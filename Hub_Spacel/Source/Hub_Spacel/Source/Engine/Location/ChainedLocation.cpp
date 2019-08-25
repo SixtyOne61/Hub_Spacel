@@ -3,8 +3,8 @@
 
 #include "ChainedLocation.h"
 
-ChainedLocation::ChainedLocation(FVector const& _center, float _size)
-	: m_center(_center)
+ChainedLocation::ChainedLocation(FVector && _center, float _size)
+	: m_center(std::move(_center))
 	, m_size(_size)
 	, m_mask(EFace::None)
 {

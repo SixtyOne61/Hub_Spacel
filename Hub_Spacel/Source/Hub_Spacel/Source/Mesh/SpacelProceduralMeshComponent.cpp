@@ -5,7 +5,7 @@
 
 void USpacelProceduralMeshComponent::generateMesh()
 {
-	m_edgesPosition.Add(ChainedLocation(FVector::ZeroVector, m_cubeSize));
+//	m_edgesPosition.Add(ChainedLocation(FVector::ZeroVector, m_cubeSize));
 
 	TArray<FVector> vertices;
 	TArray<int32> triangles;

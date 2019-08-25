@@ -3,7 +3,6 @@
 
 #include "Asteroid.h"
 #include "Hub_Spacel/Source/Mesh/SpacelProceduralMeshComponent.h"
-#include "SimplexNoise/Public/SimplexNoiseBPLibrary.h"
 
 // Sets default values
 AAsteroid::AAsteroid()
@@ -24,7 +23,6 @@ void AAsteroid::BeginPlay()
 
 	if(m_proceduralMeshComponent)
 	{
-		USimplexNoiseBPLibrary::SimplexNoise3D(0, 0, 0);
 		m_proceduralMeshComponent->setCubeSize(100.0f);
 		m_proceduralMeshComponent->generateMesh();
 	}

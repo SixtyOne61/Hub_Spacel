@@ -23,7 +23,7 @@ ENUM_CLASS_FLAGS(EFace);
 class HUB_SPACEL_API ChainedLocation
 {
 public:
-	ChainedLocation(FVector const& _center, float _size);
+	ChainedLocation(FVector && _center, float _size);
 	~ChainedLocation();
 
 	// -- get / set
