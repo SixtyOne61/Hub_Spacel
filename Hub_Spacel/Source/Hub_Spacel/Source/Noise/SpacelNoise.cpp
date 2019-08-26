@@ -4,10 +4,16 @@
 #include "SpacelNoise.h"
 
 SpacelNoise::SpacelNoise()
-	: F3(1.0 / 3.0f)
-	, G3(1.0 / 6.0f)
+	: m_f3(1.0 / 3.0f)
+	, m_g3(1.0 / 6.0f)
 {
-	p = {
+	m_grad3 = {
+		   Grad(1,1,0), Grad(-1,1,0), Grad(1,-1,0), Grad(-1,-1,0),
+		   Grad(1,0,1), Grad(-1,0,1), Grad(1,0,-1), Grad(-1,0,-1),
+		   Grad(0,1,1), Grad(0,-1,1), Grad(0,1,-1), Grad(0,-1,-1)
+	};
+
+	m_p = {
 			151,160,137,91,90,15,131,13,201,95,96,53,194,233,7,225,140,36,103,30,69,142,8,99,37,240,21,10,23,190,6,148,
 			247,120,234,75,0,26,197,62,94,252,219,203,117,35,11,32,57,177,33,88,237,149,56,87,174,20,125,136,171,168,68,175,
 			74,165,71,134,139,48,27,166,77,146,158,231,83,111,229,122,60,211,133,230,220,105,92,41,55,46,245,40,244,102,143,54,
@@ -20,8 +26,8 @@ SpacelNoise::SpacelNoise()
 
 	for (int i = 0; i < 512; i++)
 	{
-		perm[i] = p[i & 255];
-		permMod12[i] = (short)(perm[i] % 12);
+		m_perm[i] = p[i & 255];
+		m_permMod12[i] = (short)(m_perm[i] % 12);
 	}
 }
 
@@ -88,10 +94,10 @@ float SpacelNoise::getNoise(double _xin, double _yin, double _zin)
 	int jj = j & 255;
 	int kk = k & 255;
 
-	int gi0 = permMod12[ii + perm[jj + perm[kk]]];
-	int gi1 = permMod12[ii + i1 + perm[jj + j1 + perm[kk + k1]]];
-	int gi2 = permMod12[ii + i2 + perm[jj + j2 + perm[kk + k2]]];
-	int gi3 = permMod12[ii + 1 + perm[jj + 1 + perm[kk + 1]]];
+	int gi0 = m_permMod12[ii + m_perm[jj + m_perm[kk]]];
+	int gi1 = m_permMod12[ii + i1 + m_perm[jj + j1 + m_perm[kk + k1]]];
+	int gi2 = m_permMod12[ii + i2 + m_perm[jj + j2 + m_perm[kk + k2]]];
+	int gi3 = m_permMod12[ii + 1 + m_perm[jj + 1 + m_perm[kk + 1]]];
 	// Calculate the contribution from the four corners
 	double t0 = 0.6 - x0 * x0 - y0 * y0 - z0 * z0; // change to 0.5 if you want
 
@@ -131,4 +137,10 @@ int SpacelNoise::fastFloor(double _x)
 {
 	int xi = (int)_x;
 	return _x < xi ? xi - 1 : xi;
+}
+
+
+double SpacelNoise::dot(Grad const& _g, double _x, double _y, double _z) const
+{
+	return _g.m_x * _x + _g.m_y * _y + _g.m_z * _z;
 }
