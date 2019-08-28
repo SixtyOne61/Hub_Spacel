@@ -47,4 +47,6 @@ protected:
 
 	// test
 	SpacelNoise m_noise;
+
+private:
 };

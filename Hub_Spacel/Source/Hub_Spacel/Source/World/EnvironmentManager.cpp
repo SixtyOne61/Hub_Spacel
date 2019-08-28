@@ -35,7 +35,9 @@ void AEnvironmentManager::Tick(float DeltaTime)
 
 TSharedPtr<ChainedLocation> AEnvironmentManager::createChain(FVector& _location, TArray<FVector>& _openList) const
 {
-	TSharedPtr<ChainedLocation> newPos = MakeShareable(new ChainedLocation(std::forward<FVector>(_location), m_cubeSize));
+	TArray<TSharedPtr<ChainedLocation>> object;
+	object.Add(MakeShareable(new ChainedLocation(std::forward<FVector>(_location), m_cubeSize)));
+
 	addNeighboor(_openList, _location + FVector(0, m_cubeSize, 0), EFace::Top, newPos, EFace::Bot);
 	addNeighboor(_openList, _location + FVector(0, -m_cubeSize, 0), EFace::Bot, newPos, EFace::Top);
 	addNeighboor(_openList, _location + FVector(m_cubeSize, 0, 0), EFace::Right, newPos, EFace::Left);
@@ -84,13 +86,13 @@ void AEnvironmentManager::addNeighboor(TArray<FVector>& _openList, FVector _loca
 
 bool AEnvironmentManager::isValidNoise(int _x, int _y, int _z) const
 {
-	float noise = 0.0f; // USimplexNoiseBPLibrary::SimplexNoise3D(_x, _y, _z);
+	float noise = m_noise.getOctaveNoise(_x * 0.020f, _y * 0.020f, _z * 0.020f, 4);
 	return noise >= 0.7f;
 }
 
 bool AEnvironmentManager::isValidNoise(FVector const& _location) const
 {
-	float noise = 0.0f; // USimplexNoiseBPLibrary::SimplexNoise3D(_location.X, _location.Y, _location.Z);
+	float noise = m_noise.getOctaveNoise(_location.X * 0.020f, _location.Y * 0.020f, _location.Z * 0.020f, 4);
 	return noise >= 0.7f;
 }
 

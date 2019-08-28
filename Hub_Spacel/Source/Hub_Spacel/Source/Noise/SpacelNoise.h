@@ -29,9 +29,10 @@ public:
 	SpacelNoise();
 	~SpacelNoise();
 
-	float getNoise(double _xin, double _yin, double _zin);
-	int fastFloor(double _x);
+	float getNoise(double _xin, double _yin, double _zin) const;
+	int fastFloor(double _x) const;
 	double dot(Grad const& _g, double _x, double _y, double _z) const;
+	float getOctaveNoise(double _x, double _y, double _z, int _octaves) const;
 
 public:
 	// Skewing and unskewing factors for 2, 3, and 4 dimensions

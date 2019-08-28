@@ -26,7 +26,7 @@ SpacelNoise::SpacelNoise()
 
 	for (int i = 0; i < 512; i++)
 	{
-		m_perm[i] = p[i & 255];
+		m_perm[i] = m_p[i & 255];
 		m_permMod12[i] = (short)(m_perm[i] % 12);
 	}
 }
@@ -35,19 +35,19 @@ SpacelNoise::~SpacelNoise()
 {
 }
 
-float SpacelNoise::getNoise(double _xin, double _yin, double _zin)
+float SpacelNoise::getNoise(double _xin, double _yin, double _zin) const
 {
 	double n0 = 0;
 	double n1 = 0;
 	double n2 = 0;
 	double n3 = 0;
-	double s = (_xin + _yin + +_zin) * F3;
+	double s = (_xin + _yin + +_zin) * m_f3;
 
 	int i = fastFloor(_xin + s);
 	int j = fastFloor(_yin + s);
 	int k = fastFloor(_zin + s);
 
-	double t = (i + j + k) * G3;
+	double t = (i + j + k) * m_g3;
 
 	double X0 = i - t; // Unskew the cell origin back to (x,y,z) space
 	double Y0 = j - t;
@@ -80,15 +80,15 @@ float SpacelNoise::getNoise(double _xin, double _yin, double _zin)
 			// a step of (0,1,0) in (i,j,k) means a step of (-c,1-c,-c) in (x,y,z), and
 			// a step of (0,0,1) in (i,j,k) means a step of (-c,-c,1-c) in (x,y,z), where
 			// c = 1/6.
-	double x1 = x0 - i1 + G3; // Offsets for second corner in (x,y,z) coords
-	double y1 = y0 - j1 + G3;
-	double z1 = z0 - k1 + G3;
-	double x2 = x0 - i2 + 2.0 * G3; // Offsets for third corner in (x,y,z) coords
-	double y2 = y0 - j2 + 2.0 * G3;
-	double z2 = z0 - k2 + 2.0 * G3;
-	double x3 = x0 - 1.0 + 3.0 * G3; // Offsets for last corner in (x,y,z) coords
-	double y3 = y0 - 1.0 + 3.0 * G3;
-	double z3 = z0 - 1.0 + 3.0 * G3;
+	double x1 = x0 - i1 + m_g3; // Offsets for second corner in (x,y,z) coords
+	double y1 = y0 - j1 + m_g3;
+	double z1 = z0 - k1 + m_g3;
+	double x2 = x0 - i2 + 2.0 * m_g3; // Offsets for third corner in (x,y,z) coords
+	double y2 = y0 - j2 + 2.0 * m_g3;
+	double z2 = z0 - k2 + 2.0 * m_g3;
+	double x3 = x0 - 1.0 + 3.0 * m_g3; // Offsets for last corner in (x,y,z) coords
+	double y3 = y0 - 1.0 + 3.0 * m_g3;
+	double z3 = z0 - 1.0 + 3.0 * m_g3;
 	// Work out the hashed gradient indices of the four simplex corners
 	int ii = i & 255;
 	int jj = j & 255;
@@ -105,42 +105,59 @@ float SpacelNoise::getNoise(double _xin, double _yin, double _zin)
 	else
 	{
 		t0 *= t0;
-		n0 = t0 * t0 * dot(grad3[gi0], x0, y0, z0);
+		n0 = t0 * t0 * dot(m_grad3[gi0], x0, y0, z0);
 	}
 	double t1 = 0.6 - x1 * x1 - y1 * y1 - z1 * z1; // change to 0.5 if you want
 	if (t1 < 0) n1 = 0.0;
 	else
 	{
 		t1 *= t1;
-		n1 = t1 * t1 * dot(grad3[gi1], x1, y1, z1);
+		n1 = t1 * t1 * dot(m_grad3[gi1], x1, y1, z1);
 	}
 	double t2 = 0.6 - x2 * x2 - y2 * y2 - z2 * z2; // change to 0.5 if you want
 	if (t2 < 0) n2 = 0.0;
 	else
 	{
 		t2 *= t2;
-		n2 = t2 * t2 * dot(grad3[gi2], x2, y2, z2);
+		n2 = t2 * t2 * dot(m_grad3[gi2], x2, y2, z2);
 	}
 	double t3 = 0.6 - x3 * x3 - y3 * y3 - z3 * z3; // change to 0.5 if you want
 	if (t3 < 0) n3 = 0.0;
 	else
 	{
 		t3 *= t3;
-		n3 = t3 * t3 * dot(grad3[gi3], x3, y3, z3);
+		n3 = t3 * t3 * dot(m_grad3[gi3], x3, y3, z3);
 	}
 	// Add contributions from each corner to get the final noise value.
 	// The result is scaled to stay just inside [-1,1] (now [0, 1])
 	return (float)(32.0 * (n0 + n1 + n2 + n3) + 1) * 0.5f; // change to 76.0 if you want
 }
 
-int SpacelNoise::fastFloor(double _x)
+int SpacelNoise::fastFloor(double _x) const
 {
 	int xi = (int)_x;
 	return _x < xi ? xi - 1 : xi;
 }
 
-
 double SpacelNoise::dot(Grad const& _g, double _x, double _y, double _z) const
 {
 	return _g.m_x * _x + _g.m_y * _y + _g.m_z * _z;
+}
+
+float SpacelNoise::getOctaveNoise(double _x, double _y, double _z, int _octaves) const
+{
+	float value = 0;
+	float divisor = 0;
+	float currentHalf = 0;
+	float currentDouble = 0;
+
+	for (int i = 0; i < _octaves; i++)
+	{
+		currentHalf = (float)FMath::Pow(0.5f, i);
+		currentDouble = (float)FMath::Pow(2, i);
+		value += getNoise(_x * currentDouble, _y * currentDouble, _z) * currentHalf;
+		divisor += currentHalf;
+	}
+
+	return value / divisor;
 }
