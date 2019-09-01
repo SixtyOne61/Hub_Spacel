@@ -3,10 +3,24 @@
 
 #include "ChainedLocation.h"
 
-ChainedLocation::ChainedLocation()
+ChainedLocation::ChainedLocation(FVector && _center, float _size)
+	: m_center(std::move(_center))
+	, m_size(_size)
+	, m_mask(EFace::None)
 {
 }
 
 ChainedLocation::~ChainedLocation()
 {
+}
+
+void ChainedLocation::addNeighbor(EFace _face, TSharedPtr<ChainedLocation> _neighbor)
+{
+	if (EnumHasAllFlags(m_mask, _face))
+	{
+		return;
+	}
+
+	m_neighbor.Add(TPair<EFace, TSharedPtr<ChainedLocation>>(_face, _neighbor));
+	m_mask &= _face;		 
 }
