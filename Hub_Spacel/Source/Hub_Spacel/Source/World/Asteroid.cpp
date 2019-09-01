@@ -34,3 +34,12 @@ void AAsteroid::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
+void AAsteroid::setEdges(TArray<ChainedLocation> && _edges)
+{
+	if(!m_proceduralMeshComponent)
+	{
+		return;
+	}
+
+	m_proceduralMeshComponent->setEdges(std::forward<TArray<ChainedLocation>>(_edges));
+}
