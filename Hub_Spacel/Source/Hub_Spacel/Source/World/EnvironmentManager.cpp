@@ -2,7 +2,7 @@
 
 
 #include "EnvironmentManager.h"
-#include "SimplexNoise/Public/SimplexNoiseBPLibrary.h"
+#include "Hub_Spacel/Source/World/Asteroid.h"
 
 // Sets default values
 AEnvironmentManager::AEnvironmentManager()
@@ -34,7 +34,7 @@ void AEnvironmentManager::Tick(float DeltaTime)
 
 }
 
-TSharedPtr<ChainedLocation> AEnvironmentManager::createChain(FVector& _location, TArray<FVector>& _openList) const
+TSharedPtr<ChainedLocation> AEnvironmentManager::createChain(FVector& _location, TArray<FVector>& _openList)
 {
 	TSharedPtr<ChainedLocation> newPos = MakeShareable(new ChainedLocation(std::forward<FVector>(_location), m_cubeSize));
 
@@ -80,7 +80,7 @@ void AEnvironmentManager::createProceduralWorld()
 	}
 }
 
-void AEnvironmentManager::addNeighboor(TArray<FVector>& _openList, FVector _location, EFace _where, TSharedPtr<ChainedLocation> _chain, EFace _inverse) const
+void AEnvironmentManager::addNeighboor(TArray<FVector>& _openList, FVector _location, EFace _where, TSharedPtr<ChainedLocation> _chain, EFace _inverse)
 {
 	if (isValidLocation(_location) && isValidNoise(_location))
 	{
@@ -91,20 +91,24 @@ void AEnvironmentManager::addNeighboor(TArray<FVector>& _openList, FVector _loca
 	}
 }
 
-void AEnvironmentManager::spawnAsteroid() const
+void AEnvironmentManager::spawnAsteroid()
 {
 	UWorld* const world = GetWorld();
 	if (world) 
 	{
-		FActorSpawnParameters spawnParams;
-		spawnParams.Instigator = this;
+		FVector location = FVector(0, 0, 0);
+		FRotator rotation = FRotator(0, 0, 0);
 
-		// make begin spawn actor instead TO DO
-		AAsteroid* BPasteroid = World->SpawnActor<AAsteroid>(BP_asteroid, Location, Rotation, SpawnParams);
+		FActorSpawnParameters spawnParams;
+		spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		spawnParams.Instigator = GetInstigator();
+		spawnParams.Owner = GetOwner();
+
+		AAsteroid* BPasteroid = world->SpawnActor<AAsteroid>(BP_asteroid, location, rotation, spawnParams);
 		if (BPasteroid) 
 		{
 			// Init component
-			BPasteroid->setEdges(std::forward<TArray<ChainedLocation>>(m_currentObject));
+			BPasteroid->setEdges(std::forward<TArray<TSharedPtr<ChainedLocation>>>(m_currentObject));
 			// TO DO if array is correctly moved
 		}
 	}

@@ -41,7 +41,7 @@ float SpacelNoise::getNoise(double _xin, double _yin, double _zin) const
 	double n1 = 0;
 	double n2 = 0;
 	double n3 = 0;
-	double s = (_xin + _yin + +_zin) * m_f3;
+	double s = (_xin + _yin +_zin) * m_f3;
 
 	int i = fastFloor(_xin + s);
 	int j = fastFloor(_yin + s);

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Hub_Spacel/Source/Engine/Location/ChainedLocation.h"
 #include "Asteroid.generated.h"
 
 class USpacelProceduralMeshComponent;
@@ -20,7 +21,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	// -- get / set
-	void setEdges(TArray<ChainedLocation> && _edges);
+	void setEdges(TArray<TSharedPtr<ChainedLocation>>&& _edges);
 
 protected:
 	// Called when the game starts or when spawned

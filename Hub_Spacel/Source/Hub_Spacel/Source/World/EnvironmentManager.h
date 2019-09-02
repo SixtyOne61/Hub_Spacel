@@ -21,12 +21,12 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	TSharedPtr<ChainedLocation> createChain(FVector& _location, TArray<FVector>& _openList) const;
+	TSharedPtr<ChainedLocation> createChain(FVector& _location, TArray<FVector>& _openList);
 	void createProceduralWorld();
-	void addNeighboor(TArray<FVector> & _openList, FVector _location, EFace _where, TSharedPtr<ChainedLocation> _chain, EFace _inverse) const;
+	void addNeighboor(TArray<FVector> & _openList, FVector _location, EFace _where, TSharedPtr<ChainedLocation> _chain, EFace _inverse);
 
 	// -- spawn asteroid
-	void spawnAsteroid() const;
+	void spawnAsteroid();
 
 	// -- check if we have a valid noise in this points
 	bool isValidNoise(int _x, int _y, int _z) const;

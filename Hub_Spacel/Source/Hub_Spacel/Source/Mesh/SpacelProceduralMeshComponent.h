@@ -21,7 +21,7 @@ public:
 	
 	// -- get / set
 	inline void setCubeSize(float _cubeSize) { m_cubeSize = _cubeSize; }
-	inline void setEdges(TArray<ChainedLocation> && _edges) { m_edgesPosition = std::move(_edges); }
+	inline void setEdges(TArray<TSharedPtr<ChainedLocation>> && _edges) { m_edgesPosition = std::move(_edges); }
 
 protected:
 	void addTriangles(TArray<int32> & _out, int _deb) const;
@@ -32,5 +32,5 @@ protected:
 	float m_cubeSize;
 
 	// list of all edges
-	TArray<ChainedLocation> m_edgesPosition;
+	TArray<TSharedPtr<ChainedLocation>> m_edgesPosition;
 };

@@ -10,10 +10,10 @@ void USpacelProceduralMeshComponent::generateMesh()
 	TArray<FVector> vertices;
 	TArray<int32> triangles;
 
-	for (ChainedLocation const& point : m_edgesPosition)
+	for (TSharedPtr<ChainedLocation> const& point : m_edgesPosition)
 	{
-		EFace mask = point.getMask();
-		FVector center = point.getCenter();
+		EFace mask = point->getMask();
+		FVector center = point->getCenter();
 
 		// read mask from linkPos
 		if (!EnumHasAllFlags(mask, EFace::Top))
