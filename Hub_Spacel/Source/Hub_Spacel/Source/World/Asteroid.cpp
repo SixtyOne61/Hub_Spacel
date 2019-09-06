@@ -23,7 +23,6 @@ void AAsteroid::BeginPlay()
 
 	if(m_proceduralMeshComponent)
 	{
-		m_proceduralMeshComponent->setCubeSize(100.0f);
 		m_proceduralMeshComponent->generateMesh();
 	}
 }

@@ -52,7 +52,8 @@ void AEnvironmentManager::createProceduralWorld()
 		}
 	}
 
-	while (openList.Num())
+	int i = 10;
+	while (openList.Num() && i)
 	{
 		FVector location = openList[0];
 		openList.RemoveAt(0);
@@ -60,7 +61,7 @@ void AEnvironmentManager::createProceduralWorld()
 		
 		// spawn BP
 		spawnAsteroid();
-		return;
+		--i;
 	}
 }
 
@@ -81,12 +82,24 @@ TSharedPtr<ChainedLocation> AEnvironmentManager::createChain(FVector& _location,
 
 void AEnvironmentManager::addNeighboor(TArray<FVector>& _openList, FVector _location, EFace _where, TSharedPtr<ChainedLocation> _chain, EFace _inverse)
 {
-	if (isValidLocation(_location) && isValidNoise(_location) && _openList.Contains(_location))
+	if (isValidLocation(_location) && isValidNoise(_location))
 	{
-		_openList.Remove(_location);
-		TSharedPtr<ChainedLocation> newPos = createChain(_location, _openList);
-		_chain->addNeighbor(_where, newPos);
-		newPos->addNeighbor(_inverse, _chain);
+		// two way, check if it's a known value or create a new one
+		TSharedPtr<ChainedLocation> exist = isKnownLocation(_location);
+		if (exist)
+		{
+			_chain->addNeighbor(_where, exist);
+			exist->addNeighbor(_inverse, _chain);
+		}
+		else if (_openList.Contains(_location))
+		{
+			_openList.Remove(_location);
+			TSharedPtr<ChainedLocation> newPos = createChain(_location, _openList);
+		}
+		else
+		{
+			// TO DO : throw error
+		}
 	}
 }
 
@@ -132,4 +145,17 @@ bool AEnvironmentManager::isValidNoise(FVector const& _location) const
 bool AEnvironmentManager::isValidLocation(FVector const& _location) const
 {
 	return _location.X >= 0 && _location.X <= m_bornX && _location.Y >= 0 && _location.Y <= m_bornY && _location.Z >= 0 && _location.Z <= m_bornZ;
+}
+
+TSharedPtr<ChainedLocation> AEnvironmentManager::isKnownLocation(FVector const& _location) const
+{
+	for (TSharedPtr<ChainedLocation> const& value : m_currentObject)
+	{
+		if (value->getCenter() == _location)
+		{
+			return value;
+		}
+	}
+
+	return nullptr;
 }

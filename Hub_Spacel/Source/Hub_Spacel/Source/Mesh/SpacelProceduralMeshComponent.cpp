@@ -5,8 +5,6 @@
 
 void USpacelProceduralMeshComponent::generateMesh()
 {
-//	m_edgesPosition.Add(ChainedLocation(FVector::ZeroVector, m_cubeSize));
-
 	TArray<FVector> vertices;
 	TArray<int32> triangles;
 
@@ -14,6 +12,8 @@ void USpacelProceduralMeshComponent::generateMesh()
 	{
 		EFace mask = point->getMask();
 		FVector center = point->getCenter();
+
+		// TO DO : only display if we havent all neighboor ?
 
 		// read mask from linkPos
 		if (!EnumHasAllFlags(mask, EFace::Top))

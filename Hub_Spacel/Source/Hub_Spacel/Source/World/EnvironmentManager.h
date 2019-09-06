@@ -35,24 +35,27 @@ protected:
 	// -- check if we are on born
 	bool isValidLocation(FVector const& _location) const;
 
+	// -- check if this location is in m_currentObject
+	TSharedPtr<ChainedLocation> isKnownLocation(FVector const& _location) const;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 protected:
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Settings")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Settings")
 	int m_bornX;
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Settings")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Settings")
 	int m_bornY;
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Settings")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Settings")
 	int m_bornZ;
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Settings")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Settings")
 	int m_cubeSize;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Procedural Type")
 	TSubclassOf<class AAsteroid> BP_asteroid;
 
-	// test
+	// test TO DO : create a singleton
 	SpacelNoise m_noise;
 
 private:
