@@ -43,3 +43,13 @@ void AAsteroid::setEdges(TArray<TSharedPtr<ChainedLocation>> && _edges)
 
 	m_proceduralMeshComponent->setEdges(std::forward<TArray<TSharedPtr<ChainedLocation>>>(_edges));
 }
+
+void AAsteroid::setCubeSize(int _cubeSize)
+{
+	if (!m_proceduralMeshComponent)
+	{
+		return;
+	}
+
+	m_proceduralMeshComponent->setCubeSize(_cubeSize);
+}

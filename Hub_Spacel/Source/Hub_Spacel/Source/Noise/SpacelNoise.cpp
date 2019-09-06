@@ -94,10 +94,21 @@ float SpacelNoise::getNoise(double _xin, double _yin, double _zin) const
 	int jj = j & 255;
 	int kk = k & 255;
 
-	int gi0 = m_permMod12[ii + m_perm[jj + m_perm[kk]]];
-	int gi1 = m_permMod12[ii + i1 + m_perm[jj + j1 + m_perm[kk + k1]]];
-	int gi2 = m_permMod12[ii + i2 + m_perm[jj + j2 + m_perm[kk + k2]]];
-	int gi3 = m_permMod12[ii + 1 + m_perm[jj + 1 + m_perm[kk + 1]]];
+	int idx1 = jj + m_perm[kk];
+	int idx2 = ii + m_perm[idx1];
+	int gi0 = m_permMod12[idx2];
+
+	int idx3 = jj + j1 + m_perm[kk + k1];
+	int idx4 = ii + i1 + m_perm[idx3];
+	int gi1 = m_permMod12[idx4];
+
+	int idx5 = jj + j2 + m_perm[kk + k2];
+	int idx6 = ii + i2 + m_perm[idx5];
+	int gi2 = m_permMod12[idx6];
+
+	int idx7 = jj + 1 + m_perm[kk + 1];
+	int idx8 = ii + 1 + m_perm[idx7];
+	int gi3 = m_permMod12[idx8];
 	// Calculate the contribution from the four corners
 	double t0 = 0.6 - x0 * x0 - y0 * y0 - z0 * z0; // change to 0.5 if you want
 

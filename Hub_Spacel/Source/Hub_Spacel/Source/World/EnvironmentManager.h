@@ -21,8 +21,8 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	TSharedPtr<ChainedLocation> createChain(FVector& _location, TArray<FVector>& _openList);
 	void createProceduralWorld();
+	TSharedPtr<ChainedLocation> createChain(FVector& _location, TArray<FVector>& _openList);
 	void addNeighboor(TArray<FVector> & _openList, FVector _location, EFace _where, TSharedPtr<ChainedLocation> _chain, EFace _inverse);
 
 	// -- spawn asteroid
@@ -49,6 +49,7 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Settings")
 	int m_cubeSize;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Procedural Type")
 	TSubclassOf<class AAsteroid> BP_asteroid;
 
 	// test

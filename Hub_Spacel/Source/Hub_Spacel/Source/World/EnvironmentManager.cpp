@@ -34,21 +34,6 @@ void AEnvironmentManager::Tick(float DeltaTime)
 
 }
 
-TSharedPtr<ChainedLocation> AEnvironmentManager::createChain(FVector& _location, TArray<FVector>& _openList)
-{
-	TSharedPtr<ChainedLocation> newPos = MakeShareable(new ChainedLocation(std::forward<FVector>(_location), m_cubeSize));
-
-	m_currentObject.Add(newPos);
-
-	addNeighboor(_openList, _location + FVector(0, m_cubeSize, 0), EFace::Top, newPos, EFace::Bot);
-	addNeighboor(_openList, _location + FVector(0, -m_cubeSize, 0), EFace::Bot, newPos, EFace::Top);
-	addNeighboor(_openList, _location + FVector(m_cubeSize, 0, 0), EFace::Right, newPos, EFace::Left);
-	addNeighboor(_openList, _location + FVector(-m_cubeSize, 0, 0), EFace::Left, newPos, EFace::Right);
-	addNeighboor(_openList, _location + FVector(0, 0, m_cubeSize), EFace::Back, newPos, EFace::Front);
-	addNeighboor(_openList, _location + FVector(0, 0, -m_cubeSize), EFace::Front, newPos, EFace::Back);
-	return newPos;
-}
-
 void AEnvironmentManager::createProceduralWorld()
 {
 	TArray<FVector> openList;
@@ -75,14 +60,28 @@ void AEnvironmentManager::createProceduralWorld()
 		
 		// spawn BP
 		spawnAsteroid();
-
-		// clear array TO DO
+		return;
 	}
+}
+
+TSharedPtr<ChainedLocation> AEnvironmentManager::createChain(FVector& _location, TArray<FVector>& _openList)
+{
+	TSharedPtr<ChainedLocation> newPos = MakeShareable(new ChainedLocation(std::forward<FVector>(_location), m_cubeSize));
+
+	m_currentObject.Add(newPos);
+
+	addNeighboor(_openList, _location + FVector(0, m_cubeSize, 0), EFace::Top, newPos, EFace::Bot);
+	addNeighboor(_openList, _location + FVector(0, -m_cubeSize, 0), EFace::Bot, newPos, EFace::Top);
+	addNeighboor(_openList, _location + FVector(m_cubeSize, 0, 0), EFace::Right, newPos, EFace::Left);
+	addNeighboor(_openList, _location + FVector(-m_cubeSize, 0, 0), EFace::Left, newPos, EFace::Right);
+	addNeighboor(_openList, _location + FVector(0, 0, m_cubeSize), EFace::Back, newPos, EFace::Front);
+	addNeighboor(_openList, _location + FVector(0, 0, -m_cubeSize), EFace::Front, newPos, EFace::Back);
+	return newPos;
 }
 
 void AEnvironmentManager::addNeighboor(TArray<FVector>& _openList, FVector _location, EFace _where, TSharedPtr<ChainedLocation> _chain, EFace _inverse)
 {
-	if (isValidLocation(_location) && isValidNoise(_location))
+	if (isValidLocation(_location) && isValidNoise(_location) && _openList.Contains(_location))
 	{
 		_openList.Remove(_location);
 		TSharedPtr<ChainedLocation> newPos = createChain(_location, _openList);
@@ -97,19 +96,23 @@ void AEnvironmentManager::spawnAsteroid()
 	if (world) 
 	{
 		FVector location = FVector(0, 0, 0);
-		FRotator rotation = FRotator(0, 0, 0);
 
-		FActorSpawnParameters spawnParams;
+		/*FActorSpawnParameters spawnParams;
 		spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 		spawnParams.Instigator = GetInstigator();
-		spawnParams.Owner = GetOwner();
+		spawnParams.Owner = GetOwner();*/
 
-		AAsteroid* BPasteroid = world->SpawnActor<AAsteroid>(BP_asteroid, location, rotation, spawnParams);
+		FTransform transform;
+		transform.SetLocation(location);
+
+		AAsteroid* BPasteroid = world->SpawnActorDeferred<AAsteroid>(BP_asteroid, transform);
 		if (BPasteroid) 
 		{
 			// Init component
+			BPasteroid->setCubeSize(m_cubeSize);
 			BPasteroid->setEdges(std::forward<TArray<TSharedPtr<ChainedLocation>>>(m_currentObject));
-			// TO DO if array is correctly moved
+			BPasteroid->FinishSpawning(transform);
+			m_currentObject.Empty();
 		}
 	}
 }

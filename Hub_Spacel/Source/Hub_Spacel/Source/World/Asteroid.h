@@ -22,6 +22,7 @@ public:
 
 	// -- get / set
 	void setEdges(TArray<TSharedPtr<ChainedLocation>>&& _edges);
+	void setCubeSize(int _cubeSize);
 
 protected:
 	// Called when the game starts or when spawned
