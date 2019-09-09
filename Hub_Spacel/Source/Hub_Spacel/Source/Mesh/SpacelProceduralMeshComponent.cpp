@@ -7,6 +7,7 @@ void USpacelProceduralMeshComponent::generateMesh()
 {
 	TArray<FVector> vertices;
 	TArray<int32> triangles;
+	TArray<FVector> normals;
 
 	for (TSharedPtr<ChainedLocation> const& point : m_edgesPosition)
 	{
@@ -23,6 +24,11 @@ void USpacelProceduralMeshComponent::generateMesh()
 			vertices.Add(center + FVector(m_cubeSize, m_cubeSize, 0));
 			vertices.Add(center + FVector(m_cubeSize, m_cubeSize, m_cubeSize));
 			vertices.Add(center + FVector(0, m_cubeSize, m_cubeSize));
+
+			normals.Add(FVector(0, 1, 0));
+			normals.Add(FVector(0, 1, 0));
+			normals.Add(FVector(0, 1, 0));
+			normals.Add(FVector(0, 1, 0));
 			addTriangles(triangles, deb);
 		}
 		if (!EnumHasAllFlags(mask, EFace::Bot))
@@ -32,6 +38,11 @@ void USpacelProceduralMeshComponent::generateMesh()
 			vertices.Add(center + FVector(m_cubeSize, 0, 0));
 			vertices.Add(center + FVector(0, 0, 0));
 			vertices.Add(center + FVector(0, 0, m_cubeSize));
+
+			normals.Add(FVector(0, -1, 0));
+			normals.Add(FVector(0, -1, 0));
+			normals.Add(FVector(0, -1, 0));
+			normals.Add(FVector(0, -1, 0));
 			addTriangles(triangles, deb);
 		}
 		if (!EnumHasAllFlags(mask, EFace::Right))
@@ -41,6 +52,11 @@ void USpacelProceduralMeshComponent::generateMesh()
 			vertices.Add(center + FVector(m_cubeSize, m_cubeSize, m_cubeSize));
 			vertices.Add(center + FVector(m_cubeSize, m_cubeSize, 0));
 			vertices.Add(center + FVector(m_cubeSize, 0, 0));
+
+			normals.Add(FVector(0, 0, 1));
+			normals.Add(FVector(0, 0, 1));
+			normals.Add(FVector(0, 0, 1));
+			normals.Add(FVector(0, 0, 1));
 			addTriangles(triangles, deb);
 		}
 		if (!EnumHasAllFlags(mask, EFace::Left))
@@ -50,6 +66,11 @@ void USpacelProceduralMeshComponent::generateMesh()
 			vertices.Add(center + FVector(0, 0, 0));
 			vertices.Add(center + FVector(0, m_cubeSize, 0));
 			vertices.Add(center + FVector(0, m_cubeSize, m_cubeSize));
+
+			normals.Add(FVector(0, 0, -1));
+			normals.Add(FVector(0, 0, -1));
+			normals.Add(FVector(0, 0, -1));
+			normals.Add(FVector(0, 0, -1));
 			addTriangles(triangles, deb);
 		}
 		if (!EnumHasAllFlags(mask, EFace::Front))
@@ -59,6 +80,11 @@ void USpacelProceduralMeshComponent::generateMesh()
 			vertices.Add(center + FVector(0, 0, 0));
 			vertices.Add(center + FVector(m_cubeSize, 0, 0));
 			vertices.Add(center + FVector(m_cubeSize, m_cubeSize, 0));
+
+			normals.Add(FVector(1, 0, 0));
+			normals.Add(FVector(1, 0, 0));
+			normals.Add(FVector(1, 0, 0));
+			normals.Add(FVector(1, 0, 0));
 			addTriangles(triangles, deb);
 		}
 		if (!EnumHasAllFlags(mask, EFace::Back))
@@ -68,12 +94,20 @@ void USpacelProceduralMeshComponent::generateMesh()
 			vertices.Add(center + FVector(0, 0, m_cubeSize));
 			vertices.Add(center + FVector(0, m_cubeSize, m_cubeSize));
 			vertices.Add(center + FVector(m_cubeSize, m_cubeSize, m_cubeSize));
+
+			normals.Add(FVector(-1, 0, 0));
+			normals.Add(FVector(-1, 0, 0));
+			normals.Add(FVector(-1, 0, 0));
+			normals.Add(FVector(-1, 0, 0));
 			addTriangles(triangles, deb);
 		}
 	}
 
-	TArray<FVector> normals;
 	TArray<FVector2D> UV0;
+	UV0.Add(FVector2D(1, 1));
+	UV0.Add(FVector2D(0, 1));
+	UV0.Add(FVector2D(1, 0));
+	UV0.Add(FVector2D(0, 0));
 	TArray<FProcMeshTangent> tangents;
 	TArray<FLinearColor> vertexColors;
 
@@ -86,8 +120,8 @@ void USpacelProceduralMeshComponent::generateMesh()
 void USpacelProceduralMeshComponent::addTriangles(TArray<int32> & _out, int _deb) const
 {
 	int triangles[] = {
-		_deb, _deb + 2, _deb + 1,
-		_deb, _deb + 3, _deb + 2
+		_deb, _deb + 1, _deb + 2,
+		_deb, _deb + 2, _deb + 3
 	};
 
 	for(int numEdge : triangles)

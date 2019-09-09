@@ -52,8 +52,7 @@ void AEnvironmentManager::createProceduralWorld()
 		}
 	}
 
-	int i = 10;
-	while (openList.Num() && i)
+	while (openList.Num())
 	{
 		FVector location = openList[0];
 		openList.RemoveAt(0);
@@ -61,7 +60,6 @@ void AEnvironmentManager::createProceduralWorld()
 		
 		// spawn BP
 		spawnAsteroid();
-		--i;
 	}
 }
 
@@ -132,14 +130,14 @@ void AEnvironmentManager::spawnAsteroid()
 
 bool AEnvironmentManager::isValidNoise(int _x, int _y, int _z) const
 {
-	float noise = m_noise.getOctaveNoise(_x * 0.020f, _y * 0.020f, _z * 0.020f, 4);
-	return noise >= 0.7f;
+	float noise = m_noise.getOctaveNoise(_x * 0.00020f, _y * 0.00020f, _z * 0.00020f, 4);
+	//UE_LOG(LogTemp, Warning, TEXT(*FString::FromInt(noise)));
+	return noise >= .75f;
 }
 
 bool AEnvironmentManager::isValidNoise(FVector const& _location) const
 {
-	float noise = m_noise.getOctaveNoise(_location.X * 0.020f, _location.Y * 0.020f, _location.Z * 0.020f, 4);
-	return noise >= 0.7f;
+	return isValidNoise(_location.X, _location.Y, _location.Z);
 }
 
 bool AEnvironmentManager::isValidLocation(FVector const& _location) const
