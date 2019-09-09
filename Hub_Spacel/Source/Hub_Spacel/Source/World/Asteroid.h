@@ -17,9 +17,6 @@ public:
 	// Sets default values for this actor's properties
 	AAsteroid();
 	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
 	// -- get / set
 	void setEdges(TArray<TSharedPtr<ChainedLocation>>&& _edges);
 	void setCubeSize(int _cubeSize);

@@ -9,7 +9,7 @@ AAsteroid::AAsteroid()
 	: m_proceduralMeshComponent(nullptr)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
 	m_proceduralMeshComponent = CreateDefaultSubobject<USpacelProceduralMeshComponent>(TEXT("Procedural mesh"));
 	m_proceduralMeshComponent->bUseAsyncCooking = true;
@@ -25,12 +25,6 @@ void AAsteroid::BeginPlay()
 	{
 		m_proceduralMeshComponent->generateMesh();
 	}
-}
-
-// Called every frame
-void AAsteroid::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
 }
 
 void AAsteroid::setEdges(TArray<TSharedPtr<ChainedLocation>> && _edges)
