@@ -26,6 +26,21 @@ void AWorldManager::BeginPlay()
 
 void AWorldManager::spawnChunckEnvironment()
 {
-
+	for (int x = 0; x < m_nbChunck; ++x)
+	{
+		for (int y = 0; y < m_nbChunck; ++y)
+		{
+			for (int z = 0; z < m_nbChunck; ++z)
+			{
+				FVector position(x * m_chunckSize, y * m_chunckSize, z * m_chunckSize);
+				AEnvironmentManager* BPEnvironment = world->SpawnActorDeferred<AEnvironmentManager>(BP_environment, transform);
+				if (BPEnvironment)
+				{
+					// Init component
+					BPEnvironment->FinishSpawning(transform);
+				}
+			}
+		}
+	}
 }
 
