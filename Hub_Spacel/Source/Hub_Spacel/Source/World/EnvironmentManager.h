@@ -44,13 +44,13 @@ protected:
 
 protected:
 	// TO DO : just show don't edit
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Settings")
-	int m_bornX;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Settings")
-	int m_bornY;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Settings")
-	int m_bornZ;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Settings")
+	UPROPERTY(VisibleAnywhere, Category = "Settings")
+	FVector2D m_bornX;
+	UPROPERTY(VisibleAnywhere, Category = "Settings")
+	FVector2D m_bornY;
+	UPROPERTY(VisibleAnywhere, Category = "Settings")
+	FVector2D m_bornZ;
+	UPROPERTY(VisibleAnywhere, Category = "Settings")
 	int m_cubeSize;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Procedural Type")

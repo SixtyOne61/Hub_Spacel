@@ -6,21 +6,23 @@
 
 // Sets default values
 AEnvironmentManager::AEnvironmentManager()
-	: m_bornX(1000)
-	, m_bornY(1000)
-	, m_bornZ(1000)
+	: m_bornX()
+	, m_bornY()
+	, m_bornZ()
 	, m_cubeSize(10)
 	, BP_asteroid(nullptr)
 	, m_noise()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
-
 }
 
 void AEnvironmentManager::init(FVector2D const& _bornX, FVector2D const& _bornY, FVector2D const& _bornZ, int _cubeSize)
 {
-
+	m_bornX = _bornX;
+	m_bornY = _bornY;
+	m_bornZ = _bornZ;
+	m_cubeSize = _cubeSize;
 }
 
 // Called when the game starts or when spawned
@@ -36,11 +38,11 @@ void AEnvironmentManager::createProceduralWorld()
 {
 	TArray<FVector> openList;
 
-	for (int x = 0; x <= m_bornX; x += m_cubeSize)
+	for (int x = m_bornX.X; x <= m_bornX.Y; x += m_cubeSize)
 	{
-		for (int y = 0; y <= m_bornY; y += m_cubeSize)
+		for (int y = m_bornY.X; y <= m_bornY.Y; y += m_cubeSize)
 		{
-			for (int z = 0; z <= m_bornZ; z += m_cubeSize)
+			for (int z = m_bornZ.X; z <= m_bornZ.Y; z += m_cubeSize)
 			{
 				if (isValidNoise(x, y, z))
 				{
@@ -106,11 +108,6 @@ void AEnvironmentManager::spawnAsteroid()
 	{
 		FVector location = FVector(0, 0, 0);
 
-		/*FActorSpawnParameters spawnParams;
-		spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-		spawnParams.Instigator = GetInstigator();
-		spawnParams.Owner = GetOwner();*/
-
 		FTransform transform;
 		transform.SetLocation(location);
 
@@ -129,7 +126,6 @@ void AEnvironmentManager::spawnAsteroid()
 bool AEnvironmentManager::isValidNoise(int _x, int _y, int _z) const
 {
 	float noise = m_noise.getOctaveNoise(_x * 0.00020f, _y * 0.00020f, _z * 0.00020f, 4);
-	//UE_LOG(LogTemp, Warning, TEXT(*FString::FromInt(noise)));
 	return noise >= .75f;
 }
 
@@ -140,7 +136,7 @@ bool AEnvironmentManager::isValidNoise(FVector const& _location) const
 
 bool AEnvironmentManager::isValidLocation(FVector const& _location) const
 {
-	return _location.X >= 0 && _location.X <= m_bornX && _location.Y >= 0 && _location.Y <= m_bornY && _location.Z >= 0 && _location.Z <= m_bornZ;
+	return _location.X >= m_bornX.X && _location.X <= m_bornX.Y && _location.Y >= m_bornY.X && _location.Y <= m_bornY.Y && _location.Z >= m_bornZ.X && _location.Z <= m_bornZ.Y;
 }
 
 TSharedPtr<ChainedLocation> AEnvironmentManager::isKnownLocation(FVector const& _location) const

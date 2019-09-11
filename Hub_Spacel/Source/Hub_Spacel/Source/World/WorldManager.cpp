@@ -5,9 +5,9 @@
 
 // Sets default values
 AWorldManager::AWorldManager()
-	: m_nbChunck(10)
+	: m_nbChunck(3)
 	, m_chunckSize(1000)
-	, m_cubeSize(100)
+	, m_cubeSize(10)
 	, BP_environment(nullptr)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
@@ -49,8 +49,8 @@ void AWorldManager::spawnChunckEnvironment()
 				AEnvironmentManager* BPEnvironment = world->SpawnActorDeferred<AEnvironmentManager>(BP_environment, transform);
 				if (BPEnvironment)
 				{
-					// TO DO : call init
 					// Init component
+					BPEnvironment->init(FVector2D(location.X, location.X + m_chunckSize), FVector2D(location.Y, location.Y + m_chunckSize), FVector2D(location.Z, location.Z + m_chunckSize), m_cubeSize);
 					BPEnvironment->FinishSpawning(transform);
 				}
 			}
