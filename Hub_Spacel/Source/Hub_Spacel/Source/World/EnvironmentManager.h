@@ -17,6 +17,9 @@ public:
 	// Sets default values for this actor's properties
 	AEnvironmentManager();
 
+	// -- init actor, call on spawn
+	void init(FVector2D const& _bornX, FVector2D const& _bornY, FVector2D const& _bornZ, int _cubeSize);
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -38,7 +41,9 @@ protected:
 	// -- check if this location is in m_currentObject
 	TSharedPtr<ChainedLocation> isKnownLocation(FVector const& _location) const;
 
+
 protected:
+	// TO DO : just show don't edit
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Settings")
 	int m_bornX;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Settings")

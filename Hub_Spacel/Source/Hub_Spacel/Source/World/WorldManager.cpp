@@ -26,16 +26,30 @@ void AWorldManager::BeginPlay()
 
 void AWorldManager::spawnChunckEnvironment()
 {
+	UWorld* const world = GetWorld();
+	if (!world)
+	{
+		return;
+	}
+
 	for (int x = 0; x < m_nbChunck; ++x)
 	{
 		for (int y = 0; y < m_nbChunck; ++y)
 		{
 			for (int z = 0; z < m_nbChunck; ++z)
 			{
-				FVector position(x * m_chunckSize, y * m_chunckSize, z * m_chunckSize);
+				// new position
+				FVector location(x * m_chunckSize, y * m_chunckSize, z * m_chunckSize);
+
+				// add it to transform
+				FTransform transform;
+				transform.SetLocation(location);
+
+				// start spawning actor
 				AEnvironmentManager* BPEnvironment = world->SpawnActorDeferred<AEnvironmentManager>(BP_environment, transform);
 				if (BPEnvironment)
 				{
+					// TO DO : call init
 					// Init component
 					BPEnvironment->FinishSpawning(transform);
 				}

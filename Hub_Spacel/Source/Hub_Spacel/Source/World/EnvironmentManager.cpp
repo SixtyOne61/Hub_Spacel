@@ -18,6 +18,11 @@ AEnvironmentManager::AEnvironmentManager()
 
 }
 
+void AEnvironmentManager::init(FVector2D const& _bornX, FVector2D const& _bornY, FVector2D const& _bornZ, int _cubeSize)
+{
+
+}
+
 // Called when the game starts or when spawned
 void AEnvironmentManager::BeginPlay()
 {
