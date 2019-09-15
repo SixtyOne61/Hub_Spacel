@@ -43,6 +43,7 @@ void AWorldManager::spawnChunckEnvironment()
 
 				// add it to transform
 				FTransform transform;
+				transform.SetLocation(location);
 
 				// start spawning actor
 				AEnvironmentManager* BPEnvironment = world->SpawnActorDeferred<AEnvironmentManager>(BP_environment, transform);

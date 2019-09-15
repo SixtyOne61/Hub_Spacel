@@ -38,11 +38,11 @@ void AEnvironmentManager::createProceduralWorld()
 {
 	TArray<FVector> openList;
 
-	for (int x = m_bornX.X; x <= m_bornX.Y; x += m_cubeSize)
+	for (int x = 0; x <= m_bornX.Y - m_bornX.X; x += m_cubeSize)
 	{
-		for (int y = m_bornY.X; y <= m_bornY.Y; y += m_cubeSize)
+		for (int y = 0; y <= m_bornY.Y - m_bornY.X; y += m_cubeSize)
 		{
-			for (int z = m_bornZ.X; z <= m_bornZ.Y; z += m_cubeSize)
+			for (int z = 0; z <= m_bornZ.Y - m_bornZ.X; z += m_cubeSize)
 			{
 				if (isValidNoise(x, y, z))
 				{
@@ -106,7 +106,7 @@ void AEnvironmentManager::spawnAsteroid()
 	UWorld* const world = GetWorld();
 	if (world) 
 	{
-		FVector location = FVector(0, 0, 0);
+		FVector location = FVector(m_bornX.X, m_bornY.X, m_bornZ.X);
 
 		FTransform transform;
 		transform.SetLocation(location);
@@ -125,7 +125,7 @@ void AEnvironmentManager::spawnAsteroid()
 
 bool AEnvironmentManager::isValidNoise(int _x, int _y, int _z) const
 {
-	float noise = m_noise.getOctaveNoise(_x * 0.00020f, _y * 0.00020f, _z * 0.00020f, 4);
+	float noise = m_noise.getOctaveNoise((_x + m_bornX.X) * 0.00020f, (_y + m_bornY.X) * 0.00020f, (_z + m_bornZ.X) * 0.00020f, 4);
 	return noise >= .75f;
 }
 
@@ -136,7 +136,9 @@ bool AEnvironmentManager::isValidNoise(FVector const& _location) const
 
 bool AEnvironmentManager::isValidLocation(FVector const& _location) const
 {
-	return _location.X >= m_bornX.X && _location.X <= m_bornX.Y && _location.Y >= m_bornY.X && _location.Y <= m_bornY.Y && _location.Z >= m_bornZ.X && _location.Z <= m_bornZ.Y;
+	return (_location.X + m_bornX.X) >= m_bornX.X && (_location.X + m_bornX.X) <= m_bornX.Y 
+		&& (_location.Y + m_bornY.X) >= m_bornY.X && (_location.Y + m_bornY.X) <= m_bornY.Y 
+		&& (_location.Z + m_bornZ.X) >= m_bornZ.X && (_location.Z + m_bornZ.X) <= m_bornZ.Y;
 }
 
 TSharedPtr<ChainedLocation> AEnvironmentManager::isKnownLocation(FVector const& _location) const
