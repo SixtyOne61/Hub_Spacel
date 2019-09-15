@@ -111,10 +111,16 @@ void USpacelProceduralMeshComponent::generateMesh()
 	TArray<FProcMeshTangent> tangents;
 	TArray<FLinearColor> vertexColors;
 
+	// setup collision
+	SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
+	SetCollisionObjectType(ECollisionChannel::ECC_PhysicsBody);
+	bUseComplexAsSimpleCollision = false;
+
 	CreateMeshSection_LinearColor(0, vertices, triangles, normals, UV0, vertexColors, tangents, true);
 
 	// Enable collision data
-	ContainsPhysicsTriMeshData(true);
+	AddCollisionConvexMesh(vertices);
 }
 
 void USpacelProceduralMeshComponent::addTriangles(TArray<int32> & _out, int _deb) const
