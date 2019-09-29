@@ -16,20 +16,9 @@ AAsteroid::AAsteroid()
 	RootComponent = m_proceduralMeshComponent;
 }
 
-// Called when the game starts or when spawned
-void AAsteroid::BeginPlay()
+void AAsteroid::setEdges(TArray<TSharedPtr<ChainedLocation>>&& _edges)
 {
-	Super::BeginPlay();
-
-	if(m_proceduralMeshComponent)
-	{
-		m_proceduralMeshComponent->generateMesh();
-	}
-}
-
-void AAsteroid::setEdges(TArray<TSharedPtr<ChainedLocation>> && _edges)
-{
-	if(!m_proceduralMeshComponent)
+	if (!m_proceduralMeshComponent)
 	{
 		return;
 	}
@@ -45,4 +34,23 @@ void AAsteroid::setCubeSize(int _cubeSize)
 	}
 
 	m_proceduralMeshComponent->setCubeSize(_cubeSize);
+}
+
+// Called when the game starts or when spawned
+void AAsteroid::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if(m_proceduralMeshComponent)
+	{
+		m_proceduralMeshComponent->generateMesh();
+		m_proceduralMeshComponent->OnComponentHit.AddDynamic(this, &AAsteroid::onHit);
+	}
+}
+
+void AAsteroid::onHit(class UPrimitiveComponent* _comp, class AActor* _otherActor, class UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit)
+{
+	// check if it's a bullet type
+
+	// find where and destroy the right edge
 }
