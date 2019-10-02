@@ -8,6 +8,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Engine/World.h"
 #include "Engine/StaticMesh.h"
+#include "Source/Projectile/SimpleBullet.h"
 
 AHub_SpacelPawn::AHub_SpacelPawn()
 {
@@ -130,4 +131,9 @@ void AHub_SpacelPawn::MoveRightInput(float Val)
 
 	// Smoothly interpolate roll speed
 	CurrentRollSpeed = FMath::FInterpTo(CurrentRollSpeed, TargetRollSpeed, GetWorld()->GetDeltaSeconds(), 2.f);
+}
+
+void AHub_SpacelPawn::fire()
+{
+	//GetWorld()->SpawnActor<ASimpleBullet>(ASimpleBullet::StaticClass, )
 }

@@ -21,6 +21,9 @@ class AHub_SpacelPawn : public APawn
 	/** Camera component that will be our viewpoint */
 	UPROPERTY(Category = Camera, VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* Camera;
+
+	TSubclassOf<class ASimpleBullet> BP_SimpleBullet;
+
 public:
 	AHub_SpacelPawn();
 
@@ -43,6 +46,8 @@ protected:
 
 	/** Bound to the horizontal axis */
 	void MoveRightInput(float Val);
+
+	void fire();
 
 private:
 
