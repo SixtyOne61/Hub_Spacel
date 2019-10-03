@@ -10,6 +10,10 @@ UCLASS()
 class HUB_SPACEL_API ASimpleBullet : public AActor
 {
 	GENERATED_BODY()
+
+	/** StaticMesh component that will be the visuals for our flying pawn */
+	UPROPERTY(Category = Mesh, VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	class UStaticMeshComponent* SimpleBulletMesh;
 	
 public:	
 	// Sets default values for this actor's properties
@@ -23,4 +27,5 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	void launchBullet(FVector _forward);
 };

@@ -8,7 +8,6 @@ ASimpleBullet::ASimpleBullet()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
 }
 
 // Called when the game starts or when spawned
@@ -22,6 +21,13 @@ void ASimpleBullet::BeginPlay()
 void ASimpleBullet::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+}
 
+void ASimpleBullet::launchBullet(FVector _forward)
+{
+	if (SimpleBulletMesh)
+	{
+		SimpleBulletMesh->AddForce(_forward);
+	}
 }
 

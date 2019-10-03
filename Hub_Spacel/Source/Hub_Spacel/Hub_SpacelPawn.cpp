@@ -146,16 +146,6 @@ void AHub_SpacelPawn::fire()
 	{
 		// TO DO init bullet
 		UGameplayStatics::FinishSpawningActor(pBullet, GetActorTransform());
-
-		TArray<UStaticMeshComponent*> components;
-		pBullet->GetComponents<UStaticMeshComponent>(components);
-		for (int i = 0; i < components.Num(); ++i)
-		{
-			UStaticMeshComponent* staticMeshComponent = components[i];
-			if (staticMeshComponent)
-			{
-				staticMeshComponent->AddForce(GetActorForwardVector());
-			}
-		}
+		pBullet->launchBullet(GetActorForwardVector());
 	}
 }
