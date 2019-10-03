@@ -9,6 +9,7 @@
 #include "Engine/World.h"
 #include "Engine/StaticMesh.h"
 #include "Source/Projectile/SimpleBullet.h"
+#include "Kismet/GameplayStatics.h"
 
 AHub_SpacelPawn::AHub_SpacelPawn()
 {
@@ -135,5 +136,15 @@ void AHub_SpacelPawn::MoveRightInput(float Val)
 
 void AHub_SpacelPawn::fire()
 {
-	//GetWorld()->SpawnActor<ASimpleBullet>(ASimpleBullet::StaticClass, )
+	if (!SimpleBulletClass)
+	{
+		return;
+	}
+
+	ASimpleBullet* pBullet = Cast<ASimpleBullet>(UGameplayStatics::BeginDeferredActorSpawnFromClass(GetWorld(), SimpleBulletClass, GetActorTransform()));
+	if (pBullet)
+	{
+		// TO DO init bullet
+		UGameplayStatics::FinishSpawningActor(pBullet, GetActorTransform());
+	}
 }

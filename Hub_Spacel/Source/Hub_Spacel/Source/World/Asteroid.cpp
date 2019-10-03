@@ -3,6 +3,7 @@
 
 #include "Asteroid.h"
 #include "Hub_Spacel/Source/Mesh/SpacelProceduralMeshComponent.h"
+#include "Hub_Spacel/Source/Projectile/SimpleBullet.h"
 
 // Sets default values
 AAsteroid::AAsteroid()
@@ -51,6 +52,9 @@ void AAsteroid::BeginPlay()
 void AAsteroid::onHit(class UPrimitiveComponent* _comp, class AActor* _otherActor, class UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit)
 {
 	// check if it's a bullet type
-
-	// find where and destroy the right edge
+	ASimpleBullet* pBullet = Cast<ASimpleBullet>(_otherActor);
+	if (pBullet)
+	{
+		// find where and destroy the right edge
+	}
 }
