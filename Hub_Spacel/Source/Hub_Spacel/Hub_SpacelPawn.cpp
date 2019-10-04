@@ -8,6 +8,8 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Engine/World.h"
 #include "Engine/StaticMesh.h"
+#include "Engine/StaticMeshSocket.h"
+#include "Engine/TargetPoint.h"
 #include "Source/Projectile/SimpleBullet.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -89,6 +91,7 @@ void AHub_SpacelPawn::SetupPlayerInputComponent(class UInputComponent* PlayerInp
 	PlayerInputComponent->BindAxis("Thrust", this, &AHub_SpacelPawn::ThrustInput);
 	PlayerInputComponent->BindAxis("MoveUp", this, &AHub_SpacelPawn::MoveUpInput);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AHub_SpacelPawn::MoveRightInput);
+	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AHub_SpacelPawn::fire);
 }
 
 void AHub_SpacelPawn::ThrustInput(float Val)
@@ -136,16 +139,22 @@ void AHub_SpacelPawn::MoveRightInput(float Val)
 
 void AHub_SpacelPawn::fire()
 {
-	if (!SimpleBulletClass)
+	UStaticMeshSocket const* socket = PlaneMesh->GetSocketByName("SimpleBulletSpawn");
+	if (!SimpleBulletClass || !socket)
 	{
 		return;
 	}
 
-	ASimpleBullet* pBullet = Cast<ASimpleBullet>(UGameplayStatics::BeginDeferredActorSpawnFromClass(GetWorld(), SimpleBulletClass, GetActorTransform()));
-	if (pBullet)
+	FTransform transform;
+	if (socket->GetSocketTransform(transform, PlaneMesh))
 	{
-		// TO DO init bullet
-		UGameplayStatics::FinishSpawningActor(pBullet, GetActorTransform());
-		pBullet->launchBullet(GetActorForwardVector());
+		ASimpleBullet* pBullet = Cast<ASimpleBullet>(UGameplayStatics::BeginDeferredActorSpawnFromClass(GetWorld(), SimpleBulletClass, transform));
+		if (pBullet)
+		{
+			// TO DO init bullet
+			UGameplayStatics::FinishSpawningActor(pBullet, transform);
+			pBullet->launchBullet(GetActorForwardVector());
+		}
 	}
+
 }

@@ -22,6 +22,8 @@ class AHub_SpacelPawn : public APawn
 	UPROPERTY(Category = Camera, VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* Camera;
 
+protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Bullet")
 	TSubclassOf<class ASimpleBullet> SimpleBulletClass;
 
 public:

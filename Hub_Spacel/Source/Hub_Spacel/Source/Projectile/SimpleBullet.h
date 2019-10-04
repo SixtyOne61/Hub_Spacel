@@ -11,8 +11,9 @@ class HUB_SPACEL_API ASimpleBullet : public AActor
 {
 	GENERATED_BODY()
 
+protected:
 	/** StaticMesh component that will be the visuals for our flying pawn */
-	UPROPERTY(Category = Mesh, VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	class UStaticMeshComponent* SimpleBulletMesh;
 	
 public:	
