@@ -1,7 +1,14 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "SpacelProceduralMeshComponent.h"
+#include <algorithm>
+
+USpacelProceduralMeshComponent::USpacelProceduralMeshComponent()
+	: CubeSize(0.0f)
+	, m_ownerLocation(FVector::ZeroVector)
+{
+
+}
 
 void USpacelProceduralMeshComponent::generateMesh()
 {
@@ -20,10 +27,10 @@ void USpacelProceduralMeshComponent::generateMesh()
 		if (!EnumHasAllFlags(mask, EFace::Top))
 		{
 			int deb = vertices.Num();
-			vertices.Add(center + FVector(0, m_cubeSize, 0));
-			vertices.Add(center + FVector(m_cubeSize, m_cubeSize, 0));
-			vertices.Add(center + FVector(m_cubeSize, m_cubeSize, m_cubeSize));
-			vertices.Add(center + FVector(0, m_cubeSize, m_cubeSize));
+			vertices.Add(center + FVector(0, CubeSize, 0));
+			vertices.Add(center + FVector(CubeSize, CubeSize, 0));
+			vertices.Add(center + FVector(CubeSize, CubeSize, CubeSize));
+			vertices.Add(center + FVector(0, CubeSize, CubeSize));
 
 			normals.Add(FVector(0, 1, 0));
 			normals.Add(FVector(0, 1, 0));
@@ -34,10 +41,10 @@ void USpacelProceduralMeshComponent::generateMesh()
 		if (!EnumHasAllFlags(mask, EFace::Bot))
 		{
 			int deb = vertices.Num();
-			vertices.Add(center + FVector(m_cubeSize, 0, m_cubeSize));
-			vertices.Add(center + FVector(m_cubeSize, 0, 0));
+			vertices.Add(center + FVector(CubeSize, 0, CubeSize));
+			vertices.Add(center + FVector(CubeSize, 0, 0));
 			vertices.Add(center + FVector(0, 0, 0));
-			vertices.Add(center + FVector(0, 0, m_cubeSize));
+			vertices.Add(center + FVector(0, 0, CubeSize));
 
 			normals.Add(FVector(0, -1, 0));
 			normals.Add(FVector(0, -1, 0));
@@ -48,10 +55,10 @@ void USpacelProceduralMeshComponent::generateMesh()
 		if (!EnumHasAllFlags(mask, EFace::Right))
 		{
 			int deb = vertices.Num();
-			vertices.Add(center + FVector(m_cubeSize, 0, m_cubeSize));
-			vertices.Add(center + FVector(m_cubeSize, m_cubeSize, m_cubeSize));
-			vertices.Add(center + FVector(m_cubeSize, m_cubeSize, 0));
-			vertices.Add(center + FVector(m_cubeSize, 0, 0));
+			vertices.Add(center + FVector(CubeSize, 0, CubeSize));
+			vertices.Add(center + FVector(CubeSize, CubeSize, CubeSize));
+			vertices.Add(center + FVector(CubeSize, CubeSize, 0));
+			vertices.Add(center + FVector(CubeSize, 0, 0));
 
 			normals.Add(FVector(0, 0, 1));
 			normals.Add(FVector(0, 0, 1));
@@ -62,10 +69,10 @@ void USpacelProceduralMeshComponent::generateMesh()
 		if (!EnumHasAllFlags(mask, EFace::Left))
 		{
 			int deb = vertices.Num();
-			vertices.Add(center + FVector(0, 0, m_cubeSize));
+			vertices.Add(center + FVector(0, 0, CubeSize));
 			vertices.Add(center + FVector(0, 0, 0));
-			vertices.Add(center + FVector(0, m_cubeSize, 0));
-			vertices.Add(center + FVector(0, m_cubeSize, m_cubeSize));
+			vertices.Add(center + FVector(0, CubeSize, 0));
+			vertices.Add(center + FVector(0, CubeSize, CubeSize));
 
 			normals.Add(FVector(0, 0, -1));
 			normals.Add(FVector(0, 0, -1));
@@ -76,10 +83,10 @@ void USpacelProceduralMeshComponent::generateMesh()
 		if (!EnumHasAllFlags(mask, EFace::Front))
 		{
 			int deb = vertices.Num();
-			vertices.Add(center + FVector(0, m_cubeSize, 0));
+			vertices.Add(center + FVector(0, CubeSize, 0));
 			vertices.Add(center + FVector(0, 0, 0));
-			vertices.Add(center + FVector(m_cubeSize, 0, 0));
-			vertices.Add(center + FVector(m_cubeSize, m_cubeSize, 0));
+			vertices.Add(center + FVector(CubeSize, 0, 0));
+			vertices.Add(center + FVector(CubeSize, CubeSize, 0));
 
 			normals.Add(FVector(1, 0, 0));
 			normals.Add(FVector(1, 0, 0));
@@ -90,10 +97,10 @@ void USpacelProceduralMeshComponent::generateMesh()
 		if (!EnumHasAllFlags(mask, EFace::Back))
 		{
 			int deb = vertices.Num();
-			vertices.Add(center + FVector(m_cubeSize, 0, m_cubeSize));
-			vertices.Add(center + FVector(0, 0, m_cubeSize));
-			vertices.Add(center + FVector(0, m_cubeSize, m_cubeSize));
-			vertices.Add(center + FVector(m_cubeSize, m_cubeSize, m_cubeSize));
+			vertices.Add(center + FVector(CubeSize, 0, CubeSize));
+			vertices.Add(center + FVector(0, 0, CubeSize));
+			vertices.Add(center + FVector(0, CubeSize, CubeSize));
+			vertices.Add(center + FVector(CubeSize, CubeSize, CubeSize));
 
 			normals.Add(FVector(-1, 0, 0));
 			normals.Add(FVector(-1, 0, 0));
@@ -121,6 +128,20 @@ void USpacelProceduralMeshComponent::generateMesh()
 
 	// Enable collision data
 	AddCollisionConvexMesh(vertices);
+}
+
+void USpacelProceduralMeshComponent::hit(FVector const& _impactPoint)
+{
+	int size = m_edgesPosition.Num();
+	m_edgesPosition.RemoveAll([&](TSharedPtr<ChainedLocation> _point)
+	{
+		return FVector::Distance(_point->getCenter() + m_ownerLocation, _impactPoint) <= CubeSize;
+	});
+
+	if (size != m_edgesPosition.Num())
+	{
+		generateMesh();
+	}
 }
 
 void USpacelProceduralMeshComponent::addTriangles(TArray<int32> & _out, int _deb) const

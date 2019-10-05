@@ -15,6 +15,9 @@ protected:
 	/** StaticMesh component that will be the visuals for our flying pawn */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	class UStaticMeshComponent* SimpleBulletMesh;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Setup")
+	int ForceOnStart = 100000;
 	
 public:	
 	// Sets default values for this actor's properties

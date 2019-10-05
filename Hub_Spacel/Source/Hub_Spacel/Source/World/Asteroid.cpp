@@ -44,6 +44,7 @@ void AAsteroid::BeginPlay()
 
 	if(m_proceduralMeshComponent)
 	{
+		m_proceduralMeshComponent->setOwnerLocation(GetActorLocation());
 		m_proceduralMeshComponent->generateMesh();
 		m_proceduralMeshComponent->OnComponentHit.AddDynamic(this, &AAsteroid::onHit);
 	}
@@ -55,6 +56,9 @@ void AAsteroid::onHit(class UPrimitiveComponent* _comp, class AActor* _otherActo
 	ASimpleBullet* pBullet = Cast<ASimpleBullet>(_otherActor);
 	if (pBullet)
 	{
+		// destroy bullet
+		pBullet->Destroy();
 		// find where and destroy the right edge
+		m_proceduralMeshComponent->hit(_hit.ImpactPoint);
 	}
 }
