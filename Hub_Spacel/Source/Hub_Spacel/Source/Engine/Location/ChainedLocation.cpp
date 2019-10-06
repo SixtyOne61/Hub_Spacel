@@ -24,3 +24,25 @@ void ChainedLocation::addNeighbor(EFace _face, TSharedPtr<ChainedLocation> _neig
 	m_neighbor.Add(TPair<EFace, TSharedPtr<ChainedLocation>>(_face, _neighbor));
 	m_mask &= _face;		 
 }
+
+void ChainedLocation::removeMeToOtherFace()
+{
+	for (auto pair : m_neighbor)
+	{
+		pair.Value->removeFace(m_center);
+	}
+	m_neighbor.Empty();
+}
+
+void ChainedLocation::removeFace(FVector const& _location)
+{
+	for(int i = 0; i < m_neighbor.Num(); ++i)
+	{
+		if (m_neighbor[i].Value->getCenter() == _location)
+		{
+			m_mask ^= m_neighbor[i].Key;
+			m_neighbor.RemoveAt(i);
+			break;
+		}
+	}
+}

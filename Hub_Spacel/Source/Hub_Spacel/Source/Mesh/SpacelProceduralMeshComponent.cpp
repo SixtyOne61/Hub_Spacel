@@ -133,13 +133,14 @@ void USpacelProceduralMeshComponent::generateMesh()
 
 void USpacelProceduralMeshComponent::hit(FVector const& _impactPoint)
 {
-	DrawDebugSphere(GetWorld(), _impactPoint, 200, 26, FColor(181, 0, 0), true, -1, 0, 2);
+	//DrawDebugSphere(GetWorld(), _impactPoint, 200, 26, FColor(181, 0, 0), true, -1, 0, 2);
 
 	if(m_edgesPosition.RemoveAll([&](TSharedPtr<ChainedLocation> _point)
 	{
 		if (FVector::Distance(_point->getCenter() + m_ownerLocation, _impactPoint) <= CubeSize)
 		{
-			DrawDebugSphere(GetWorld(), _point->getCenter() + m_ownerLocation, 200, 26, FColor(0, 181, 0), true, -1, 0, 2);
+			_point->removeMeToOtherFace();
+			//DrawDebugSphere(GetWorld(), _point->getCenter() + m_ownerLocation, 200, 26, FColor(0, 181, 0), true, -1, 0, 2);
 			return true;
 		}
 		return false;

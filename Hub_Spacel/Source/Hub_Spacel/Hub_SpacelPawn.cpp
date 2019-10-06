@@ -45,15 +45,17 @@ AHub_SpacelPawn::AHub_SpacelPawn()
 	Camera->bUsePawnControlRotation = false; // Don't rotate camera with controller
 
 	// Set handling parameters
-	Acceleration = 500.f;
+	Acceleration = 0; // 500.f;
 	TurnSpeed = 50.f;
 	MaxSpeed = 4000.f;
 	MinSpeed = 500.f;
-	CurrentForwardSpeed = 500.f;
+	CurrentForwardSpeed = 0;// 500.f; TO DO
 }
 
 void AHub_SpacelPawn::Tick(float DeltaSeconds)
 {
+	CurrentForwardSpeed = 0;
+
 	const FVector LocalMove = FVector(CurrentForwardSpeed * DeltaSeconds, 0.f, 0.f);
 
 	// Move plan forwards (with sweep so we stop when we collide with things)

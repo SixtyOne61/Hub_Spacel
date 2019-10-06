@@ -32,6 +32,10 @@ public:
 
 	// -- add a neighbor
 	void addNeighbor(EFace _face, TSharedPtr<ChainedLocation> _neighbor);
+	// -- remove this objet to other face
+	void removeMeToOtherFace();
+	// -- remove a face
+	void removeFace(FVector const& _location);
 
 private:
 	// center of edgde
