@@ -131,12 +131,21 @@ void USpacelProceduralMeshComponent::generateMesh()
 	AddCollisionConvexMesh(vertices);
 }
 
-void USpacelProceduralMeshComponent::hit(FVector const& _impactPoint)
+void USpacelProceduralMeshComponent::hit(FVector const& _normalImpact, FVector const& _impactPoint)
 {
+	// TO DO
+	// change cube size to middle 
+	// create seg with this normal, find cube hit with low dist (CubeSize * 2)
+
 	//DrawDebugSphere(GetWorld(), _impactPoint, 200, 26, FColor(181, 0, 0), true, -1, 0, 2);
 
 	if(m_edgesPosition.RemoveAll([&](TSharedPtr<ChainedLocation> _point)
 	{
+		if (_point->hasAllMask())
+		{
+				return false;
+		}
+
 		if (FVector::Distance(_point->getCenter() + m_ownerLocation, _impactPoint) <= CubeSize)
 		{
 			_point->removeMeToOtherFace();
