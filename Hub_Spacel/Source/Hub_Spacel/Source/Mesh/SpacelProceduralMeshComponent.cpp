@@ -17,6 +17,8 @@ void USpacelProceduralMeshComponent::generateMesh()
 	TArray<int32> triangles;
 	TArray<FVector> normals;
 
+	float half = CubeSize / 2.0f;
+
 	for (TSharedPtr<ChainedLocation> const& point : m_edgesPosition)
 	{
 		EFace mask = point->getMask();
@@ -28,10 +30,10 @@ void USpacelProceduralMeshComponent::generateMesh()
 		if (!EnumHasAllFlags(mask, EFace::Top))
 		{
 			int deb = vertices.Num();
-			vertices.Add(center + FVector(0, CubeSize, 0));
-			vertices.Add(center + FVector(CubeSize, CubeSize, 0));
-			vertices.Add(center + FVector(CubeSize, CubeSize, CubeSize));
-			vertices.Add(center + FVector(0, CubeSize, CubeSize));
+			vertices.Add(center + FVector(-half, half, -half));
+			vertices.Add(center + FVector(half, half, -half));
+			vertices.Add(center + FVector(half, half, half));
+			vertices.Add(center + FVector(-half, half, half));
 
 			normals.Add(FVector(0, 1, 0));
 			normals.Add(FVector(0, 1, 0));
@@ -42,10 +44,10 @@ void USpacelProceduralMeshComponent::generateMesh()
 		if (!EnumHasAllFlags(mask, EFace::Bot))
 		{
 			int deb = vertices.Num();
-			vertices.Add(center + FVector(CubeSize, 0, CubeSize));
-			vertices.Add(center + FVector(CubeSize, 0, 0));
-			vertices.Add(center + FVector(0, 0, 0));
-			vertices.Add(center + FVector(0, 0, CubeSize));
+			vertices.Add(center + FVector(half, -half, half));
+			vertices.Add(center + FVector(half, -half, -half));
+			vertices.Add(center + FVector(-half, -half, -half));
+			vertices.Add(center + FVector(-half, -half, half));
 
 			normals.Add(FVector(0, -1, 0));
 			normals.Add(FVector(0, -1, 0));
@@ -56,10 +58,10 @@ void USpacelProceduralMeshComponent::generateMesh()
 		if (!EnumHasAllFlags(mask, EFace::Right))
 		{
 			int deb = vertices.Num();
-			vertices.Add(center + FVector(CubeSize, 0, CubeSize));
-			vertices.Add(center + FVector(CubeSize, CubeSize, CubeSize));
-			vertices.Add(center + FVector(CubeSize, CubeSize, 0));
-			vertices.Add(center + FVector(CubeSize, 0, 0));
+			vertices.Add(center + FVector(half, -half, half));
+			vertices.Add(center + FVector(half, half, half));
+			vertices.Add(center + FVector(half, half, -half));
+			vertices.Add(center + FVector(half, -half, -half));
 
 			normals.Add(FVector(0, 0, 1));
 			normals.Add(FVector(0, 0, 1));
@@ -70,10 +72,10 @@ void USpacelProceduralMeshComponent::generateMesh()
 		if (!EnumHasAllFlags(mask, EFace::Left))
 		{
 			int deb = vertices.Num();
-			vertices.Add(center + FVector(0, 0, CubeSize));
-			vertices.Add(center + FVector(0, 0, 0));
-			vertices.Add(center + FVector(0, CubeSize, 0));
-			vertices.Add(center + FVector(0, CubeSize, CubeSize));
+			vertices.Add(center + FVector(-half, -half, half));
+			vertices.Add(center + FVector(-half, -half, -half));
+			vertices.Add(center + FVector(-half, half, -half));
+			vertices.Add(center + FVector(-half, half, half));
 
 			normals.Add(FVector(0, 0, -1));
 			normals.Add(FVector(0, 0, -1));
@@ -84,10 +86,10 @@ void USpacelProceduralMeshComponent::generateMesh()
 		if (!EnumHasAllFlags(mask, EFace::Front))
 		{
 			int deb = vertices.Num();
-			vertices.Add(center + FVector(0, CubeSize, 0));
-			vertices.Add(center + FVector(0, 0, 0));
-			vertices.Add(center + FVector(CubeSize, 0, 0));
-			vertices.Add(center + FVector(CubeSize, CubeSize, 0));
+			vertices.Add(center + FVector(-half, half, -half));
+			vertices.Add(center + FVector(-half, -half, -half));
+			vertices.Add(center + FVector(half, -half, -half));
+			vertices.Add(center + FVector(half, half, -half));
 
 			normals.Add(FVector(1, 0, 0));
 			normals.Add(FVector(1, 0, 0));
@@ -98,10 +100,10 @@ void USpacelProceduralMeshComponent::generateMesh()
 		if (!EnumHasAllFlags(mask, EFace::Back))
 		{
 			int deb = vertices.Num();
-			vertices.Add(center + FVector(CubeSize, 0, CubeSize));
-			vertices.Add(center + FVector(0, 0, CubeSize));
-			vertices.Add(center + FVector(0, CubeSize, CubeSize));
-			vertices.Add(center + FVector(CubeSize, CubeSize, CubeSize));
+			vertices.Add(center + FVector(half, -half, half));
+			vertices.Add(center + FVector(-half, -half, half));
+			vertices.Add(center + FVector(-half, half, half));
+			vertices.Add(center + FVector(half, half, half));
 
 			normals.Add(FVector(-1, 0, 0));
 			normals.Add(FVector(-1, 0, 0));
@@ -134,7 +136,6 @@ void USpacelProceduralMeshComponent::generateMesh()
 void USpacelProceduralMeshComponent::hit(FVector const& _normalImpact, FVector const& _impactPoint)
 {
 	// TO DO
-	// change cube size to middle 
 	// create seg with this normal, find cube hit with low dist (CubeSize * 2)
 
 	//DrawDebugSphere(GetWorld(), _impactPoint, 200, 26, FColor(181, 0, 0), true, -1, 0, 2);
