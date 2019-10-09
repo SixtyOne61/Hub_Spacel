@@ -30,12 +30,12 @@ public:
 	inline EFace getMask() const { return m_mask; }
 	inline FVector const& getCenter() const { return m_center; }
 	inline bool hasAllMask() const {
-		return ((m_mask & EFace::Top) == EFace::Top)
-			&& ((m_mask & EFace::Bot) == EFace::Bot)
-			&& ((m_mask & EFace::Front) == EFace::Front)
-			&& ((m_mask & EFace::Back) == EFace::Back)
-			&& ((m_mask & EFace::Right) == EFace::Right)
-			&& ((m_mask & EFace::Left) == EFace::Left);
+		return EnumHasAllFlags(m_mask, EFace::Top)
+			&& EnumHasAllFlags(m_mask, EFace::Bot)
+			&& EnumHasAllFlags(m_mask, EFace::Front)
+			&& EnumHasAllFlags(m_mask, EFace::Back)
+			&& EnumHasAllFlags(m_mask, EFace::Right)
+			&& EnumHasAllFlags(m_mask, EFace::Left);
 	}
 
 	// -- add a neighbor
