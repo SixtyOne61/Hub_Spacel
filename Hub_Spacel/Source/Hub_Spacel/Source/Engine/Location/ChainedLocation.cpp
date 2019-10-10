@@ -8,6 +8,18 @@ ChainedLocation::ChainedLocation(FVector && _center, float _size)
 	, m_size(_size)
 	, m_mask(EFace::None)
 {
+	float half = m_size / 2.0f;
+
+	TArray<FVector> const points = {
+		{_center.X - half, _center.Y - half, _center.Z - half},
+		{_center.X + half, _center.Y - half, _center.Z - half},
+		{_center.X + half, _center.Y + half, _center.Z - half},
+		{_center.X - half, _center.Y + half, _center.Z - half},
+		{_center.X - half, _center.Y - half, _center.Z + half},
+		{_center.X + half, _center.Y - half, _center.Z + half},
+		{_center.X + half, _center.Y + half, _center.Z + half},
+		{_center.X - half, _center.Y + half, _center.Z + half} };
+	m_box = FBox(points);
 }
 
 ChainedLocation::~ChainedLocation()

@@ -29,6 +29,7 @@ public:
 	// -- get / set
 	inline EFace getMask() const { return m_mask; }
 	inline FVector const& getCenter() const { return m_center; }
+	inline FBox const& getBox() const { return m_box; }
 	inline bool hasAllMask() const {
 		return EnumHasAllFlags(m_mask, EFace::Top)
 			&& EnumHasAllFlags(m_mask, EFace::Bot)
@@ -52,6 +53,8 @@ private:
 	float m_size;
 	// neighbor mask
 	EFace m_mask;
+	// box
+	FBox m_box;
 	// neighbor list
 	TArray<TPair<EFace, TSharedPtr<ChainedLocation>>> m_neighbor;
 };

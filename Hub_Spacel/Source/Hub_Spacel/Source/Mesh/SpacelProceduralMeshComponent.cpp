@@ -144,7 +144,16 @@ void USpacelProceduralMeshComponent::hit(FVector const& _normalImpact, FVector c
 	{
 		if (_point->hasAllMask())
 		{
-				return false;
+			return false;
+		}
+		
+
+		FVector hitLocation;
+		FVector hitNormal;
+		float hitTime;
+		if (FMath::LineExtentBoxIntersection(_point->getBox(), _impactPoint, _impactPoint + _normalImpact * 10, FVector::ZeroVector, hitLocation, hitNormal, hitTime))
+		{
+			return true;
 		}
 
 		if (FVector::Distance(_point->getCenter() + m_ownerLocation, _impactPoint) <= CubeSize)
