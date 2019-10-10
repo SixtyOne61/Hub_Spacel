@@ -58,3 +58,20 @@ void ChainedLocation::removeFace(FVector const& _location)
 		}
 	}
 }
+
+void ChainedLocation::createBox(FVector const& _location)
+{
+	float half = m_size / 2.0f;
+	FVector worldCenter = m_center + _location;
+
+	TArray<FVector> const points = {
+		{worldCenter.X - half, worldCenter.Y - half, worldCenter.Z - half},
+		{worldCenter.X + half, worldCenter.Y - half, worldCenter.Z - half},
+		{worldCenter.X + half, worldCenter.Y + half, worldCenter.Z - half},
+		{worldCenter.X - half, worldCenter.Y + half, worldCenter.Z - half},
+		{worldCenter.X - half, worldCenter.Y - half, worldCenter.Z + half},
+		{worldCenter.X + half, worldCenter.Y - half, worldCenter.Z + half},
+		{worldCenter.X + half, worldCenter.Y + half, worldCenter.Z + half},
+		{worldCenter.X - half, worldCenter.Y + half, worldCenter.Z + half} };
+	m_box = FBox(points);
+}

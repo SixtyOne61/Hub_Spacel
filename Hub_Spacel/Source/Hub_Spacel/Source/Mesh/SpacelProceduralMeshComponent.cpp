@@ -19,8 +19,10 @@ void USpacelProceduralMeshComponent::generateMesh()
 
 	float half = CubeSize / 2.0f;
 
-	for (TSharedPtr<ChainedLocation> const& point : m_edgesPosition)
+	for (TSharedPtr<ChainedLocation> point : m_edgesPosition)
 	{
+		point->createBox(m_ownerLocation);
+
 		EFace mask = point->getMask();
 		FVector center = point->getCenter();
 

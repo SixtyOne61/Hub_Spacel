@@ -45,6 +45,8 @@ public:
 	void removeMeToOtherFace();
 	// -- remove a face
 	void removeFace(FVector const& _location);
+	// -- create box with world location
+	void createBox(FVector const& _location);
 
 private:
 	// center of edgde

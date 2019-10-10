@@ -38,11 +38,11 @@ void AEnvironmentManager::createProceduralWorld()
 {
 	TArray<FVector> openList;
 
-	for (int x = 0; x <= m_bornX.Y - m_bornX.X; x += m_cubeSize)
+	for (int x = 0; x < m_bornX.Y - m_bornX.X; x += m_cubeSize)
 	{
-		for (int y = 0; y <= m_bornY.Y - m_bornY.X; y += m_cubeSize)
+		for (int y = 0; y < m_bornY.Y - m_bornY.X; y += m_cubeSize)
 		{
-			for (int z = 0; z <= m_bornZ.Y - m_bornZ.X; z += m_cubeSize)
+			for (int z = 0; z < m_bornZ.Y - m_bornZ.X; z += m_cubeSize)
 			{
 				if (isValidNoise(x, y, z))
 				{
@@ -136,9 +136,9 @@ bool AEnvironmentManager::isValidNoise(FVector const& _location) const
 
 bool AEnvironmentManager::isValidLocation(FVector const& _location) const
 {
-	return (_location.X + m_bornX.X) >= m_bornX.X && (_location.X + m_bornX.X) <= m_bornX.Y 
-		&& (_location.Y + m_bornY.X) >= m_bornY.X && (_location.Y + m_bornY.X) <= m_bornY.Y 
-		&& (_location.Z + m_bornZ.X) >= m_bornZ.X && (_location.Z + m_bornZ.X) <= m_bornZ.Y;
+	return (_location.X + m_bornX.X) >= m_bornX.X && (_location.X + m_bornX.X) < m_bornX.Y 
+		&& (_location.Y + m_bornY.X) >= m_bornY.X && (_location.Y + m_bornY.X) < m_bornY.Y 
+		&& (_location.Z + m_bornZ.X) >= m_bornZ.X && (_location.Z + m_bornZ.X) < m_bornZ.Y;
 }
 
 TSharedPtr<ChainedLocation> AEnvironmentManager::isKnownLocation(FVector const& _location) const
