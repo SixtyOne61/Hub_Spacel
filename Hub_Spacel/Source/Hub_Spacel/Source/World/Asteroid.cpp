@@ -56,9 +56,9 @@ void AAsteroid::onHit(class UPrimitiveComponent* _comp, class AActor* _otherActo
 	ASimpleBullet* pBullet = Cast<ASimpleBullet>(_otherActor);
 	if (pBullet)
 	{
+		// find where and destroy the right edge
+		m_proceduralMeshComponent->hit(pBullet->GetActorForwardVector(), _hit.ImpactPoint);
 		// destroy bullet
 		pBullet->Destroy();
-		// find where and destroy the right edge
-		m_proceduralMeshComponent->hit(_normalImpulse, _hit.ImpactPoint);
 	}
 }
