@@ -40,7 +40,6 @@ protected:
 	// -- check if this location is in m_currentObject
 	TSharedPtr<ChainedLocation> isKnownLocation(FVector const& _location) const;
 
-
 protected:
 	// TO DO : just show don't edit
 	UPROPERTY(VisibleAnywhere, Category = "Settings")
@@ -55,7 +54,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Procedural Type")
 	TSubclassOf<class AAsteroid> BP_asteroid;
 	
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Component")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Component")
 	TArray<class USpacelProceduralMeshComponent*> m_proceduralMeshComponents;
 
 private:

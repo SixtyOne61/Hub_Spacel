@@ -4,6 +4,7 @@
 #include "EnvironmentManager.h"
 #include "Hub_Spacel/Source/World/Asteroid.h"
 #include "Hub_Spacel/Source/Noise/SpacelNoise.h"
+#include "Hub_Spacel/Source/Mesh/SpacelProceduralMeshComponent.h"
 
 // Sets default values
 AEnvironmentManager::AEnvironmentManager()
@@ -32,6 +33,19 @@ void AEnvironmentManager::BeginPlay()
 	
 	// create procedural world
 	createProceduralWorld();
+
+	// init all procedural mesh
+	for (auto proceduralMesh : m_proceduralMeshComponents)
+	{
+		if (!proceduralMesh)
+		{
+			continue;
+		}
+
+		proceduralMesh->setOwnerLocation(GetActorLocation());
+		proceduralMesh->generateMesh();
+		//proceduralMesh->OnComponentHit.AddDynamic(this, &AAsteroid::onHit);
+	}
 }
 
 void AEnvironmentManager::createProceduralWorld()
@@ -108,7 +122,19 @@ void AEnvironmentManager::spawnAsteroid()
 	{
 		FVector location = FVector(m_bornX.X, m_bornY.X, m_bornZ.X);
 
-		FTransform transform;
+		USpacelProceduralMeshComponent* proceduralMesh = NewObject<USpacelProceduralMeshComponent>(this);
+		proceduralMesh->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepWorldTransform);
+		proceduralMesh->RegisterComponent();
+
+		proceduralMesh->SetWorldLocation(location);
+		proceduralMesh->bUseAsyncCooking = true;
+		proceduralMesh->setCubeSize(m_cubeSize);
+		proceduralMesh->setEdges(std::forward<TArray<TSharedPtr<ChainedLocation>>>(m_currentObject));
+		m_currentObject.Empty();
+
+		m_proceduralMeshComponents.Add(proceduralMesh);
+
+		/*FTransform transform;
 		transform.SetLocation(location);
 
 		AAsteroid* BPasteroid = world->SpawnActorDeferred<AAsteroid>(BP_asteroid, transform);
@@ -119,7 +145,7 @@ void AEnvironmentManager::spawnAsteroid()
 			BPasteroid->setEdges(std::forward<TArray<TSharedPtr<ChainedLocation>>>(m_currentObject));
 			BPasteroid->FinishSpawning(transform);
 			m_currentObject.Empty();
-		}
+		}*/
 	}
 }
 
