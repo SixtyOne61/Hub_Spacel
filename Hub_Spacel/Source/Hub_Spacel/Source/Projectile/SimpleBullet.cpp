@@ -31,6 +31,7 @@ void ASimpleBullet::launchBullet(FVector _forward)
 	if (SimpleBulletMesh)
 	{
 		SimpleBulletMesh->AddForce(_forward * ForceOnStart);
+		m_launchVector = _forward;
 	}
 }
 

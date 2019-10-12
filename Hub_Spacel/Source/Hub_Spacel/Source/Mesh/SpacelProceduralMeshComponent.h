@@ -27,7 +27,7 @@ public:
 	inline void setOwnerLocation(FVector const& _ownerLocation) { m_ownerLocation = _ownerLocation; }
 
 	// -- manage hit
-	void hit(FVector const& _forward, FVector const& _impactPoint);
+	bool hit(FVector const& _forward, FVector const& _impactPoint);
 
 protected:
 	void addTriangles(TArray<int32> & _out, int _deb) const;

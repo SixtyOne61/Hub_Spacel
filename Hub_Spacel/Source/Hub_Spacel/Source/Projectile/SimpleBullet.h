@@ -31,5 +31,11 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	// -- get / set
+	inline FVector const& getLaunchForward() const { return m_launchVector; }
+
 	void launchBullet(FVector _forward);
+
+protected:
+	FVector m_launchVector = FVector::ZeroVector;
 };

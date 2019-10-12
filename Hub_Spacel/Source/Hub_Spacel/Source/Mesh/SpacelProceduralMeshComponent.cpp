@@ -135,14 +135,11 @@ void USpacelProceduralMeshComponent::generateMesh()
 	AddCollisionConvexMesh(vertices);
 }
 
-void USpacelProceduralMeshComponent::hit(FVector const& _forward, FVector const& _impactPoint)
+bool USpacelProceduralMeshComponent::hit(FVector const& _forward, FVector const& _impactPoint)
 {
-	// TO DO
-	// create seg with this normal, find cube hit with low dist (CubeSize * 2)
-
 	DrawDebugSphere(GetWorld(), _impactPoint, 200, 26, FColor(181, 0, 0), true, -1, 0, 2);
 
-	FVector endPoint = _impactPoint + _forward * 10;
+	FVector endPoint = _impactPoint + _forward * CubeSize;
 	DrawDebugLine(GetWorld(), _impactPoint, endPoint, FColor(0, 0, 181), true);
 
 	DrawDebugSphere(GetWorld(), endPoint, 200, 26, FColor(0, 181, 0), true, -1, 0, 2);
@@ -157,22 +154,14 @@ void USpacelProceduralMeshComponent::hit(FVector const& _forward, FVector const&
 		FVector hitLocation;
 		FVector hitNormal;
 		float hitTime;
-		if (FMath::LineExtentBoxIntersection(_point->getBox(), _impactPoint, endPoint, FVector::ZeroVector, hitLocation, hitNormal, hitTime))
-		{
-			return true;
-		}
-
-// 		if (FVector::Distance(_point->getCenter() + m_ownerLocation, _impactPoint) <= CubeSize)
-// 		{
-// 			_point->removeMeToOtherFace();
-// 			//DrawDebugSphere(GetWorld(), _point->getCenter() + m_ownerLocation, 200, 26, FColor(0, 181, 0), true, -1, 0, 2);
-// 			return true;
-// 		}
-		return false;
+		return FMath::LineExtentBoxIntersection(_point->getBox(), _impactPoint, endPoint, FVector::ZeroVector, hitLocation, hitNormal, hitTime);
 	}) != 0)
 	{
 		generateMesh();
+		return true;
 	}
+
+	return false;
 }
 
 void USpacelProceduralMeshComponent::addTriangles(TArray<int32> & _out, int _deb) const
