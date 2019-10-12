@@ -140,10 +140,12 @@ void USpacelProceduralMeshComponent::hit(FVector const& _forward, FVector const&
 	// TO DO
 	// create seg with this normal, find cube hit with low dist (CubeSize * 2)
 
-	//DrawDebugSphere(GetWorld(), _impactPoint, 200, 26, FColor(181, 0, 0), true, -1, 0, 2);
+	DrawDebugSphere(GetWorld(), _impactPoint, 200, 26, FColor(181, 0, 0), true, -1, 0, 2);
 
 	FVector endPoint = _impactPoint + _forward * 10;
 	DrawDebugLine(GetWorld(), _impactPoint, endPoint, FColor(0, 0, 181), true);
+
+	DrawDebugSphere(GetWorld(), endPoint, 200, 26, FColor(0, 181, 0), true, -1, 0, 2);
 
 	if(m_edgesPosition.RemoveAll([&](TSharedPtr<ChainedLocation> _point)
 	{
