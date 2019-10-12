@@ -3,6 +3,9 @@
 
 #include "SpacelNoise.h"
 
+
+SpacelNoise* SpacelNoise::m_instance = nullptr;
+
 SpacelNoise::SpacelNoise()
 	: m_f3(1.0 / 3.0f)
 	, m_g3(1.0 / 6.0f)

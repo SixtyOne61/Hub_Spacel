@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Hub_Spacel/Source/Engine/Location/ChainedLocation.h"
-#include "Hub_Spacel/Source/Noise/SpacelNoise.h"
 #include "EnvironmentManager.generated.h"
 
 UCLASS()
@@ -55,9 +54,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Procedural Type")
 	TSubclassOf<class AAsteroid> BP_asteroid;
-
-	// test TO DO : create a singleton
-	SpacelNoise m_noise;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Component")
+	TArray<class USpacelProceduralMeshComponent*> m_proceduralMeshComponents;
 
 private:
 	TArray<TSharedPtr<ChainedLocation>> m_currentObject;

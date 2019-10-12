@@ -25,9 +25,21 @@ private:
 		double m_w;
 
 	};
-public:
+
+	static SpacelNoise* m_instance;
+
 	SpacelNoise();
+public:
 	~SpacelNoise();
+
+	static SpacelNoise* getInstance()
+	{
+		if (!m_instance)
+		{
+			m_instance = new SpacelNoise();
+		}
+		return m_instance;
+	}
 
 	float getNoise(double _xin, double _yin, double _zin) const;
 	int fastFloor(double _x) const;

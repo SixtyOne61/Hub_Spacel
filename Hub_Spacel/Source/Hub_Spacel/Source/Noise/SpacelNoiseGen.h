@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "SpacelNoise.h"
 
 /**
  * 
@@ -16,12 +15,10 @@ public:
 		, m_yScale(0.02f)
 		, m_zScale(1)
 		, m_octaves(1)
-		, m_noise()
 	{}
 
 	SpacelNoiseGen(double _scale, int _octaves)
 		: m_zScale(1)
-		, m_noise()
 	{
 		m_xScale = _scale;
 		m_yScale = _scale;
@@ -30,7 +27,6 @@ public:
 
 	SpacelNoiseGen(double _scaleX, double _scaleY, int _octaves)
 		: m_zScale(1)
-		, m_noise()
 	{
 		m_xScale = _scaleX;
 		m_yScale = _scaleY;
@@ -49,5 +45,4 @@ public:
 	double m_yScale;
 	double m_zScale;
 	int  m_octaves;
-	SpacelNoise m_noise;
 };

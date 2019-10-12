@@ -2,6 +2,7 @@
 
 
 #include "SpacelNoiseGen.h"
+#include "SpacelNoise.h"
 
 SpacelNoiseGen::~SpacelNoiseGen()
 {
@@ -10,7 +11,7 @@ SpacelNoiseGen::~SpacelNoiseGen()
 float SpacelNoiseGen::getNoise(double _x, double _y, double _z)
 {
 	if (m_octaves > 1)
-		return m_noise.getOctaveNoise(_x * m_xScale, _y * m_yScale, _z * m_zScale, m_octaves);
+		return SpacelNoise::getInstance()->getOctaveNoise(_x * m_xScale, _y * m_yScale, _z * m_zScale, m_octaves);
 	else
-		return m_noise.getNoise(_x * m_xScale, _y * m_yScale, _z * m_zScale);
+		return SpacelNoise::getInstance()->getNoise(_x * m_xScale, _y * m_yScale, _z * m_zScale);
 }

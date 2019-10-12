@@ -3,6 +3,7 @@
 
 #include "EnvironmentManager.h"
 #include "Hub_Spacel/Source/World/Asteroid.h"
+#include "Hub_Spacel/Source/Noise/SpacelNoise.h"
 
 // Sets default values
 AEnvironmentManager::AEnvironmentManager()
@@ -11,7 +12,6 @@ AEnvironmentManager::AEnvironmentManager()
 	, m_bornZ()
 	, m_cubeSize(10)
 	, BP_asteroid(nullptr)
-	, m_noise()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
@@ -125,7 +125,7 @@ void AEnvironmentManager::spawnAsteroid()
 
 bool AEnvironmentManager::isValidNoise(int _x, int _y, int _z) const
 {
-	float noise = m_noise.getOctaveNoise((_x + m_bornX.X) * 0.00020f, (_y + m_bornY.X) * 0.00020f, (_z + m_bornZ.X) * 0.00020f, 4);
+	float noise = SpacelNoise::getInstance()->getOctaveNoise((_x + m_bornX.X) * 0.00020f, (_y + m_bornY.X) * 0.00020f, (_z + m_bornZ.X) * 0.00020f, 4);
 	return noise >= .75f;
 }
 
