@@ -8,7 +8,6 @@ USpacelProceduralMeshComponent::USpacelProceduralMeshComponent()
 	: CubeSize(0.0f)
 	, m_ownerLocation(FVector::ZeroVector)
 {
-
 }
 
 void USpacelProceduralMeshComponent::generateMesh()

@@ -28,7 +28,7 @@ protected:
 	void addNeighboor(TArray<FVector> & _openList, FVector _location, EFace _where, TSharedPtr<ChainedLocation> _chain, EFace _inverse);
 
 	// -- spawn asteroid
-	void spawnAsteroid();
+	void addProceduralMesh();
 
 	// -- check if we have a valid noise in this points
 	bool isValidNoise(int _x, int _y, int _z) const;
@@ -40,8 +40,11 @@ protected:
 	// -- check if this location is in m_currentObject
 	TSharedPtr<ChainedLocation> isKnownLocation(FVector const& _location) const;
 
+	// -- call when something hit this procedural mesh
+	UFUNCTION()
+	void onHit(class UPrimitiveComponent* _comp, class AActor* _otherActor, class UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit);
+
 protected:
-	// TO DO : just show don't edit
 	UPROPERTY(VisibleAnywhere, Category = "Settings")
 	FVector2D m_bornX;
 	UPROPERTY(VisibleAnywhere, Category = "Settings")
@@ -51,9 +54,6 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = "Settings")
 	int m_cubeSize;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Procedural Type")
-	TSubclassOf<class AAsteroid> BP_asteroid;
-	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Component")
 	TArray<class USpacelProceduralMeshComponent*> m_proceduralMeshComponents;
 

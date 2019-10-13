@@ -2,9 +2,9 @@
 
 
 #include "EnvironmentManager.h"
-#include "Hub_Spacel/Source/World/Asteroid.h"
 #include "Hub_Spacel/Source/Noise/SpacelNoise.h"
 #include "Hub_Spacel/Source/Mesh/SpacelProceduralMeshComponent.h"
+#include "Hub_Spacel/Source/Projectile/SimpleBullet.h"
 
 // Sets default values
 AEnvironmentManager::AEnvironmentManager()
@@ -12,7 +12,6 @@ AEnvironmentManager::AEnvironmentManager()
 	, m_bornY()
 	, m_bornZ()
 	, m_cubeSize(10)
-	, BP_asteroid(nullptr)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
@@ -44,7 +43,7 @@ void AEnvironmentManager::BeginPlay()
 
 		proceduralMesh->setOwnerLocation(GetActorLocation());
 		proceduralMesh->generateMesh();
-		//proceduralMesh->OnComponentHit.AddDynamic(this, &AAsteroid::onHit);
+		proceduralMesh->OnComponentHit.AddDynamic(this, &AEnvironmentManager::onHit);
 	}
 }
 
@@ -72,8 +71,8 @@ void AEnvironmentManager::createProceduralWorld()
 		openList.RemoveAt(0);
 		createChain(location, openList);
 		
-		// spawn BP
-		spawnAsteroid();
+		// add component
+		addProceduralMesh();
 	}
 }
 
@@ -115,7 +114,7 @@ void AEnvironmentManager::addNeighboor(TArray<FVector>& _openList, FVector _loca
 	}
 }
 
-void AEnvironmentManager::spawnAsteroid()
+void AEnvironmentManager::addProceduralMesh()
 {
 	UWorld* const world = GetWorld();
 	if (world) 
@@ -133,19 +132,6 @@ void AEnvironmentManager::spawnAsteroid()
 		m_currentObject.Empty();
 
 		m_proceduralMeshComponents.Add(proceduralMesh);
-
-		/*FTransform transform;
-		transform.SetLocation(location);
-
-		AAsteroid* BPasteroid = world->SpawnActorDeferred<AAsteroid>(BP_asteroid, transform);
-		if (BPasteroid) 
-		{
-			// Init component
-			BPasteroid->setCubeSize(m_cubeSize);
-			BPasteroid->setEdges(std::forward<TArray<TSharedPtr<ChainedLocation>>>(m_currentObject));
-			BPasteroid->FinishSpawning(transform);
-			m_currentObject.Empty();
-		}*/
 	}
 }
 
@@ -178,4 +164,24 @@ TSharedPtr<ChainedLocation> AEnvironmentManager::isKnownLocation(FVector const& 
 	}
 
 	return nullptr;
+}
+
+
+void AEnvironmentManager::onHit(class UPrimitiveComponent* _comp, class AActor* _otherActor, class UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit)
+{
+	USpacelProceduralMeshComponent* proceduralComp = Cast<USpacelProceduralMeshComponent>(_comp);
+	if (proceduralComp)
+	{
+		// check if it's a bullet type
+		ASimpleBullet* pBullet = Cast<ASimpleBullet>(_otherActor);
+		if (pBullet)
+		{
+			// find where and destroy the right edge
+			if (proceduralComp->hit(pBullet->getLaunchForward(), _hit.ImpactPoint))
+			{
+				// destroy bullet
+				pBullet->Destroy();
+			}
+		}
+	}
 }
