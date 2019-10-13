@@ -26,11 +26,15 @@ public:
 	inline void setEdges(TArray<TSharedPtr<ChainedLocation>> && _edges) { m_edgesPosition = std::move(_edges); }
 	inline void setOwnerLocation(FVector const& _ownerLocation) { m_ownerLocation = _ownerLocation; }
 
-	// -- manage hit
-	bool hit(FVector const& _forward, FVector const& _impactPoint);
-
 protected:
 	void addTriangles(TArray<int32> & _out, int _deb) const;
+
+	// -- call when something hit this procedural mesh
+	UFUNCTION()
+	void onHit(class UPrimitiveComponent* _comp, class AActor* _otherActor, class UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit);
+
+	// -- manage hit
+	bool hit(FVector const& _forward, FVector const& _impactPoint);
 
 protected:
 	// size of cube

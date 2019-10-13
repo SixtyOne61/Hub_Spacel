@@ -2,12 +2,14 @@
 
 #include "SpacelProceduralMeshComponent.h"
 #include "DrawDebugHelpers.h"
+#include "Hub_Spacel/Source/Projectile/SimpleBullet.h"
 #include <algorithm>
 
 USpacelProceduralMeshComponent::USpacelProceduralMeshComponent()
 	: CubeSize(0.0f)
 	, m_ownerLocation(FVector::ZeroVector)
 {
+	OnComponentHit.AddDynamic(this, &USpacelProceduralMeshComponent::onHit);
 }
 
 void USpacelProceduralMeshComponent::generateMesh()
@@ -127,6 +129,7 @@ void USpacelProceduralMeshComponent::generateMesh()
 	SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
 	SetCollisionObjectType(ECollisionChannel::ECC_PhysicsBody);
 	bUseComplexAsSimpleCollision = false;
+	SetNotifyRigidBodyCollision(true);
 
 	CreateMeshSection_LinearColor(0, vertices, triangles, normals, UV0, vertexColors, tangents, true);
 
@@ -173,5 +176,20 @@ void USpacelProceduralMeshComponent::addTriangles(TArray<int32> & _out, int _deb
 	for(int numEdge : triangles)
 	{
 		_out.Add(numEdge);
+	}
+}
+
+void USpacelProceduralMeshComponent::onHit(class UPrimitiveComponent* _comp, class AActor* _otherActor, class UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit)
+{
+	// check if it's a bullet type
+	ASimpleBullet* pBullet = Cast<ASimpleBullet>(_otherActor);
+	if (pBullet)
+	{
+		// find where and destroy the right edge
+		if (hit(pBullet->getLaunchForward(), _hit.ImpactPoint))
+		{
+			// destroy bullet
+			pBullet->Destroy();
+		}
 	}
 }

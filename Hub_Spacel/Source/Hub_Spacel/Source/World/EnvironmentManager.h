@@ -40,10 +40,6 @@ protected:
 	// -- check if this location is in m_currentObject
 	TSharedPtr<ChainedLocation> isKnownLocation(FVector const& _location) const;
 
-	// -- call when something hit this procedural mesh
-	UFUNCTION()
-	void onHit(class UPrimitiveComponent* _comp, class AActor* _otherActor, class UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit);
-
 protected:
 	UPROPERTY(VisibleAnywhere, Category = "Settings")
 	FVector2D m_bornX;

@@ -4,7 +4,6 @@
 #include "EnvironmentManager.h"
 #include "Hub_Spacel/Source/Noise/SpacelNoise.h"
 #include "Hub_Spacel/Source/Mesh/SpacelProceduralMeshComponent.h"
-#include "Hub_Spacel/Source/Projectile/SimpleBullet.h"
 
 // Sets default values
 AEnvironmentManager::AEnvironmentManager()
@@ -43,7 +42,6 @@ void AEnvironmentManager::BeginPlay()
 
 		proceduralMesh->setOwnerLocation(GetActorLocation());
 		proceduralMesh->generateMesh();
-		proceduralMesh->OnComponentHit.AddDynamic(this, &AEnvironmentManager::onHit);
 	}
 }
 
@@ -164,24 +162,4 @@ TSharedPtr<ChainedLocation> AEnvironmentManager::isKnownLocation(FVector const& 
 	}
 
 	return nullptr;
-}
-
-
-void AEnvironmentManager::onHit(class UPrimitiveComponent* _comp, class AActor* _otherActor, class UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit)
-{
-	USpacelProceduralMeshComponent* proceduralComp = Cast<USpacelProceduralMeshComponent>(_comp);
-	if (proceduralComp)
-	{
-		// check if it's a bullet type
-		ASimpleBullet* pBullet = Cast<ASimpleBullet>(_otherActor);
-		if (pBullet)
-		{
-			// find where and destroy the right edge
-			if (proceduralComp->hit(pBullet->getLaunchForward(), _hit.ImpactPoint))
-			{
-				// destroy bullet
-				pBullet->Destroy();
-			}
-		}
-	}
 }
