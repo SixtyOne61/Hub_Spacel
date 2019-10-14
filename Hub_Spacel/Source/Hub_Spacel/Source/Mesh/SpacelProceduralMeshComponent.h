@@ -36,12 +36,6 @@ protected:
 	// -- manage hit
 	bool hit(FVector const& _forward, FVector const& _impactPoint);
 
-	// -- overlap manage
-	UFUNCTION()
-	void OnOverlapBegin(class UPrimitiveComponent* _overlappedComp, class AActor* _otherActor, class UPrimitiveComponent* _otherComp, int32 _otherBodyIndex, bool _bFromSweep, const FHitResult& _sweepResult);
-	UFUNCTION()
-	void OnOverlapEnd(class UPrimitiveComponent* _overlappedComp, class AActor* _otherActor, class UPrimitiveComponent* _otherComp, int32 _otherBodyIndex);
-
 protected:
 	// size of cube
 	UPROPERTY(VisibleAnywhere)
