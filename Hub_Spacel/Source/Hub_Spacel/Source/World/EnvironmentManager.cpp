@@ -115,7 +115,7 @@ void AEnvironmentManager::addNeighboor(TArray<FVector>& _openList, FVector _loca
 void AEnvironmentManager::addProceduralMesh()
 {
 	UWorld* const world = GetWorld();
-	if (world) 
+	if (world)
 	{
 		FVector location = FVector(m_bornX.X, m_bornY.X, m_bornZ.X);
 
