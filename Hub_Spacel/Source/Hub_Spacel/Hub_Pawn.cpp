@@ -94,9 +94,9 @@ void AHub_Pawn::fire()
 		if (pBullet)
 		{
 			// TO DO init bullet
+			pBullet->SetReplicates(true);
 			UGameplayStatics::FinishSpawningActor(pBullet, transform);
 			pBullet->netMulticast_launchBullet(GetActorForwardVector());
-			pBullet->SetReplicates(true);
 		}
 	}
 }
