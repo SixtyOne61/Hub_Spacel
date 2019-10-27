@@ -34,7 +34,9 @@ public:
 	// -- get / set
 	inline FVector const& getLaunchForward() const { return m_launchVector; }
 
-	void launchBullet(FVector _forward);
+	// -- multicast
+	UFUNCTION(NetMulticast, Reliable, WithValidation)
+	void netMulticast_launchBullet(FVector const& _forward);
 
 protected:
 	FVector m_launchVector = FVector::ZeroVector;

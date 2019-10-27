@@ -26,7 +26,7 @@ void ASimpleBullet::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-void ASimpleBullet::launchBullet(FVector _forward)
+void ASimpleBullet::netMulticast_launchBullet_Implementation(FVector const& _forward)
 {
 	if (SimpleBulletMesh)
 	{
@@ -35,3 +35,7 @@ void ASimpleBullet::launchBullet(FVector _forward)
 	}
 }
 
+bool ASimpleBullet::netMulticast_launchBullet_Validate(FVector const& _forward)
+{
+	return true;
+}

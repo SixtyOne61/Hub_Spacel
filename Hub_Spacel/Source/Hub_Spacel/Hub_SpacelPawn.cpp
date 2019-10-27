@@ -141,6 +141,12 @@ void AHub_SpacelPawn::MoveRightInput(float Val)
 
 void AHub_SpacelPawn::fire()
 {
+	if (Role < ROLE_Authority)
+	{
+		server_Fire();
+		return;
+	}
+
 	UStaticMeshSocket const* socket = PlaneMesh->GetSocketByName("SimpleBulletSpawn");
 	if (!SimpleBulletClass || !socket)
 	{
@@ -155,8 +161,20 @@ void AHub_SpacelPawn::fire()
 		{
 			// TO DO init bullet
 			UGameplayStatics::FinishSpawningActor(pBullet, transform);
-			pBullet->launchBullet(GetActorForwardVector());
+			pBullet->netMulticast_launchBullet(GetActorForwardVector());
 		}
 	}
 
 }
+
+void AHub_SpacelPawn::server_Fire_Implementation()
+{
+	fire();
+}
+
+bool AHub_SpacelPawn::server_Fire_Validate()
+{
+	return true;
+}
+
+

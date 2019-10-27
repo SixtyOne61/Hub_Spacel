@@ -12,9 +12,6 @@ AWorldManager::AWorldManager()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
-	bNetLoadOnClient = false; // Only have this world manager on client
-
-	spawnChunckEnvironment();
 }
 
 // Called when the game starts or when spawned

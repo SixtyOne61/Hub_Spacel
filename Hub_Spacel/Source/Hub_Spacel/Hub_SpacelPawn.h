@@ -49,7 +49,12 @@ protected:
 	/** Bound to the horizontal axis */
 	void MoveRightInput(float Val);
 
+	// -- bind function
 	void fire();
+
+	// -- server function
+	UFUNCTION(Server, Reliable, WithValidation)
+	void server_Fire();
 
 private:
 

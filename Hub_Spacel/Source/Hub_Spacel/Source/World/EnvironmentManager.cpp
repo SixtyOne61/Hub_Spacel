@@ -14,6 +14,7 @@ AEnvironmentManager::AEnvironmentManager()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	SetReplicates(true);
 }
 
 void AEnvironmentManager::init(FVector2D const& _bornX, FVector2D const& _bornY, FVector2D const& _bornZ, int _cubeSize)
@@ -28,7 +29,7 @@ void AEnvironmentManager::init(FVector2D const& _bornX, FVector2D const& _bornY,
 void AEnvironmentManager::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 	// create procedural world
 	createProceduralWorld();
 
