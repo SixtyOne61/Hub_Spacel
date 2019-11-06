@@ -70,6 +70,7 @@ void AHub_Pawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	
 	// bind function
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AHub_Pawn::fire);
+	PlayerInputComponent->BindAxis("Speed", this, &AHub_Pawn::speed);
 
 }
 
@@ -99,6 +100,19 @@ void AHub_Pawn::fire()
 			pBullet->netMulticast_launchBullet(GetActorForwardVector());
 		}
 	}
+}
+
+void AHub_Pawn::speed(float _val)
+{
+	// Is there any input?
+	bool bHasInput = !FMath::IsNearlyEqual(_val, 0.f);
+	// If input is not held down, reduce speed
+	float currentAcc = bHasInput ? (_val * m_acceleration) : (-0.5f * m_acceleration);
+	// Calculate new speed
+	float newForwardSpeed = m_currentForwardSpeed + (GetWorld()->GetDeltaSeconds() * currentAcc);
+	// Clamp between MinSpeed and MaxSpeed
+	m_currentForwardSpeed = FMath::Clamp(newForwardSpeed, m_minSpeed, m_maxSpeed);
+	
 }
 
 void AHub_Pawn::server_Fire_Implementation()

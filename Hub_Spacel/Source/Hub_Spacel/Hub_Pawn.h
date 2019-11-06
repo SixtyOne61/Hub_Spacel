@@ -31,6 +31,7 @@ public:
 protected:
 	// -- bind function
 	void fire();
+	void speed(float _val);
 
 	// -- server function
 	UFUNCTION(Server, Reliable, WithValidation)
@@ -50,6 +51,14 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Bullet")
 	TSubclassOf<class ASimpleBullet> SimpleBulletClass;
+
+private:
+	// -- speed
+	float m_acceleration = 250.0f;
+	float m_currentForwardSpeed = 0.0f;
+	const float m_minSpeed = 200.0f;
+	const float m_maxSpeed = 4000.0f;
+
 
 public:
 	// -- get
