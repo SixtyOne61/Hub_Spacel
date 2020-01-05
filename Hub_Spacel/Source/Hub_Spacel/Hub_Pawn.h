@@ -33,6 +33,7 @@ protected:
 	void input_Fire();
 	void input_Speed(float _val);
 	void input_MoveUp(float _val);
+	void input_MoveRight(float _val);
 
 	// -- server function
 	UFUNCTION(Server, Reliable, WithValidation)

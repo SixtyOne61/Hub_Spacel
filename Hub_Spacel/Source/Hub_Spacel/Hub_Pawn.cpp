@@ -85,6 +85,7 @@ void AHub_Pawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AHub_Pawn::input_Fire);
 	PlayerInputComponent->BindAxis("Speed", this, &AHub_Pawn::input_Speed);
 	PlayerInputComponent->BindAxis("MoveUp", this, &AHub_Pawn::input_MoveUp);
+	PlayerInputComponent->BindAxis("MoveRight", this, &AHub_Pawn::input_MoveRight);
 }
 
 void AHub_Pawn::input_Fire()
@@ -137,6 +138,11 @@ void AHub_Pawn::input_MoveUp(float _val)
 
 	// Smoothly interpolate to target pitch speed
 	m_currentPitchSpeed = FMath::FInterpTo(m_currentPitchSpeed, targetPitchSpeed, GetWorld()->GetDeltaSeconds(), m_interpSpeed);
+}
+
+void AHub_Pawn::input_MoveRight(float _val)
+{
+	// TO DO
 }
 
 void AHub_Pawn::server_Fire_Implementation()
