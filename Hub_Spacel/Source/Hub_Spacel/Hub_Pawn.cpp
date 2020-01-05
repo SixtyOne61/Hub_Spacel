@@ -49,6 +49,11 @@ void AHub_Pawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	// move
+	const FVector localMove = FVector(m_currentForwardSpeed * DeltaTime, 0.f, 0.f);
+
+	// Move plan forwards (with sweep so we stop when we collide with things)
+	AddActorLocalOffset(localMove, true);
 }
 
 void AHub_Pawn::NotifyHit(class UPrimitiveComponent* MyComp, class AActor* Other, class UPrimitiveComponent* OtherComp, bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult& Hit)
@@ -111,8 +116,7 @@ void AHub_Pawn::speed(float _val)
 	// Calculate new speed
 	float newForwardSpeed = m_currentForwardSpeed + (GetWorld()->GetDeltaSeconds() * currentAcc);
 	// Clamp between MinSpeed and MaxSpeed
-	m_currentForwardSpeed = FMath::Clamp(newForwardSpeed, m_minSpeed, m_maxSpeed);
-	
+	m_currentForwardSpeed = FMath::Clamp(newForwardSpeed, m_minSpeed, m_maxSpeed);	
 }
 
 void AHub_Pawn::server_Fire_Implementation()
