@@ -47,13 +47,21 @@ void AHub_Pawn::BeginPlay()
 // Called every frame
 void AHub_Pawn::Tick(float DeltaTime)
 {
-	Super::Tick(DeltaTime);
-
 	// move
 	const FVector localMove = FVector(m_currentForwardSpeed * DeltaTime, 0.f, 0.f);
 
 	// Move plan forwards (with sweep so we stop when we collide with things)
 	AddActorLocalOffset(localMove, true);
+
+	// rotation
+	FRotator deltaRotation(0.f, 0.f, 0.f);
+	deltaRotation.Pitch = m_currentPitchSpeed * DeltaTime;
+
+	// rotate ship
+	AddActorLocalRotation(deltaRotation);
+
+	// Call any parent class Tick implementation
+	Super::Tick(DeltaTime);
 }
 
 void AHub_Pawn::NotifyHit(class UPrimitiveComponent* MyComp, class AActor* Other, class UPrimitiveComponent* OtherComp, bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult& Hit)
