@@ -30,8 +30,9 @@ public:
 
 protected:
 	// -- bind function
-	void fire();
-	void speed(float _val);
+	void input_Fire();
+	void input_Speed(float _val);
+	void input_MoveUp(float _val);
 
 	// -- server function
 	UFUNCTION(Server, Reliable, WithValidation)
@@ -58,6 +59,16 @@ private:
 	float m_currentForwardSpeed = 0.0f;
 	const float m_minSpeed = 200.0f;
 	const float m_maxSpeed = 4000.0f;
+
+	// -- rotation common param
+	const float m_interpSpeed = 2.0f;
+	const float m_turnSpeed = 50.0f;
+
+	// -- move up / pitch
+	float m_currentPitchSpeed = 0.0f;
+
+	// -- move right / yaw
+	float m_currentYawSpeed = 0.0f;
 
 
 public:

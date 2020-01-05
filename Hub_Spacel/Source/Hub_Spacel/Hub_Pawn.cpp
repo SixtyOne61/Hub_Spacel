@@ -74,12 +74,12 @@ void AHub_Pawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	check(PlayerInputComponent);
 	
 	// bind function
-	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AHub_Pawn::fire);
-	PlayerInputComponent->BindAxis("Speed", this, &AHub_Pawn::speed);
-
+	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AHub_Pawn::input_Fire);
+	PlayerInputComponent->BindAxis("Speed", this, &AHub_Pawn::input_Speed);
+	PlayerInputComponent->BindAxis("MoveUp", this, &AHub_Pawn::input_MoveUp);
 }
 
-void AHub_Pawn::fire()
+void AHub_Pawn::input_Fire()
 {
 	if (Role < ROLE_Authority)
 	{
@@ -107,7 +107,7 @@ void AHub_Pawn::fire()
 	}
 }
 
-void AHub_Pawn::speed(float _val)
+void AHub_Pawn::input_Speed(float _val)
 {
 	// Is there any input?
 	bool bHasInput = !FMath::IsNearlyEqual(_val, 0.f);
@@ -119,9 +119,21 @@ void AHub_Pawn::speed(float _val)
 	m_currentForwardSpeed = FMath::Clamp(newForwardSpeed, m_minSpeed, m_maxSpeed);	
 }
 
+void AHub_Pawn::input_MoveUp(float _val)
+{
+	// target pitch speed is based in input
+	float targetPitchSpeed = (_val * m_turnSpeed * -1.0f);
+
+	// when steering, we decrease pitch slightly
+	targetPitchSpeed += (FMath::Abs(m_currentYawSpeed) * -0.2f);
+
+	// Smoothly interpolate to target pitch speed
+	m_currentPitchSpeed = FMath::FInterpTo(m_currentPitchSpeed, targetPitchSpeed, GetWorld()->GetDeltaSeconds(), m_interpSpeed);
+}
+
 void AHub_Pawn::server_Fire_Implementation()
 {
-	fire();
+	input_Fire();
 }
 
 bool AHub_Pawn::server_Fire_Validate()
