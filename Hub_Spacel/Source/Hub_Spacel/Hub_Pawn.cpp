@@ -56,6 +56,8 @@ void AHub_Pawn::Tick(float DeltaTime)
 	// rotation
 	FRotator deltaRotation(0.f, 0.f, 0.f);
 	deltaRotation.Pitch = m_currentPitchSpeed * DeltaTime;
+	deltaRotation.Yaw = m_currentYawSpeed * DeltaTime;
+	deltaRotation.Roll = m_currentRollSpeed * DeltaTime;
 
 	// rotate ship
 	AddActorLocalRotation(deltaRotation);
@@ -142,7 +144,21 @@ void AHub_Pawn::input_MoveUp(float _val)
 
 void AHub_Pawn::input_MoveRight(float _val)
 {
-	// TO DO
+	// target yaw speed is based on input
+	float targetYawSpeed = (_val * m_turnSpeed);
+
+	// smoothly interpolate to target yaw speed
+	m_currentYawSpeed = FMath::FInterpTo(m_currentYawSpeed, targetYawSpeed, GetWorld()->GetDeltaSeconds(), m_interpSpeed);
+
+	// Is there any left / right input ?
+	const bool isTurning = FMath::Abs(_val) > 0.2f;
+
+	// if turning, yaw value is used to influence rool
+	// if not turning, roll to reverse current roll value
+	float targetRollSpeed = isTurning ? (m_currentYawSpeed * 0.5f) : (GetActorRotation().Roll * -2.0f);
+
+	// smoothly interpolate roll speed
+	m_currentRollSpeed = FMath::FInterpTo(m_currentRollSpeed, targetRollSpeed, GetWorld()->GetDeltaSeconds(), m_interpSpeed);
 }
 
 void AHub_Pawn::server_Fire_Implementation()

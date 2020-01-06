@@ -71,6 +71,8 @@ private:
 	// -- move right / yaw
 	float m_currentYawSpeed = 0.0f;
 
+	// -- move right / roll
+	float m_currentRollSpeed = 0.0f;
 
 public:
 	// -- get
