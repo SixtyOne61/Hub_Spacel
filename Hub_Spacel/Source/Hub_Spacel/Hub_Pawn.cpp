@@ -84,10 +84,11 @@ void AHub_Pawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	check(PlayerInputComponent);
 	
 	// bind function
-	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AHub_Pawn::input_Fire);
 	PlayerInputComponent->BindAxis("Speed", this, &AHub_Pawn::input_Speed);
 	PlayerInputComponent->BindAxis("MoveUp", this, &AHub_Pawn::input_MoveUp);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AHub_Pawn::input_MoveRight);
+	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AHub_Pawn::input_Fire);
+	PlayerInputComponent->BindAction("HandBrake", IE_Pressed, this, &AHub_Pawn::input_HandBrakePress);
 }
 
 void AHub_Pawn::input_Fire()
@@ -155,10 +156,15 @@ void AHub_Pawn::input_MoveRight(float _val)
 
 	// if turning, yaw value is used to influence rool
 	// if not turning, roll to reverse current roll value
-	float targetRollSpeed = isTurning ? (m_currentYawSpeed * 0.5f) : (GetActorRotation().Roll * -2.0f);
+	float targetRollSpeed = isTurning ? (m_currentYawSpeed * 0.8f) : (GetActorRotation().Roll * -2.0f);
 
 	// smoothly interpolate roll speed
 	m_currentRollSpeed = FMath::FInterpTo(m_currentRollSpeed, targetRollSpeed, GetWorld()->GetDeltaSeconds(), m_interpSpeed);
+}
+
+void AHub_Pawn::input_HandBrakePress()
+{
+
 }
 
 void AHub_Pawn::server_Fire_Implementation()

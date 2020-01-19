@@ -34,6 +34,7 @@ protected:
 	void input_Speed(float _val);
 	void input_MoveUp(float _val);
 	void input_MoveRight(float _val);
+	void input_HandBrakePress();
 
 	// -- server function
 	UFUNCTION(Server, Reliable, WithValidation)
