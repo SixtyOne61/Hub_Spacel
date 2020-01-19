@@ -27,7 +27,7 @@ AHub_Pawn::AHub_Pawn()
 	SpringArm->SetupAttachment(RootComponent);	// Attach SpringArm to RootComponent
 	SpringArm->TargetArmLength = 160.0f; // The camera follows at this distance behind the character	
 	SpringArm->SocketOffset = FVector(0.f, 0.f, 60.f);
-	SpringArm->bEnableCameraLag = false;	// Do not allow camera to lag
+	SpringArm->bEnableCameraLag = true;	// Do not allow camera to lag
 	SpringArm->CameraLagSpeed = 15.f;
 
 	// Create camera component 
