@@ -34,6 +34,7 @@ protected:
 	void input_Speed(float _val);
 	void input_MoveUp(float _val);
 	void input_MoveRight(float _val);
+	void input_MoveRoll(float _val);
 	void input_HandBrakePress();
 
 	// -- server function
@@ -73,6 +74,7 @@ private:
 	float m_currentYawSpeed = 0.0f;
 
 	// -- move right / roll
+	const float m_rollSpeed = 25.0f;
 	float m_currentRollSpeed = 0.0f;
 
 public:
