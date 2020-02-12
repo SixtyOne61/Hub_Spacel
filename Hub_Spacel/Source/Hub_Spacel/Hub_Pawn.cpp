@@ -201,9 +201,16 @@ void AHub_Pawn::generateMesh()
     FVector const& location = this->GetActorLocation();
     ProceduralSpaceShipMesh->SetWorldLocation(location);
     ProceduralSpaceShipMesh->setOwnerLocation(location);
-    /* TO DO 
-    ProceduralSpaceShipMesh->setCubeSize();
-    ProceduralSpaceShipMesh->setEdges();*/
+    /* TO DO */
+    ProceduralSpaceShipMesh->setCubeSize(5.0f);
+    TArray<TSharedPtr<ChainedLocation>> chainedLocations =
+    {
+        MakeShareable(new ChainedLocation(FVector(0,0,0), 5.0f)),
+        MakeShareable(new ChainedLocation(FVector(1,0,0), 5.0f)),
+        MakeShareable(new ChainedLocation(FVector(1,1,0), 5.0f)),
+        MakeShareable(new ChainedLocation(FVector(0,0,1), 5.0f))
+    };
+    ProceduralSpaceShipMesh->setEdges(std::forward<TArray<TSharedPtr<ChainedLocation>>>(chainedLocations));
 
     ProceduralSpaceShipMesh->generateMesh();
 }
