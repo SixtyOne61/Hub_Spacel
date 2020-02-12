@@ -45,6 +45,10 @@ protected:
 	UPROPERTY(Category = Mesh, VisibleDefaultsOnly, BlueprintReadOnly)
 	class UStaticMeshComponent* SpaceShipMesh;
 
+    /* Procedural mesh for this ship */
+    UPROPERTY(Category = Mesh, VisibleDefaultsOnly, BlueprintReadyOnly, Category = "Mesh")
+    class USpacelProceduralMeshComponent* ProceduralSpaceShipMesh = nullptr;
+
 	/** Spring arm that will offset the camera */
 	UPROPERTY(Category = Camera, VisibleDefaultsOnly, BlueprintReadOnly)
 	class USpringArmComponent* SpringArm;

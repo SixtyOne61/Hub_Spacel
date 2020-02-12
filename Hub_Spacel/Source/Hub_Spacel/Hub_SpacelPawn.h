@@ -5,6 +5,7 @@
 #include "GameFramework/Pawn.h"
 #include "Hub_SpacelPawn.generated.h"
 
+// TO DO : remove
 UCLASS(Config=Game)
 class AHub_SpacelPawn : public APawn
 {

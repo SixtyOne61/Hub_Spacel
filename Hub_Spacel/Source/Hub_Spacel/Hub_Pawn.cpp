@@ -11,6 +11,7 @@
 #include "Engine/World.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/StaticMeshSocket.h"
+#include "Source/Mesh/SpacelProceduralMeshComponent.h"
 
 // Sets default values
 AHub_Pawn::AHub_Pawn()
@@ -35,6 +36,8 @@ AHub_Pawn::AHub_Pawn()
 	Camera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);	// Attach the camera
 	Camera->bUsePawnControlRotation = false; // Don't rotate camera with controller
 
+    // create procedural mesh component
+    ProceduralSpaceShipMesh = CreateDefaultSubobject<USpacelProceduralMeshComponent>(TEXT("ProceduralShip0"));
 }
 
 // Called when the game starts or when spawned
