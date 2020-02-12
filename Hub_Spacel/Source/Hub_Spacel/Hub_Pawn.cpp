@@ -38,6 +38,7 @@ AHub_Pawn::AHub_Pawn()
 
     // create procedural mesh component
     ProceduralSpaceShipMesh = CreateDefaultSubobject<USpacelProceduralMeshComponent>(TEXT("ProceduralShip0"));
+    ProceduralSpaceShipMesh->bUseAsyncCooking = true;
 }
 
 // Called when the game starts or when spawned
@@ -188,4 +189,21 @@ void AHub_Pawn::server_Fire_Implementation()
 bool AHub_Pawn::server_Fire_Validate()
 {
 	return true;
+}
+
+void AHub_Pawn::generateMesh()
+{
+    if (!ProceduralSpaceShipMesh)
+    {
+        return;
+    }
+
+    FVector const& location = this->GetActorLocation();
+    ProceduralSpaceShipMesh->SetWorldLocation(location);
+    ProceduralSpaceShipMesh->setOwnerLocation(location);
+    /* TO DO 
+    ProceduralSpaceShipMesh->setCubeSize();
+    ProceduralSpaceShipMesh->setEdges();*/
+
+    ProceduralSpaceShipMesh->generateMesh();
 }

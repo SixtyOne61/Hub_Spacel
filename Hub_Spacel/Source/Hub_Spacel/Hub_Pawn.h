@@ -29,7 +29,7 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 protected:
-	// -- bind function
+	/* bind function */
 	void input_Fire();
 	void input_Speed(float _val);
 	void input_MoveUp(float _val);
@@ -37,9 +37,12 @@ protected:
 	void input_MoveRoll(float _val);
 	void input_HandBrakePress();
 
-	// -- server function
+	/* server function */
 	UFUNCTION(Server, Reliable, WithValidation)
 	void server_Fire();
+
+    /* function call for generate our mesh */
+    void generateMesh();
 
 protected:
 	UPROPERTY(Category = Mesh, VisibleDefaultsOnly, BlueprintReadOnly)
