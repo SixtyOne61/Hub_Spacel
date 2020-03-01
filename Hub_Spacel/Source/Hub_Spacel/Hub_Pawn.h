@@ -45,11 +45,8 @@ protected:
     void generateMesh();
 
 protected:
-	UPROPERTY(Category = Mesh, VisibleDefaultsOnly, BlueprintReadOnly)
-	class UStaticMeshComponent* SpaceShipMesh;
-
     /* Procedural mesh for this ship */
-    UPROPERTY(Category = Mesh, VisibleDefaultsOnly, BlueprintReadyOnly, Category = "Mesh")
+    UPROPERTY(Category = Mesh, VisibleDefaultsOnly, BlueprintReadOnly, Category = "Mesh")
     class USpacelProceduralMeshComponent* ProceduralSpaceShipMesh = nullptr;
 
 	/** Spring arm that will offset the camera */
@@ -87,7 +84,7 @@ private:
 public:
 	// -- get
 		/** Returns PlaneMesh subobject **/
-	FORCEINLINE class UStaticMeshComponent* GetPlaneMesh() const { return SpaceShipMesh; }
+	FORCEINLINE class USpacelProceduralMeshComponent* GetPlaneMesh() const { return ProceduralSpaceShipMesh; }
 	/** Returns SpringArm subobject **/
 	FORCEINLINE class USpringArmComponent* GetSpringArm() const { return SpringArm; }
 	/** Returns Camera subobject **/

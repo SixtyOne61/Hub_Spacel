@@ -19,9 +19,10 @@ AHub_Pawn::AHub_Pawn()
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	// Create static mesh component
-	SpaceShipMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SpaceShip"));
-	RootComponent = SpaceShipMesh;
+    // create procedural mesh component
+    ProceduralSpaceShipMesh = CreateDefaultSubobject<USpacelProceduralMeshComponent>(TEXT("ProceduralShip0"));
+    ProceduralSpaceShipMesh->bUseAsyncCooking = true;
+    RootComponent = ProceduralSpaceShipMesh;
 
 	// Create a spring arm component
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm0"));
@@ -35,10 +36,6 @@ AHub_Pawn::AHub_Pawn()
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera0"));
 	Camera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);	// Attach the camera
 	Camera->bUsePawnControlRotation = false; // Don't rotate camera with controller
-
-    // create procedural mesh component
-    ProceduralSpaceShipMesh = CreateDefaultSubobject<USpacelProceduralMeshComponent>(TEXT("ProceduralShip0"));
-    ProceduralSpaceShipMesh->bUseAsyncCooking = true;
 }
 
 // Called when the game starts or when spawned
@@ -46,6 +43,7 @@ void AHub_Pawn::BeginPlay()
 {
 	Super::BeginPlay();
 	
+    generateMesh();
 }
 
 // Called every frame
@@ -104,24 +102,15 @@ void AHub_Pawn::input_Fire()
 		return;
 	}
 
-	UStaticMeshSocket const* socket = SpaceShipMesh->GetSocketByName("SimpleBulletSpawn");
-	if (!SimpleBulletClass || !socket)
-	{
-		return;
-	}
-
-	FTransform transform;
-	if (socket->GetSocketTransform(transform, SpaceShipMesh))
-	{
-		ASimpleBullet* pBullet = Cast<ASimpleBullet>(UGameplayStatics::BeginDeferredActorSpawnFromClass(GetWorld(), SimpleBulletClass, transform));
-		if (pBullet)
-		{
-			// TO DO init bullet
-			pBullet->SetReplicates(true);
-			UGameplayStatics::FinishSpawningActor(pBullet, transform);
-			pBullet->netMulticast_launchBullet(GetActorForwardVector());
-		}
-	}
+    FTransform transform = ProceduralSpaceShipMesh->GetSocketTransform("SimpleBulletSpawn");
+    ASimpleBullet* pBullet = Cast<ASimpleBullet>(UGameplayStatics::BeginDeferredActorSpawnFromClass(GetWorld(), SimpleBulletClass, transform));
+    if (pBullet)
+    {
+        // TO DO init bullet
+        pBullet->SetReplicates(true);
+        UGameplayStatics::FinishSpawningActor(pBullet, transform);
+        pBullet->netMulticast_launchBullet(GetActorForwardVector());
+    }
 }
 
 void AHub_Pawn::input_Speed(float _val)
@@ -202,13 +191,13 @@ void AHub_Pawn::generateMesh()
     ProceduralSpaceShipMesh->SetWorldLocation(location);
     ProceduralSpaceShipMesh->setOwnerLocation(location);
     /* TO DO */
-    ProceduralSpaceShipMesh->setCubeSize(5.0f);
+    ProceduralSpaceShipMesh->setCubeSize(50.0f);
     TArray<TSharedPtr<ChainedLocation>> chainedLocations =
     {
-        MakeShareable(new ChainedLocation(FVector(0,0,0), 5.0f)),
-        MakeShareable(new ChainedLocation(FVector(1,0,0), 5.0f)),
-        MakeShareable(new ChainedLocation(FVector(1,1,0), 5.0f)),
-        MakeShareable(new ChainedLocation(FVector(0,0,1), 5.0f))
+        MakeShareable(new ChainedLocation(FVector(0,0,0), 50.0f)),
+        MakeShareable(new ChainedLocation(FVector(50,0,0), 50.0f)),
+        MakeShareable(new ChainedLocation(FVector(50,50,0), 50.0f)),
+        MakeShareable(new ChainedLocation(FVector(0,0,50), 50.0f))
     };
     ProceduralSpaceShipMesh->setEdges(std::forward<TArray<TSharedPtr<ChainedLocation>>>(chainedLocations));
 
