@@ -40,6 +40,11 @@ protected:
 	// -- check if this location is in m_currentObject
 	TSharedPtr<ChainedLocation> isKnownLocation(FVector const& _location) const;
 
+public:
+    /* Material for asteroid */
+    UPROPERTY(Category = "Material", EditAnywhere, BlueprintReadWrite)
+    class UMaterialInstance* AsteroidMat = nullptr;
+
 protected:
 	UPROPERTY(VisibleAnywhere, Category = "Settings")
 	FVector2D m_bornX;
@@ -54,5 +59,5 @@ protected:
 	TArray<class USpacelProceduralMeshComponent*> m_proceduralMeshComponents;
 
 private:
-	TArray<TSharedPtr<ChainedLocation>> m_currentObject;
+    TArray<TSharedPtr<ChainedLocation>> m_currentObject;
 };

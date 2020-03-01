@@ -46,18 +46,18 @@ protected:
 
 protected:
     /* Procedural mesh for this ship */
-    UPROPERTY(Category = Mesh, VisibleDefaultsOnly, BlueprintReadOnly, Category = "Mesh")
+    UPROPERTY(Category = "Mesh", VisibleDefaultsOnly, BlueprintReadOnly)
     class USpacelProceduralMeshComponent* ProceduralSpaceShipMesh = nullptr;
 
 	/** Spring arm that will offset the camera */
-	UPROPERTY(Category = Camera, VisibleDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(Category = "Camera", VisibleDefaultsOnly, BlueprintReadOnly)
 	class USpringArmComponent* SpringArm;
 
 	/** Camera component that will be our viewpoint */
-	UPROPERTY(Category = Camera, VisibleDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(Category = "Camera", VisibleDefaultsOnly, BlueprintReadOnly)
 	class UCameraComponent* Camera;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Bullet")
+	UPROPERTY(Category = "Bullet", EditAnywhere, BlueprintReadOnly)
 	TSubclassOf<class ASimpleBullet> SimpleBulletClass;
 
 private:

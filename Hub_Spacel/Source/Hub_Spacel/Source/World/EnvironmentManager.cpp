@@ -3,6 +3,7 @@
 
 #include "EnvironmentManager.h"
 #include "Hub_Spacel/Source/Noise/SpacelNoise.h"
+#include "Materials/MaterialInstance.h"
 #include "Hub_Spacel/Source/Mesh/SpacelProceduralMeshComponent.h"
 
 // Sets default values
@@ -128,6 +129,10 @@ void AEnvironmentManager::addProceduralMesh()
 		proceduralMesh->bUseAsyncCooking = true;
 		proceduralMesh->setCubeSize(m_cubeSize);
 		proceduralMesh->setEdges(std::forward<TArray<TSharedPtr<ChainedLocation>>>(m_currentObject));
+        if (AsteroidMat)
+        {
+            proceduralMesh->SetMaterial(0, AsteroidMat);
+        }
 		m_currentObject.Empty();
 
 		m_proceduralMeshComponents.Add(proceduralMesh);

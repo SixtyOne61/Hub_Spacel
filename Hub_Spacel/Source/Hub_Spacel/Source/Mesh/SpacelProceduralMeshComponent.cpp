@@ -122,7 +122,8 @@ void USpacelProceduralMeshComponent::generateMesh()
 	UV0.Add(FVector2D(1, 0));
 	UV0.Add(FVector2D(0, 0));
 	TArray<FProcMeshTangent> tangents;
-	TArray<FLinearColor> vertexColors;
+	//TArray<FColor> vertexColors;
+    TArray<FLinearColor> vertexColors;
 
 	// setup collision
 	SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
@@ -132,6 +133,7 @@ void USpacelProceduralMeshComponent::generateMesh()
 	SetNotifyRigidBodyCollision(true);
 
 	CreateMeshSection_LinearColor(0, vertices, triangles, normals, UV0, vertexColors, tangents, true);
+    //CreateMeshSection(0, vertices, triangles, normals, UV0, vertexColors, tangents, true);
 
 	// Enable collision data
 	AddCollisionConvexMesh(vertices);
