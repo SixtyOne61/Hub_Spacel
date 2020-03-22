@@ -16,7 +16,9 @@ void USpacelProceduralMeshComponent::generateMesh()
 {
 	TArray<FVector> vertices;
 	TArray<int32> triangles;
-	TArray<FVector> normals;
+    TArray<FVector> normals;
+    TArray<FLinearColor> vertexColors;
+    TArray<FVector2D> UV0;
 
 	float half = CubeSize / 2.0f;
 
@@ -32,11 +34,21 @@ void USpacelProceduralMeshComponent::generateMesh()
 		// read mask from linkPos
 		if (!EnumHasAllFlags(mask, EFace::Top))
 		{
-			int deb = vertices.Num();
-			vertices.Add(center + FVector(-half, half, -half));
-			vertices.Add(center + FVector(half, half, -half));
-			vertices.Add(center + FVector(half, half, half));
-			vertices.Add(center + FVector(-half, half, half));
+            int deb = vertices.Num();
+            vertices.Add(center + FVector(-half, half, -half));
+            vertices.Add(center + FVector(half, half, -half));
+            vertices.Add(center + FVector(half, half, half));
+            vertices.Add(center + FVector(-half, half, half));
+
+            UV0.Add(FVector2D(0, 0));
+            UV0.Add(FVector2D(1, 0));
+            UV0.Add(FVector2D(1, 1));
+            UV0.Add(FVector2D(0, 1));
+
+            vertexColors.Add(FLinearColor(1.f, 0.f, 0.f));
+            vertexColors.Add(FLinearColor(0.f, 0.f, 1.f));
+            vertexColors.Add(FLinearColor(1.f, 0.f, 0.f));
+            vertexColors.Add(FLinearColor(0.f, 1.f, 0.f));
 
 			normals.Add(FVector(0, 1, 0));
 			normals.Add(FVector(0, 1, 0));
@@ -50,7 +62,17 @@ void USpacelProceduralMeshComponent::generateMesh()
 			vertices.Add(center + FVector(half, -half, half));
 			vertices.Add(center + FVector(half, -half, -half));
 			vertices.Add(center + FVector(-half, -half, -half));
-			vertices.Add(center + FVector(-half, -half, half));
+            vertices.Add(center + FVector(-half, -half, half));
+
+            UV0.Add(FVector2D(1, 1));
+            UV0.Add(FVector2D(1, 0));
+            UV0.Add(FVector2D(0, 0));
+            UV0.Add(FVector2D(0, 1));
+
+            vertexColors.Add(FLinearColor(0.f, 0.f, 1.f));
+            vertexColors.Add(FLinearColor(1.f, 0.f, 0.f));
+            vertexColors.Add(FLinearColor(1.f, 0.f, 0.f));
+            vertexColors.Add(FLinearColor(0.f, 1.f, 0.f));
 
 			normals.Add(FVector(0, -1, 0));
 			normals.Add(FVector(0, -1, 0));
@@ -64,7 +86,17 @@ void USpacelProceduralMeshComponent::generateMesh()
 			vertices.Add(center + FVector(half, -half, half));
 			vertices.Add(center + FVector(half, half, half));
 			vertices.Add(center + FVector(half, half, -half));
-			vertices.Add(center + FVector(half, -half, -half));
+            vertices.Add(center + FVector(half, -half, -half));
+
+            UV0.Add(FVector2D(0, 1));
+            UV0.Add(FVector2D(1, 1));
+            UV0.Add(FVector2D(1, 0));
+            UV0.Add(FVector2D(0, 0));
+
+            vertexColors.Add(FLinearColor(0.f, 0.f, 1.f));
+            vertexColors.Add(FLinearColor(1.f, 0.f, 0.f));
+            vertexColors.Add(FLinearColor(1.f, 0.f, 0.f));
+            vertexColors.Add(FLinearColor(0.f, 1.f, 0.f));
 
 			normals.Add(FVector(0, 0, 1));
 			normals.Add(FVector(0, 0, 1));
@@ -78,7 +110,17 @@ void USpacelProceduralMeshComponent::generateMesh()
 			vertices.Add(center + FVector(-half, -half, half));
 			vertices.Add(center + FVector(-half, -half, -half));
 			vertices.Add(center + FVector(-half, half, -half));
-			vertices.Add(center + FVector(-half, half, half));
+            vertices.Add(center + FVector(-half, half, half));
+
+            UV0.Add(FVector2D(0, 1));
+            UV0.Add(FVector2D(0, 0));
+            UV0.Add(FVector2D(1, 0));
+            UV0.Add(FVector2D(0, 0));
+
+            vertexColors.Add(FLinearColor(0.f, 0.f, 1.f));
+            vertexColors.Add(FLinearColor(1.f, 0.f, 0.f));
+            vertexColors.Add(FLinearColor(1.f, 0.f, 0.f));
+            vertexColors.Add(FLinearColor(0.f, 1.f, 0.f));
 
 			normals.Add(FVector(0, 0, -1));
 			normals.Add(FVector(0, 0, -1));
@@ -92,7 +134,17 @@ void USpacelProceduralMeshComponent::generateMesh()
 			vertices.Add(center + FVector(-half, half, -half));
 			vertices.Add(center + FVector(-half, -half, -half));
 			vertices.Add(center + FVector(half, -half, -half));
-			vertices.Add(center + FVector(half, half, -half));
+            vertices.Add(center + FVector(half, half, -half));
+
+            UV0.Add(FVector2D(0, 1));
+            UV0.Add(FVector2D(0, 0));
+            UV0.Add(FVector2D(1, 0));
+            UV0.Add(FVector2D(1, 1));
+
+            vertexColors.Add(FLinearColor(0.f, 0.f, 1.f));
+            vertexColors.Add(FLinearColor(1.f, 0.f, 0.f));
+            vertexColors.Add(FLinearColor(1.f, 0.f, 0.f));
+            vertexColors.Add(FLinearColor(0.f, 1.f, 0.f));
 
 			normals.Add(FVector(1, 0, 0));
 			normals.Add(FVector(1, 0, 0));
@@ -106,7 +158,17 @@ void USpacelProceduralMeshComponent::generateMesh()
 			vertices.Add(center + FVector(half, -half, half));
 			vertices.Add(center + FVector(-half, -half, half));
 			vertices.Add(center + FVector(-half, half, half));
-			vertices.Add(center + FVector(half, half, half));
+            vertices.Add(center + FVector(half, half, half));
+
+            UV0.Add(FVector2D(1, 0));
+            UV0.Add(FVector2D(0, 0));
+            UV0.Add(FVector2D(0, 1));
+            UV0.Add(FVector2D(1, 1));
+
+            vertexColors.Add(FLinearColor(0.f, 0.f, 1.f));
+            vertexColors.Add(FLinearColor(1.f, 0.f, 0.f));
+            vertexColors.Add(FLinearColor(1.f, 0.f, 0.f));
+            vertexColors.Add(FLinearColor(0.f, 1.f, 0.f));
 
 			normals.Add(FVector(-1, 0, 0));
 			normals.Add(FVector(-1, 0, 0));
@@ -116,14 +178,7 @@ void USpacelProceduralMeshComponent::generateMesh()
 		}
 	}
 
-	TArray<FVector2D> UV0;
-	UV0.Add(FVector2D(1, 1));
-	UV0.Add(FVector2D(0, 1));
-	UV0.Add(FVector2D(1, 0));
-	UV0.Add(FVector2D(0, 0));
 	TArray<FProcMeshTangent> tangents;
-	TArray<FColor> vertexColors;
-    //TArray<FLinearColor> vertexColors;
 
 	// setup collision
 	SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
@@ -132,8 +187,8 @@ void USpacelProceduralMeshComponent::generateMesh()
 	bUseComplexAsSimpleCollision = false;
 	SetNotifyRigidBodyCollision(true);
 
-	//CreateMeshSection_LinearColor(0, vertices, triangles, normals, UV0, vertexColors, tangents, true);
-    CreateMeshSection(0, vertices, triangles, normals, UV0, vertexColors, tangents, true);
+	CreateMeshSection_LinearColor(0, vertices, triangles, normals, UV0, vertexColors, TArray<FProcMeshTangent>() /*tangents*/, true);
+    //CreateMeshSection_LinearColor(0, vertices, triangles, TArray<FVector>(), TArray<FVector2D>(), vertexColors, TArray<FProcMeshTangent>(), true);
 
 	// Enable collision data
 	AddCollisionConvexMesh(vertices);
@@ -173,6 +228,7 @@ void USpacelProceduralMeshComponent::addTriangles(TArray<int32> & _out, int _deb
 	int triangles[] = {
 		_deb, _deb + 1, _deb + 2,
 		_deb, _deb + 2, _deb + 3
+        //_deb + 2, _deb + 3, _deb
 	};
 
 	for(int numEdge : triangles)
