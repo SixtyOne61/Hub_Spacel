@@ -12,6 +12,8 @@
 #include "Engine/StaticMesh.h"
 #include "Engine/StaticMeshSocket.h"
 #include "Source/Mesh/SpacelProceduralMeshComponent.h"
+#include "Materials/MaterialInstance.h"
+#include <functional>
 
 // Sets default values
 AHub_Pawn::AHub_Pawn()
@@ -20,9 +22,13 @@ AHub_Pawn::AHub_Pawn()
 	PrimaryActorTick.bCanEverTick = true;
 
     // create procedural mesh component
-    ProceduralSpaceShipMesh = CreateDefaultSubobject<USpacelProceduralMeshComponent>(TEXT("ProceduralShip0"));
-    ProceduralSpaceShipMesh->bUseAsyncCooking = true;
-    RootComponent = ProceduralSpaceShipMesh;
+    ProceduralSpaceShipBase = CreateDefaultSubobject<USpacelProceduralMeshComponent>(TEXT("ProceduralBase0"));
+    ProceduralSpaceShipBase->bUseAsyncCooking = true;
+    RootComponent = ProceduralSpaceShipBase;
+
+    ProceduralSpaceShipEngine = CreateDefaultSubobject<USpacelProceduralMeshComponent>(TEXT("ProceduralEngine0"));
+    ProceduralSpaceShipEngine->bUseAsyncCooking = true;
+    ProceduralSpaceShipEngine->SetupAttachment(RootComponent);
 
 	// Create a spring arm component
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm0"));
@@ -102,7 +108,7 @@ void AHub_Pawn::input_Fire()
 		return;
 	}
 
-    FTransform transform = ProceduralSpaceShipMesh->GetSocketTransform("SimpleBulletSpawn");
+    FTransform transform = ProceduralSpaceShipBase->GetSocketTransform("SimpleBulletSpawn");
     ASimpleBullet* pBullet = Cast<ASimpleBullet>(UGameplayStatics::BeginDeferredActorSpawnFromClass(GetWorld(), SimpleBulletClass, transform));
     if (pBullet)
     {
@@ -182,24 +188,52 @@ bool AHub_Pawn::server_Fire_Validate()
 
 void AHub_Pawn::generateMesh()
 {
-    if (!ProceduralSpaceShipMesh)
-    {
-        return;
-    }
-
     FVector const& location = this->GetActorLocation();
-    ProceduralSpaceShipMesh->SetWorldLocation(location);
-    ProceduralSpaceShipMesh->setOwnerLocation(location);
-    /* TO DO */
-    ProceduralSpaceShipMesh->setCubeSize(50.0f);
+
+    auto lb_init = [&location](USpacelProceduralMeshComponent * _mesh, std::function<void(void)> _func)
+    {
+        if (!_mesh)
+        {
+            return;
+        }
+        _mesh->SetWorldLocation(location);
+        _func();
+    };
+
+    lb_init(ProceduralSpaceShipBase, std::bind(&AHub_Pawn::generateBase, this));
+    lb_init(ProceduralSpaceShipEngine, std::bind(&AHub_Pawn::generateEngine, this));
+}
+
+void AHub_Pawn::generateBase()
+{
+    ProceduralSpaceShipBase->setCubeSize(15.0f);
     TArray<TSharedPtr<ChainedLocation>> chainedLocations =
     {
-        MakeShareable(new ChainedLocation(FVector(0,0,0), 50.0f)),
-        MakeShareable(new ChainedLocation(FVector(50,0,0), 50.0f)),
-        MakeShareable(new ChainedLocation(FVector(50,50,0), 50.0f)),
-        MakeShareable(new ChainedLocation(FVector(0,0,50), 50.0f))
+        MakeShareable(new ChainedLocation(FVector(-15,0,0), 15.0f)),
+        MakeShareable(new ChainedLocation(FVector(0,0,0), 15.0f)),
+        MakeShareable(new ChainedLocation(FVector(15,0,0), 15.0f)),
+        MakeShareable(new ChainedLocation(FVector(-15,15,0), 15.0f)),
+        MakeShareable(new ChainedLocation(FVector(-15,-15,0), 15.0f)),
     };
-    ProceduralSpaceShipMesh->setEdges(std::forward<TArray<TSharedPtr<ChainedLocation>>>(chainedLocations));
+    ProceduralSpaceShipBase->setEdges(std::forward<TArray<TSharedPtr<ChainedLocation>>>(chainedLocations));
+    ProceduralSpaceShipBase->generateMesh();
+    ProceduralSpaceShipBase->SetMaterial(0, MatBase);
+}
 
-    ProceduralSpaceShipMesh->generateMesh();
+void AHub_Pawn::generateEngine()
+{
+    ProceduralSpaceShipEngine->setCubeSize(5.0f);
+    TArray<TSharedPtr<ChainedLocation>> chainedLocations =
+    {
+        MakeShareable(new ChainedLocation(FVector(-25.0f, -15.0f, 0.0f), 5.0f)),
+        MakeShareable(new ChainedLocation(FVector(-25.0f, -10.0f, 0.0f), 5.0f)),
+        MakeShareable(new ChainedLocation(FVector(-25.0f, -5.0f, 0.0f), 5.0f)),
+        MakeShareable(new ChainedLocation(FVector(-25.0f, 0.0f, 0.0f), 5.0f)),
+        MakeShareable(new ChainedLocation(FVector(-25.0f, 5.0f, 0.0f), 5.0f)),
+        MakeShareable(new ChainedLocation(FVector(-25.0f, 10.0f, 0.0f), 5.0f)),
+        MakeShareable(new ChainedLocation(FVector(-25.0f, 15.0f, 0.0f), 5.0f)),
+    };
+    ProceduralSpaceShipEngine->setEdges(std::forward<TArray<TSharedPtr<ChainedLocation>>>(chainedLocations));
+    ProceduralSpaceShipEngine->generateMesh();
+    ProceduralSpaceShipEngine->SetMaterial(0, MatEngine);
 }

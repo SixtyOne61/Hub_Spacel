@@ -43,11 +43,22 @@ protected:
 
     /* function call for generate our mesh */
     void generateMesh();
+    void generateBase();
+    void generateEngine();
+
 
 protected:
     /* Procedural mesh for this ship */
     UPROPERTY(Category = "Mesh", VisibleDefaultsOnly, BlueprintReadOnly)
-    class USpacelProceduralMeshComponent* ProceduralSpaceShipMesh = nullptr;
+    class USpacelProceduralMeshComponent* ProceduralSpaceShipBase = nullptr;
+    UPROPERTY(Category = "Mesh", VisibleDefaultsOnly, BlueprintReadOnly)
+    class USpacelProceduralMeshComponent* ProceduralSpaceShipEngine = nullptr;
+
+    /* Materials for ship */
+    UPROPERTY(Category = "Material", EditAnywhere, BlueprintReadWrite)
+    class UMaterialInstance* MatBase = nullptr;
+    UPROPERTY(Category = "Material", EditAnywhere, BlueprintReadWrite)
+    class UMaterialInstance* MatEngine = nullptr;
 
 	/** Spring arm that will offset the camera */
 	UPROPERTY(Category = "Camera", VisibleDefaultsOnly, BlueprintReadOnly)
@@ -83,8 +94,6 @@ private:
 
 public:
 	// -- get
-		/** Returns PlaneMesh subobject **/
-	FORCEINLINE class USpacelProceduralMeshComponent* GetPlaneMesh() const { return ProceduralSpaceShipMesh; }
 	/** Returns SpringArm subobject **/
 	FORCEINLINE class USpringArmComponent* GetSpringArm() const { return SpringArm; }
 	/** Returns Camera subobject **/
