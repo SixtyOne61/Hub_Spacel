@@ -36,6 +36,9 @@ protected:
 	void input_MoveRight(float _val);
 	void input_MoveRoll(float _val);
 	void input_HandBrakePress();
+    /* bind function rework */
+    void input_MoveTargetUp(float _val);
+    void input_MoveTargetRight(float _val);
 
 	/* server function */
 	UFUNCTION(Server, Reliable, WithValidation)

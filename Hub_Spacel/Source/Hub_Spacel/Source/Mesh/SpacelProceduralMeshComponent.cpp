@@ -182,8 +182,6 @@ void USpacelProceduralMeshComponent::generateMesh()
 		}
 	}
 
-	TArray<FProcMeshTangent> tangents;
-
 	// setup collision
 	SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
@@ -191,7 +189,7 @@ void USpacelProceduralMeshComponent::generateMesh()
 	bUseComplexAsSimpleCollision = true;
 	SetNotifyRigidBodyCollision(true);
 
-	CreateMeshSection_LinearColor(0, vertices, triangles, normals, UV0, vertexColors, TArray<FProcMeshTangent>() /*tangents*/, true);
+	CreateMeshSection_LinearColor(0, vertices, triangles, normals, UV0, vertexColors, TArray<FProcMeshTangent>(), true);
 
 	// Enable collision data
 	AddCollisionConvexMesh(vertices);

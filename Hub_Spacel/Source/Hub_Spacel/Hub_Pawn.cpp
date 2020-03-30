@@ -98,6 +98,10 @@ void AHub_Pawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAxis("MoveRoll", this, &AHub_Pawn::input_MoveRoll);
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AHub_Pawn::input_Fire);
 	PlayerInputComponent->BindAction("HandBrake", IE_Pressed, this, &AHub_Pawn::input_HandBrakePress);
+
+    /* bind input rework */
+    PlayerInputComponent->BindAxis("MoveTargetUp", this, &AHub_Pawn::input_MoveTargetUp);
+    PlayerInputComponent->BindAxis("MoveTargetRight", this, &AHub_Pawn::input_MoveTargetRight);
 }
 
 void AHub_Pawn::input_Fire()
@@ -172,6 +176,16 @@ void AHub_Pawn::input_MoveRoll(float _val)
 }
 
 void AHub_Pawn::input_HandBrakePress()
+{
+
+}
+
+void AHub_Pawn::input_MoveTargetUp(float _val)
+{
+
+}
+
+void AHub_Pawn::input_MoveTargetRight(float _val)
 {
 
 }
