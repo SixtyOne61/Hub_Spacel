@@ -43,7 +43,7 @@ protected:
 public:
     /* Material for asteroid */
     UPROPERTY(Category = "Material", EditAnywhere, BlueprintReadWrite)
-    class UMaterialInstance* AsteroidMat = nullptr;
+    class UMaterialInstance* MatAsteroid = nullptr;
 
 protected:
 	UPROPERTY(VisibleAnywhere, Category = "Settings")

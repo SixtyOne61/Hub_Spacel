@@ -44,9 +44,9 @@ void AEnvironmentManager::BeginPlay()
 
 		proceduralMesh->setOwnerLocation(GetActorLocation());
         proceduralMesh->generateMesh();
-        if (AsteroidMat)
+        if (MatAsteroid)
         {
-            proceduralMesh->SetMaterial(0, AsteroidMat);
+            proceduralMesh->SetMaterial(0, MatAsteroid);
         }
 	}
 }

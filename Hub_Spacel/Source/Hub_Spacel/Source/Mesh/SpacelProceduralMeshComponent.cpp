@@ -14,6 +14,10 @@ USpacelProceduralMeshComponent::USpacelProceduralMeshComponent()
 
 void USpacelProceduralMeshComponent::generateMesh()
 {
+    // clear all
+    ClearAllMeshSections();
+    ClearCollisionConvexMeshes();
+
 	TArray<FVector> vertices;
 	TArray<int32> triangles;
     TArray<FVector> normals;
@@ -184,11 +188,10 @@ void USpacelProceduralMeshComponent::generateMesh()
 	SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
 	SetCollisionObjectType(ECollisionChannel::ECC_PhysicsBody);
-	bUseComplexAsSimpleCollision = false;
+	bUseComplexAsSimpleCollision = true;
 	SetNotifyRigidBodyCollision(true);
 
 	CreateMeshSection_LinearColor(0, vertices, triangles, normals, UV0, vertexColors, TArray<FProcMeshTangent>() /*tangents*/, true);
-    //CreateMeshSection_LinearColor(0, vertices, triangles, TArray<FVector>(), TArray<FVector2D>(), vertexColors, TArray<FProcMeshTangent>(), true);
 
 	// Enable collision data
 	AddCollisionConvexMesh(vertices);
@@ -196,12 +199,7 @@ void USpacelProceduralMeshComponent::generateMesh()
 
 bool USpacelProceduralMeshComponent::hit(FVector const& _forward, FVector const& _impactPoint)
 {
-	//DrawDebugSphere(GetWorld(), _impactPoint, 200, 26, FColor(181, 0, 0), true, -1, 0, 2);
-
 	FVector endPoint = _impactPoint + _forward * CubeSize;
-	//DrawDebugLine(GetWorld(), _impactPoint, endPoint, FColor(0, 0, 181), true);
-
-	//DrawDebugSphere(GetWorld(), endPoint, 200, 26, FColor(0, 181, 0), true, -1, 0, 2);
 
 	if(m_edgesPosition.RemoveAll([&](TSharedPtr<ChainedLocation> _point)
 	{
@@ -246,8 +244,12 @@ void USpacelProceduralMeshComponent::onHit(class UPrimitiveComponent* _comp, cla
 		// find where and destroy the right edge
 		if (hit(pBullet->getLaunchForward(), _hit.ImpactPoint))
 		{
-			// destroy bullet
-			pBullet->Destroy();
+			
 		}
+
+        // all case, it's better to delete bullet
+
+        // destroy bullet
+        pBullet->Destroy();
 	}
 }
