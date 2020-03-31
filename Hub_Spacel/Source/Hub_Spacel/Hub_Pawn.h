@@ -36,9 +36,12 @@ protected:
 	void input_MoveRight(float _val);
 	void input_MoveRoll(float _val);
 	void input_HandBrakePress();
+
     /* bind function rework */
     void input_MoveTargetUp(float _val);
     void input_MoveTargetRight(float _val);
+    void input_SnapOn();
+    void input_SnapOff();
 
 	/* server function */
 	UFUNCTION(Server, Reliable, WithValidation)
@@ -49,8 +52,13 @@ protected:
     void generateBase();
     void generateEngine();
 
+    /* snap mesh to target crosshair location */
+    void snapTarget();
 
 protected:
+    UPROPERTY(Category = "UI", EditAnywhere, BlueprintReadOnly)
+    FVector2D CrosshairPosition = FVector2D::ZeroVector;
+
     /* Procedural mesh for this ship */
     UPROPERTY(Category = "Mesh", VisibleDefaultsOnly, BlueprintReadOnly)
     class USpacelProceduralMeshComponent* ProceduralSpaceShipBase = nullptr;
@@ -94,6 +102,9 @@ private:
 	// -- move right / roll
 	const float m_rollSpeed = 25.0f;
 	float m_currentRollSpeed = 0.0f;
+
+    /* true if we snap for look at of mesh */
+    bool m_isSnap = false;
 
 public:
 	// -- get

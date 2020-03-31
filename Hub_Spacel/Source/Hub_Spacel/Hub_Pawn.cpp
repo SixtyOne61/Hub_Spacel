@@ -13,6 +13,7 @@
 #include "Engine/StaticMeshSocket.h"
 #include "Source/Mesh/SpacelProceduralMeshComponent.h"
 #include "Materials/MaterialInstance.h"
+#include "Kismet/KismetMathLibrary.h"
 #include <functional>
 
 // Sets default values
@@ -70,6 +71,8 @@ void AHub_Pawn::Tick(float DeltaTime)
 	// rotate ship
 	AddActorLocalRotation(deltaRotation);
 
+    snapTarget();
+
 	// Call any parent class Tick implementation
 	Super::Tick(DeltaTime);
 }
@@ -93,15 +96,17 @@ void AHub_Pawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	
 	// bind function
 	PlayerInputComponent->BindAxis("Speed", this, &AHub_Pawn::input_Speed);
-	PlayerInputComponent->BindAxis("MoveUp", this, &AHub_Pawn::input_MoveUp);
-	PlayerInputComponent->BindAxis("MoveRight", this, &AHub_Pawn::input_MoveRight);
-	PlayerInputComponent->BindAxis("MoveRoll", this, &AHub_Pawn::input_MoveRoll);
+	//PlayerInputComponent->BindAxis("MoveUp", this, &AHub_Pawn::input_MoveUp);
+	//PlayerInputComponent->BindAxis("MoveRight", this, &AHub_Pawn::input_MoveRight);
+	//PlayerInputComponent->BindAxis("MoveRoll", this, &AHub_Pawn::input_MoveRoll);
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AHub_Pawn::input_Fire);
-	PlayerInputComponent->BindAction("HandBrake", IE_Pressed, this, &AHub_Pawn::input_HandBrakePress);
+	//PlayerInputComponent->BindAction("HandBrake", IE_Pressed, this, &AHub_Pawn::input_HandBrakePress);
 
     /* bind input rework */
     PlayerInputComponent->BindAxis("MoveTargetUp", this, &AHub_Pawn::input_MoveTargetUp);
     PlayerInputComponent->BindAxis("MoveTargetRight", this, &AHub_Pawn::input_MoveTargetRight);
+    PlayerInputComponent->BindAction("SnapOn", IE_Pressed, this, &AHub_Pawn::input_SnapOn);
+    PlayerInputComponent->BindAction("SnapOff", IE_Released, this, &AHub_Pawn::input_SnapOff);
 }
 
 void AHub_Pawn::input_Fire()
@@ -182,12 +187,22 @@ void AHub_Pawn::input_HandBrakePress()
 
 void AHub_Pawn::input_MoveTargetUp(float _val)
 {
-
+    CrosshairPosition.X = (_val + 1.0f) / 2.0f; // clamp between 0 / 1 instead -1 / 1
 }
 
 void AHub_Pawn::input_MoveTargetRight(float _val)
 {
+    CrosshairPosition.Y = (_val + 1.0f) / 2.0f; // clamp between 0 / 1 instead -1 / 1
+}
 
+void AHub_Pawn::input_SnapOn()
+{
+    m_isSnap = true;
+}
+
+void AHub_Pawn::input_SnapOff()
+{
+    m_isSnap = false;
 }
 
 void AHub_Pawn::server_Fire_Implementation()
@@ -202,7 +217,7 @@ bool AHub_Pawn::server_Fire_Validate()
 
 void AHub_Pawn::generateMesh()
 {
-    FVector const& location = this->GetActorLocation();
+    FVector const& location = GetActorLocation();
 
     auto lb_init = [&location](USpacelProceduralMeshComponent * _mesh, std::function<void(void)> _func)
     {
@@ -250,4 +265,15 @@ void AHub_Pawn::generateEngine()
     ProceduralSpaceShipEngine->setEdges(std::forward<TArray<TSharedPtr<ChainedLocation>>>(chainedLocations));
     ProceduralSpaceShipEngine->generateMesh();
     ProceduralSpaceShipEngine->SetMaterial(0, MatEngine);
+}
+
+void AHub_Pawn::snapTarget()
+{
+    if (!m_isSnap)
+    {
+        return;
+    }
+
+    FRotator rot = UKismetMathLibrary::MakeRotFromXZ(GetActorRightVector(), FVector::UpVector);
+    SetActorRotation(rot);
 }
