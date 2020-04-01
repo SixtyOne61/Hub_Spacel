@@ -27,6 +27,10 @@ AHub_Pawn::AHub_Pawn()
     ProceduralSpaceShipBase->bUseAsyncCooking = true;
     RootComponent = ProceduralSpaceShipBase;
 
+    ProceduralSpaceShipShell = CreateDefaultSubobject<USpacelProceduralMeshComponent>(TEXT("ProceduralShell0"));
+    ProceduralSpaceShipShell->bUseAsyncCooking = true;
+    ProceduralSpaceShipShell->SetupAttachment(RootComponent);
+
     ProceduralSpaceShipEngine = CreateDefaultSubobject<USpacelProceduralMeshComponent>(TEXT("ProceduralEngine0"));
     ProceduralSpaceShipEngine->bUseAsyncCooking = true;
     ProceduralSpaceShipEngine->SetupAttachment(RootComponent);
@@ -34,8 +38,8 @@ AHub_Pawn::AHub_Pawn()
 	// Create a spring arm component
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm0"));
 	SpringArm->SetupAttachment(RootComponent);	// Attach SpringArm to RootComponent
-	SpringArm->TargetArmLength = 160.0f; // The camera follows at this distance behind the character	
-	SpringArm->SocketOffset = FVector(0.f, 0.f, 60.f);
+	SpringArm->TargetArmLength = 260.0f; // The camera follows at this distance behind the character	
+	SpringArm->SocketOffset = FVector(0.f, 0.f, 90.f);
 	SpringArm->bEnableCameraLag = true;	// Do not allow camera to lag
 	SpringArm->CameraLagSpeed = 15.f;
 
@@ -230,6 +234,7 @@ void AHub_Pawn::generateMesh()
     };
 
     lb_init(ProceduralSpaceShipBase, std::bind(&AHub_Pawn::generateBase, this));
+    lb_init(ProceduralSpaceShipShell, std::bind(&AHub_Pawn::generateShell, this));
     lb_init(ProceduralSpaceShipEngine, std::bind(&AHub_Pawn::generateEngine, this));
 }
 
@@ -241,26 +246,93 @@ void AHub_Pawn::generateBase()
         MakeShareable(new ChainedLocation(FVector(-15,0,0), 15.0f)),
         MakeShareable(new ChainedLocation(FVector(0,0,0), 15.0f)),
         MakeShareable(new ChainedLocation(FVector(15,0,0), 15.0f)),
-        MakeShareable(new ChainedLocation(FVector(-15,15,0), 15.0f)),
-        MakeShareable(new ChainedLocation(FVector(-15,-15,0), 15.0f)),
+        MakeShareable(new ChainedLocation(FVector(0,15,0), 15.0f)),
+        MakeShareable(new ChainedLocation(FVector(0,-15,0), 15.0f)),
+        MakeShareable(new ChainedLocation(FVector(0,0,15), 15.0f)),
+        MakeShareable(new ChainedLocation(FVector(0,0,-15), 15.0f)),
     };
     ProceduralSpaceShipBase->setEdges(std::forward<TArray<TSharedPtr<ChainedLocation>>>(chainedLocations));
     ProceduralSpaceShipBase->generateMesh();
     ProceduralSpaceShipBase->SetMaterial(0, MatBase);
 }
 
+void AHub_Pawn::generateShell()
+{
+    ProceduralSpaceShipShell->setCubeSize(15.0f);
+    TArray<TSharedPtr<ChainedLocation>> chainedLocations;
+
+    TArray<TSharedPtr<ChainedLocation>> const& chainedLocationBase = ProceduralSpaceShipBase->getEdges();
+    TArray<FVector> locationBase;
+    for (auto chained : chainedLocationBase)
+    {
+        if (chained)
+        {
+            locationBase.Add(chained->getCenter());
+        }
+    }
+
+    int8 radius = 105;
+    for (int8 x = -radius; x < radius; x += 15)
+    {
+        for (int8 y = -radius; y < radius; y += 15)
+        {
+            for (int8 z = -radius; z < radius; z += 15)
+            {
+                FVector loc = FVector(x, y, z);
+                if (FVector::Dist(loc, FVector::ZeroVector) >= radius)
+                {
+                    continue;
+                }
+
+                if (locationBase.Find(loc) != INDEX_NONE)
+                {
+                    continue;
+                }
+                chainedLocations.Add(MakeShareable(new ChainedLocation(std::move(loc), 15.0f)));
+            }
+        }
+    }
+
+    ProceduralSpaceShipShell->setEdges(std::forward<TArray<TSharedPtr<ChainedLocation>>>(chainedLocations));
+    ProceduralSpaceShipShell->generateMesh();
+    ProceduralSpaceShipShell->SetMaterial(0, MatShell);
+}
+
 void AHub_Pawn::generateEngine()
 {
-    ProceduralSpaceShipEngine->setCubeSize(5.0f);
+    ProceduralSpaceShipEngine->setCubeSize(15.0f);
+    int8 radius = 120;
     TArray<TSharedPtr<ChainedLocation>> chainedLocations =
     {
-        MakeShareable(new ChainedLocation(FVector(-25.0f, -15.0f, 0.0f), 5.0f)),
-        MakeShareable(new ChainedLocation(FVector(-25.0f, -10.0f, 0.0f), 5.0f)),
-        MakeShareable(new ChainedLocation(FVector(-25.0f, -5.0f, 0.0f), 5.0f)),
-        MakeShareable(new ChainedLocation(FVector(-25.0f, 0.0f, 0.0f), 5.0f)),
-        MakeShareable(new ChainedLocation(FVector(-25.0f, 5.0f, 0.0f), 5.0f)),
-        MakeShareable(new ChainedLocation(FVector(-25.0f, 10.0f, 0.0f), 5.0f)),
-        MakeShareable(new ChainedLocation(FVector(-25.0f, 15.0f, 0.0f), 5.0f)),
+        MakeShareable(new ChainedLocation(FVector(-60.0f, -radius, 0.0f), 5.0f)),
+        MakeShareable(new ChainedLocation(FVector(-45.0f, -radius, 0.0f), 5.0f)),
+        MakeShareable(new ChainedLocation(FVector(-30.0f, -radius, 0.0f), 5.0f)),
+        MakeShareable(new ChainedLocation(FVector(-15.0f, -radius, 0.0f), 5.0f)),
+
+        MakeShareable(new ChainedLocation(FVector(-75.0f, -radius + 15.0f, 0.0f), 5.0f)),
+        MakeShareable(new ChainedLocation(FVector(-90.0f, -radius + 15.0f, 0.0f), 5.0f)),
+        MakeShareable(new ChainedLocation(FVector(-105.0f, -radius + 30.0f, 0.0f), 5.0f)),
+
+        MakeShareable(new ChainedLocation(FVector(-60.0f, radius, 0.0f), 5.0f)),
+        MakeShareable(new ChainedLocation(FVector(-45.0f, radius, 0.0f), 5.0f)),
+        MakeShareable(new ChainedLocation(FVector(-30.0f, radius, 0.0f), 5.0f)),
+        MakeShareable(new ChainedLocation(FVector(-15.0f, radius, 0.0f), 5.0f)),
+
+        MakeShareable(new ChainedLocation(FVector(-75.0f, radius - 15.0f, 0.0f), 5.0f)),
+        MakeShareable(new ChainedLocation(FVector(-90.0f, radius - 15.0f, 0.0f), 5.0f)),
+        MakeShareable(new ChainedLocation(FVector(-105.0f, radius - 30.0f, 0.0f), 5.0f)),
+
+        MakeShareable(new ChainedLocation(FVector(-120.0f, -radius + 30.0f, 0.0f), 5.0f)),
+        MakeShareable(new ChainedLocation(FVector(-120.0f, -radius + 45.0f, 0.0f), 5.0f)),
+        MakeShareable(new ChainedLocation(FVector(-120.0f, -radius + 60.0f, 0.0f), 5.0f)),
+        MakeShareable(new ChainedLocation(FVector(-120.0f, -radius + 60.0f, 15.0f), 5.0f)),
+        MakeShareable(new ChainedLocation(FVector(-120.0f, -radius + 60.0f, -15.0f), 5.0f)),
+
+        MakeShareable(new ChainedLocation(FVector(-120.0f, radius - 30.0f, 0.0f), 5.0f)),
+        MakeShareable(new ChainedLocation(FVector(-120.0f, radius - 45.0f, 0.0f), 5.0f)),
+        MakeShareable(new ChainedLocation(FVector(-120.0f, radius - 60.0f, 0.0f), 5.0f)),
+        MakeShareable(new ChainedLocation(FVector(-120.0f, radius - 60.0f, 15.0f), 5.0f)),
+        MakeShareable(new ChainedLocation(FVector(-120.0f, radius - 60.0f, -15.0f), 5.0f)),
     };
     ProceduralSpaceShipEngine->setEdges(std::forward<TArray<TSharedPtr<ChainedLocation>>>(chainedLocations));
     ProceduralSpaceShipEngine->generateMesh();

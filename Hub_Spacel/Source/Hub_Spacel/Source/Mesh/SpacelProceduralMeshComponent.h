@@ -24,6 +24,7 @@ public:
 	// -- get / set
 	inline void setCubeSize(float _cubeSize) { CubeSize = _cubeSize; }
 	inline void setEdges(TArray<TSharedPtr<ChainedLocation>> && _edges) { m_edgesPosition = std::move(_edges); }
+    inline TArray<TSharedPtr<ChainedLocation>> const& getEdges() const { return m_edgesPosition; }
 	inline void setOwnerLocation(FVector const& _ownerLocation) { m_ownerLocation = _ownerLocation; }
 
 protected:

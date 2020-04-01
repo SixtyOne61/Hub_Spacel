@@ -50,6 +50,7 @@ protected:
     /* function call for generate our mesh */
     void generateMesh();
     void generateBase();
+    void generateShell();
     void generateEngine();
 
     /* snap mesh to target crosshair location */
@@ -63,11 +64,15 @@ protected:
     UPROPERTY(Category = "Mesh", VisibleDefaultsOnly, BlueprintReadOnly)
     class USpacelProceduralMeshComponent* ProceduralSpaceShipBase = nullptr;
     UPROPERTY(Category = "Mesh", VisibleDefaultsOnly, BlueprintReadOnly)
+    class USpacelProceduralMeshComponent* ProceduralSpaceShipShell = nullptr;
+    UPROPERTY(Category = "Mesh", VisibleDefaultsOnly, BlueprintReadOnly)
     class USpacelProceduralMeshComponent* ProceduralSpaceShipEngine = nullptr;
 
     /* Materials for ship */
     UPROPERTY(Category = "Material", EditAnywhere, BlueprintReadWrite)
     class UMaterialInstance* MatBase = nullptr;
+    UPROPERTY(Category = "Material", EditAnywhere, BlueprintReadWrite)
+    class UMaterialInstance* MatShell = nullptr;
     UPROPERTY(Category = "Material", EditAnywhere, BlueprintReadWrite)
     class UMaterialInstance* MatEngine = nullptr;
 
