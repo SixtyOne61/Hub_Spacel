@@ -8,12 +8,14 @@
 #include "Components/StaticMeshComponent.h"
 #include "Components/InputComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Engine/Engine.h"
 #include "Engine/World.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/StaticMeshSocket.h"
 #include "Source/Mesh/SpacelProceduralMeshComponent.h"
 #include "Materials/MaterialInstance.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "DrawDebugHelpers.h"
 #include <functional>
 
 // Sets default values
@@ -37,11 +39,11 @@ AHub_Pawn::AHub_Pawn()
 
 	// Create a spring arm component
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm0"));
-	SpringArm->SetupAttachment(RootComponent);	// Attach SpringArm to RootComponent
+	SpringArm->SetupAttachment(ProceduralSpaceShipShell);	// Attach SpringArm to RootComponent
 	SpringArm->TargetArmLength = 260.0f; // The camera follows at this distance behind the character	
 	SpringArm->SocketOffset = FVector(0.f, 0.f, 90.f);
 	SpringArm->bEnableCameraLag = true;	// Do not allow camera to lag
-	SpringArm->CameraLagSpeed = 15.f;
+	SpringArm->CameraLagSpeed = 600.f;
 
 	// Create camera component 
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera0"));
@@ -55,6 +57,12 @@ void AHub_Pawn::BeginPlay()
 	Super::BeginPlay();
 	
     generateMesh();
+
+    if (GEngine->GameViewport && GEngine->GameViewport->Viewport)
+    {
+        m_viewportSize = FVector2D(GEngine->GameViewport->Viewport->GetSizeXY());
+        CrosshairPosition = m_viewportSize / 2.0f;
+    }
 }
 
 // Called every frame
@@ -75,7 +83,7 @@ void AHub_Pawn::Tick(float DeltaTime)
 	// rotate ship
 	AddActorLocalRotation(deltaRotation);
 
-    snapTarget();
+    snapTarget(DeltaTime);
 
 	// Call any parent class Tick implementation
 	Super::Tick(DeltaTime);
@@ -100,13 +108,11 @@ void AHub_Pawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	
 	// bind function
 	PlayerInputComponent->BindAxis("Speed", this, &AHub_Pawn::input_Speed);
-	//PlayerInputComponent->BindAxis("MoveUp", this, &AHub_Pawn::input_MoveUp);
-	//PlayerInputComponent->BindAxis("MoveRight", this, &AHub_Pawn::input_MoveRight);
-	//PlayerInputComponent->BindAxis("MoveRoll", this, &AHub_Pawn::input_MoveRoll);
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AHub_Pawn::input_Fire);
-	//PlayerInputComponent->BindAction("HandBrake", IE_Pressed, this, &AHub_Pawn::input_HandBrakePress);
 
     /* bind input rework */
+    PlayerInputComponent->BindAxis("MoveUp", this, &AHub_Pawn::input_MoveUp);
+    PlayerInputComponent->BindAxis("MoveRight", this, &AHub_Pawn::input_MoveRight);
     PlayerInputComponent->BindAxis("MoveTargetUp", this, &AHub_Pawn::input_MoveTargetUp);
     PlayerInputComponent->BindAxis("MoveTargetRight", this, &AHub_Pawn::input_MoveTargetRight);
     PlayerInputComponent->BindAction("SnapOn", IE_Pressed, this, &AHub_Pawn::input_SnapOn);
@@ -175,28 +181,26 @@ void AHub_Pawn::input_MoveRight(float _val)
 	m_currentRollSpeed = FMath::FInterpTo(m_currentRollSpeed, targetRollSpeed, GetWorld()->GetDeltaSeconds(), m_interpSpeed);
 }
 
-void AHub_Pawn::input_MoveRoll(float _val)
-{
-	// target roll speed is based on input
-	float targetRollSpeed = (_val * m_rollSpeed);
-
-	// smoothly interpolate to target roll speed
-	m_currentRollSpeed = FMath::FInterpTo(m_currentRollSpeed, targetRollSpeed, GetWorld()->GetDeltaSeconds(), m_interpSpeed);
-}
-
-void AHub_Pawn::input_HandBrakePress()
-{
-
-}
-
 void AHub_Pawn::input_MoveTargetUp(float _val)
 {
-    CrosshairPosition.X = (_val + 1.0f) / 2.0f; // clamp between 0 / 1 instead -1 / 1
+    float sensibility = SensibilityCrosshair;
+    if (m_isSnap)
+    {
+        sensibility /= 3.0f;
+    }
+    float delta = m_viewportSize.X * _val * sensibility;
+    CrosshairPosition.X = FMath::Clamp(CrosshairPosition.X + delta, 0.0f, m_viewportSize.X);
 }
 
 void AHub_Pawn::input_MoveTargetRight(float _val)
 {
-    CrosshairPosition.Y = (_val + 1.0f) / 2.0f; // clamp between 0 / 1 instead -1 / 1
+    float sensibility = SensibilityCrosshair;
+    if (m_isSnap)
+    {
+        sensibility /= 3.0f;
+    }
+    float delta = m_viewportSize.Y * _val * sensibility;
+    CrosshairPosition.Y = FMath::Clamp(CrosshairPosition.Y + delta, 0.0f, m_viewportSize.Y);
 }
 
 void AHub_Pawn::input_SnapOn()
@@ -339,13 +343,34 @@ void AHub_Pawn::generateEngine()
     ProceduralSpaceShipEngine->SetMaterial(0, MatEngine);
 }
 
-void AHub_Pawn::snapTarget()
+void AHub_Pawn::snapTarget(float _deltaTime)
 {
     if (!m_isSnap)
     {
         return;
     }
 
-    FRotator rot = UKismetMathLibrary::MakeRotFromXZ(GetActorRightVector(), FVector::UpVector);
-    SetActorRotation(rot);
+    if (GEngine->GameViewport && GEngine->GameViewport->Viewport)
+    {
+        APlayerController const* playerController = Cast<APlayerController>(GetController());
+        if (!playerController)
+        {
+            return;
+        }
+
+        FVector worldPosition, worldDirection;
+        if (UGameplayStatics::DeprojectScreenToWorld(playerController, CrosshairPosition, worldPosition, worldDirection))
+        {
+            FVector const& actorLocation = GetActorLocation();
+            FVector target = actorLocation + worldDirection * 1000.0f;
+            DrawDebugSphere(GetWorld(), target, 300.0f, 18, FColor::Red);
+            FRotator rot = UKismetMathLibrary::FindLookAtRotation(actorLocation, target);
+
+            FRotator deltaRot = GetActorRotation();
+            deltaRot += (rot - deltaRot) * SensibilitySnap;
+
+            ProceduralSpaceShipShell->SetWorldRotation(rot);
+        }
+    }
+
 }

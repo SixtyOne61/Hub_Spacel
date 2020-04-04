@@ -34,8 +34,6 @@ protected:
 	void input_Speed(float _val);
 	void input_MoveUp(float _val);
 	void input_MoveRight(float _val);
-	void input_MoveRoll(float _val);
-	void input_HandBrakePress();
 
     /* bind function rework */
     void input_MoveTargetUp(float _val);
@@ -54,11 +52,16 @@ protected:
     void generateEngine();
 
     /* snap mesh to target crosshair location */
-    void snapTarget();
+    void snapTarget(float _deltaTime);
 
 protected:
     UPROPERTY(Category = "UI", EditAnywhere, BlueprintReadOnly)
     FVector2D CrosshairPosition = FVector2D::ZeroVector;
+
+    UPROPERTY(Category = "Sensibility", EditAnywhere, BlueprintReadWrite)
+    float SensibilityCrosshair = 0.004f;
+    UPROPERTY(Category = "Sensibility", EditAnywhere, BlueprintReadWrite)
+    float SensibilitySnap = 0.00001f;
 
     /* Procedural mesh for this ship */
     UPROPERTY(Category = "Mesh", VisibleDefaultsOnly, BlueprintReadOnly)
@@ -110,6 +113,9 @@ private:
 
     /* true if we snap for look at of mesh */
     bool m_isSnap = false;
+
+    /* viewport size */
+    FVector2D m_viewportSize = FVector2D::ZeroVector;
 
 public:
 	// -- get
