@@ -63,6 +63,12 @@ void AHub_Pawn::BeginPlay()
         m_viewportSize = FVector2D(GEngine->GameViewport->Viewport->GetSizeXY());
         CrosshairPosition = m_viewportSize / 2.0f;
     }
+
+    // init default rotation for snap
+    if (ProceduralSpaceShipShell)
+    {
+        m_defaultRotation = ProceduralSpaceShipShell->GetRelativeTransform().Rotator();
+    }
 }
 
 // Called every frame
@@ -211,6 +217,12 @@ void AHub_Pawn::input_SnapOn()
 void AHub_Pawn::input_SnapOff()
 {
     m_isSnap = false;
+    m_progressResetSnap = TimeToResetSnap;
+    if (ProceduralSpaceShipShell)
+    {
+        m_snapRotationOnRelease = ProceduralSpaceShipShell->GetComponentRotation();
+        m_snapRelativeRotationOnRelease = ProceduralSpaceShipShell->GetRelativeTransform().Rotator();
+    }
 }
 
 void AHub_Pawn::server_Fire_Implementation()
@@ -347,10 +359,18 @@ void AHub_Pawn::snapTarget(float _deltaTime)
 {
     if (!m_isSnap)
     {
-        return;
-    }
+        // move actor to shell orientation
+        if (ProceduralSpaceShipShell && m_progressResetSnap != 0.0f)
+        {
+            m_progressResetSnap = FMath::Clamp(m_progressResetSnap - _deltaTime, 0.0f, TimeToResetSnap);
 
-    if (GEngine->GameViewport && GEngine->GameViewport->Viewport)
+            FRotator r1 = FMath::Lerp(m_defaultRotation, m_snapRelativeRotationOnRelease, m_progressResetSnap / TimeToResetSnap);
+            FRotator r2 = ProceduralSpaceShipShell->GetRelativeTransform().Rotator() - r1;
+            ProceduralSpaceShipShell->SetRelativeRotation(r1);
+            AddActorLocalRotation(r2);
+        }
+    }
+    else if (GEngine->GameViewport && GEngine->GameViewport->Viewport && ProceduralSpaceShipShell)
     {
         APlayerController const* playerController = Cast<APlayerController>(GetController());
         if (!playerController)
@@ -372,5 +392,4 @@ void AHub_Pawn::snapTarget(float _deltaTime)
             ProceduralSpaceShipShell->SetWorldRotation(rot);
         }
     }
-
 }

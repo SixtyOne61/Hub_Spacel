@@ -63,6 +63,9 @@ protected:
     UPROPERTY(Category = "Sensibility", EditAnywhere, BlueprintReadWrite)
     float SensibilitySnap = 0.00001f;
 
+    UPROPERTY(Category = "Snap", EditAnywhere, BlueprintReadWrite)
+    float TimeToResetSnap = 0.6f;
+
     /* Procedural mesh for this ship */
     UPROPERTY(Category = "Mesh", VisibleDefaultsOnly, BlueprintReadOnly)
     class USpacelProceduralMeshComponent* ProceduralSpaceShipBase = nullptr;
@@ -113,6 +116,13 @@ private:
 
     /* true if we snap for look at of mesh */
     bool m_isSnap = false;
+    /* default rotator value for snap */
+    FRotator m_defaultRotation = FRotator::ZeroRotator;
+    /* progress reset snap when we release snap for back to default value and set actor rotation */
+    float m_progressResetSnap = 0.0f;
+    /* save value when we release snap */
+    FRotator m_snapRelativeRotationOnRelease = FRotator::ZeroRotator;
+    FRotator m_snapRotationOnRelease = FRotator::ZeroRotator;
 
     /* viewport size */
     FVector2D m_viewportSize = FVector2D::ZeroVector;
@@ -123,5 +133,4 @@ public:
 	FORCEINLINE class USpringArmComponent* GetSpringArm() const { return SpringArm; }
 	/** Returns Camera subobject **/
 	FORCEINLINE class UCameraComponent* GetCamera() const { return Camera; }
-
 };
