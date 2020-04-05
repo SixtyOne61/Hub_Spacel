@@ -66,6 +66,15 @@ protected:
     UPROPERTY(Category = "Snap", EditAnywhere, BlueprintReadWrite)
     float TimeToResetSnap = 0.6f;
 
+    UPROPERTY(Category = "Controller", EditAnywhere, BlueprintReadWrite)
+    float MaxForwardSpeed = 6000.0f;
+    UPROPERTY(Category = "Controller", EditAnywhere, BlueprintReadWrite)
+    float TurnSpeed = 50.0f;
+    UPROPERTY(Category = "Controller", EditAnywhere, BlueprintReadWrite)
+    float InterpSpeed = 2.0f;
+    UPROPERTY(Category = "Controller", VisibleAnywhere, BlueprintReadOnly)
+    float PercentSpeed = 50.0f;
+
     /* Procedural mesh for this ship */
     UPROPERTY(Category = "Mesh", VisibleDefaultsOnly, BlueprintReadOnly)
     class USpacelProceduralMeshComponent* ProceduralSpaceShipBase = nullptr;
@@ -94,24 +103,14 @@ protected:
 	TSubclassOf<class ASimpleBullet> SimpleBulletClass;
 
 private:
-	// -- speed
-	float m_acceleration = 250.0f;
+	/* speed */
 	float m_currentForwardSpeed = 0.0f;
-	const float m_minSpeed = 200.0f;
-	const float m_maxSpeed = 4000.0f;
-
-	// -- rotation common param
-	const float m_interpSpeed = 2.0f;
-	const float m_turnSpeed = 50.0f;
-
-	// -- move up / pitch
+    
+	/* move up / pitch */
 	float m_currentPitchSpeed = 0.0f;
-
-	// -- move right / yaw
+	/* move right / yaw */
 	float m_currentYawSpeed = 0.0f;
-
-	// -- move right / roll
-	const float m_rollSpeed = 25.0f;
+	/* move right / roll */
 	float m_currentRollSpeed = 0.0f;
 
     /* true if we snap for look at of mesh */

@@ -113,7 +113,6 @@ void AHub_Pawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	check(PlayerInputComponent);
 	
 	// bind function
-	PlayerInputComponent->BindAxis("Speed", this, &AHub_Pawn::input_Speed);
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AHub_Pawn::input_Fire);
 
     /* bind input rework */
@@ -121,6 +120,8 @@ void AHub_Pawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
     PlayerInputComponent->BindAxis("MoveRight", this, &AHub_Pawn::input_MoveRight);
     PlayerInputComponent->BindAxis("MoveTargetUp", this, &AHub_Pawn::input_MoveTargetUp);
     PlayerInputComponent->BindAxis("MoveTargetRight", this, &AHub_Pawn::input_MoveTargetRight);
+    PlayerInputComponent->BindAxis("Speed", this, &AHub_Pawn::input_Speed);
+
     PlayerInputComponent->BindAction("SnapOn", IE_Pressed, this, &AHub_Pawn::input_SnapOn);
     PlayerInputComponent->BindAction("SnapOff", IE_Released, this, &AHub_Pawn::input_SnapOff);
 }
@@ -146,35 +147,30 @@ void AHub_Pawn::input_Fire()
 
 void AHub_Pawn::input_Speed(float _val)
 {
-	// Is there any input?
-	bool bHasInput = !FMath::IsNearlyEqual(_val, 0.f);
-	// If input is not held down, reduce speed
-	float currentAcc = bHasInput ? (_val * m_acceleration) : (-0.5f * m_acceleration);
-	// Calculate new speed
-	float newForwardSpeed = m_currentForwardSpeed + (GetWorld()->GetDeltaSeconds() * currentAcc);
-	// Clamp between MinSpeed and MaxSpeed
-	m_currentForwardSpeed = FMath::Clamp(newForwardSpeed, m_minSpeed, m_maxSpeed);	
+    // TO DO : not cool + _val
+    PercentSpeed = FMath::Clamp(PercentSpeed + _val, 0.0f, 100.0f);
+    m_currentForwardSpeed = MaxForwardSpeed * (PercentSpeed / 100.0f);
 }
 
 void AHub_Pawn::input_MoveUp(float _val)
 {
 	// target pitch speed is based in input
-	float targetPitchSpeed = (_val * m_turnSpeed * -1.0f);
+	float targetPitchSpeed = (_val * TurnSpeed * -1.0f);
 
 	// when steering, we decrease pitch slightly
 	targetPitchSpeed += (FMath::Abs(m_currentYawSpeed) * -0.2f);
 
 	// Smoothly interpolate to target pitch speed
-	m_currentPitchSpeed = FMath::FInterpTo(m_currentPitchSpeed, targetPitchSpeed, GetWorld()->GetDeltaSeconds(), m_interpSpeed);
+	m_currentPitchSpeed = FMath::FInterpTo(m_currentPitchSpeed, targetPitchSpeed, GetWorld()->GetDeltaSeconds(), InterpSpeed);
 }
 
 void AHub_Pawn::input_MoveRight(float _val)
 {
 	// target yaw speed is based on input
-	float targetYawSpeed = (_val * m_turnSpeed);
+	float targetYawSpeed = (_val * TurnSpeed);
 
 	// smoothly interpolate to target yaw speed
-	m_currentYawSpeed = FMath::FInterpTo(m_currentYawSpeed, targetYawSpeed, GetWorld()->GetDeltaSeconds(), m_interpSpeed);
+	m_currentYawSpeed = FMath::FInterpTo(m_currentYawSpeed, targetYawSpeed, GetWorld()->GetDeltaSeconds(), InterpSpeed);
 
 	// Is there any left / right input ?
 	const bool isTurning = FMath::Abs(_val) > 0.2f;
@@ -184,7 +180,7 @@ void AHub_Pawn::input_MoveRight(float _val)
 	float targetRollSpeed = isTurning ? (m_currentYawSpeed * 0.8f) : (GetActorRotation().Roll * -2.0f);
 
 	// smoothly interpolate roll speed
-	m_currentRollSpeed = FMath::FInterpTo(m_currentRollSpeed, targetRollSpeed, GetWorld()->GetDeltaSeconds(), m_interpSpeed);
+	m_currentRollSpeed = FMath::FInterpTo(m_currentRollSpeed, targetRollSpeed, GetWorld()->GetDeltaSeconds(), InterpSpeed);
 }
 
 void AHub_Pawn::input_MoveTargetUp(float _val)
