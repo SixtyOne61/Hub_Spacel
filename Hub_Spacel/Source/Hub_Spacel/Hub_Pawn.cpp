@@ -57,12 +57,7 @@ void AHub_Pawn::BeginPlay()
 	Super::BeginPlay();
 	
     generateMesh();
-
-    if (GEngine->GameViewport && GEngine->GameViewport->Viewport)
-    {
-        m_viewportSize = FVector2D(GEngine->GameViewport->Viewport->GetSizeXY());
-        CrosshairPosition = m_viewportSize / 2.0f;
-    }
+    resetCrosshair();
 
     // init default rotation for snap
     if (ProceduralSpaceShipShell)
@@ -185,22 +180,32 @@ void AHub_Pawn::input_MoveRight(float _val)
 
 void AHub_Pawn::input_MoveTargetUp(float _val)
 {
-    float sensibility = SensibilityCrosshair;
-    if (m_isSnap)
+    if (!m_isSnap)
     {
-        sensibility /= 3.0f;
+        return;
     }
+
+    float sensibility = SensibilityCrosshair;
+    //if (m_isSnap)
+    //{
+    //    sensibility /= 3.0f;
+    //}
     float delta = m_viewportSize.X * _val * sensibility;
     CrosshairPosition.X = FMath::Clamp(CrosshairPosition.X + delta, 0.0f, m_viewportSize.X);
 }
 
 void AHub_Pawn::input_MoveTargetRight(float _val)
 {
-    float sensibility = SensibilityCrosshair;
-    if (m_isSnap)
+    if (!m_isSnap)
     {
-        sensibility /= 3.0f;
+        return;
     }
+
+    float sensibility = SensibilityCrosshair;
+    //if (m_isSnap)
+    //{
+    //    sensibility /= 3.0f;
+    //}
     float delta = m_viewportSize.Y * _val * sensibility;
     CrosshairPosition.Y = FMath::Clamp(CrosshairPosition.Y + delta, 0.0f, m_viewportSize.Y);
 }
@@ -219,6 +224,8 @@ void AHub_Pawn::input_SnapOff()
         m_snapRotationOnRelease = ProceduralSpaceShipShell->GetComponentRotation();
         m_snapRelativeRotationOnRelease = ProceduralSpaceShipShell->GetRelativeTransform().Rotator();
     }
+
+    resetCrosshair();
 }
 
 void AHub_Pawn::server_Fire_Implementation()
@@ -387,5 +394,14 @@ void AHub_Pawn::snapTarget(float _deltaTime)
 
             ProceduralSpaceShipShell->SetWorldRotation(rot);
         }
+    }
+}
+
+void AHub_Pawn::resetCrosshair()
+{
+    if (GEngine->GameViewport && GEngine->GameViewport->Viewport)
+    {
+        m_viewportSize = FVector2D(GEngine->GameViewport->Viewport->GetSizeXY());
+        CrosshairPosition = m_viewportSize / 2.0f;
     }
 }

@@ -54,6 +54,9 @@ protected:
     /* snap mesh to target crosshair location */
     void snapTarget(float _deltaTime);
 
+    /* reset crosshair position to center screen */
+    void resetCrosshair();
+
 protected:
     UPROPERTY(Category = "UI", EditAnywhere, BlueprintReadOnly)
     FVector2D CrosshairPosition = FVector2D::ZeroVector;
