@@ -34,7 +34,7 @@ void ChainedLocation::addNeighbor(EFace _face, TSharedPtr<ChainedLocation> _neig
 	}
 
 	m_neighbor.Add(TPair<EFace, TSharedPtr<ChainedLocation>>(_face, _neighbor));
-	m_mask &= _face;		 
+	m_mask |= _face;		 
 }
 
 void ChainedLocation::removeMeToOtherFace()
