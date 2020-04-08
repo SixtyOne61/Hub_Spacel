@@ -133,6 +133,7 @@ void AEnvironmentManager::addProceduralMesh()
 		proceduralMesh->bUseAsyncCooking = true;
 		proceduralMesh->setCubeSize(m_cubeSize);
 		proceduralMesh->setEdges(std::forward<TArray<TSharedPtr<ChainedLocation>>>(m_currentObject));
+        proceduralMesh->SetCastShadow(false);
 		m_currentObject.Empty();
 
 		m_proceduralMeshComponents.Add(proceduralMesh);
@@ -141,7 +142,7 @@ void AEnvironmentManager::addProceduralMesh()
 
 bool AEnvironmentManager::isValidNoise(int _x, int _y, int _z) const
 {
-	float noise = SpacelNoise::getInstance()->getOctaveNoise((_x + m_bornX.X) * 0.00020f, (_y + m_bornY.X) * 0.00020f, (_z + m_bornZ.X) * 0.00020f, 4);
+	float noise = SpacelNoise::getInstance()->getOctaveNoise((_x + m_bornX.X) * 0.00010f, (_y + m_bornY.X) * 0.00010f, (_z + m_bornZ.X) * 0.00010f, 2);
 	return noise >= .75f;
 }
 
