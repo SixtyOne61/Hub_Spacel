@@ -142,7 +142,7 @@ void AEnvironmentManager::addProceduralMesh()
 
 bool AEnvironmentManager::isValidNoise(int _x, int _y, int _z) const
 {
-	float noise = SpacelNoise::getInstance()->getOctaveNoise((_x + m_bornX.X) * 0.00010f, (_y + m_bornY.X) * 0.00010f, (_z + m_bornZ.X) * 0.00010f, 2);
+	float noise = SpacelNoise::getInstance()->getOctaveNoise((_x + m_bornX.X) * 0.00007f, (_y + m_bornY.X) * 0.00007f, (_z + m_bornZ.X) * 0.00007f, 2);
 	return noise >= .75f;
 }
 
