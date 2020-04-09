@@ -116,8 +116,8 @@ void AHub_Pawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
     PlayerInputComponent->BindAxis("MoveTargetRight", this, &AHub_Pawn::input_MoveTargetRight);
     PlayerInputComponent->BindAxis("Speed", this, &AHub_Pawn::input_Speed);
 
-    PlayerInputComponent->BindAction("SnapOn", IE_Pressed, this, &AHub_Pawn::input_SnapOn);
-    PlayerInputComponent->BindAction("SnapOff", IE_Released, this, &AHub_Pawn::input_SnapOff);
+    PlayerInputComponent->BindAction("Snap", IE_Pressed, this, &AHub_Pawn::input_SnapOn);
+    PlayerInputComponent->BindAction("Snap", IE_Released, this, &AHub_Pawn::input_SnapOff);
     PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AHub_Pawn::input_FireOn);
     PlayerInputComponent->BindAction("Fire", IE_Released, this, &AHub_Pawn::input_FireOff);
 }
