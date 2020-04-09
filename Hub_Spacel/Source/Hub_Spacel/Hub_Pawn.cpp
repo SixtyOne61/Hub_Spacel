@@ -7,6 +7,7 @@
 #include "Camera/CameraComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/InputComponent.h"
+#include "GameFramework/ProjectileMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Engine/Engine.h"
 #include "Engine/World.h"
@@ -85,6 +86,7 @@ void AHub_Pawn::Tick(float DeltaTime)
 	AddActorLocalRotation(deltaRotation);
 
     snapTarget(DeltaTime);
+    fireLaser(DeltaTime);
 
 	// Call any parent class Tick implementation
 	Super::Tick(DeltaTime);
@@ -107,9 +109,6 @@ void AHub_Pawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	// Check if PlayerInputComponent is valid (not NULL)
 	check(PlayerInputComponent);
 	
-	// bind function
-	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AHub_Pawn::input_Fire);
-
     /* bind input rework */
     PlayerInputComponent->BindAxis("MoveUp", this, &AHub_Pawn::input_MoveUp);
     PlayerInputComponent->BindAxis("MoveRight", this, &AHub_Pawn::input_MoveRight);
@@ -119,25 +118,18 @@ void AHub_Pawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
     PlayerInputComponent->BindAction("SnapOn", IE_Pressed, this, &AHub_Pawn::input_SnapOn);
     PlayerInputComponent->BindAction("SnapOff", IE_Released, this, &AHub_Pawn::input_SnapOff);
+    PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AHub_Pawn::input_FireOn);
+    PlayerInputComponent->BindAction("Fire", IE_Released, this, &AHub_Pawn::input_FireOff);
 }
 
-void AHub_Pawn::input_Fire()
+void AHub_Pawn::input_FireOn()
 {
-	if (Role < ROLE_Authority)
-	{
-		server_Fire();
-		return;
-	}
+    m_isFire = true;
+}
 
-    FTransform transform = ProceduralSpaceShipBase->GetSocketTransform("SimpleBulletSpawn");
-    ASimpleBullet* pBullet = Cast<ASimpleBullet>(UGameplayStatics::BeginDeferredActorSpawnFromClass(GetWorld(), SimpleBulletClass, transform));
-    if (pBullet)
-    {
-        // TO DO init bullet
-        pBullet->SetReplicates(true);
-        UGameplayStatics::FinishSpawningActor(pBullet, transform);
-        pBullet->netMulticast_launchBullet(GetActorForwardVector());
-    }
+void AHub_Pawn::input_FireOff()
+{
+    m_isFire = false;
 }
 
 void AHub_Pawn::input_Speed(float _val)
@@ -186,10 +178,6 @@ void AHub_Pawn::input_MoveTargetUp(float _val)
     }
 
     float sensibility = SensibilityCrosshair;
-    //if (m_isSnap)
-    //{
-    //    sensibility /= 3.0f;
-    //}
     float delta = m_viewportSize.X * _val * sensibility;
     CrosshairPosition.X = FMath::Clamp(CrosshairPosition.X + delta, 0.0f, m_viewportSize.X);
 }
@@ -202,10 +190,6 @@ void AHub_Pawn::input_MoveTargetRight(float _val)
     }
 
     float sensibility = SensibilityCrosshair;
-    //if (m_isSnap)
-    //{
-    //    sensibility /= 3.0f;
-    //}
     float delta = m_viewportSize.Y * _val * sensibility;
     CrosshairPosition.Y = FMath::Clamp(CrosshairPosition.Y + delta, 0.0f, m_viewportSize.Y);
 }
@@ -228,14 +212,29 @@ void AHub_Pawn::input_SnapOff()
     resetCrosshair();
 }
 
-void AHub_Pawn::server_Fire_Implementation()
+void AHub_Pawn::fireLaser(float _deltaTime)
 {
-	input_Fire();
-}
-
-bool AHub_Pawn::server_Fire_Validate()
-{
-	return true;
+    if (m_isFire && m_laserCountDown <= 0.0f)
+    {
+        FTransform transform = ProceduralSpaceShipBase->GetSocketTransform("SimpleBulletSpawn");
+        AActor* pLaser = Cast<AActor>(UGameplayStatics::BeginDeferredActorSpawnFromClass(GetWorld(), LaserClass, transform));
+        if (pLaser)
+        {
+            // TO DO init bullet
+            pLaser->SetReplicates(true);
+            UGameplayStatics::FinishSpawningActor(pLaser, transform);
+            UProjectileMovementComponent* comp = Cast<UProjectileMovementComponent>(pLaser->GetComponentByClass(UProjectileMovementComponent::StaticClass()));
+            if (comp && ProceduralSpaceShipShell)
+            {
+                comp->SetVelocityInLocalSpace(FVector(1, 0, 0) * comp->InitialSpeed);
+            }
+        }
+        m_laserCountDown = TimeBetweenLaserShot;
+    }
+    else if (m_laserCountDown != 0.0f)
+    {
+        m_laserCountDown -= _deltaTime;
+    }
 }
 
 void AHub_Pawn::generateMesh()

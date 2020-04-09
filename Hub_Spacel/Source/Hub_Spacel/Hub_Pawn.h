@@ -30,7 +30,8 @@ public:
 
 protected:
 	/* bind function */
-	void input_Fire();
+	void input_FireOn();
+    void input_FireOff();
 	void input_Speed(float _val);
 	void input_MoveUp(float _val);
 	void input_MoveRight(float _val);
@@ -41,9 +42,8 @@ protected:
     void input_SnapOn();
     void input_SnapOff();
 
-	/* server function */
-	UFUNCTION(Server, Reliable, WithValidation)
-	void server_Fire();
+	/* TO DO network */
+    void fireLaser(float _deltaTime);
 
     /* function call for generate our mesh */
     void generateMesh();
@@ -103,7 +103,9 @@ protected:
 	class UCameraComponent* Camera;
 
 	UPROPERTY(Category = "Bullet", EditAnywhere, BlueprintReadOnly)
-	TSubclassOf<class ASimpleBullet> SimpleBulletClass;
+	TSubclassOf<class AActor> LaserClass;
+    UPROPERTY(Category = "Bullet", EditAnywhere, BlueprintReadOnly)
+    float TimeBetweenLaserShot = 0.3f;
 
 private:
 	/* speed */
@@ -128,6 +130,12 @@ private:
 
     /* viewport size */
     FVector2D m_viewportSize = FVector2D::ZeroVector;
+
+    /* true if we hold fire input */
+    bool m_isFire = false;
+
+    /* count down between fire */
+    float m_laserCountDown = 0.0f;
 
 public:
 	// -- get
