@@ -23,16 +23,18 @@ protected:
 	void spawnChunckEnvironment();
 
 protected:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Settings")
-	int m_nbChunck;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
+    class UBoxComponent* Delimiter;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Settings")
-	int m_chunckSize;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
+	int NbChunck;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Settings")
-	int m_cubeSize;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
+	int ChunckSize;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
+	int CubeSize;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Procedural")
-	TSubclassOf<class AEnvironmentManager> BP_environment;
-
+	TSubclassOf<class AEnvironmentManager> EnvironmentClass;
 };
