@@ -6,14 +6,22 @@
 #include <algorithm>
 
 USpacelProceduralMeshComponent::USpacelProceduralMeshComponent()
-	: CubeSize(0.0f)
+	: UProceduralMeshComponent(FObjectInitializer())
+    , CubeSize(0.0f)
 	, m_ownerLocation(FVector::ZeroVector)
 {
-	OnComponentHit.AddDynamic(this, &USpacelProceduralMeshComponent::onHit);
 }
 
-void USpacelProceduralMeshComponent::generateMesh()
+void USpacelProceduralMeshComponent::BeginPlay()
 {
+    Super::BeginPlay();
+    OnComponentHit.AddDynamic(this, &USpacelProceduralMeshComponent::onHit);
+}
+
+void USpacelProceduralMeshComponent::generateMesh(FName _profileName)
+{
+    m_profileName = _profileName;
+
     // clear all
     ClearAllMeshSections();
     ClearCollisionConvexMeshes();
@@ -184,8 +192,9 @@ void USpacelProceduralMeshComponent::generateMesh()
 
 	// setup collision
 	SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
-	SetCollisionObjectType(ECollisionChannel::ECC_PhysicsBody);
+	//SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
+	//SetCollisionObjectType(ECollisionChannel::ECC_PhysicsBody);
+    SetCollisionProfileName(_profileName);
 	bUseComplexAsSimpleCollision = true;
 	SetNotifyRigidBodyCollision(true);
 
@@ -197,6 +206,7 @@ void USpacelProceduralMeshComponent::generateMesh()
 
 bool USpacelProceduralMeshComponent::hit(FVector const& _forward, FVector const& _impactPoint)
 {
+    DrawDebugSphere(GetWorld(), _impactPoint, 300.0f, 12, FColor::Red, false, 30.0f, 128, 10.0f);
 	FVector endPoint = _impactPoint + _forward * CubeSize;
 
 	if(m_edgesPosition.RemoveAll([&](TSharedPtr<ChainedLocation> _point)
@@ -212,7 +222,7 @@ bool USpacelProceduralMeshComponent::hit(FVector const& _forward, FVector const&
 		return FMath::LineExtentBoxIntersection(_point->getBox(), _impactPoint, endPoint, FVector::ZeroVector, hitLocation, hitNormal, hitTime);
 	}) != 0)
 	{
-		generateMesh();
+		generateMesh(m_profileName);
 		return true;
 	}
 
@@ -224,7 +234,6 @@ void USpacelProceduralMeshComponent::addTriangles(TArray<int32> & _out, int _deb
 	int triangles[] = {
 		_deb, _deb + 1, _deb + 2,
 		_deb, _deb + 2, _deb + 3
-        //_deb + 2, _deb + 3, _deb
 	};
 
 	for(int numEdge : triangles)
@@ -235,19 +244,14 @@ void USpacelProceduralMeshComponent::addTriangles(TArray<int32> & _out, int _deb
 
 void USpacelProceduralMeshComponent::onHit(class UPrimitiveComponent* _comp, class AActor* _otherActor, class UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit)
 {
+    if (!_otherActor)
+    {
+        return;
+    }
+
 	// check if it's a bullet type
-	ASimpleBullet* pBullet = Cast<ASimpleBullet>(_otherActor);
-	if (pBullet)
-	{
-		// find where and destroy the right edge
-		if (hit(pBullet->getLaunchForward(), _hit.ImpactPoint))
-		{
-			
-		}
-
-        // all case, it's better to delete bullet
-
-        // destroy bullet
-        pBullet->Destroy();
-	}
+    if (hit(_hit.ImpactNormal, _hit.ImpactPoint))
+    {
+        _otherActor->Destroy();
+    }
 }

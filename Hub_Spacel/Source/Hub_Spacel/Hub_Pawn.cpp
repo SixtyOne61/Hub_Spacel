@@ -270,7 +270,7 @@ void AHub_Pawn::generateBase()
         MakeShareable(new ChainedLocation(FVector(0,0,-15), 15.0f)),
     };
     ProceduralSpaceShipBase->setEdges(std::forward<TArray<TSharedPtr<ChainedLocation>>>(chainedLocations));
-    ProceduralSpaceShipBase->generateMesh();
+    ProceduralSpaceShipBase->generateMesh(std::move(FName("Player")));
     ProceduralSpaceShipBase->SetMaterial(0, MatBase);
 }
 
@@ -312,7 +312,7 @@ void AHub_Pawn::generateShell()
     }
 
     ProceduralSpaceShipShell->setEdges(std::forward<TArray<TSharedPtr<ChainedLocation>>>(chainedLocations));
-    ProceduralSpaceShipShell->generateMesh();
+    ProceduralSpaceShipShell->generateMesh(std::move(FName("Player")));
     ProceduralSpaceShipShell->SetMaterial(0, MatShell);
 }
 
@@ -353,7 +353,7 @@ void AHub_Pawn::generateEngine()
         MakeShareable(new ChainedLocation(FVector(-120.0f, radius - 60.0f, -15.0f), 5.0f)),
     };
     ProceduralSpaceShipEngine->setEdges(std::forward<TArray<TSharedPtr<ChainedLocation>>>(chainedLocations));
-    ProceduralSpaceShipEngine->generateMesh();
+    ProceduralSpaceShipEngine->generateMesh(std::move(FName("Player")));
     ProceduralSpaceShipEngine->SetMaterial(0, MatEngine);
 }
 

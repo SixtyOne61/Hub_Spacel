@@ -18,8 +18,10 @@ class HUB_SPACEL_API USpacelProceduralMeshComponent : public UProceduralMeshComp
 public:
 	USpacelProceduralMeshComponent();
 
+    virtual void BeginPlay() override;
+
 	UFUNCTION(BlueprintCallable, Category = "Generation")
-	void generateMesh();
+	void generateMesh(FName _profileName);
 	
 	// -- get / set
 	inline void setCubeSize(float _cubeSize) { CubeSize = _cubeSize; }
@@ -50,4 +52,7 @@ protected:
 
 	// list of overlap object
 	TArray<AActor*> m_overlapActors;
+
+    // profile name for collision
+    FName m_profileName;
 };

@@ -43,7 +43,7 @@ void AEnvironmentManager::BeginPlay()
 		}
 
 		proceduralMesh->setOwnerLocation(GetActorLocation());
-        proceduralMesh->generateMesh();
+        proceduralMesh->generateMesh(std::move(FName("BlockAll")));
         if (MatAsteroid)
         {
             proceduralMesh->SetMaterial(0, MatAsteroid);
