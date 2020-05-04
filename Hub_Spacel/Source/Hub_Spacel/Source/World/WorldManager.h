@@ -19,24 +19,21 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	// -- spawn chunck environment
+	/* spawn chunck environment */
 	void spawnChunckEnvironment();
 
 protected:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
-    class UBoxComponent* Delimiter;
+    class UBoxComponent* Delimiter = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
-	int NbChunck;
+	int NbChunck = 0;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
-    int NbCubeByChunck;
+    int NbCubeByChunck = 0;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
-	int ChunckSize;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
-	int CubeSize;
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settings")
+    FVector CubeSize = FVector::ZeroVector;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Procedural")
 	TSubclassOf<class AEnvironmentManager> EnvironmentClass;
