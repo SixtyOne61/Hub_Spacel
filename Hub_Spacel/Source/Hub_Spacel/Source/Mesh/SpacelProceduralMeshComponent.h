@@ -54,5 +54,5 @@ protected:
 	TArray<AActor*> m_overlapActors;
 
     // profile name for collision
-    FName m_profileName;
+    FName m_collisionProfileName;
 };

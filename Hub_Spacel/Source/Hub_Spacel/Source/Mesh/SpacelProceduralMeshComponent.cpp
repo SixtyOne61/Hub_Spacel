@@ -18,25 +18,34 @@ void USpacelProceduralMeshComponent::BeginPlay()
     OnComponentHit.AddDynamic(this, &USpacelProceduralMeshComponent::onHit);
 }
 
-void USpacelProceduralMeshComponent::generateMesh(FName _profileName)
+void USpacelProceduralMeshComponent::generateMesh(FName _collisionProfileName)
 {
-    m_profileName = _profileName;
+    this->m_collisionProfileName = _collisionProfileName;
 
     // clear all
     ClearAllMeshSections();
     ClearCollisionConvexMeshes();
 
+    int nbEdge = this->m_edgesPosition.Num();
+
+    TArray<int32> triangles;
+    triangles.Reserve(nbEdge * 6);
+
+    int maxSize = nbEdge * 24;
 	TArray<FVector> vertices;
-	TArray<int32> triangles;
+    vertices.Reserve(maxSize);
     TArray<FVector> normals;
+    normals.Reserve(maxSize);
     TArray<FLinearColor> vertexColors;
+    vertexColors.Reserve(maxSize);
     TArray<FVector2D> UV0;
+    UV0.Reserve(maxSize);
 
-	FVector half = CubeSize / 2.0f;
+	FVector half = this->CubeSize / 2.0f;
 
-	for (TSharedPtr<ChainedLocation> point : m_edgesPosition)
+	for (TSharedPtr<ChainedLocation> point : this->m_edgesPosition)
 	{
-		point->createBox(m_ownerLocation);
+		point->createBox(this->m_ownerLocation);
 
 		EFace mask = point->getMask();
 		FVector center = point->getCenter();
@@ -194,7 +203,7 @@ void USpacelProceduralMeshComponent::generateMesh(FName _profileName)
 	SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	//SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
 	//SetCollisionObjectType(ECollisionChannel::ECC_PhysicsBody);
-    SetCollisionProfileName(_profileName);
+    SetCollisionProfileName(m_collisionProfileName);
 	bUseComplexAsSimpleCollision = true;
 	SetNotifyRigidBodyCollision(true);
 
@@ -222,7 +231,8 @@ bool USpacelProceduralMeshComponent::hit(FVector const& _forward, FVector const&
 		return FMath::LineExtentBoxIntersection(_point->getBox(), _impactPoint, endPoint, FVector::ZeroVector, hitLocation, hitNormal, hitTime);
 	}) != 0)
 	{
-		generateMesh(m_profileName);
+        // TO DO; only update needed part
+		generateMesh(m_collisionProfileName);
 		return true;
 	}
 
