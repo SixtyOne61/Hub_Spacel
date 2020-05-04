@@ -3,22 +3,22 @@
 
 #include "ChainedLocation.h"
 
-ChainedLocation::ChainedLocation(FVector && _center, float _size)
-	: m_center(std::move(_center))
+ChainedLocation::ChainedLocation(FVector const& _center, FVector const& _size)
+	: m_center(_center)
 	, m_size(_size)
 	, m_mask(EFace::None)
 {
-	float half = m_size / 2.0f;
+	FVector half = m_size / 2.0f;
 
 	TArray<FVector> const points = {
-		{_center.X - half, _center.Y - half, _center.Z - half},
-		{_center.X + half, _center.Y - half, _center.Z - half},
-		{_center.X + half, _center.Y + half, _center.Z - half},
-		{_center.X - half, _center.Y + half, _center.Z - half},
-		{_center.X - half, _center.Y - half, _center.Z + half},
-		{_center.X + half, _center.Y - half, _center.Z + half},
-		{_center.X + half, _center.Y + half, _center.Z + half},
-		{_center.X - half, _center.Y + half, _center.Z + half} };
+		{_center.X - half.X, _center.Y - half.Y, _center.Z - half.Z},
+		{_center.X + half.X, _center.Y - half.Y, _center.Z - half.Z},
+		{_center.X + half.X, _center.Y + half.Y, _center.Z - half.Z},
+		{_center.X - half.X, _center.Y + half.Y, _center.Z - half.Z},
+		{_center.X - half.X, _center.Y - half.Y, _center.Z + half.Z},
+		{_center.X + half.X, _center.Y - half.Y, _center.Z + half.Z},
+		{_center.X + half.X, _center.Y + half.Y, _center.Z + half.Z},
+		{_center.X - half.X, _center.Y + half.Y, _center.Z + half.Z} };
 	m_box = FBox(points);
 }
 
@@ -61,17 +61,17 @@ void ChainedLocation::removeFace(FVector const& _location)
 
 void ChainedLocation::createBox(FVector const& _location)
 {
-	float half = m_size / 2.0f;
+	FVector half = m_size / 2.0f;
 	FVector worldCenter = m_center + _location;
 
 	TArray<FVector> const points = {
-		{worldCenter.X - half, worldCenter.Y - half, worldCenter.Z - half},
-		{worldCenter.X + half, worldCenter.Y - half, worldCenter.Z - half},
-		{worldCenter.X + half, worldCenter.Y + half, worldCenter.Z - half},
-		{worldCenter.X - half, worldCenter.Y + half, worldCenter.Z - half},
-		{worldCenter.X - half, worldCenter.Y - half, worldCenter.Z + half},
-		{worldCenter.X + half, worldCenter.Y - half, worldCenter.Z + half},
-		{worldCenter.X + half, worldCenter.Y + half, worldCenter.Z + half},
-		{worldCenter.X - half, worldCenter.Y + half, worldCenter.Z + half} };
+        {worldCenter.X - half.X, worldCenter.Y - half.Y, worldCenter.Z - half.Z},
+        {worldCenter.X + half.X, worldCenter.Y - half.Y, worldCenter.Z - half.Z},
+        {worldCenter.X + half.X, worldCenter.Y + half.Y, worldCenter.Z - half.Z},
+        {worldCenter.X - half.X, worldCenter.Y + half.Y, worldCenter.Z - half.Z},
+        {worldCenter.X - half.X, worldCenter.Y - half.Y, worldCenter.Z + half.Z},
+        {worldCenter.X + half.X, worldCenter.Y - half.Y, worldCenter.Z + half.Z},
+        {worldCenter.X + half.X, worldCenter.Y + half.Y, worldCenter.Z + half.Z},
+        {worldCenter.X - half.X, worldCenter.Y + half.Y, worldCenter.Z + half.Z} };
 	m_box = FBox(points);
 }

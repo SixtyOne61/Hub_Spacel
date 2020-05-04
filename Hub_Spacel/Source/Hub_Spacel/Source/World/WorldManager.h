@@ -29,6 +29,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
 	int NbChunck;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
+    int NbCubeByChunck;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
 	int ChunckSize;
 

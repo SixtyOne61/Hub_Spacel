@@ -7,7 +7,7 @@
 
 USpacelProceduralMeshComponent::USpacelProceduralMeshComponent()
 	: UProceduralMeshComponent(FObjectInitializer())
-    , CubeSize(0.0f)
+    , CubeSize(FVector::ZeroVector)
 	, m_ownerLocation(FVector::ZeroVector)
 {
 }
@@ -32,7 +32,7 @@ void USpacelProceduralMeshComponent::generateMesh(FName _profileName)
     TArray<FLinearColor> vertexColors;
     TArray<FVector2D> UV0;
 
-	float half = CubeSize / 2.0f;
+	FVector half = CubeSize / 2.0f;
 
 	for (TSharedPtr<ChainedLocation> point : m_edgesPosition)
 	{
@@ -47,10 +47,10 @@ void USpacelProceduralMeshComponent::generateMesh(FName _profileName)
 		if (!EnumHasAllFlags(mask, EFace::Top))
 		{
             int deb = vertices.Num();
-            vertices.Add(center + FVector(-half, half, -half));
-            vertices.Add(center + FVector(half, half, -half));
-            vertices.Add(center + FVector(half, half, half));
-            vertices.Add(center + FVector(-half, half, half));
+            vertices.Add(center + FVector(-half.X, half.Y, -half.Z));
+            vertices.Add(center + FVector(half.X, half.Y, -half.Z));
+            vertices.Add(center + FVector(half.X, half.Y, half.Z));
+            vertices.Add(center + FVector(-half.X, half.Y, half.Z));
 
             UV0.Add(FVector2D(0, 0));
             UV0.Add(FVector2D(1, 0));
@@ -71,10 +71,10 @@ void USpacelProceduralMeshComponent::generateMesh(FName _profileName)
 		if (!EnumHasAllFlags(mask, EFace::Bot))
 		{
 			int deb = vertices.Num();
-			vertices.Add(center + FVector(half, -half, half));
-			vertices.Add(center + FVector(half, -half, -half));
-			vertices.Add(center + FVector(-half, -half, -half));
-            vertices.Add(center + FVector(-half, -half, half));
+			vertices.Add(center + FVector(half.X, -half.Y, half.Z));
+			vertices.Add(center + FVector(half.X, -half.Y, -half.Z));
+			vertices.Add(center + FVector(-half.X, -half.Y, -half.Z));
+            vertices.Add(center + FVector(-half.X, -half.Y, half.Z));
 
             UV0.Add(FVector2D(1, 1));
             UV0.Add(FVector2D(1, 0));
@@ -95,10 +95,10 @@ void USpacelProceduralMeshComponent::generateMesh(FName _profileName)
 		if (!EnumHasAllFlags(mask, EFace::Right))
 		{
 			int deb = vertices.Num();
-			vertices.Add(center + FVector(half, -half, half));
-			vertices.Add(center + FVector(half, half, half));
-			vertices.Add(center + FVector(half, half, -half));
-            vertices.Add(center + FVector(half, -half, -half));
+			vertices.Add(center + FVector(half.X, -half.Y, half.Z));
+			vertices.Add(center + FVector(half.X, half.Y, half.Z));
+			vertices.Add(center + FVector(half.X, half.Y, -half.Z));
+            vertices.Add(center + FVector(half.X, -half.Y, -half.Z));
 
             UV0.Add(FVector2D(0, 1));
             UV0.Add(FVector2D(1, 1));
@@ -119,10 +119,10 @@ void USpacelProceduralMeshComponent::generateMesh(FName _profileName)
 		if (!EnumHasAllFlags(mask, EFace::Left))
 		{
 			int deb = vertices.Num();
-			vertices.Add(center + FVector(-half, -half, half));
-			vertices.Add(center + FVector(-half, -half, -half));
-			vertices.Add(center + FVector(-half, half, -half));
-            vertices.Add(center + FVector(-half, half, half));
+			vertices.Add(center + FVector(-half.X, -half.Y, half.Z));
+			vertices.Add(center + FVector(-half.X, -half.Y, -half.Z));
+			vertices.Add(center + FVector(-half.X, half.Y, -half.Z));
+            vertices.Add(center + FVector(-half.X, half.Y, half.Z));
 
             UV0.Add(FVector2D(0, 1));
             UV0.Add(FVector2D(0, 0));
@@ -143,10 +143,10 @@ void USpacelProceduralMeshComponent::generateMesh(FName _profileName)
 		if (!EnumHasAllFlags(mask, EFace::Front))
 		{
 			int deb = vertices.Num();
-			vertices.Add(center + FVector(-half, half, -half));
-			vertices.Add(center + FVector(-half, -half, -half));
-			vertices.Add(center + FVector(half, -half, -half));
-            vertices.Add(center + FVector(half, half, -half));
+			vertices.Add(center + FVector(-half.X, half.Y, -half.Z));
+			vertices.Add(center + FVector(-half.X, -half.Y, -half.Z));
+			vertices.Add(center + FVector(half.X, -half.Y, -half.Z));
+            vertices.Add(center + FVector(half.X, half.Y, -half.Z));
 
             UV0.Add(FVector2D(0, 1));
             UV0.Add(FVector2D(0, 0));
@@ -167,10 +167,10 @@ void USpacelProceduralMeshComponent::generateMesh(FName _profileName)
 		if (!EnumHasAllFlags(mask, EFace::Back))
 		{
 			int deb = vertices.Num();
-			vertices.Add(center + FVector(half, -half, half));
-			vertices.Add(center + FVector(-half, -half, half));
-			vertices.Add(center + FVector(-half, half, half));
-            vertices.Add(center + FVector(half, half, half));
+			vertices.Add(center + FVector(half.X, -half.Y, half.Z));
+			vertices.Add(center + FVector(-half.X, -half.Y, half.Z));
+			vertices.Add(center + FVector(-half.X, half.Y, half.Z));
+            vertices.Add(center + FVector(half.X, half.Y, half.Z));
 
             UV0.Add(FVector2D(1, 0));
             UV0.Add(FVector2D(0, 0));

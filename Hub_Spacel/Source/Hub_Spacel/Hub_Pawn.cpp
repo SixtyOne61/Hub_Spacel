@@ -258,16 +258,17 @@ void AHub_Pawn::generateMesh()
 
 void AHub_Pawn::generateBase()
 {
-    ProceduralSpaceShipBase->setCubeSize(15.0f);
+    FVector cubeSize = FVector(15.0f, 15.0f, 15.0f);
+    ProceduralSpaceShipBase->setCubeSize(cubeSize);
     TArray<TSharedPtr<ChainedLocation>> chainedLocations =
     {
-        MakeShareable(new ChainedLocation(FVector(-15,0,0), 15.0f)),
-        MakeShareable(new ChainedLocation(FVector(0,0,0), 15.0f)),
-        MakeShareable(new ChainedLocation(FVector(15,0,0), 15.0f)),
-        MakeShareable(new ChainedLocation(FVector(0,15,0), 15.0f)),
-        MakeShareable(new ChainedLocation(FVector(0,-15,0), 15.0f)),
-        MakeShareable(new ChainedLocation(FVector(0,0,15), 15.0f)),
-        MakeShareable(new ChainedLocation(FVector(0,0,-15), 15.0f)),
+        MakeShareable(new ChainedLocation(FVector(-15,0,0), cubeSize)),
+        MakeShareable(new ChainedLocation(FVector(0,0,0), cubeSize)),
+        MakeShareable(new ChainedLocation(FVector(15,0,0), cubeSize)),
+        MakeShareable(new ChainedLocation(FVector(0,15,0), cubeSize)),
+        MakeShareable(new ChainedLocation(FVector(0,-15,0), cubeSize)),
+        MakeShareable(new ChainedLocation(FVector(0,0,15), cubeSize)),
+        MakeShareable(new ChainedLocation(FVector(0,0,-15), cubeSize)),
     };
     ProceduralSpaceShipBase->setEdges(std::forward<TArray<TSharedPtr<ChainedLocation>>>(chainedLocations));
     ProceduralSpaceShipBase->generateMesh(std::move(FName("Player")));
@@ -276,7 +277,8 @@ void AHub_Pawn::generateBase()
 
 void AHub_Pawn::generateShell()
 {
-    ProceduralSpaceShipShell->setCubeSize(15.0f);
+    FVector cubeSize = FVector(15.0f, 15.0f, 15.0f);
+    ProceduralSpaceShipShell->setCubeSize(cubeSize);
     TArray<TSharedPtr<ChainedLocation>> chainedLocations;
 
     TArray<TSharedPtr<ChainedLocation>> const& chainedLocationBase = ProceduralSpaceShipBase->getEdges();
@@ -306,7 +308,7 @@ void AHub_Pawn::generateShell()
                 {
                     continue;
                 }
-                chainedLocations.Add(MakeShareable(new ChainedLocation(std::move(loc), 15.0f)));
+                chainedLocations.Add(MakeShareable(new ChainedLocation(loc, cubeSize)));
             }
         }
     }
@@ -318,39 +320,40 @@ void AHub_Pawn::generateShell()
 
 void AHub_Pawn::generateEngine()
 {
-    ProceduralSpaceShipEngine->setCubeSize(15.0f);
+    FVector cubeSize = FVector(5.0f, 5.0f, 5.0f);
+    ProceduralSpaceShipEngine->setCubeSize(cubeSize);
     int8 radius = 120;
     TArray<TSharedPtr<ChainedLocation>> chainedLocations =
     {
-        MakeShareable(new ChainedLocation(FVector(-60.0f, -radius, 0.0f), 5.0f)),
-        MakeShareable(new ChainedLocation(FVector(-45.0f, -radius, 0.0f), 5.0f)),
-        MakeShareable(new ChainedLocation(FVector(-30.0f, -radius, 0.0f), 5.0f)),
-        MakeShareable(new ChainedLocation(FVector(-15.0f, -radius, 0.0f), 5.0f)),
+        MakeShareable(new ChainedLocation(FVector(-60.0f, -radius, 0.0f), cubeSize)),
+        MakeShareable(new ChainedLocation(FVector(-45.0f, -radius, 0.0f), cubeSize)),
+        MakeShareable(new ChainedLocation(FVector(-30.0f, -radius, 0.0f), cubeSize)),
+        MakeShareable(new ChainedLocation(FVector(-15.0f, -radius, 0.0f), cubeSize)),
 
-        MakeShareable(new ChainedLocation(FVector(-75.0f, -radius + 15.0f, 0.0f), 5.0f)),
-        MakeShareable(new ChainedLocation(FVector(-90.0f, -radius + 15.0f, 0.0f), 5.0f)),
-        MakeShareable(new ChainedLocation(FVector(-105.0f, -radius + 30.0f, 0.0f), 5.0f)),
+        MakeShareable(new ChainedLocation(FVector(-75.0f, -radius + 15.0f, 0.0f), cubeSize)),
+        MakeShareable(new ChainedLocation(FVector(-90.0f, -radius + 15.0f, 0.0f), cubeSize)),
+        MakeShareable(new ChainedLocation(FVector(-105.0f, -radius + 30.0f, 0.0f), cubeSize)),
 
-        MakeShareable(new ChainedLocation(FVector(-60.0f, radius, 0.0f), 5.0f)),
-        MakeShareable(new ChainedLocation(FVector(-45.0f, radius, 0.0f), 5.0f)),
-        MakeShareable(new ChainedLocation(FVector(-30.0f, radius, 0.0f), 5.0f)),
-        MakeShareable(new ChainedLocation(FVector(-15.0f, radius, 0.0f), 5.0f)),
+        MakeShareable(new ChainedLocation(FVector(-60.0f, radius, 0.0f), cubeSize)),
+        MakeShareable(new ChainedLocation(FVector(-45.0f, radius, 0.0f), cubeSize)),
+        MakeShareable(new ChainedLocation(FVector(-30.0f, radius, 0.0f), cubeSize)),
+        MakeShareable(new ChainedLocation(FVector(-15.0f, radius, 0.0f), cubeSize)),
 
-        MakeShareable(new ChainedLocation(FVector(-75.0f, radius - 15.0f, 0.0f), 5.0f)),
-        MakeShareable(new ChainedLocation(FVector(-90.0f, radius - 15.0f, 0.0f), 5.0f)),
-        MakeShareable(new ChainedLocation(FVector(-105.0f, radius - 30.0f, 0.0f), 5.0f)),
+        MakeShareable(new ChainedLocation(FVector(-75.0f, radius - 15.0f, 0.0f), cubeSize)),
+        MakeShareable(new ChainedLocation(FVector(-90.0f, radius - 15.0f, 0.0f), cubeSize)),
+        MakeShareable(new ChainedLocation(FVector(-105.0f, radius - 30.0f, 0.0f), cubeSize)),
 
-        MakeShareable(new ChainedLocation(FVector(-120.0f, -radius + 30.0f, 0.0f), 5.0f)),
-        MakeShareable(new ChainedLocation(FVector(-120.0f, -radius + 45.0f, 0.0f), 5.0f)),
-        MakeShareable(new ChainedLocation(FVector(-120.0f, -radius + 60.0f, 0.0f), 5.0f)),
-        MakeShareable(new ChainedLocation(FVector(-120.0f, -radius + 60.0f, 15.0f), 5.0f)),
-        MakeShareable(new ChainedLocation(FVector(-120.0f, -radius + 60.0f, -15.0f), 5.0f)),
+        MakeShareable(new ChainedLocation(FVector(-120.0f, -radius + 30.0f, 0.0f), cubeSize)),
+        MakeShareable(new ChainedLocation(FVector(-120.0f, -radius + 45.0f, 0.0f), cubeSize)),
+        MakeShareable(new ChainedLocation(FVector(-120.0f, -radius + 60.0f, 0.0f), cubeSize)),
+        MakeShareable(new ChainedLocation(FVector(-120.0f, -radius + 60.0f, 15.0f), cubeSize)),
+        MakeShareable(new ChainedLocation(FVector(-120.0f, -radius + 60.0f, -15.0f), cubeSize)),
 
-        MakeShareable(new ChainedLocation(FVector(-120.0f, radius - 30.0f, 0.0f), 5.0f)),
-        MakeShareable(new ChainedLocation(FVector(-120.0f, radius - 45.0f, 0.0f), 5.0f)),
-        MakeShareable(new ChainedLocation(FVector(-120.0f, radius - 60.0f, 0.0f), 5.0f)),
-        MakeShareable(new ChainedLocation(FVector(-120.0f, radius - 60.0f, 15.0f), 5.0f)),
-        MakeShareable(new ChainedLocation(FVector(-120.0f, radius - 60.0f, -15.0f), 5.0f)),
+        MakeShareable(new ChainedLocation(FVector(-120.0f, radius - 30.0f, 0.0f), cubeSize)),
+        MakeShareable(new ChainedLocation(FVector(-120.0f, radius - 45.0f, 0.0f), cubeSize)),
+        MakeShareable(new ChainedLocation(FVector(-120.0f, radius - 60.0f, 0.0f), cubeSize)),
+        MakeShareable(new ChainedLocation(FVector(-120.0f, radius - 60.0f, 15.0f), cubeSize)),
+        MakeShareable(new ChainedLocation(FVector(-120.0f, radius - 60.0f, -15.0f), cubeSize)),
     };
     ProceduralSpaceShipEngine->setEdges(std::forward<TArray<TSharedPtr<ChainedLocation>>>(chainedLocations));
     ProceduralSpaceShipEngine->generateMesh(std::move(FName("Player")));

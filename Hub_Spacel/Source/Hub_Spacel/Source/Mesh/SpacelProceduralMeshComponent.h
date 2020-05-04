@@ -24,7 +24,7 @@ public:
 	void generateMesh(FName _profileName);
 	
 	// -- get / set
-	inline void setCubeSize(float _cubeSize) { CubeSize = _cubeSize; }
+	inline void setCubeSize(FVector const& _cubeSize) { CubeSize = _cubeSize; }
 	inline void setEdges(TArray<TSharedPtr<ChainedLocation>> && _edges) { m_edgesPosition = std::move(_edges); }
     inline TArray<TSharedPtr<ChainedLocation>> const& getEdges() const { return m_edgesPosition; }
 	inline void setOwnerLocation(FVector const& _ownerLocation) { m_ownerLocation = _ownerLocation; }
@@ -42,7 +42,7 @@ protected:
 protected:
 	// size of cube
 	UPROPERTY(VisibleAnywhere)
-	float CubeSize;
+	FVector CubeSize;
 
 	// location of owner
 	FVector m_ownerLocation;

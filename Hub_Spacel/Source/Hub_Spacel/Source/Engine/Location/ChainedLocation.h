@@ -23,7 +23,7 @@ ENUM_CLASS_FLAGS(EFace);
 class HUB_SPACEL_API ChainedLocation
 {
 public:
-	ChainedLocation(FVector && _center, float _size);
+	ChainedLocation(FVector const& _center, FVector const& _size);
 	~ChainedLocation();
 
 	// -- get / set
@@ -52,7 +52,7 @@ private:
 	// center of edgde
 	FVector m_center;
 	// cube size
-	float m_size;
+	FVector m_size;
 	// neighbor mask
 	EFace m_mask;
 	// box

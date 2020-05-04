@@ -29,7 +29,7 @@ void AWorldManager::BeginPlay()
 void AWorldManager::spawnChunckEnvironment()
 {
 	UWorld* const world = GetWorld();
-	if (!world)
+	if (!world || !Delimiter)
 	{
 		return;
 	}
@@ -39,7 +39,35 @@ void AWorldManager::spawnChunckEnvironment()
         Delimiter->GetScaledBoxExtent().Y / NbChunck,
         Delimiter->GetScaledBoxExtent().Z / NbChunck);
 
-	for (int x = 0; x < this->NbChunck; ++x)
+    // define cube size
+    FVector cubeSize = chunckSize / NbCubeByChunck;
+
+    for (int x = 0; x < this->NbChunck; ++x) 
+    {
+        for (int y = 0; y < this->NbChunck; ++y)
+        {
+            for (int z = 0; z < this->NbChunck; ++z)
+            {
+                // new location
+                FVector location(x * chunckSize.X, y * chunckSize.Y, z * chunckSize.Z);
+
+                // add it to transform
+                FTransform transform;
+                transform.SetLocation(location);
+
+                // start spawning actor
+                AEnvironmentManager* environment = world->SpawnActorDeferred<AEnvironmentManager>(EnvironmentClass, transform);
+                if (environment)
+                {
+                    // Init component
+                    environment->init(FVector2D(location.X, location.X + chunckSize.X), FVector2D(location.Y, location.Y + chunckSize.Y), FVector2D(location.Z, location.Z + chunckSize.Z), cubeSize);
+                    environment->FinishSpawning(transform);
+                }
+            }
+        }
+    }
+
+	/*for (int x = 0; x < this->NbChunck; ++x)
 	{
 		for (int y = 0; y < this->NbChunck; ++y)
 		{
@@ -62,6 +90,6 @@ void AWorldManager::spawnChunckEnvironment()
 				}
 			}
 		}
-	}
+	}*/
 }
 
