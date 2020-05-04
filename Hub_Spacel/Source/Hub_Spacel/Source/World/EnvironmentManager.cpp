@@ -129,11 +129,15 @@ void AEnvironmentManager::createProceduralWorld()
     }
 
     int id = 0;
-    while (id < list.Num())
+    int max = list.Num();
+    while (id < max)
     {
         CoordInfo & info = list[id];
         if (info.isValid())
         {
+            // max item in next object
+            m_currentObject.Reserve(max - id);
+
             addNeighboor(info, list);
             // add component
             addProceduralMesh();
@@ -223,9 +227,13 @@ void AEnvironmentManager::addNeighboor(CoordInfo& _info, TArray<CoordInfo> & _li
     auto lb_addNeighboor = [&](EFace _face)
     {
         int idx = _info.m_neighboor[_face];
-        if (idx != -1 && !_list[idx].m_use)
+        if (idx != -1)
         {
-            addNeighboor(_list[idx], _list);
+            CoordInfo& next = _list[idx];
+            if (!next.m_use)
+            {
+                addNeighboor(next, _list);
+            }
         }
     };
 
