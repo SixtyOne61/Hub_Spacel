@@ -22,9 +22,9 @@ protected:
 	/* spawn chunck environment */
 	void spawnChunckEnvironment();
 
-protected:
+public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
-    class UBoxComponent* Delimiter = nullptr;
+    class UBoxComponent* Delimiter;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
 	int NbChunck = 0;

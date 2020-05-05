@@ -148,76 +148,6 @@ void AEnvironmentManager::createProceduralWorld()
         ++id;
     }
 }
-/*
-void AEnvironmentManager::createProceduralWorld()
-{
-	TArray<FVector> openList;
-
-    //TMap<FVector, noise value and if we use it
-
-	for (float x = 0; x < BornX.Y - BornX.X; x += CubeSize.X)
-	{
-		for (float y = 0; y < BornY.Y - BornY.X; y += CubeSize.Y)
-		{
-			for (float z = 0; z < BornZ.Y - BornZ.X; z += CubeSize.Z)
-			{
-                FVector location = FVector(x, y, z);
-				if (isValidNoise(location))
-				{
-					openList.Add(location);
-				}
-			}
-		}
-	}
-
-	while (openList.Num())
-	{
-		FVector location = openList[0];
-		openList.RemoveAt(0);
-		createChain(location, openList);
-		
-		// add component
-		addProceduralMesh();
-	}
-}*/
-
-TSharedPtr<ChainedLocation> AEnvironmentManager::createChain(FVector const& _location, TArray<FVector>& _openList)
-{
-	TSharedPtr<ChainedLocation> newPos = MakeShareable(new ChainedLocation(_location, CubeSize));
-
-	m_currentObject.Add(newPos);
-
-	addNeighboor(_openList, _location + FVector(0, CubeSize.Y, 0), EFace::Top, newPos, EFace::Bot);
-	addNeighboor(_openList, _location + FVector(0, -CubeSize.Y, 0), EFace::Bot, newPos, EFace::Top);
-	addNeighboor(_openList, _location + FVector(CubeSize.X, 0, 0), EFace::Right, newPos, EFace::Left);
-	addNeighboor(_openList, _location + FVector(-CubeSize.X, 0, 0), EFace::Left, newPos, EFace::Right);
-	addNeighboor(_openList, _location + FVector(0, 0, CubeSize.Z), EFace::Back, newPos, EFace::Front);
-	addNeighboor(_openList, _location + FVector(0, 0, -CubeSize.Z), EFace::Front, newPos, EFace::Back);
-	return newPos;
-}
-
-void AEnvironmentManager::addNeighboor(TArray<FVector>& _openList, FVector _location, EFace _where, TSharedPtr<ChainedLocation> _chain, EFace _inverse)
-{
-	if (isValidLocation(_location) && isValidNoise(_location))
-	{
-		// two way, check if it's a known value or create a new one
-		TSharedPtr<ChainedLocation> exist = isKnownLocation(_location);
-		if (exist)
-		{
-			_chain->addNeighbor(_where, exist);
-			exist->addNeighbor(_inverse, _chain);
-		}
-		else if (_openList.Contains(_location))
-		{
-			_openList.Remove(_location);
-			TSharedPtr<ChainedLocation> newPos = createChain(_location, _openList);
-		}
-		else
-		{
-			// TO DO : throw error
-		}
-	}
-}
 
 void AEnvironmentManager::addNeighboor(CoordInfo& _info, TArray<CoordInfo> & _list)
 {
@@ -265,33 +195,6 @@ void AEnvironmentManager::addProceduralMesh()
 
 		m_proceduralMeshComponents.Add(proceduralMesh);
 	}
-}
-
-bool AEnvironmentManager::isValidNoise(FVector const& _location) const
-{
-    // increase float broke bloc, increase int (octave) add more bloc
-    float noise = SpacelNoise::getInstance()->getOctaveNoise((_location.X + BornX.X) * 0.00007f, (_location.Y + BornY.X) * 0.00007f, (_location.Z + BornZ.X) * 0.00007f, 2);
-    return noise >= .75f;
-}
-
-bool AEnvironmentManager::isValidLocation(FVector const& _location) const
-{
-	return (_location.X + BornX.X) >= BornX.X && (_location.X + BornX.X) < BornX.Y 
-		&& (_location.Y + BornY.X) >= BornY.X && (_location.Y + BornY.X) < BornY.Y 
-		&& (_location.Z + BornZ.X) >= BornZ.X && (_location.Z + BornZ.X) < BornZ.Y;
-}
-
-TSharedPtr<ChainedLocation> AEnvironmentManager::isKnownLocation(FVector const& _location) const
-{
-	for (TSharedPtr<ChainedLocation> const& value : m_currentObject)
-	{
-		if (value->getCenter() == _location)
-		{
-			return value;
-		}
-	}
-
-	return nullptr;
 }
 
 float AEnvironmentManager::getNoise(FVector const& _location) const

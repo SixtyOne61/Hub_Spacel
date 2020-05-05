@@ -34,29 +34,21 @@ public:
 	// Sets default values for this actor's properties
 	AEnvironmentManager();
 
-	// -- init actor, call on spawn
+	/* init actor, call on spawn */
 	void init(FVector2D const& _bornX, FVector2D const& _bornY, FVector2D const& _bornZ, FVector const& _cubeSize);
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+    /* full generate world */
 	void createProceduralWorld();
-	TSharedPtr<ChainedLocation> createChain(FVector const& _location, TArray<FVector>& _openList);
-	void addNeighboor(TArray<FVector> & _openList, FVector _location, EFace _where, TSharedPtr<ChainedLocation> _chain, EFace _inverse);
+
+    /* recurcive call */
     void addNeighboor(CoordInfo & _info, TArray<CoordInfo> & _list);
 
-	// -- spawn asteroid
+	/* spawn asteroid */
 	void addProceduralMesh();
-
-	// -- check if we have a valid noise in this points
-	bool isValidNoise(FVector const& _location) const;
-
-	// -- check if we are on born
-	bool isValidLocation(FVector const& _location) const;
-
-	// -- check if this location is in m_currentObject
-	TSharedPtr<ChainedLocation> isKnownLocation(FVector const& _location) const;
 
     /* get noise value */
     float getNoise(FVector const& _location) const;

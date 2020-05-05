@@ -35,6 +35,9 @@ void AWorldManager::spawnChunckEnvironment()
         this->Delimiter->GetScaledBoxExtent().Y / this->NbChunck,
         this->Delimiter->GetScaledBoxExtent().Z / this->NbChunck);
 
+    FVector offset = this->Delimiter->GetScaledBoxExtent();
+    offset /= 2;
+
     // define cube size
     this->CubeSize = chunckSize / this->NbCubeByChunck;
 
@@ -45,7 +48,7 @@ void AWorldManager::spawnChunckEnvironment()
             for (int z = 0; z < this->NbChunck; ++z)
             {
                 // new location
-                FVector location(x * chunckSize.X, y * chunckSize.Y, z * chunckSize.Z);
+                FVector location(x * chunckSize.X - offset.X, y * chunckSize.Y - offset.Y, z * chunckSize.Z - offset.Z);
 
                 // add it to transform
                 FTransform transform;
