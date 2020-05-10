@@ -57,6 +57,8 @@ public:
     /* Material for asteroid */
     UPROPERTY(Category = "Material", EditAnywhere, BlueprintReadWrite)
     class UMaterialInstance* MatAsteroid = nullptr;
+    UPROPERTY(Category = "Material", EditAnywhere, BlueprintReadWrite)
+    int StencilValue = 0;
 
 protected:
 	UPROPERTY(VisibleAnywhere, Category = "Settings")

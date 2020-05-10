@@ -47,6 +47,8 @@ void AEnvironmentManager::BeginPlay()
         if (MatAsteroid)
         {
             proceduralMesh->SetMaterial(0, MatAsteroid);
+            proceduralMesh->SetRenderCustomDepth(true);
+            proceduralMesh->SetCustomDepthStencilValue(StencilValue);
         }
 	}
 }
