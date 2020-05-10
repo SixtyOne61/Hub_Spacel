@@ -2,7 +2,6 @@
 
 #include "SpacelProceduralMeshComponent.h"
 #include "DrawDebugHelpers.h"
-#include "Hub_Spacel/Source/Projectile/SimpleBullet.h"
 #include <algorithm>
 
 USpacelProceduralMeshComponent::USpacelProceduralMeshComponent()
