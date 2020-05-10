@@ -199,7 +199,7 @@ void USpacelProceduralMeshComponent::generateMesh(FName _collisionProfileName)
 	// setup collision
 	SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
     SetCollisionProfileName(this->m_collisionProfileName);
-	bUseComplexAsSimpleCollision = false;
+	bUseComplexAsSimpleCollision = true;
 	SetNotifyRigidBodyCollision(true);
 
 	CreateMeshSection_LinearColor(0, vertices, triangles, normals, UV0, vertexColors, TArray<FProcMeshTangent>(), true);
