@@ -4,6 +4,7 @@
 #include "EnvironmentManager.h"
 #include "Hub_Spacel/Source/Noise/SpacelNoise.h"
 #include "Materials/MaterialInstance.h"
+#include "Materials/MaterialInstanceDynamic.h"
 #include "Hub_Spacel/Source/Mesh/SpacelProceduralMeshComponent.h"
 
 // Sets default values
@@ -46,9 +47,13 @@ void AEnvironmentManager::BeginPlay()
         proceduralMesh->generateMesh(std::move(FName("BlockAll")));
         if (MatAsteroid)
         {
-            proceduralMesh->SetMaterial(0, MatAsteroid);
-            proceduralMesh->SetRenderCustomDepth(true);
-            proceduralMesh->SetCustomDepthStencilValue(StencilValue);
+            if (UMaterialInstanceDynamic * customMat = UMaterialInstanceDynamic::Create(MatAsteroid, proceduralMesh))
+            {
+                customMat->SetScalarParameterValue(TEXT("Trickness"), TricknessValue);
+                proceduralMesh->SetMaterial(0, customMat);
+                proceduralMesh->SetRenderCustomDepth(true);
+                proceduralMesh->SetCustomDepthStencilValue(StencilValue);
+            }
         }
 	}
 }

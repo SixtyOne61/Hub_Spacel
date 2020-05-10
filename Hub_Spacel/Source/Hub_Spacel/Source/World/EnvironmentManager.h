@@ -59,6 +59,8 @@ public:
     class UMaterialInstance* MatAsteroid = nullptr;
     UPROPERTY(Category = "Material", EditAnywhere, BlueprintReadWrite)
     int StencilValue = 0;
+    UPROPERTY(Category = "Material", EditAnywhere, BlueprintReadWrite)
+    float TricknessValue = 2.0f;
 
 protected:
 	UPROPERTY(VisibleAnywhere, Category = "Settings")

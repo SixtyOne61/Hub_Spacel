@@ -42,10 +42,10 @@ protected:
 protected:
 	// size of cube
 	UPROPERTY(VisibleAnywhere)
-	FVector CubeSize;
+	FVector CubeSize = FVector::ZeroVector;
 
 	// location of owner
-	FVector m_ownerLocation;
+	FVector m_ownerLocation = FVector::ZeroVector;
 
 	// list of all edges
 	TArray<TSharedPtr<ChainedLocation>> m_edgesPosition;
@@ -54,5 +54,5 @@ protected:
 	TArray<AActor*> m_overlapActors;
 
     // profile name for collision
-    FName m_collisionProfileName;
+    FName m_collisionProfileName = "";
 };

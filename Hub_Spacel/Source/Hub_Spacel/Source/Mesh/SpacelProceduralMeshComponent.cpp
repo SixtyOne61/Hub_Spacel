@@ -6,8 +6,6 @@
 
 USpacelProceduralMeshComponent::USpacelProceduralMeshComponent()
 	: UProceduralMeshComponent(FObjectInitializer())
-    , CubeSize(FVector::ZeroVector)
-	, m_ownerLocation(FVector::ZeroVector)
 {
 }
 
@@ -200,10 +198,8 @@ void USpacelProceduralMeshComponent::generateMesh(FName _collisionProfileName)
 
 	// setup collision
 	SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	//SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
-	//SetCollisionObjectType(ECollisionChannel::ECC_PhysicsBody);
-    SetCollisionProfileName(m_collisionProfileName);
-	bUseComplexAsSimpleCollision = true;
+    SetCollisionProfileName(this->m_collisionProfileName);
+	bUseComplexAsSimpleCollision = false;
 	SetNotifyRigidBodyCollision(true);
 
 	CreateMeshSection_LinearColor(0, vertices, triangles, normals, UV0, vertexColors, TArray<FProcMeshTangent>(), true);
@@ -214,7 +210,6 @@ void USpacelProceduralMeshComponent::generateMesh(FName _collisionProfileName)
 
 bool USpacelProceduralMeshComponent::hit(FVector const& _forward, FVector const& _impactPoint)
 {
-    DrawDebugSphere(GetWorld(), _impactPoint, 300.0f, 12, FColor::Red, false, 30.0f, 128, 10.0f);
 	FVector endPoint = _impactPoint + _forward * CubeSize;
 
 	if(m_edgesPosition.RemoveAll([&](TSharedPtr<ChainedLocation> _point)
@@ -231,7 +226,7 @@ bool USpacelProceduralMeshComponent::hit(FVector const& _forward, FVector const&
 	}) != 0)
 	{
         // TO DO; only update needed part
-		generateMesh(m_collisionProfileName);
+		generateMesh(this->m_collisionProfileName);
 		return true;
 	}
 
@@ -257,6 +252,9 @@ void USpacelProceduralMeshComponent::onHit(class UPrimitiveComponent* _comp, cla
     {
         return;
     }
+
+    DrawDebugSphere(GetWorld(), _otherActor->GetActorLocation(), 200.0f, 12, FColor::Blue, false, 30.0f, 128, 10.0f);
+    DrawDebugSphere(GetWorld(), _hit.ImpactPoint, 250.0f, 12, FColor::Red, false, 30.0f, 128, 10.0f);
 
 	// check if it's a bullet type
     if (hit(_hit.ImpactNormal, _hit.ImpactPoint))

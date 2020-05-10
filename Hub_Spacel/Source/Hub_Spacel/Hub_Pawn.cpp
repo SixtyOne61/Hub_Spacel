@@ -60,113 +60,113 @@ void AHub_Pawn::BeginPlay()
     resetCrosshair();
 
     // init default rotation for snap
-    if (ProceduralSpaceShipShell)
+    if (this->ProceduralSpaceShipShell)
     {
-        m_defaultRotation = ProceduralSpaceShipShell->GetRelativeTransform().Rotator();
+        this->m_defaultRotation = this->ProceduralSpaceShipShell->GetRelativeTransform().Rotator();
     }
 }
 
 // Called every frame
-void AHub_Pawn::Tick(float DeltaTime)
+void AHub_Pawn::Tick(float _deltaTime)
 {
 	// move
-	const FVector localMove = FVector(m_currentForwardSpeed * DeltaTime, 0.f, 0.f);
+	const FVector localMove = FVector(this->m_currentForwardSpeed * _deltaTime, 0.f, 0.f);
 
 	// Move plan forwards (with sweep so we stop when we collide with things)
 	AddActorLocalOffset(localMove, true);
 
 	// rotation
 	FRotator deltaRotation(0.f, 0.f, 0.f);
-	deltaRotation.Pitch = m_currentPitchSpeed * DeltaTime;
-	deltaRotation.Yaw = m_currentYawSpeed * DeltaTime;
-	deltaRotation.Roll = m_currentRollSpeed * DeltaTime;
+	deltaRotation.Pitch = m_currentPitchSpeed * _deltaTime;
+	deltaRotation.Yaw = m_currentYawSpeed * _deltaTime;
+	deltaRotation.Roll = m_currentRollSpeed * _deltaTime;
 
 	// rotate ship
 	AddActorLocalRotation(deltaRotation);
 
-    snapTarget(DeltaTime);
-    fireLaser(DeltaTime);
+    snapTarget(_deltaTime);
+    fireLaser(_deltaTime);
 
 	// Call any parent class Tick implementation
-	Super::Tick(DeltaTime);
+	Super::Tick(_deltaTime);
 }
 
-void AHub_Pawn::NotifyHit(class UPrimitiveComponent* MyComp, class AActor* Other, class UPrimitiveComponent* OtherComp, bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult& Hit)
+void AHub_Pawn::NotifyHit(class UPrimitiveComponent* _myComp, class AActor* _other, class UPrimitiveComponent* _otherComp, bool _bSelfMoved, FVector _hitLocation, FVector _hitNormal, FVector _normalImpulse, const FHitResult& _hit)
 {
-	Super::NotifyHit(MyComp, Other, OtherComp, bSelfMoved, HitLocation, HitNormal, NormalImpulse, Hit);
+	Super::NotifyHit(_myComp, _other, _otherComp, _bSelfMoved, _hitLocation, _hitNormal, _normalImpulse, _hit);
 
 	// Deflect along the surface when we collide.
-	FRotator CurrentRotation = GetActorRotation();
-	SetActorRotation(FQuat::Slerp(CurrentRotation.Quaternion(), HitNormal.ToOrientationQuat(), 0.025f));
+	FRotator currentRotation = GetActorRotation();
+	SetActorRotation(FQuat::Slerp(currentRotation.Quaternion(), _hitNormal.ToOrientationQuat(), 0.025f));
 }
 
 // Called to bind functionality to input
-void AHub_Pawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+void AHub_Pawn::SetupPlayerInputComponent(UInputComponent* _playerInputComponent)
 {
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
+	Super::SetupPlayerInputComponent(_playerInputComponent);
 
 	// Check if PlayerInputComponent is valid (not NULL)
-	check(PlayerInputComponent);
+	check(_playerInputComponent);
 	
     /* bind input rework */
-    PlayerInputComponent->BindAxis("MoveUp", this, &AHub_Pawn::input_MoveUp);
-    PlayerInputComponent->BindAxis("MoveRight", this, &AHub_Pawn::input_MoveRight);
-    PlayerInputComponent->BindAxis("MoveTargetUp", this, &AHub_Pawn::input_MoveTargetUp);
-    PlayerInputComponent->BindAxis("MoveTargetRight", this, &AHub_Pawn::input_MoveTargetRight);
-    PlayerInputComponent->BindAxis("Speed", this, &AHub_Pawn::input_Speed);
+    _playerInputComponent->BindAxis("MoveUp", this, &AHub_Pawn::input_MoveUp);
+    _playerInputComponent->BindAxis("MoveRight", this, &AHub_Pawn::input_MoveRight);
+    _playerInputComponent->BindAxis("MoveTargetUp", this, &AHub_Pawn::input_MoveTargetUp);
+    _playerInputComponent->BindAxis("MoveTargetRight", this, &AHub_Pawn::input_MoveTargetRight);
+    _playerInputComponent->BindAxis("Speed", this, &AHub_Pawn::input_Speed);
 
-    PlayerInputComponent->BindAction("Snap", IE_Pressed, this, &AHub_Pawn::input_SnapOn);
-    PlayerInputComponent->BindAction("Snap", IE_Released, this, &AHub_Pawn::input_SnapOff);
-    PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AHub_Pawn::input_FireOn);
-    PlayerInputComponent->BindAction("Fire", IE_Released, this, &AHub_Pawn::input_FireOff);
+    _playerInputComponent->BindAction("Snap", IE_Pressed, this, &AHub_Pawn::input_SnapOn);
+    _playerInputComponent->BindAction("Snap", IE_Released, this, &AHub_Pawn::input_SnapOff);
+    _playerInputComponent->BindAction("Fire", IE_Pressed, this, &AHub_Pawn::input_FireOn);
+    _playerInputComponent->BindAction("Fire", IE_Released, this, &AHub_Pawn::input_FireOff);
 }
 
 void AHub_Pawn::input_FireOn()
 {
-    m_isFire = true;
+    this->m_isFire = true;
 }
 
 void AHub_Pawn::input_FireOff()
 {
-    m_isFire = false;
+    this->m_isFire = false;
 }
 
 void AHub_Pawn::input_Speed(float _val)
 {
     // TO DO : not cool + _val
-    PercentSpeed = FMath::Clamp(PercentSpeed + _val, 0.0f, 100.0f);
-    m_currentForwardSpeed = MaxForwardSpeed * (PercentSpeed / 100.0f);
+    this->PercentSpeed = FMath::Clamp(this->PercentSpeed + _val, 0.0f, 100.0f);
+    this->m_currentForwardSpeed = this->MaxForwardSpeed * (this->PercentSpeed / 100.0f);
 }
 
 void AHub_Pawn::input_MoveUp(float _val)
 {
 	// target pitch speed is based in input
-	float targetPitchSpeed = (_val * TurnSpeed * -1.0f);
+	float targetPitchSpeed = (_val * this->TurnSpeed * -1.0f);
 
 	// when steering, we decrease pitch slightly
-	targetPitchSpeed += (FMath::Abs(m_currentYawSpeed) * -0.2f);
+	targetPitchSpeed += (FMath::Abs(this->m_currentYawSpeed) * -0.2f);
 
 	// Smoothly interpolate to target pitch speed
-	m_currentPitchSpeed = FMath::FInterpTo(m_currentPitchSpeed, targetPitchSpeed, GetWorld()->GetDeltaSeconds(), InterpSpeed);
+    this->m_currentPitchSpeed = FMath::FInterpTo(this->m_currentPitchSpeed, targetPitchSpeed, GetWorld()->GetDeltaSeconds(), this->InterpSpeed);
 }
 
 void AHub_Pawn::input_MoveRight(float _val)
 {
 	// target yaw speed is based on input
-	float targetYawSpeed = (_val * TurnSpeed);
+	float targetYawSpeed = (_val * this->TurnSpeed);
 
 	// smoothly interpolate to target yaw speed
-	m_currentYawSpeed = FMath::FInterpTo(m_currentYawSpeed, targetYawSpeed, GetWorld()->GetDeltaSeconds(), InterpSpeed);
+    this->m_currentYawSpeed = FMath::FInterpTo(this->m_currentYawSpeed, targetYawSpeed, GetWorld()->GetDeltaSeconds(), this->InterpSpeed);
 
 	// Is there any left / right input ?
 	const bool isTurning = FMath::Abs(_val) > 0.2f;
 
 	// if turning, yaw value is used to influence rool
 	// if not turning, roll to reverse current roll value
-	float targetRollSpeed = isTurning ? (m_currentYawSpeed * 0.8f) : (GetActorRotation().Roll * -2.0f);
+	float targetRollSpeed = isTurning ? (this->m_currentYawSpeed * 0.8f) : (GetActorRotation().Roll * -2.0f);
 
 	// smoothly interpolate roll speed
-	m_currentRollSpeed = FMath::FInterpTo(m_currentRollSpeed, targetRollSpeed, GetWorld()->GetDeltaSeconds(), InterpSpeed);
+    this->m_currentRollSpeed = FMath::FInterpTo(this->m_currentRollSpeed, targetRollSpeed, GetWorld()->GetDeltaSeconds(), this->InterpSpeed);
 }
 
 void AHub_Pawn::input_MoveTargetUp(float _val)
@@ -176,36 +176,36 @@ void AHub_Pawn::input_MoveTargetUp(float _val)
         return;
     }
 
-    float sensibility = SensibilityCrosshair;
-    float delta = m_viewportSize.X * _val * sensibility;
-    CrosshairPosition.X = FMath::Clamp(CrosshairPosition.X + delta, 0.0f, m_viewportSize.X);
+    float sensibility = this->SensibilityCrosshair;
+    float delta = this->m_viewportSize.X * _val * sensibility;
+    this->CrosshairPosition.X = FMath::Clamp(this->CrosshairPosition.X + delta, 0.0f, this->m_viewportSize.X);
 }
 
 void AHub_Pawn::input_MoveTargetRight(float _val)
 {
-    if (!m_isSnap)
+    if (!this->m_isSnap)
     {
         return;
     }
 
-    float sensibility = SensibilityCrosshair;
-    float delta = m_viewportSize.Y * _val * sensibility;
-    CrosshairPosition.Y = FMath::Clamp(CrosshairPosition.Y + delta, 0.0f, m_viewportSize.Y);
+    float sensibility = this->SensibilityCrosshair;
+    float delta = this->m_viewportSize.Y * _val * sensibility;
+    this->CrosshairPosition.Y = FMath::Clamp(this->CrosshairPosition.Y + delta, 0.0f, this->m_viewportSize.Y);
 }
 
 void AHub_Pawn::input_SnapOn()
 {
-    m_isSnap = true;
+    this->m_isSnap = true;
 }
 
 void AHub_Pawn::input_SnapOff()
 {
-    m_isSnap = false;
-    m_progressResetSnap = TimeToResetSnap;
-    if (ProceduralSpaceShipShell)
+    this->m_isSnap = false;
+    this->m_progressResetSnap = this->TimeToResetSnap;
+    if (this->ProceduralSpaceShipShell)
     {
-        m_snapRotationOnRelease = ProceduralSpaceShipShell->GetComponentRotation();
-        m_snapRelativeRotationOnRelease = ProceduralSpaceShipShell->GetRelativeTransform().Rotator();
+        this->m_snapRotationOnRelease = this->ProceduralSpaceShipShell->GetComponentRotation();
+        this->m_snapRelativeRotationOnRelease = this->ProceduralSpaceShipShell->GetRelativeTransform().Rotator();
     }
 
     resetCrosshair();
@@ -213,26 +213,26 @@ void AHub_Pawn::input_SnapOff()
 
 void AHub_Pawn::fireLaser(float _deltaTime)
 {
-    if (m_isFire && m_laserCountDown <= 0.0f)
+    if (this->m_isFire && this->m_laserCountDown <= 0.0f)
     {
         FTransform transform = ProceduralSpaceShipBase->GetSocketTransform("SimpleBulletSpawn");
-        AActor* pLaser = Cast<AActor>(UGameplayStatics::BeginDeferredActorSpawnFromClass(GetWorld(), LaserClass, transform));
+        AActor* pLaser = Cast<AActor>(UGameplayStatics::BeginDeferredActorSpawnFromClass(GetWorld(), this->LaserClass, transform));
         if (pLaser)
         {
             // TO DO init bullet
             pLaser->SetReplicates(true);
             UGameplayStatics::FinishSpawningActor(pLaser, transform);
             UProjectileMovementComponent* comp = Cast<UProjectileMovementComponent>(pLaser->GetComponentByClass(UProjectileMovementComponent::StaticClass()));
-            if (comp && ProceduralSpaceShipShell)
+            if (comp && this->ProceduralSpaceShipShell)
             {
                 comp->SetVelocityInLocalSpace(FVector(1, 0, 0) * comp->InitialSpeed);
             }
         }
-        m_laserCountDown = TimeBetweenLaserShot;
+        this->m_laserCountDown = this->TimeBetweenLaserShot;
     }
-    else if (m_laserCountDown != 0.0f)
+    else if (this->m_laserCountDown != 0.0f)
     {
-        m_laserCountDown -= _deltaTime;
+        this->m_laserCountDown -= _deltaTime;
     }
 }
 
@@ -250,9 +250,9 @@ void AHub_Pawn::generateMesh()
         _func();
     };
 
-    lb_init(ProceduralSpaceShipBase, std::bind(&AHub_Pawn::generateBase, this));
-    lb_init(ProceduralSpaceShipShell, std::bind(&AHub_Pawn::generateShell, this));
-    lb_init(ProceduralSpaceShipEngine, std::bind(&AHub_Pawn::generateEngine, this));
+    lb_init(this->ProceduralSpaceShipBase, std::bind(&AHub_Pawn::generateBase, this));
+    lb_init(this->ProceduralSpaceShipShell, std::bind(&AHub_Pawn::generateShell, this));
+    lb_init(this->ProceduralSpaceShipEngine, std::bind(&AHub_Pawn::generateEngine, this));
 }
 
 void AHub_Pawn::generateBase()
@@ -269,18 +269,18 @@ void AHub_Pawn::generateBase()
         MakeShareable(new ChainedLocation(FVector(0,0,15), cubeSize)),
         MakeShareable(new ChainedLocation(FVector(0,0,-15), cubeSize)),
     };
-    ProceduralSpaceShipBase->setEdges(std::forward<TArray<TSharedPtr<ChainedLocation>>>(chainedLocations));
-    ProceduralSpaceShipBase->generateMesh(std::move(FName("Player")));
-    ProceduralSpaceShipBase->SetMaterial(0, MatBase);
+    this->ProceduralSpaceShipBase->setEdges(std::forward<TArray<TSharedPtr<ChainedLocation>>>(chainedLocations));
+    this->ProceduralSpaceShipBase->generateMesh(std::move(FName("Player")));
+    this->ProceduralSpaceShipBase->SetMaterial(0, this->MatBase);
 }
 
 void AHub_Pawn::generateShell()
 {
     FVector cubeSize = FVector(15.0f, 15.0f, 15.0f);
-    ProceduralSpaceShipShell->setCubeSize(cubeSize);
+    this->ProceduralSpaceShipShell->setCubeSize(cubeSize);
     TArray<TSharedPtr<ChainedLocation>> chainedLocations;
 
-    TArray<TSharedPtr<ChainedLocation>> const& chainedLocationBase = ProceduralSpaceShipBase->getEdges();
+    TArray<TSharedPtr<ChainedLocation>> const& chainedLocationBase = this->ProceduralSpaceShipBase->getEdges();
     TArray<FVector> locationBase;
     for (auto chained : chainedLocationBase)
     {
@@ -312,15 +312,15 @@ void AHub_Pawn::generateShell()
         }
     }
 
-    ProceduralSpaceShipShell->setEdges(std::forward<TArray<TSharedPtr<ChainedLocation>>>(chainedLocations));
-    ProceduralSpaceShipShell->generateMesh(std::move(FName("Player")));
-    ProceduralSpaceShipShell->SetMaterial(0, MatShell);
+    this->ProceduralSpaceShipShell->setEdges(std::forward<TArray<TSharedPtr<ChainedLocation>>>(chainedLocations));
+    this->ProceduralSpaceShipShell->generateMesh(std::move(FName("Player")));
+    this->ProceduralSpaceShipShell->SetMaterial(0, this->MatShell);
 }
 
 void AHub_Pawn::generateEngine()
 {
     FVector cubeSize = FVector(5.0f, 5.0f, 5.0f);
-    ProceduralSpaceShipEngine->setCubeSize(cubeSize);
+    this->ProceduralSpaceShipEngine->setCubeSize(cubeSize);
     int8 radius = 120;
     TArray<TSharedPtr<ChainedLocation>> chainedLocations =
     {
@@ -354,27 +354,28 @@ void AHub_Pawn::generateEngine()
         MakeShareable(new ChainedLocation(FVector(-120.0f, radius - 60.0f, 15.0f), cubeSize)),
         MakeShareable(new ChainedLocation(FVector(-120.0f, radius - 60.0f, -15.0f), cubeSize)),
     };
-    ProceduralSpaceShipEngine->setEdges(std::forward<TArray<TSharedPtr<ChainedLocation>>>(chainedLocations));
-    ProceduralSpaceShipEngine->generateMesh(std::move(FName("Player")));
-    ProceduralSpaceShipEngine->SetMaterial(0, MatEngine);
+    
+    this->ProceduralSpaceShipEngine->setEdges(std::forward<TArray<TSharedPtr<ChainedLocation>>>(chainedLocations));
+    this->ProceduralSpaceShipEngine->generateMesh(std::move(FName("Player")));
+    this->ProceduralSpaceShipEngine->SetMaterial(0, MatEngine);
 }
 
 void AHub_Pawn::snapTarget(float _deltaTime)
 {
-    if (!m_isSnap)
+    if (!this->m_isSnap)
     {
         // move actor to shell orientation
-        if (ProceduralSpaceShipShell && m_progressResetSnap != 0.0f)
+        if (this->ProceduralSpaceShipShell && this->m_progressResetSnap != 0.0f)
         {
-            m_progressResetSnap = FMath::Clamp(m_progressResetSnap - _deltaTime, 0.0f, TimeToResetSnap);
+            this->m_progressResetSnap = FMath::Clamp(this->m_progressResetSnap - _deltaTime, 0.0f, this->TimeToResetSnap);
 
-            FRotator r1 = FMath::Lerp(m_defaultRotation, m_snapRelativeRotationOnRelease, m_progressResetSnap / TimeToResetSnap);
-            FRotator r2 = ProceduralSpaceShipShell->GetRelativeTransform().Rotator() - r1;
-            ProceduralSpaceShipShell->SetRelativeRotation(r1);
+            FRotator r1 = FMath::Lerp(this->m_defaultRotation, this->m_snapRelativeRotationOnRelease, this->m_progressResetSnap / this->TimeToResetSnap);
+            FRotator r2 = this->ProceduralSpaceShipShell->GetRelativeTransform().Rotator() - r1;
+            this->ProceduralSpaceShipShell->SetRelativeRotation(r1);
             AddActorLocalRotation(r2);
         }
     }
-    else if (GEngine->GameViewport && GEngine->GameViewport->Viewport && ProceduralSpaceShipShell)
+    else if (GEngine->GameViewport && GEngine->GameViewport->Viewport && this->ProceduralSpaceShipShell)
     {
         APlayerController const* playerController = Cast<APlayerController>(GetController());
         if (!playerController)
@@ -383,7 +384,7 @@ void AHub_Pawn::snapTarget(float _deltaTime)
         }
 
         FVector worldPosition, worldDirection;
-        if (UGameplayStatics::DeprojectScreenToWorld(playerController, CrosshairPosition, worldPosition, worldDirection))
+        if (UGameplayStatics::DeprojectScreenToWorld(playerController, this->CrosshairPosition, worldPosition, worldDirection))
         {
             FVector const& actorLocation = GetActorLocation();
             FVector target = actorLocation + worldDirection * 1000.0f;
@@ -393,7 +394,7 @@ void AHub_Pawn::snapTarget(float _deltaTime)
             FRotator deltaRot = GetActorRotation();
             deltaRot += (rot - deltaRot) * SensibilitySnap;
 
-            ProceduralSpaceShipShell->SetWorldRotation(rot);
+            this->ProceduralSpaceShipShell->SetWorldRotation(rot);
         }
     }
 }
@@ -402,7 +403,7 @@ void AHub_Pawn::resetCrosshair()
 {
     if (GEngine->GameViewport && GEngine->GameViewport->Viewport)
     {
-        m_viewportSize = FVector2D(GEngine->GameViewport->Viewport->GetSizeXY());
-        CrosshairPosition = m_viewportSize / 2.0f;
+        this->m_viewportSize = FVector2D(GEngine->GameViewport->Viewport->GetSizeXY());
+        this->CrosshairPosition = this->m_viewportSize / 2.0f;
     }
 }
