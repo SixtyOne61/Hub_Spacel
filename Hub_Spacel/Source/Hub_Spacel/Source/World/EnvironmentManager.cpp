@@ -21,10 +21,10 @@ AEnvironmentManager::AEnvironmentManager()
 
 void AEnvironmentManager::init(FVector2D const& _bornX, FVector2D const& _bornY, FVector2D const& _bornZ, FVector const& _cubeSize)
 {
-	BornX = _bornX;
-	BornY = _bornY;
-	BornZ = _bornZ;
-	CubeSize = _cubeSize;
+	this->BornX = _bornX;
+	this->BornY = _bornY;
+	this->BornZ = _bornZ;
+	this->CubeSize = _cubeSize;
 }
 
 // Called when the game starts or when spawned
@@ -36,7 +36,7 @@ void AEnvironmentManager::BeginPlay()
 	createProceduralWorld();
 
 	// init all procedural mesh
-	for (auto proceduralMesh : m_proceduralMeshComponents)
+	for (auto proceduralMesh : this->m_proceduralMeshComponents)
 	{
 		if (!proceduralMesh)
 		{
@@ -47,12 +47,12 @@ void AEnvironmentManager::BeginPlay()
         proceduralMesh->generateMesh(std::move(FName("BlockAll")));
         if (MatAsteroid)
         {
-            if (UMaterialInstanceDynamic * customMat = UMaterialInstanceDynamic::Create(MatAsteroid, proceduralMesh))
+            if (UMaterialInstanceDynamic * customMat = UMaterialInstanceDynamic::Create(this->MatAsteroid, proceduralMesh))
             {
-                customMat->SetScalarParameterValue(TEXT("Trickness"), TricknessValue);
+                customMat->SetScalarParameterValue(TEXT("Trickness"), this->TricknessValue);
                 proceduralMesh->SetMaterial(0, customMat);
                 proceduralMesh->SetRenderCustomDepth(true);
-                proceduralMesh->SetCustomDepthStencilValue(StencilValue);
+                proceduralMesh->SetCustomDepthStencilValue(this->StencilValue);
             }
         }
 	}
@@ -143,7 +143,7 @@ void AEnvironmentManager::createProceduralWorld()
         if (info.isValid())
         {
             // max item in next object
-            m_currentObject.Reserve(max - id);
+            this->m_currentObject.Reserve(max - id);
 
             addNeighboor(info, list);
             // add component
@@ -158,7 +158,7 @@ void AEnvironmentManager::createProceduralWorld()
 
 void AEnvironmentManager::addNeighboor(CoordInfo& _info, TArray<CoordInfo> & _list)
 {
-    m_currentObject.Add(_info.m_chainedLocation);
+    this->m_currentObject.Add(_info.m_chainedLocation);
     _info.m_use = true;
 
     auto lb_addNeighboor = [&](EFace _face)
@@ -196,11 +196,11 @@ void AEnvironmentManager::addProceduralMesh()
 		proceduralMesh->SetWorldLocation(location);
 		proceduralMesh->bUseAsyncCooking = true;
 		proceduralMesh->setCubeSize(CubeSize);
-		proceduralMesh->setEdges(std::forward<TArray<TSharedPtr<ChainedLocation>>>(m_currentObject));
+		proceduralMesh->setEdges(std::forward<TArray<TSharedPtr<ChainedLocation>>>(this->m_currentObject));
         proceduralMesh->SetCastShadow(false);
-		m_currentObject.Empty();
+		this->m_currentObject.Empty();
 
-		m_proceduralMeshComponents.Add(proceduralMesh);
+        this->m_proceduralMeshComponents.Add(proceduralMesh);
 	}
 }
 
