@@ -106,6 +106,8 @@ protected:
 	TSubclassOf<class AActor> LaserClass;
     UPROPERTY(Category = "Bullet", EditAnywhere, BlueprintReadOnly)
     float TimeBetweenLaserShot = 0.3f;
+    UPROPERTY(Category = "Bullet", VisibleDefaultsOnly, BlueprintReadOnly)
+    class USceneComponent* BulletSpawner = nullptr;
 
 private:
 	/* speed */

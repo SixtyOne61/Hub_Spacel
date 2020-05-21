@@ -49,6 +49,10 @@ AHub_Pawn::AHub_Pawn()
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera0"));
 	Camera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);	// Attach the camera
 	Camera->bUsePawnControlRotation = false; // Don't rotate camera with controller
+
+    // spawner for bullet
+    BulletSpawner = CreateDefaultSubobject<USceneComponent>(TEXT("BulletSpawner"));
+    BulletSpawner->SetupAttachment(RootComponent);
 }
 
 // Called when the game starts or when spawned
@@ -215,7 +219,7 @@ void AHub_Pawn::fireLaser(float _deltaTime)
 {
     if (this->m_isFire && this->m_laserCountDown <= 0.0f)
     {
-        FTransform transform = ProceduralSpaceShipBase->GetSocketTransform("SimpleBulletSpawn");
+        FTransform transform = this->BulletSpawner->GetComponentTransform();
         AActor* pLaser = Cast<AActor>(UGameplayStatics::BeginDeferredActorSpawnFromClass(GetWorld(), this->LaserClass, transform));
         if (pLaser)
         {
