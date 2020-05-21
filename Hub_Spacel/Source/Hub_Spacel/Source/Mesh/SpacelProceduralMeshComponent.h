@@ -39,7 +39,7 @@ protected:
 	void onHit(class UPrimitiveComponent* _comp, class AActor* _otherActor, class UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit);
 
 	// -- manage hit
-	bool hit(FVector const& _forward, FVector const& _impactPoint);
+	bool hit(FVector const& _impactPoint);
 
 protected:
 	// size of cube

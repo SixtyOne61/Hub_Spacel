@@ -215,21 +215,26 @@ void USpacelProceduralMeshComponent::generateMesh(FName _collisionProfileName)
 	AddCollisionConvexMesh(vertices);
 }
 
-bool USpacelProceduralMeshComponent::hit(FVector const& _forward, FVector const& _impactPoint)
+bool USpacelProceduralMeshComponent::hit(FVector const& _impactPoint)
 {
-	FVector endPoint = _impactPoint + _forward * this->m_halfCubeSize;
+    // for this moment we keep cubeSize instead half (more impact size)
+    float radius = this->CubeSize.Size();
 
-	if(this->m_edgesPosition.RemoveAll([&](TSharedPtr<ChainedLocation> _point)
+    FVector ownerLocation = this->m_ownerLocation;
+
+	if(this->m_edgesPosition.RemoveAll([&_impactPoint, &radius, &ownerLocation](TSharedPtr<ChainedLocation> _point)
 	{
 		if (_point->hasAllMask())
 		{
-			return false;
-		}		
+            return false;
+		}
 
-		FVector hitLocation;
-		FVector hitNormal;
-		float hitTime;
-		return FMath::LineExtentBoxIntersection(_point->getBox(), _impactPoint, endPoint, FVector::ZeroVector, hitLocation, hitNormal, hitTime);
+        if (FVector::Dist(_point->getCenter() + ownerLocation, _impactPoint) <= radius)
+        {
+            _point->removeMeToOtherFace();
+            return true;
+        }
+        return false;
 	}) != 0)
 	{
         // TO DO; only update needed part
@@ -262,12 +267,16 @@ void USpacelProceduralMeshComponent::onHit(class UPrimitiveComponent* _comp, cla
 
     if (DebugDrawProceduralMeshCollision == 1)
     {
-        DrawDebugSphere(GetWorld(), _otherActor->GetActorLocation(), 200.0f, 12, FColor::Blue, false, 30.0f, 128, 10.0f);
-        DrawDebugSphere(GetWorld(), _hit.ImpactPoint, 250.0f, 12, FColor::Red, false, 30.0f, 128, 10.0f);
+        DrawDebugSphere(GetWorld(), _otherActor->GetActorLocation(), 70.0f, 12, FColor::Blue, false, 30.0f, 128, 10.0f);
+        DrawDebugSphere(GetWorld(), _hit.ImpactPoint, 100.0f, 12, FColor::Red, false, 30.0f, 128, 10.0f);
     }
 
 	// check if it's a bullet type
-    if (hit(_hit.ImpactNormal, _hit.ImpactPoint))
+    if (hit(_hit.ImpactPoint))
+    {
+        _otherActor->Destroy();
+    }
+    else
     {
         _otherActor->Destroy();
     }
