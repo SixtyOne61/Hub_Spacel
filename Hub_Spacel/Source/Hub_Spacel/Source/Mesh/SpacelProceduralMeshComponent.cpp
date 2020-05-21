@@ -54,8 +54,6 @@ void USpacelProceduralMeshComponent::generateMesh(FName _collisionProfileName)
 		EFace mask = point->getMask();
 		FVector center = point->getCenter();
 
-		// TO DO : only display if we havent all neighboor ?
-
 		// read mask from linkPos
 		if (!EnumHasAllFlags(mask, EFace::Top))
 		{
@@ -221,6 +219,8 @@ bool USpacelProceduralMeshComponent::hit(FVector const& _impactPoint)
     float radius = this->CubeSize.Size();
 
     FVector ownerLocation = this->m_ownerLocation;
+
+    // TO DO : add edge with hasAllMash, in an other array, and don't check it for remove ?
 
 	if(this->m_edgesPosition.RemoveAll([&_impactPoint, &radius, &ownerLocation](TSharedPtr<ChainedLocation> _point)
 	{
