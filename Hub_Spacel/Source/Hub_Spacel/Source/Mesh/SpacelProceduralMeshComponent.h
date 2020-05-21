@@ -7,6 +7,8 @@
 #include "Hub_Spacel/Source/Engine/Location/ChainedLocation.h"
 #include "SpacelProceduralMeshComponent.generated.h"
 
+static int32 DebugDrawProceduralMeshCollision = 0;
+
 /**
  * 
  */
@@ -43,6 +45,9 @@ protected:
 	// size of cube
 	UPROPERTY(VisibleAnywhere)
 	FVector CubeSize = FVector::ZeroVector;
+
+    /* half of cubeSize */
+    FVector m_halfCubeSize = FVector::ZeroVector;
 
 	// location of owner
 	FVector m_ownerLocation = FVector::ZeroVector;

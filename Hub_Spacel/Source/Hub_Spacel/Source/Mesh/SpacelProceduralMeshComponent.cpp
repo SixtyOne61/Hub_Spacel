@@ -4,6 +4,13 @@
 #include "DrawDebugHelpers.h"
 #include <algorithm>
 
+FAutoConsoleVariableRef CVARDebugDrawProceduralMeshCollision(
+    TEXT("h.Draw.ProceduralMeshCollision"),
+    DebugDrawProceduralMeshCollision,
+    TEXT("Debug draw collision, 0 : disable, 1 : show impact point."),
+    ECVF_Default
+);
+
 USpacelProceduralMeshComponent::USpacelProceduralMeshComponent()
 	: UProceduralMeshComponent(FObjectInitializer())
 {
@@ -38,7 +45,7 @@ void USpacelProceduralMeshComponent::generateMesh(FName _collisionProfileName)
     TArray<FVector2D> UV0;
     UV0.Reserve(maxSize);
 
-	FVector half = this->CubeSize / 2.0f;
+	this->m_halfCubeSize = this->CubeSize / 2.0f;
 
 	for (TSharedPtr<ChainedLocation> point : this->m_edgesPosition)
 	{
@@ -53,10 +60,10 @@ void USpacelProceduralMeshComponent::generateMesh(FName _collisionProfileName)
 		if (!EnumHasAllFlags(mask, EFace::Top))
 		{
             int deb = vertices.Num();
-            vertices.Add(center + FVector(-half.X, half.Y, -half.Z));
-            vertices.Add(center + FVector(half.X, half.Y, -half.Z));
-            vertices.Add(center + FVector(half.X, half.Y, half.Z));
-            vertices.Add(center + FVector(-half.X, half.Y, half.Z));
+            vertices.Add(center + FVector(-this->m_halfCubeSize.X, this->m_halfCubeSize.Y, -this->m_halfCubeSize.Z));
+            vertices.Add(center + FVector(this->m_halfCubeSize.X, this->m_halfCubeSize.Y, -this->m_halfCubeSize.Z));
+            vertices.Add(center + FVector(this->m_halfCubeSize.X, this->m_halfCubeSize.Y, this->m_halfCubeSize.Z));
+            vertices.Add(center + FVector(-this->m_halfCubeSize.X, this->m_halfCubeSize.Y, this->m_halfCubeSize.Z));
 
             UV0.Add(FVector2D(0, 0));
             UV0.Add(FVector2D(1, 0));
@@ -77,10 +84,10 @@ void USpacelProceduralMeshComponent::generateMesh(FName _collisionProfileName)
 		if (!EnumHasAllFlags(mask, EFace::Bot))
 		{
 			int deb = vertices.Num();
-			vertices.Add(center + FVector(half.X, -half.Y, half.Z));
-			vertices.Add(center + FVector(half.X, -half.Y, -half.Z));
-			vertices.Add(center + FVector(-half.X, -half.Y, -half.Z));
-            vertices.Add(center + FVector(-half.X, -half.Y, half.Z));
+			vertices.Add(center + FVector(this->m_halfCubeSize.X, -this->m_halfCubeSize.Y, this->m_halfCubeSize.Z));
+			vertices.Add(center + FVector(this->m_halfCubeSize.X, -this->m_halfCubeSize.Y, -this->m_halfCubeSize.Z));
+			vertices.Add(center + FVector(-this->m_halfCubeSize.X, -this->m_halfCubeSize.Y, -this->m_halfCubeSize.Z));
+            vertices.Add(center + FVector(-this->m_halfCubeSize.X, -this->m_halfCubeSize.Y, this->m_halfCubeSize.Z));
 
             UV0.Add(FVector2D(1, 1));
             UV0.Add(FVector2D(1, 0));
@@ -101,10 +108,10 @@ void USpacelProceduralMeshComponent::generateMesh(FName _collisionProfileName)
 		if (!EnumHasAllFlags(mask, EFace::Right))
 		{
 			int deb = vertices.Num();
-			vertices.Add(center + FVector(half.X, -half.Y, half.Z));
-			vertices.Add(center + FVector(half.X, half.Y, half.Z));
-			vertices.Add(center + FVector(half.X, half.Y, -half.Z));
-            vertices.Add(center + FVector(half.X, -half.Y, -half.Z));
+			vertices.Add(center + FVector(this->m_halfCubeSize.X, -this->m_halfCubeSize.Y, this->m_halfCubeSize.Z));
+			vertices.Add(center + FVector(this->m_halfCubeSize.X, this->m_halfCubeSize.Y, this->m_halfCubeSize.Z));
+			vertices.Add(center + FVector(this->m_halfCubeSize.X, this->m_halfCubeSize.Y, -this->m_halfCubeSize.Z));
+            vertices.Add(center + FVector(this->m_halfCubeSize.X, -this->m_halfCubeSize.Y, -this->m_halfCubeSize.Z));
 
             UV0.Add(FVector2D(0, 1));
             UV0.Add(FVector2D(1, 1));
@@ -125,10 +132,10 @@ void USpacelProceduralMeshComponent::generateMesh(FName _collisionProfileName)
 		if (!EnumHasAllFlags(mask, EFace::Left))
 		{
 			int deb = vertices.Num();
-			vertices.Add(center + FVector(-half.X, -half.Y, half.Z));
-			vertices.Add(center + FVector(-half.X, -half.Y, -half.Z));
-			vertices.Add(center + FVector(-half.X, half.Y, -half.Z));
-            vertices.Add(center + FVector(-half.X, half.Y, half.Z));
+			vertices.Add(center + FVector(-this->m_halfCubeSize.X, -this->m_halfCubeSize.Y, this->m_halfCubeSize.Z));
+			vertices.Add(center + FVector(-this->m_halfCubeSize.X, -this->m_halfCubeSize.Y, -this->m_halfCubeSize.Z));
+			vertices.Add(center + FVector(-this->m_halfCubeSize.X, this->m_halfCubeSize.Y, -this->m_halfCubeSize.Z));
+            vertices.Add(center + FVector(-this->m_halfCubeSize.X, this->m_halfCubeSize.Y, this->m_halfCubeSize.Z));
 
             UV0.Add(FVector2D(0, 1));
             UV0.Add(FVector2D(0, 0));
@@ -149,10 +156,10 @@ void USpacelProceduralMeshComponent::generateMesh(FName _collisionProfileName)
 		if (!EnumHasAllFlags(mask, EFace::Front))
 		{
 			int deb = vertices.Num();
-			vertices.Add(center + FVector(-half.X, half.Y, -half.Z));
-			vertices.Add(center + FVector(-half.X, -half.Y, -half.Z));
-			vertices.Add(center + FVector(half.X, -half.Y, -half.Z));
-            vertices.Add(center + FVector(half.X, half.Y, -half.Z));
+			vertices.Add(center + FVector(-this->m_halfCubeSize.X, this->m_halfCubeSize.Y, -this->m_halfCubeSize.Z));
+			vertices.Add(center + FVector(-this->m_halfCubeSize.X, -this->m_halfCubeSize.Y, -this->m_halfCubeSize.Z));
+			vertices.Add(center + FVector(this->m_halfCubeSize.X, -this->m_halfCubeSize.Y, -this->m_halfCubeSize.Z));
+            vertices.Add(center + FVector(this->m_halfCubeSize.X, this->m_halfCubeSize.Y, -this->m_halfCubeSize.Z));
 
             UV0.Add(FVector2D(0, 1));
             UV0.Add(FVector2D(0, 0));
@@ -173,10 +180,10 @@ void USpacelProceduralMeshComponent::generateMesh(FName _collisionProfileName)
 		if (!EnumHasAllFlags(mask, EFace::Back))
 		{
 			int deb = vertices.Num();
-			vertices.Add(center + FVector(half.X, -half.Y, half.Z));
-			vertices.Add(center + FVector(-half.X, -half.Y, half.Z));
-			vertices.Add(center + FVector(-half.X, half.Y, half.Z));
-            vertices.Add(center + FVector(half.X, half.Y, half.Z));
+			vertices.Add(center + FVector(this->m_halfCubeSize.X, -this->m_halfCubeSize.Y, this->m_halfCubeSize.Z));
+			vertices.Add(center + FVector(-this->m_halfCubeSize.X, -this->m_halfCubeSize.Y, this->m_halfCubeSize.Z));
+			vertices.Add(center + FVector(-this->m_halfCubeSize.X, this->m_halfCubeSize.Y, this->m_halfCubeSize.Z));
+            vertices.Add(center + FVector(this->m_halfCubeSize.X, this->m_halfCubeSize.Y, this->m_halfCubeSize.Z));
 
             UV0.Add(FVector2D(1, 0));
             UV0.Add(FVector2D(0, 0));
@@ -210,9 +217,9 @@ void USpacelProceduralMeshComponent::generateMesh(FName _collisionProfileName)
 
 bool USpacelProceduralMeshComponent::hit(FVector const& _forward, FVector const& _impactPoint)
 {
-	FVector endPoint = _impactPoint + _forward * CubeSize;
+	FVector endPoint = _impactPoint + _forward * this->m_halfCubeSize;
 
-	if(m_edgesPosition.RemoveAll([&](TSharedPtr<ChainedLocation> _point)
+	if(this->m_edgesPosition.RemoveAll([&](TSharedPtr<ChainedLocation> _point)
 	{
 		if (_point->hasAllMask())
 		{
@@ -253,8 +260,11 @@ void USpacelProceduralMeshComponent::onHit(class UPrimitiveComponent* _comp, cla
         return;
     }
 
-    DrawDebugSphere(GetWorld(), _otherActor->GetActorLocation(), 200.0f, 12, FColor::Blue, false, 30.0f, 128, 10.0f);
-    DrawDebugSphere(GetWorld(), _hit.ImpactPoint, 250.0f, 12, FColor::Red, false, 30.0f, 128, 10.0f);
+    if (DebugDrawProceduralMeshCollision == 1)
+    {
+        DrawDebugSphere(GetWorld(), _otherActor->GetActorLocation(), 200.0f, 12, FColor::Blue, false, 30.0f, 128, 10.0f);
+        DrawDebugSphere(GetWorld(), _hit.ImpactPoint, 250.0f, 12, FColor::Red, false, 30.0f, 128, 10.0f);
+    }
 
 	// check if it's a bullet type
     if (hit(_hit.ImpactNormal, _hit.ImpactPoint))
