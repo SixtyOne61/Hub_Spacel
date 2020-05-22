@@ -18,6 +18,13 @@
 #include "DrawDebugHelpers.h"
 #include <functional>
 
+FAutoConsoleVariableRef CVARDebugDrawSpawnBullet(
+    TEXT("h.Draw.SpawnBullet"),
+    DebugDrawSpawnBullet,
+    TEXT("Debug draw spawn bullet, 0 : disable, 1 : show start point."),
+    ECVF_Default
+);
+
 // Sets default values
 AHub_Pawn::AHub_Pawn()
 {
@@ -50,9 +57,20 @@ AHub_Pawn::AHub_Pawn()
 	Camera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);	// Attach the camera
 	Camera->bUsePawnControlRotation = false; // Don't rotate camera with controller
 
-    // spawner for bullet
-    BulletSpawner = CreateDefaultSubobject<USceneComponent>(TEXT("BulletSpawner"));
-    BulletSpawner->SetupAttachment(RootComponent);
+    // spawners for bullet
+    auto lb_initSpawner = [&](FName&& _name, USceneComponent*& _comp)
+    {
+        _comp = CreateDefaultSubobject<USceneComponent>(_name);
+        _comp->SetupAttachment(RootComponent);
+        m_bulletSpawners.Add(_comp);
+    };
+
+    lb_initSpawner(TEXT("BulletSpawner0"), BulletSpawner0);
+    lb_initSpawner(TEXT("BulletSpawner1"), BulletSpawner1);
+    lb_initSpawner(TEXT("BulletSpawner2"), BulletSpawner2);
+    lb_initSpawner(TEXT("BulletSpawner3"), BulletSpawner3);
+
+    generateMesh();
 }
 
 // Called when the game starts or when spawned
@@ -81,9 +99,9 @@ void AHub_Pawn::Tick(float _deltaTime)
 
 	// rotation
 	FRotator deltaRotation(0.f, 0.f, 0.f);
-	deltaRotation.Pitch = m_currentPitchSpeed * _deltaTime;
-	deltaRotation.Yaw = m_currentYawSpeed * _deltaTime;
-	deltaRotation.Roll = m_currentRollSpeed * _deltaTime;
+	deltaRotation.Pitch = this->m_currentPitchSpeed * _deltaTime;
+	deltaRotation.Yaw = this->m_currentYawSpeed * _deltaTime;
+	deltaRotation.Roll = this->m_currentRollSpeed * _deltaTime;
 
 	// rotate ship
 	AddActorLocalRotation(deltaRotation);
@@ -219,7 +237,18 @@ void AHub_Pawn::fireLaser(float _deltaTime)
 {
     if (this->m_isFire && this->m_laserCountDown <= 0.0f)
     {
-        FTransform transform = this->BulletSpawner->GetComponentTransform();
+        FTransform transform = this->m_bulletSpawners[this->m_idBulletSpawner]->GetComponentTransform();
+        ++this->m_idBulletSpawner;
+        if (this->m_idBulletSpawner >= this->m_bulletSpawners.Num())
+        {
+            this->m_idBulletSpawner = 0;
+        }
+
+        if (DebugDrawSpawnBullet)
+        {
+            DrawDebugSphere(GetWorld(), transform.GetLocation(), 10.0f, 12, FColor::Green, false, 30.0f, 128, 10.0f);
+        }
+
         AActor* pLaser = Cast<AActor>(UGameplayStatics::BeginDeferredActorSpawnFromClass(GetWorld(), this->LaserClass, transform));
         if (pLaser)
         {
@@ -323,7 +352,7 @@ void AHub_Pawn::generateShell()
 
 void AHub_Pawn::generateEngine()
 {
-    FVector cubeSize = FVector(5.0f, 5.0f, 5.0f);
+    FVector cubeSize = FVector(15.0f, 15.0f, 15.0f);
     this->ProceduralSpaceShipEngine->setCubeSize(cubeSize);
     int8 radius = 120;
     TArray<TSharedPtr<ChainedLocation>> chainedLocations =

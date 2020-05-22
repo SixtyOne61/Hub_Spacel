@@ -6,6 +6,8 @@
 #include "GameFramework/Pawn.h"
 #include "Hub_Pawn.generated.h"
 
+static int32 DebugDrawSpawnBullet = 0;
+
 UCLASS()
 class HUB_SPACEL_API AHub_Pawn : public APawn
 {
@@ -107,7 +109,13 @@ protected:
     UPROPERTY(Category = "Bullet", EditAnywhere, BlueprintReadOnly)
     float TimeBetweenLaserShot = 0.3f;
     UPROPERTY(Category = "Bullet", VisibleDefaultsOnly, BlueprintReadOnly)
-    class USceneComponent* BulletSpawner = nullptr;
+    class USceneComponent* BulletSpawner0 = nullptr;
+    UPROPERTY(Category = "Bullet", VisibleDefaultsOnly, BlueprintReadOnly)
+    class USceneComponent* BulletSpawner1 = nullptr;
+    UPROPERTY(Category = "Bullet", VisibleDefaultsOnly, BlueprintReadOnly)
+    class USceneComponent* BulletSpawner2 = nullptr;
+    UPROPERTY(Category = "Bullet", VisibleDefaultsOnly, BlueprintReadOnly)
+    class USceneComponent* BulletSpawner3 = nullptr;
 
 private:
 	/* speed */
@@ -138,6 +146,12 @@ private:
 
     /* count down between fire */
     float m_laserCountDown = 0.0f;
+
+    /* id for next bullet spawner to use */
+    uint8 m_idBulletSpawner = 0;
+
+    /* bullet spawn list */
+    TArray<class USceneComponent*> m_bulletSpawners;
 
 public:
 	// -- get
