@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
+#include "Hub_Enum.h"
 #include "Hub_Pawn.generated.h"
 
 static int32 DebugDrawSpawnBullet = 0;
@@ -26,9 +27,13 @@ public:
 	virtual void Tick(float _deltaTime) override;
 	virtual void NotifyHit(class UPrimitiveComponent* _myComp, class AActor* _other, class UPrimitiveComponent* _otherComp, bool _bSelfMoved, FVector _hitLocation, FVector _hitNormal, FVector _normalImpulse, const FHitResult& _hit) override;
 
-
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* _playerInputComponent) override;
+
+    /* for setup all module of ship */
+    UFUNCTION(BlueprintCallable)
+    //void SetupModule(ESubMachine _subMachine);
+    void SetupModule(TSubclassOf<ADefaultSubMachine> _subMachine);
 
 protected:
 	/* bind function */
@@ -108,14 +113,9 @@ protected:
 	TSubclassOf<class AActor> LaserClass;
     UPROPERTY(Category = "Bullet", EditAnywhere, BlueprintReadOnly)
     float TimeBetweenLaserShot = 0.3f;
-    UPROPERTY(Category = "Bullet", VisibleDefaultsOnly, BlueprintReadOnly)
-    class USceneComponent* BulletSpawner0 = nullptr;
-    UPROPERTY(Category = "Bullet", VisibleDefaultsOnly, BlueprintReadOnly)
-    class USceneComponent* BulletSpawner1 = nullptr;
-    UPROPERTY(Category = "Bullet", VisibleDefaultsOnly, BlueprintReadOnly)
-    class USceneComponent* BulletSpawner2 = nullptr;
-    UPROPERTY(Category = "Bullet", VisibleDefaultsOnly, BlueprintReadOnly)
-    class USceneComponent* BulletSpawner3 = nullptr;
+    
+    UPROPERTY(Category = "Module", VisibleAnywhere, BlueprintReadOnly)
+    class UChildActorComponent* SubMachineModule = nullptr;
 
 private:
 	/* speed */
@@ -146,12 +146,6 @@ private:
 
     /* count down between fire */
     float m_laserCountDown = 0.0f;
-
-    /* id for next bullet spawner to use */
-    uint8 m_idBulletSpawner = 0;
-
-    /* bullet spawn list */
-    TArray<class USceneComponent*> m_bulletSpawners;
 
 public:
 	// -- get

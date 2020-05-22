@@ -16,6 +16,7 @@
 #include "Materials/MaterialInstance.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "DrawDebugHelpers.h"
+#include "Source/Gameplay/Bullet/DefaultSubMachine.h"
 #include <functional>
 
 FAutoConsoleVariableRef CVARDebugDrawSpawnBullet(
@@ -54,21 +55,12 @@ AHub_Pawn::AHub_Pawn()
 
 	// Create camera component 
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera0"));
-	Camera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);	// Attach the camera
+	Camera->SetupAttachment(SpringArm, USpringArmComponent::SocketName); // Attach the camera
 	Camera->bUsePawnControlRotation = false; // Don't rotate camera with controller
 
-    // spawners for bullet
-    auto lb_initSpawner = [&](FName&& _name, USceneComponent*& _comp)
-    {
-        _comp = CreateDefaultSubobject<USceneComponent>(_name);
-        _comp->SetupAttachment(RootComponent);
-        m_bulletSpawners.Add(_comp);
-    };
-
-    lb_initSpawner(TEXT("BulletSpawner0"), BulletSpawner0);
-    lb_initSpawner(TEXT("BulletSpawner1"), BulletSpawner1);
-    lb_initSpawner(TEXT("BulletSpawner2"), BulletSpawner2);
-    lb_initSpawner(TEXT("BulletSpawner3"), BulletSpawner3);
+    // init module of ship
+    SubMachineModule = CreateDefaultSubobject<UChildActorComponent>(TEXT("SubMachineModule"));
+    SubMachineModule->SetupAttachment(RootComponent);
 
     generateMesh();
 }
@@ -143,6 +135,12 @@ void AHub_Pawn::SetupPlayerInputComponent(UInputComponent* _playerInputComponent
     _playerInputComponent->BindAction("Fire", IE_Released, this, &AHub_Pawn::input_FireOff);
 }
 
+void AHub_Pawn::SetupModule(TSubclassOf<ADefaultSubMachine> _subMachine)
+{
+    this->SubMachineModule->SetChildActorClass(_subMachine);
+    this->SubMachineModule->CreateChildActor();
+}
+
 void AHub_Pawn::input_FireOn()
 {
     this->m_isFire = true;
@@ -193,7 +191,7 @@ void AHub_Pawn::input_MoveRight(float _val)
 
 void AHub_Pawn::input_MoveTargetUp(float _val)
 {
-    if (!m_isSnap)
+    if (!this->m_isSnap)
     {
         return;
     }
@@ -235,33 +233,38 @@ void AHub_Pawn::input_SnapOff()
 
 void AHub_Pawn::fireLaser(float _deltaTime)
 {
-    if (this->m_isFire && this->m_laserCountDown <= 0.0f)
+    if (this->m_isFire && this->m_laserCountDown <= 0.0f && this->SubMachineModule)
     {
-        FTransform transform = this->m_bulletSpawners[this->m_idBulletSpawner]->GetComponentTransform();
-        ++this->m_idBulletSpawner;
-        if (this->m_idBulletSpawner >= this->m_bulletSpawners.Num())
+        if (ADefaultSubMachine * subMachine = Cast<ADefaultSubMachine>(this->SubMachineModule->GetChildActor()))
         {
-            this->m_idBulletSpawner = 0;
-        }
-
-        if (DebugDrawSpawnBullet)
-        {
-            DrawDebugSphere(GetWorld(), transform.GetLocation(), 10.0f, 12, FColor::Green, false, 30.0f, 128, 10.0f);
-        }
-
-        AActor* pLaser = Cast<AActor>(UGameplayStatics::BeginDeferredActorSpawnFromClass(GetWorld(), this->LaserClass, transform));
-        if (pLaser)
-        {
-            // TO DO init bullet
-            pLaser->SetReplicates(true);
-            UGameplayStatics::FinishSpawningActor(pLaser, transform);
-            UProjectileMovementComponent* comp = Cast<UProjectileMovementComponent>(pLaser->GetComponentByClass(UProjectileMovementComponent::StaticClass()));
-            if (comp && this->ProceduralSpaceShipShell)
+            FVector location = FVector::ZeroVector;
+            if (subMachine->getWoldLocationBulletSpawner(location))
             {
-                comp->SetVelocityInLocalSpace(FVector(1, 0, 0) * comp->InitialSpeed);
+                // TO DO : if we reoriented mesh we can directly use rotation from bullet spawner, but keep scale to 1
+                FTransform transform = FTransform::Identity;
+                transform.SetLocation(location);
+                transform.SetRotation(GetActorRotation().Quaternion());
+
+                if (DebugDrawSpawnBullet)
+                {
+                    DrawDebugSphere(GetWorld(), transform.GetLocation(), 10.0f, 12, FColor::Green, false, 30.0f, 128, 10.0f);
+                }
+
+                AActor* pLaser = Cast<AActor>(UGameplayStatics::BeginDeferredActorSpawnFromClass(GetWorld(), this->LaserClass, transform));
+                if (pLaser)
+                {
+                    // TO DO init bullet
+                    pLaser->SetReplicates(true);
+                    UGameplayStatics::FinishSpawningActor(pLaser, transform);
+                    UProjectileMovementComponent* comp = Cast<UProjectileMovementComponent>(pLaser->GetComponentByClass(UProjectileMovementComponent::StaticClass()));
+                    if (comp && this->ProceduralSpaceShipShell)
+                    {
+                        comp->SetVelocityInLocalSpace(FVector(1, 0, 0) * comp->InitialSpeed);
+                    }
+                }
+                this->m_laserCountDown = this->TimeBetweenLaserShot;
             }
         }
-        this->m_laserCountDown = this->TimeBetweenLaserShot;
     }
     else if (this->m_laserCountDown != 0.0f)
     {
