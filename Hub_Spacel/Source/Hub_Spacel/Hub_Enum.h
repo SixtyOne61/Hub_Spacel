@@ -13,3 +13,13 @@ enum class ESubMachine : uint8
     Default UMETA(DisplayName = "Default"),
     Light UMETA(DisplayName = "Light")
 };
+
+UENUM(BlueprintType)
+enum class EShell : uint8
+{
+    /* Default and unset value */
+    None,
+
+    /* Head */
+    Default UMETA(DisplayName = "Default")
+};

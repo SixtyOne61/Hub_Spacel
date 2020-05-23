@@ -33,7 +33,7 @@ public:
     /* for setup all module of ship */
     UFUNCTION(BlueprintCallable)
     //void SetupModule(ESubMachine _subMachine);
-    void SetupModule(TSubclassOf<ADefaultSubMachine> _subMachine);
+    void SetupModule(TSubclassOf<ADefaultSubMachine> _subMachine, TSubclassOf<ADefaultShell> _shell);
 
 protected:
 	/* bind function */
@@ -116,6 +116,8 @@ protected:
     
     UPROPERTY(Category = "Module", VisibleAnywhere, BlueprintReadOnly)
     class UChildActorComponent* SubMachineModule = nullptr;
+    UPROPERTY(Category = "Module", VisibleAnywhere, BlueprintReadOnly)
+    class UChildActorComponent* ShellModule = nullptr;
 
 private:
 	/* speed */

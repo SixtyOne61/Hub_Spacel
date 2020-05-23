@@ -17,6 +17,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "DrawDebugHelpers.h"
 #include "Source/Gameplay/Bullet/DefaultSubMachine.h"
+#include "Source/Gameplay/Shell/DefaultShell.h"
 #include <functional>
 
 FAutoConsoleVariableRef CVARDebugDrawSpawnBullet(
@@ -61,6 +62,9 @@ AHub_Pawn::AHub_Pawn()
     // init module of ship
     SubMachineModule = CreateDefaultSubobject<UChildActorComponent>(TEXT("SubMachineModule"));
     SubMachineModule->SetupAttachment(RootComponent);
+
+    ShellModule = CreateDefaultSubobject<UChildActorComponent>(TEXT("ShellModule"));
+    ShellModule->SetupAttachment(RootComponent);
 
     generateMesh();
 }
@@ -135,10 +139,13 @@ void AHub_Pawn::SetupPlayerInputComponent(UInputComponent* _playerInputComponent
     _playerInputComponent->BindAction("Fire", IE_Released, this, &AHub_Pawn::input_FireOff);
 }
 
-void AHub_Pawn::SetupModule(TSubclassOf<ADefaultSubMachine> _subMachine)
+void AHub_Pawn::SetupModule(TSubclassOf<ADefaultSubMachine> _subMachine, TSubclassOf<ADefaultShell> _shell)
 {
     this->SubMachineModule->SetChildActorClass(_subMachine);
     this->SubMachineModule->CreateChildActor();
+
+    this->ShellModule->SetChildActorClass(_shell);
+    this->ShellModule->CreateChildActor();
 }
 
 void AHub_Pawn::input_FireOn()
