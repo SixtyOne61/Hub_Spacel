@@ -18,6 +18,7 @@
 #include "DrawDebugHelpers.h"
 #include "Source/Gameplay/Bullet/DefaultSubMachine.h"
 #include "Source/Gameplay/Shell/DefaultShell.h"
+#include "Source/Gameplay/Power/DefaultEngine.h"
 #include <functional>
 
 FAutoConsoleVariableRef CVARDebugDrawSpawnBullet(
@@ -38,33 +39,28 @@ AHub_Pawn::AHub_Pawn()
     ProceduralSpaceShipBase->bUseAsyncCooking = true;
     RootComponent = ProceduralSpaceShipBase;
 
-    ProceduralSpaceShipShell = CreateDefaultSubobject<USpacelProceduralMeshComponent>(TEXT("ProceduralShell0"));
-    ProceduralSpaceShipShell->bUseAsyncCooking = true;
-    ProceduralSpaceShipShell->SetupAttachment(RootComponent);
-
-    ProceduralSpaceShipEngine = CreateDefaultSubobject<USpacelProceduralMeshComponent>(TEXT("ProceduralEngine0"));
-    ProceduralSpaceShipEngine->bUseAsyncCooking = true;
-    ProceduralSpaceShipEngine->SetupAttachment(RootComponent);
-
-	// Create a spring arm component
-	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm0"));
-	SpringArm->SetupAttachment(ProceduralSpaceShipShell);	// Attach SpringArm to RootComponent
-	SpringArm->TargetArmLength = 260.0f; // The camera follows at this distance behind the character	
-	SpringArm->SocketOffset = FVector(0.f, 0.f, 90.f);
-	SpringArm->bEnableCameraLag = true;	// Do not allow camera to lag
-	SpringArm->CameraLagSpeed = 600.f;
-
-	// Create camera component 
-	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera0"));
-	Camera->SetupAttachment(SpringArm, USpringArmComponent::SocketName); // Attach the camera
-	Camera->bUsePawnControlRotation = false; // Don't rotate camera with controller
-
     // init module of ship
     SubMachineModule = CreateDefaultSubobject<UChildActorComponent>(TEXT("SubMachineModule"));
     SubMachineModule->SetupAttachment(RootComponent);
 
     ShellModule = CreateDefaultSubobject<UChildActorComponent>(TEXT("ShellModule"));
     ShellModule->SetupAttachment(RootComponent);
+
+    EngineModule = CreateDefaultSubobject<UChildActorComponent>(TEXT("EngineModule"));
+    EngineModule->SetupAttachment(RootComponent);
+
+    // Create a spring arm component
+    SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm0"));
+    SpringArm->SetupAttachment(ProceduralSpaceShipBase);	// Attach SpringArm to RootComponent
+    SpringArm->TargetArmLength = 260.0f; // The camera follows at this distance behind the character	
+    SpringArm->SocketOffset = FVector(0.f, 0.f, 90.f);
+    SpringArm->bEnableCameraLag = true;	// Do not allow camera to lag
+    SpringArm->CameraLagSpeed = 600.f;
+
+    // Create camera component 
+    Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera0"));
+    Camera->SetupAttachment(SpringArm, USpringArmComponent::SocketName); // Attach the camera
+    Camera->bUsePawnControlRotation = false; // Don't rotate camera with controller
 
     generateMesh();
 }
@@ -77,10 +73,35 @@ void AHub_Pawn::BeginPlay()
     generateMesh();
     resetCrosshair();
 
-    // init default rotation for snap
-    if (this->ProceduralSpaceShipShell)
+    if (ProceduralSpaceShipBase)
     {
-        this->m_defaultRotation = this->ProceduralSpaceShipShell->GetRelativeTransform().Rotator();
+        TArray<TSharedPtr<ChainedLocation>> const& chainedLocationBase = this->ProceduralSpaceShipBase->getEdges();
+        TArray<FVector> locationBase;
+        for (auto chained : chainedLocationBase)
+        {
+            if (chained)
+            {
+                locationBase.Add(chained->getCenter());
+            }
+        }
+        initModule<ADefaultShell>(this->ShellModule, locationBase);
+    }
+    else
+    {
+        initModule<ADefaultShell>(this->ShellModule, {});
+    }
+    initModule<ADefaultEngine>(this->EngineModule, {});
+
+    // change setup attachment of SpringArm
+    if (this->ShellModule)
+    {
+        if (ADefaultShell* shellModule = Cast<ADefaultShell>(this->ShellModule->GetChildActor()))
+        {
+            if (shellModule->ProceduralMesh)
+            {
+                this->m_defaultRotation = shellModule->ProceduralMesh->GetRelativeTransform().Rotator();
+            }
+        }
     }
 }
 
@@ -139,13 +160,16 @@ void AHub_Pawn::SetupPlayerInputComponent(UInputComponent* _playerInputComponent
     _playerInputComponent->BindAction("Fire", IE_Released, this, &AHub_Pawn::input_FireOff);
 }
 
-void AHub_Pawn::SetupModule(TSubclassOf<ADefaultSubMachine> _subMachine, TSubclassOf<ADefaultShell> _shell)
+void AHub_Pawn::SetupModule(TSubclassOf<ADefaultSubMachine> _subMachine, TSubclassOf<ADefaultShell> _shell, TSubclassOf<ADefaultEngine> _engine)
 {
     this->SubMachineModule->SetChildActorClass(_subMachine);
     this->SubMachineModule->CreateChildActor();
 
     this->ShellModule->SetChildActorClass(_shell);
     this->ShellModule->CreateChildActor();
+
+    this->EngineModule->SetChildActorClass(_engine);
+    this->EngineModule->CreateChildActor();
 }
 
 void AHub_Pawn::input_FireOn()
@@ -229,10 +253,14 @@ void AHub_Pawn::input_SnapOff()
 {
     this->m_isSnap = false;
     this->m_progressResetSnap = this->TimeToResetSnap;
-    if (this->ProceduralSpaceShipShell)
+
+    if (ADefaultShell * shellModule = Cast<ADefaultShell>(this->ShellModule->GetChildActor()))
     {
-        this->m_snapRotationOnRelease = this->ProceduralSpaceShipShell->GetComponentRotation();
-        this->m_snapRelativeRotationOnRelease = this->ProceduralSpaceShipShell->GetRelativeTransform().Rotator();
+        if (shellModule->ProceduralMesh)
+        {
+            this->m_snapRotationOnRelease = shellModule->ProceduralMesh->GetComponentRotation();
+            this->m_snapRelativeRotationOnRelease = shellModule->ProceduralMesh->GetRelativeTransform().Rotator();
+        }
     }
 
     resetCrosshair();
@@ -263,8 +291,7 @@ void AHub_Pawn::fireLaser(float _deltaTime)
                     // TO DO init bullet
                     pLaser->SetReplicates(true);
                     UGameplayStatics::FinishSpawningActor(pLaser, transform);
-                    UProjectileMovementComponent* comp = Cast<UProjectileMovementComponent>(pLaser->GetComponentByClass(UProjectileMovementComponent::StaticClass()));
-                    if (comp && this->ProceduralSpaceShipShell)
+                    if (UProjectileMovementComponent * comp = Cast<UProjectileMovementComponent>(pLaser->GetComponentByClass(UProjectileMovementComponent::StaticClass())))
                     {
                         comp->SetVelocityInLocalSpace(FVector(1, 0, 0) * comp->InitialSpeed);
                     }
@@ -282,26 +309,10 @@ void AHub_Pawn::fireLaser(float _deltaTime)
 void AHub_Pawn::generateMesh()
 {
     FVector const& location = GetActorLocation();
-
-    auto lb_init = [&location](USpacelProceduralMeshComponent * _mesh, std::function<void(void)> _func)
-    {
-        if (!_mesh)
-        {
-            return;
-        }
-        _mesh->SetWorldLocation(location);
-        _func();
-    };
-
-    lb_init(this->ProceduralSpaceShipBase, std::bind(&AHub_Pawn::generateBase, this));
-    lb_init(this->ProceduralSpaceShipShell, std::bind(&AHub_Pawn::generateShell, this));
-    lb_init(this->ProceduralSpaceShipEngine, std::bind(&AHub_Pawn::generateEngine, this));
-}
-
-void AHub_Pawn::generateBase()
-{
+    this->ProceduralSpaceShipBase->SetWorldLocation(location);
+    
     FVector cubeSize = FVector(15.0f, 15.0f, 15.0f);
-    ProceduralSpaceShipBase->setCubeSize(cubeSize);
+    this->ProceduralSpaceShipBase->setCubeSize(cubeSize);
     TArray<TSharedPtr<ChainedLocation>> chainedLocations =
     {
         MakeShareable(new ChainedLocation(FVector(-15,0,0), cubeSize)),
@@ -317,108 +328,28 @@ void AHub_Pawn::generateBase()
     this->ProceduralSpaceShipBase->SetMaterial(0, this->MatBase);
 }
 
-void AHub_Pawn::generateShell()
-{
-    FVector cubeSize = FVector(15.0f, 15.0f, 15.0f);
-    this->ProceduralSpaceShipShell->setCubeSize(cubeSize);
-    TArray<TSharedPtr<ChainedLocation>> chainedLocations;
-
-    TArray<TSharedPtr<ChainedLocation>> const& chainedLocationBase = this->ProceduralSpaceShipBase->getEdges();
-    TArray<FVector> locationBase;
-    for (auto chained : chainedLocationBase)
-    {
-        if (chained)
-        {
-            locationBase.Add(chained->getCenter());
-        }
-    }
-
-    int8 radius = 105;
-    for (int8 x = -radius; x < radius; x += 15)
-    {
-        for (int8 y = -radius; y < radius; y += 15)
-        {
-            for (int8 z = -radius; z < radius; z += 15)
-            {
-                FVector loc = FVector(x, y, z);
-                if (FVector::Dist(loc, FVector::ZeroVector) >= radius)
-                {
-                    continue;
-                }
-
-                if (locationBase.Find(loc) != INDEX_NONE)
-                {
-                    continue;
-                }
-                chainedLocations.Add(MakeShareable(new ChainedLocation(loc, cubeSize)));
-            }
-        }
-    }
-
-    this->ProceduralSpaceShipShell->setEdges(std::forward<TArray<TSharedPtr<ChainedLocation>>>(chainedLocations));
-    this->ProceduralSpaceShipShell->generateMesh(std::move(FName("Player")));
-    this->ProceduralSpaceShipShell->SetMaterial(0, this->MatShell);
-}
-
-void AHub_Pawn::generateEngine()
-{
-    FVector cubeSize = FVector(15.0f, 15.0f, 15.0f);
-    this->ProceduralSpaceShipEngine->setCubeSize(cubeSize);
-    int8 radius = 120;
-    TArray<TSharedPtr<ChainedLocation>> chainedLocations =
-    {
-        MakeShareable(new ChainedLocation(FVector(-60.0f, -radius, 0.0f), cubeSize)),
-        MakeShareable(new ChainedLocation(FVector(-45.0f, -radius, 0.0f), cubeSize)),
-        MakeShareable(new ChainedLocation(FVector(-30.0f, -radius, 0.0f), cubeSize)),
-        MakeShareable(new ChainedLocation(FVector(-15.0f, -radius, 0.0f), cubeSize)),
-
-        MakeShareable(new ChainedLocation(FVector(-75.0f, -radius + 15.0f, 0.0f), cubeSize)),
-        MakeShareable(new ChainedLocation(FVector(-90.0f, -radius + 15.0f, 0.0f), cubeSize)),
-        MakeShareable(new ChainedLocation(FVector(-105.0f, -radius + 30.0f, 0.0f), cubeSize)),
-
-        MakeShareable(new ChainedLocation(FVector(-60.0f, radius, 0.0f), cubeSize)),
-        MakeShareable(new ChainedLocation(FVector(-45.0f, radius, 0.0f), cubeSize)),
-        MakeShareable(new ChainedLocation(FVector(-30.0f, radius, 0.0f), cubeSize)),
-        MakeShareable(new ChainedLocation(FVector(-15.0f, radius, 0.0f), cubeSize)),
-
-        MakeShareable(new ChainedLocation(FVector(-75.0f, radius - 15.0f, 0.0f), cubeSize)),
-        MakeShareable(new ChainedLocation(FVector(-90.0f, radius - 15.0f, 0.0f), cubeSize)),
-        MakeShareable(new ChainedLocation(FVector(-105.0f, radius - 30.0f, 0.0f), cubeSize)),
-
-        MakeShareable(new ChainedLocation(FVector(-120.0f, -radius + 30.0f, 0.0f), cubeSize)),
-        MakeShareable(new ChainedLocation(FVector(-120.0f, -radius + 45.0f, 0.0f), cubeSize)),
-        MakeShareable(new ChainedLocation(FVector(-120.0f, -radius + 60.0f, 0.0f), cubeSize)),
-        MakeShareable(new ChainedLocation(FVector(-120.0f, -radius + 60.0f, 15.0f), cubeSize)),
-        MakeShareable(new ChainedLocation(FVector(-120.0f, -radius + 60.0f, -15.0f), cubeSize)),
-
-        MakeShareable(new ChainedLocation(FVector(-120.0f, radius - 30.0f, 0.0f), cubeSize)),
-        MakeShareable(new ChainedLocation(FVector(-120.0f, radius - 45.0f, 0.0f), cubeSize)),
-        MakeShareable(new ChainedLocation(FVector(-120.0f, radius - 60.0f, 0.0f), cubeSize)),
-        MakeShareable(new ChainedLocation(FVector(-120.0f, radius - 60.0f, 15.0f), cubeSize)),
-        MakeShareable(new ChainedLocation(FVector(-120.0f, radius - 60.0f, -15.0f), cubeSize)),
-    };
-    
-    this->ProceduralSpaceShipEngine->setEdges(std::forward<TArray<TSharedPtr<ChainedLocation>>>(chainedLocations));
-    this->ProceduralSpaceShipEngine->generateMesh(std::move(FName("Player")));
-    this->ProceduralSpaceShipEngine->SetMaterial(0, MatEngine);
-}
-
 void AHub_Pawn::snapTarget(float _deltaTime)
 {
+    USpacelProceduralMeshComponent* shellMesh = nullptr;
+    if (ADefaultShell * shellModule = Cast<ADefaultShell>(this->ShellModule->GetChildActor()))
+    {
+        shellMesh = shellModule->ProceduralMesh;
+    }
+
     if (!this->m_isSnap)
     {
         // move actor to shell orientation
-        if (this->ProceduralSpaceShipShell && this->m_progressResetSnap != 0.0f)
+        if (shellMesh && this->m_progressResetSnap != 0.0f)
         {
             this->m_progressResetSnap = FMath::Clamp(this->m_progressResetSnap - _deltaTime, 0.0f, this->TimeToResetSnap);
 
             FRotator r1 = FMath::Lerp(this->m_defaultRotation, this->m_snapRelativeRotationOnRelease, this->m_progressResetSnap / this->TimeToResetSnap);
-            FRotator r2 = this->ProceduralSpaceShipShell->GetRelativeTransform().Rotator() - r1;
-            this->ProceduralSpaceShipShell->SetRelativeRotation(r1);
+            FRotator r2 = shellMesh->GetRelativeTransform().Rotator() - r1;
+            shellMesh->SetRelativeRotation(r1);
             AddActorLocalRotation(r2);
         }
     }
-    else if (GEngine->GameViewport && GEngine->GameViewport->Viewport && this->ProceduralSpaceShipShell)
+    else if (GEngine->GameViewport && GEngine->GameViewport->Viewport && shellMesh)
     {
         APlayerController const* playerController = Cast<APlayerController>(GetController());
         if (!playerController)
@@ -437,7 +368,7 @@ void AHub_Pawn::snapTarget(float _deltaTime)
             FRotator deltaRot = GetActorRotation();
             deltaRot += (rot - deltaRot) * SensibilitySnap;
 
-            this->ProceduralSpaceShipShell->SetWorldRotation(rot);
+            shellMesh->SetWorldRotation(rot);
         }
     }
 }

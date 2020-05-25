@@ -33,7 +33,7 @@ public:
     /* for setup all module of ship */
     UFUNCTION(BlueprintCallable)
     //void SetupModule(ESubMachine _subMachine);
-    void SetupModule(TSubclassOf<ADefaultSubMachine> _subMachine, TSubclassOf<ADefaultShell> _shell);
+    void SetupModule(TSubclassOf<ADefaultSubMachine> _subMachine, TSubclassOf<ADefaultShell> _shell, TSubclassOf<ADefaultEngine> _engine);
 
 protected:
 	/* bind function */
@@ -54,9 +54,10 @@ protected:
 
     /* function call for generate our mesh */
     void generateMesh();
-    void generateBase();
-    void generateShell();
-    void generateEngine();
+
+    /* init module of ship */
+    template<class T>
+    void initModule(UChildActorComponent*& _child, TArray<FVector> const& _ignoreCoord);
 
     /* snap mesh to target crosshair location */
     void snapTarget(float _deltaTime);
@@ -88,18 +89,10 @@ protected:
     /* Procedural mesh for this ship */
     UPROPERTY(Category = "Mesh", VisibleDefaultsOnly, BlueprintReadOnly)
     class USpacelProceduralMeshComponent* ProceduralSpaceShipBase = nullptr;
-    UPROPERTY(Category = "Mesh", VisibleDefaultsOnly, BlueprintReadOnly)
-    class USpacelProceduralMeshComponent* ProceduralSpaceShipShell = nullptr;
-    UPROPERTY(Category = "Mesh", VisibleDefaultsOnly, BlueprintReadOnly)
-    class USpacelProceduralMeshComponent* ProceduralSpaceShipEngine = nullptr;
 
     /* Materials for ship */
     UPROPERTY(Category = "Material", EditAnywhere, BlueprintReadWrite)
     class UMaterialInstance* MatBase = nullptr;
-    UPROPERTY(Category = "Material", EditAnywhere, BlueprintReadWrite)
-    class UMaterialInstance* MatShell = nullptr;
-    UPROPERTY(Category = "Material", EditAnywhere, BlueprintReadWrite)
-    class UMaterialInstance* MatEngine = nullptr;
 
 	/** Spring arm that will offset the camera */
 	UPROPERTY(Category = "Camera", VisibleDefaultsOnly, BlueprintReadOnly)
@@ -118,6 +111,8 @@ protected:
     class UChildActorComponent* SubMachineModule = nullptr;
     UPROPERTY(Category = "Module", VisibleAnywhere, BlueprintReadOnly)
     class UChildActorComponent* ShellModule = nullptr;
+    UPROPERTY(Category = "Module", VisibleAnywhere, BlueprintReadOnly)
+    class UChildActorComponent* EngineModule = nullptr;
 
 private:
 	/* speed */
@@ -156,3 +151,15 @@ public:
 	/** Returns Camera subobject **/
 	FORCEINLINE class UCameraComponent* GetCamera() const { return Camera; }
 };
+
+template<class T>
+void AHub_Pawn::initModule(UChildActorComponent*& _child, TArray<FVector> const& _ignoreCoord)
+{
+    if (!_child)
+    {
+        return;
+    }
+
+    T* module = Cast<T>(_child->GetChildActor());
+    module->GenerateMesh(_ignoreCoord);
+}

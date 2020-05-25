@@ -23,3 +23,13 @@ enum class EShell : uint8
     /* Head */
     Default UMETA(DisplayName = "Default")
 };
+
+UENUM(BlueprintType)
+enum class EEngine : uint8
+{
+    /* Default and unset value */
+    None,
+
+    /* Head */
+    Default UMETA(DisplayName = "Default")
+};
