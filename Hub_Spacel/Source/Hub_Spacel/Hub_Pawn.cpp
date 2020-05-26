@@ -19,6 +19,7 @@
 #include "Source/Gameplay/Bullet/DefaultSubMachine.h"
 #include "Source/Gameplay/Shell/DefaultShell.h"
 #include "Source/Gameplay/Power/DefaultEngine.h"
+#include "Hub_SpacelGameInstance.h"
 #include <functional>
 
 FAutoConsoleVariableRef CVARDebugDrawSpawnBullet(
@@ -70,6 +71,12 @@ void AHub_Pawn::BeginPlay()
 {
 	Super::BeginPlay();
 	
+    if (Role == ROLE_Authority)
+    {
+        UHub_SpacelGameInstance* gameInstance = Cast<UHub_SpacelGameInstance>(GetGameInstance());
+        SetupModule(gameInstance->SubMachineModuleClass, gameInstance->ShellModuleClass, gameInstance->EngineModuleClass);
+    }
+
     generateMesh();
     resetCrosshair();
 
@@ -162,14 +169,23 @@ void AHub_Pawn::SetupPlayerInputComponent(UInputComponent* _playerInputComponent
 
 void AHub_Pawn::SetupModule(TSubclassOf<ADefaultSubMachine> _subMachine, TSubclassOf<ADefaultShell> _shell, TSubclassOf<ADefaultEngine> _engine)
 {
-    this->SubMachineModule->SetChildActorClass(_subMachine);
-    this->SubMachineModule->CreateChildActor();
+    if (_subMachine)
+    {
+        this->SubMachineModule->SetChildActorClass(_subMachine);
+        this->SubMachineModule->CreateChildActor();
+    }
 
-    this->ShellModule->SetChildActorClass(_shell);
-    this->ShellModule->CreateChildActor();
+    if (_shell)
+    {
+        this->ShellModule->SetChildActorClass(_shell);
+        this->ShellModule->CreateChildActor();
+    }
 
-    this->EngineModule->SetChildActorClass(_engine);
-    this->EngineModule->CreateChildActor();
+    if (_engine)
+    {
+        this->EngineModule->SetChildActorClass(_engine);
+        this->EngineModule->CreateChildActor();
+    }
 }
 
 void AHub_Pawn::input_FireOn()
