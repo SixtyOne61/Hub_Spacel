@@ -53,10 +53,6 @@ AHub_Pawn::AHub_Pawn()
     // Create a spring arm component
     SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm0"));
     SpringArm->SetupAttachment(ProceduralSpaceShipBase);	// Attach SpringArm to RootComponent
-    SpringArm->TargetArmLength = 260.0f; // The camera follows at this distance behind the character	
-    SpringArm->SocketOffset = FVector(0.f, 0.f, 90.f);
-    SpringArm->bEnableCameraLag = true;	// Do not allow camera to lag
-    SpringArm->CameraLagSpeed = 600.f;
 
     // Create camera component 
     Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera0"));
@@ -71,44 +67,39 @@ void AHub_Pawn::BeginPlay()
 {
 	Super::BeginPlay();
 	
-    if (Role == ROLE_Authority)
+    if (Role != ROLE_Authority)
     {
-        UHub_SpacelGameInstance* gameInstance = Cast<UHub_SpacelGameInstance>(GetGameInstance());
-        SetupModule(gameInstance->SubMachineModuleClass, gameInstance->ShellModuleClass, gameInstance->EngineModuleClass);
+        return;
     }
+
+    UHub_SpacelGameInstance* gameInstance = Cast<UHub_SpacelGameInstance>(GetGameInstance());
+    SetupModule(gameInstance->SubMachineModuleClass, gameInstance->ShellModuleClass, gameInstance->EngineModuleClass);
 
     generateMesh();
     resetCrosshair();
+    initMeshModules();
 
-    if (ProceduralSpaceShipBase)
-    {
-        TArray<TSharedPtr<ChainedLocation>> const& chainedLocationBase = this->ProceduralSpaceShipBase->getEdges();
-        TArray<FVector> locationBase;
-        for (auto chained : chainedLocationBase)
-        {
-            if (chained)
-            {
-                locationBase.Add(chained->getCenter());
-            }
-        }
-        initModule<ADefaultShell>(this->ShellModule, locationBase);
-    }
-    else
-    {
-        initModule<ADefaultShell>(this->ShellModule, {});
-    }
-    initModule<ADefaultEngine>(this->EngineModule, {});
-
-    // change setup attachment of SpringArm
     if (this->ShellModule)
     {
-        if (ADefaultShell* shellModule = Cast<ADefaultShell>(this->ShellModule->GetChildActor()))
+        if (ADefaultShell * shellModule = Cast<ADefaultShell>(this->ShellModule->GetChildActor()))
         {
             if (shellModule->ProceduralMesh)
             {
                 this->m_defaultRotation = shellModule->ProceduralMesh->GetRelativeTransform().Rotator();
             }
         }
+    }
+
+    // save spring arm default size
+    if (this->SpringArm)
+    {
+        this->m_springArmDefaultSize = this->SpringArm->TargetArmLength;
+    }
+
+    // save camera default field of view
+    if (this->Camera)
+    {
+        this->m_fieldOfViewDefault = this->Camera->FieldOfView;
     }
 }
 
@@ -202,7 +193,14 @@ void AHub_Pawn::input_Speed(float _val)
 {
     // TO DO : not cool + _val
     this->PercentSpeed = FMath::Clamp(this->PercentSpeed + _val, 0.0f, 100.0f);
-    this->m_currentForwardSpeed = this->MaxForwardSpeed * (this->PercentSpeed / 100.0f);
+    float percent = (this->PercentSpeed / 100.0f);
+    this->m_currentForwardSpeed = this->MaxForwardSpeed * percent;
+
+    // update spring arm size
+    if (SpringArm)
+    {
+        this->SpringArm->TargetArmLength = this->m_springArmDefaultSize + this->m_springArmDefaultSize * percent * this->MultiplierSpringArmSize;
+    }
 }
 
 void AHub_Pawn::input_MoveUp(float _val)
@@ -263,6 +261,11 @@ void AHub_Pawn::input_MoveTargetRight(float _val)
 void AHub_Pawn::input_SnapOn()
 {
     this->m_isSnap = true;
+
+    if (this->Camera)
+    {
+        this->Camera->FieldOfView = this->FieldOfViewOnFocus;
+    }
 }
 
 void AHub_Pawn::input_SnapOff()
@@ -280,6 +283,11 @@ void AHub_Pawn::input_SnapOff()
     }
 
     resetCrosshair();
+
+    if (this->Camera)
+    {
+        this->Camera->FieldOfView = this->m_fieldOfViewDefault;
+    }
 }
 
 void AHub_Pawn::fireLaser(float _deltaTime)
@@ -365,7 +373,7 @@ void AHub_Pawn::snapTarget(float _deltaTime)
             AddActorLocalRotation(r2);
         }
     }
-    else if (GEngine->GameViewport && GEngine->GameViewport->Viewport && shellMesh)
+    else if (GEngine->GameViewport && GEngine->GameViewport->Viewport)
     {
         APlayerController const* playerController = Cast<APlayerController>(GetController());
         if (!playerController)
@@ -384,7 +392,7 @@ void AHub_Pawn::snapTarget(float _deltaTime)
             FRotator deltaRot = GetActorRotation();
             deltaRot += (rot - deltaRot) * SensibilitySnap;
 
-            shellMesh->SetWorldRotation(rot);
+            RootComponent->SetWorldRotation(rot);
         }
     }
 }
@@ -396,4 +404,25 @@ void AHub_Pawn::resetCrosshair()
         this->m_viewportSize = FVector2D(GEngine->GameViewport->Viewport->GetSizeXY());
         this->CrosshairPosition = this->m_viewportSize / 2.0f;
     }
+}
+
+void AHub_Pawn::initMeshModules()
+{
+    // Shell module
+    if (ProceduralSpaceShipBase)
+    {
+        TArray<TSharedPtr<ChainedLocation>> const& chainedLocationBase = this->ProceduralSpaceShipBase->getEdges();
+        TArray<FVector> locationBase;
+        for (auto chained : chainedLocationBase)
+        {
+            if (chained)
+            {
+                locationBase.Add(chained->getCenter());
+            }
+        }
+        initModule<ADefaultShell>(this->ShellModule, locationBase);
+    }
+
+    // Engine module
+    initModule<ADefaultEngine>(this->EngineModule, {});
 }

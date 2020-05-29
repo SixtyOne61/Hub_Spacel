@@ -64,6 +64,9 @@ protected:
     /* reset crosshair position to center screen */
     void resetCrosshair();
 
+    /* init all module */
+    void initMeshModules();
+
 protected:
     UPROPERTY(Category = "UI", EditAnywhere, BlueprintReadOnly)
     FVector2D CrosshairPosition = FVector2D::ZeroVector;
@@ -93,13 +96,18 @@ protected:
     UPROPERTY(Category = "Material", EditAnywhere, BlueprintReadWrite)
     class UMaterialInstance* MatBase = nullptr;
 
-	/** Spring arm that will offset the camera */
+	/* Spring arm that will offset the camera */
 	UPROPERTY(Category = "Camera", VisibleDefaultsOnly, BlueprintReadOnly)
 	class USpringArmComponent* SpringArm;
-
-	/** Camera component that will be our viewpoint */
+	/* Camera component that will be our viewpoint */
 	UPROPERTY(Category = "Camera", VisibleDefaultsOnly, BlueprintReadOnly)
 	class UCameraComponent* Camera;
+    /* Multiplier for spring arm size */
+    UPROPERTY(Category = "Camera", EditAnywhere, BlueprintReadWrite)
+    float MultiplierSpringArmSize = 2.0f;
+    /* Field of view when focus */
+    UPROPERTY(Category = "Camera", EditAnywhere, BlueprintReadWrite)
+    float FieldOfViewOnFocus = 60.0f;
 
 	UPROPERTY(Category = "Bullet", EditAnywhere, BlueprintReadOnly)
 	TSubclassOf<class AActor> LaserClass;
@@ -142,6 +150,11 @@ private:
 
     /* count down between fire */
     float m_laserCountDown = 0.0f;
+
+    /* default spring arm size */
+    float m_springArmDefaultSize = 0.0f;
+    /* default field of view */
+    float m_fieldOfViewDefault = 0.0f;
 
 public:
 	// -- get
