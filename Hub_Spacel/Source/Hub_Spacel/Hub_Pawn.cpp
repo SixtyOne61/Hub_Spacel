@@ -398,7 +398,6 @@ void AHub_Pawn::snapTarget(float _deltaTime)
         {
             FVector const& actorLocation = GetActorLocation();
             FVector target = actorLocation + worldDirection * 1000.0f;
-            DrawDebugSphere(GetWorld(), target, 300.0f, 18, FColor::Red);
             FRotator rot = UKismetMathLibrary::FindLookAtRotation(actorLocation, target);
 
             FRotator deltaRot = GetActorRotation();
