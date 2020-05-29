@@ -372,9 +372,21 @@ void AHub_Pawn::snapTarget(float _deltaTime)
             shellMesh->SetRelativeRotation(r1);
             AddActorLocalRotation(r2);
         }
+
+        // unzoom
+        if (this->Camera && this->m_timeToUpdateFieldOfView != 0.0f)
+        {
+            this->Camera->FieldOfView = FMath::Lerp(this->m_fieldOfViewDefault, this->FieldOfViewOnFocus, this->m_timeToUpdateFieldOfView);
+            this->m_timeToUpdateFieldOfView -= _deltaTime;
+            if (this->m_timeToUpdateFieldOfView < 0.0f)
+            {
+                this->m_timeToUpdateFieldOfView = 0.0f;
+            }
+        }
     }
     else if (GEngine->GameViewport && GEngine->GameViewport->Viewport)
     {
+        // rotate to snap
         APlayerController const* playerController = Cast<APlayerController>(GetController());
         if (!playerController)
         {
@@ -393,6 +405,17 @@ void AHub_Pawn::snapTarget(float _deltaTime)
             deltaRot += (rot - deltaRot) * SensibilitySnap;
 
             RootComponent->SetWorldRotation(rot);
+        }
+
+        // zoom
+        if (this->Camera && this->m_timeToUpdateFieldOfView != 1.0f)
+        {
+            this->Camera->FieldOfView = FMath::Lerp(this->m_fieldOfViewDefault, this->FieldOfViewOnFocus, this->m_timeToUpdateFieldOfView);
+            this->m_timeToUpdateFieldOfView += _deltaTime;
+            if (this->m_timeToUpdateFieldOfView > 1.0f)
+            {
+                this->m_timeToUpdateFieldOfView = 1.0f;
+            }
         }
     }
 }

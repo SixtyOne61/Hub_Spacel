@@ -155,6 +155,8 @@ private:
     float m_springArmDefaultSize = 0.0f;
     /* default field of view */
     float m_fieldOfViewDefault = 0.0f;
+    /* time to update field of view */
+    float m_timeToUpdateFieldOfView = 0.0f;
 
 public:
 	// -- get
