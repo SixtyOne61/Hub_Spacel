@@ -67,7 +67,7 @@ void AHub_Pawn::BeginPlay()
 {
 	Super::BeginPlay();
 	
-    if (Role != ROLE_Authority)
+    if (GetLocalRole() != ROLE_Authority)
     {
         return;
     }
