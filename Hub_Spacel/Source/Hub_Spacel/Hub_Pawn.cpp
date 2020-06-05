@@ -197,7 +197,7 @@ void AHub_Pawn::input_Speed(float _val)
     this->m_currentForwardSpeed = this->MaxForwardSpeed * percent;
 
     // update spring arm size
-    if (SpringArm)
+    if (this->SpringArm)
     {
         this->SpringArm->TargetArmLength = this->m_springArmDefaultSize + this->m_springArmDefaultSize * percent * this->MultiplierSpringArmSize;
     }

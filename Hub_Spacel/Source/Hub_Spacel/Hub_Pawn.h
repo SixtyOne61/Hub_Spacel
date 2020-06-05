@@ -86,7 +86,7 @@ protected:
     UPROPERTY(Category = "Controller", EditAnywhere, BlueprintReadWrite)
     float InterpSpeed = 2.0f;
     UPROPERTY(Category = "Controller", VisibleAnywhere, BlueprintReadOnly)
-    float PercentSpeed = 50.0f;
+    float PercentSpeed = 0.0f;
 
     /* Procedural mesh for this ship */
     UPROPERTY(Category = "Mesh", VisibleDefaultsOnly, BlueprintReadOnly)
