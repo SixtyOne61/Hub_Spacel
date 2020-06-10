@@ -30,6 +30,12 @@ void ALaserBullet::BeginPlay()
 	Super::BeginPlay();
 	
     setupMaterial();
+
+    if (HasAuthority())
+    {
+        SetReplicates(true);
+        SetReplicateMovement(true);
+    }
 }
 
 // Called every frame

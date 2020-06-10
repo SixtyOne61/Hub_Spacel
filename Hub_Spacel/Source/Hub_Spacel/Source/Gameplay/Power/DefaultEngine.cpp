@@ -24,7 +24,12 @@ ADefaultEngine::ADefaultEngine()
 void ADefaultEngine::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+    if (HasAuthority())
+    {
+        SetReplicates(true);
+        SetReplicateMovement(true);
+    }
 }
 
 // Called every frame

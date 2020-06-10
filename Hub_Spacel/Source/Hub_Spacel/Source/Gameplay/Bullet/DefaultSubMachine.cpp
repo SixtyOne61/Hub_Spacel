@@ -27,7 +27,13 @@ ADefaultSubMachine::ADefaultSubMachine()
 // Called when the game starts or when spawned
 void ADefaultSubMachine::BeginPlay()
 {
-	Super::BeginPlay();
+    Super::BeginPlay();
+
+    if (HasAuthority())
+    {
+        SetReplicates(true);
+        SetReplicateMovement(true);
+    }
 }
 
 // Called every frame

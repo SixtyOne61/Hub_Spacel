@@ -6,8 +6,10 @@
 #include "Camera/CameraComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/InputComponent.h"
+#include "GameFramework/PawnMovementComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "GameFramework/PawnMovementComponent.h"
 #include "Engine/Engine.h"
 #include "Engine/World.h"
 #include "Engine/StaticMesh.h"
@@ -20,6 +22,7 @@
 #include "Source/Gameplay/Shell/DefaultShell.h"
 #include "Source/Gameplay/Power/DefaultEngine.h"
 #include "Hub_SpacelGameInstance.h"
+#include "UnrealNetwork.h"
 #include <functional>
 
 FAutoConsoleVariableRef CVARDebugDrawSpawnBullet(
@@ -101,28 +104,39 @@ void AHub_Pawn::BeginPlay()
     {
         this->m_fieldOfViewDefault = this->Camera->FieldOfView;
     }
+    
+    if (HasAuthority())
+    {
+        SetReplicates(true);
+        SetReplicateMovement(true);
+    }
 }
 
 // Called every frame
 void AHub_Pawn::Tick(float _deltaTime)
 {
-	// move
-	const FVector localMove = FVector(this->m_currentForwardSpeed * _deltaTime, 0.f, 0.f);
+    if (HasAuthority())
+    {
+        GEngine->AddOnScreenDebugMessage(-1, 0.f, FColor::Red, FString::SanitizeFloat(m_currentForwardSpeed));
+        GEngine->AddOnScreenDebugMessage(-1, 0.f, FColor::Red, this->GetActorLocation().ToString());
+        // move
+        FVector localMove = FVector(this->m_currentForwardSpeed * _deltaTime, 0.f, 0.f);
 
-	// Move plan forwards (with sweep so we stop when we collide with things)
-	AddActorLocalOffset(localMove, true);
+        // Move plan forwards (with sweep so we stop when we collide with things)
+        AddActorLocalOffset(localMove, true);
 
-	// rotation
-	FRotator deltaRotation(0.f, 0.f, 0.f);
-	deltaRotation.Pitch = this->m_currentPitchSpeed * _deltaTime;
-	deltaRotation.Yaw = this->m_currentYawSpeed * _deltaTime;
-	deltaRotation.Roll = this->m_currentRollSpeed * _deltaTime;
+        // rotation
+        FRotator deltaRotation(0.f, 0.f, 0.f);
+        deltaRotation.Pitch = this->m_currentPitchSpeed * _deltaTime;
+        deltaRotation.Yaw = this->m_currentYawSpeed * _deltaTime;
+        deltaRotation.Roll = this->m_currentRollSpeed * _deltaTime;
 
-	// rotate ship
-	AddActorLocalRotation(deltaRotation);
+        // rotate ship
+        AddActorLocalRotation(deltaRotation);
 
-    snapTarget(_deltaTime);
-    fireLaser(_deltaTime);
+        fireLaser(_deltaTime);
+        snapTarget(_deltaTime);
+    }
 
 	// Call any parent class Tick implementation
 	Super::Tick(_deltaTime);
@@ -179,17 +193,12 @@ void AHub_Pawn::SetupModule(TSubclassOf<ADefaultSubMachine> _subMachine, TSubcla
     }
 }
 
-void AHub_Pawn::input_FireOn()
+void AHub_Pawn::serverRPCSetFireOn_Implementation(bool _val)
 {
-    this->m_isFire = true;
+    this->m_isFire = _val;
 }
 
-void AHub_Pawn::input_FireOff()
-{
-    this->m_isFire = false;
-}
-
-void AHub_Pawn::input_Speed(float _val)
+void AHub_Pawn::serverRPCSetSpeed_Implementation(float _val)
 {
     // TO DO : not cool + _val
     this->PercentSpeed = FMath::Clamp(this->PercentSpeed + _val, 0.0f, 100.0f);
@@ -203,38 +212,38 @@ void AHub_Pawn::input_Speed(float _val)
     }
 }
 
-void AHub_Pawn::input_MoveUp(float _val)
+void AHub_Pawn::serverRPCSetMoveUp_Implementation(float _val)
 {
-	// target pitch speed is based in input
-	float targetPitchSpeed = (_val * this->TurnSpeed * -1.0f);
+    // target pitch speed is based in input
+    float targetPitchSpeed = (_val * this->TurnSpeed * -1.0f);
 
-	// when steering, we decrease pitch slightly
-	targetPitchSpeed += (FMath::Abs(this->m_currentYawSpeed) * -0.2f);
+    // when steering, we decrease pitch slightly
+    targetPitchSpeed += (FMath::Abs(this->m_currentYawSpeed) * -0.2f);
 
-	// Smoothly interpolate to target pitch speed
+    // Smoothly interpolate to target pitch speed
     this->m_currentPitchSpeed = FMath::FInterpTo(this->m_currentPitchSpeed, targetPitchSpeed, GetWorld()->GetDeltaSeconds(), this->InterpSpeed);
 }
 
-void AHub_Pawn::input_MoveRight(float _val)
+void AHub_Pawn::serverRPCSetMoveRight_Implementation(float _val)
 {
-	// target yaw speed is based on input
-	float targetYawSpeed = (_val * this->TurnSpeed);
+    // target yaw speed is based on input
+    float targetYawSpeed = (_val * this->TurnSpeed);
 
-	// smoothly interpolate to target yaw speed
+    // smoothly interpolate to target yaw speed
     this->m_currentYawSpeed = FMath::FInterpTo(this->m_currentYawSpeed, targetYawSpeed, GetWorld()->GetDeltaSeconds(), this->InterpSpeed);
 
-	// Is there any left / right input ?
-	const bool isTurning = FMath::Abs(_val) > 0.2f;
+    // Is there any left / right input ?
+    const bool isTurning = FMath::Abs(_val) > 0.2f;
 
-	// if turning, yaw value is used to influence rool
-	// if not turning, roll to reverse current roll value
-	float targetRollSpeed = isTurning ? (this->m_currentYawSpeed * 0.8f) : (GetActorRotation().Roll * -2.0f);
+    // if turning, yaw value is used to influence rool
+    // if not turning, roll to reverse current roll value
+    float targetRollSpeed = isTurning ? (this->m_currentYawSpeed * 0.8f) : (GetActorRotation().Roll * -2.0f);
 
-	// smoothly interpolate roll speed
+    // smoothly interpolate roll speed
     this->m_currentRollSpeed = FMath::FInterpTo(this->m_currentRollSpeed, targetRollSpeed, GetWorld()->GetDeltaSeconds(), this->InterpSpeed);
 }
 
-void AHub_Pawn::input_MoveTargetUp(float _val)
+void AHub_Pawn::serverRPCSetMoveTargetUp_Implementation(float _val)
 {
     if (!this->m_isSnap)
     {
@@ -246,7 +255,7 @@ void AHub_Pawn::input_MoveTargetUp(float _val)
     this->CrosshairPosition.X = FMath::Clamp(this->CrosshairPosition.X + delta, 0.0f, this->m_viewportSize.X);
 }
 
-void AHub_Pawn::input_MoveTargetRight(float _val)
+void AHub_Pawn::serverRPCSetMoveTargetRight_Implementation(float _val)
 {
     if (!this->m_isSnap)
     {
@@ -258,36 +267,83 @@ void AHub_Pawn::input_MoveTargetRight(float _val)
     this->CrosshairPosition.Y = FMath::Clamp(this->CrosshairPosition.Y + delta, 0.0f, this->m_viewportSize.Y);
 }
 
+void AHub_Pawn::serverRPCSetSnap_Implementation(bool _val)
+{
+    if (_val)
+    {
+        this->m_isSnap = true;
+
+        if (this->Camera)
+        {
+            this->Camera->FieldOfView = this->FieldOfViewOnFocus;
+        }
+    }
+    else
+    {
+        this->m_isSnap = false;
+        this->m_progressResetSnap = this->TimeToResetSnap;
+
+        if (ADefaultShell * shellModule = Cast<ADefaultShell>(this->ShellModule->GetChildActor()))
+        {
+            if (shellModule->ProceduralMesh)
+            {
+                this->m_snapRotationOnRelease = shellModule->ProceduralMesh->GetComponentRotation();
+                this->m_snapRelativeRotationOnRelease = shellModule->ProceduralMesh->GetRelativeTransform().Rotator();
+            }
+        }
+
+        resetCrosshair();
+
+        if (this->Camera)
+        {
+            this->Camera->FieldOfView = this->m_fieldOfViewDefault;
+        }
+    }
+}
+
+void AHub_Pawn::input_FireOn()
+{
+    serverRPCSetFireOn(true);
+}
+
+void AHub_Pawn::input_FireOff()
+{
+    serverRPCSetFireOn(false);
+}
+
+void AHub_Pawn::input_Speed(float _val)
+{
+    serverRPCSetSpeed(_val);
+}
+
+void AHub_Pawn::input_MoveUp(float _val)
+{
+    serverRPCSetMoveUp(_val);
+}
+
+void AHub_Pawn::input_MoveRight(float _val)
+{
+    serverRPCSetMoveRight(_val);
+}
+
+void AHub_Pawn::input_MoveTargetUp(float _val)
+{
+    serverRPCSetMoveTargetUp(_val);
+}
+
+void AHub_Pawn::input_MoveTargetRight(float _val)
+{
+    serverRPCSetMoveTargetRight(_val);
+}
+
 void AHub_Pawn::input_SnapOn()
 {
-    this->m_isSnap = true;
-
-    if (this->Camera)
-    {
-        this->Camera->FieldOfView = this->FieldOfViewOnFocus;
-    }
+    serverRPCSetSnap(true);
 }
 
 void AHub_Pawn::input_SnapOff()
 {
-    this->m_isSnap = false;
-    this->m_progressResetSnap = this->TimeToResetSnap;
-
-    if (ADefaultShell * shellModule = Cast<ADefaultShell>(this->ShellModule->GetChildActor()))
-    {
-        if (shellModule->ProceduralMesh)
-        {
-            this->m_snapRotationOnRelease = shellModule->ProceduralMesh->GetComponentRotation();
-            this->m_snapRelativeRotationOnRelease = shellModule->ProceduralMesh->GetRelativeTransform().Rotator();
-        }
-    }
-
-    resetCrosshair();
-
-    if (this->Camera)
-    {
-        this->Camera->FieldOfView = this->m_fieldOfViewDefault;
-    }
+    serverRPCSetSnap(false);
 }
 
 void AHub_Pawn::fireLaser(float _deltaTime)
@@ -447,4 +503,9 @@ void AHub_Pawn::initMeshModules()
 
     // Engine module
     initModule<ADefaultEngine>(this->EngineModule, {});
+}
+
+void AHub_Pawn::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const
+{
+    DOREPLIFETIME(AHub_Pawn, CrosshairPosition);
 }

@@ -23,7 +23,13 @@ ADefaultShell::ADefaultShell()
 // Called when the game starts or when spawned
 void ADefaultShell::BeginPlay()
 {
-	Super::BeginPlay();
+    Super::BeginPlay();
+
+    if (HasAuthority())
+    {
+        SetReplicates(true);
+        SetReplicateMovement(true);
+    }
 }
 
 // Called every frame

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
+#include "GameFramework/Character.h"
 #include "Hub_Enum.h"
 #include "Hub_Pawn.generated.h"
 
@@ -33,6 +34,28 @@ public:
     /* for setup all module of ship */
     UFUNCTION(BlueprintCallable)
     void SetupModule(TSubclassOf<ADefaultSubMachine> _subMachine, TSubclassOf<ADefaultShell> _shell, TSubclassOf<ADefaultEngine> _engine);
+
+protected:
+    UFUNCTION(Reliable, Server)
+    void serverRPCSetFireOn(bool _val);
+
+    UFUNCTION(Reliable, Server)
+    void serverRPCSetSpeed(float _val);
+
+    UFUNCTION(Reliable, Server)
+    void serverRPCSetMoveUp(float _val);
+
+    UFUNCTION(Reliable, Server)
+    void serverRPCSetMoveRight(float _val);
+
+    UFUNCTION(Reliable, Server)
+    void serverRPCSetMoveTargetUp(float _val);
+
+    UFUNCTION(Reliable, Server)
+    void serverRPCSetMoveTargetRight(float _val);
+
+    UFUNCTION(Reliable, Server)
+    void serverRPCSetSnap(bool _val);
 
 protected:
 	/* bind function */
@@ -68,7 +91,7 @@ protected:
     void initMeshModules();
 
 protected:
-    UPROPERTY(Category = "UI", EditAnywhere, BlueprintReadOnly)
+    UPROPERTY(Category = "UI", EditAnywhere, BlueprintReadOnly, Replicated)
     FVector2D CrosshairPosition = FVector2D::ZeroVector;
 
     UPROPERTY(Category = "Sensibility", EditAnywhere, BlueprintReadWrite)
