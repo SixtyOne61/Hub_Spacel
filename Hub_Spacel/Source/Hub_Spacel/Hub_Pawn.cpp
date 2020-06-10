@@ -69,8 +69,8 @@ AHub_Pawn::AHub_Pawn()
 void AHub_Pawn::BeginPlay()
 {
 	Super::BeginPlay();
-	
-    if (GetLocalRole() != ROLE_Authority)
+
+    if (!HasAuthority())
     {
         return;
     }
@@ -105,11 +105,8 @@ void AHub_Pawn::BeginPlay()
         this->m_fieldOfViewDefault = this->Camera->FieldOfView;
     }
     
-    if (HasAuthority())
-    {
-        SetReplicates(true);
-        SetReplicateMovement(true);
-    }
+    SetReplicates(true);
+    SetReplicateMovement(true);
 }
 
 // Called every frame
@@ -146,9 +143,12 @@ void AHub_Pawn::NotifyHit(class UPrimitiveComponent* _myComp, class AActor* _oth
 {
 	Super::NotifyHit(_myComp, _other, _otherComp, _bSelfMoved, _hitLocation, _hitNormal, _normalImpulse, _hit);
 
-	// Deflect along the surface when we collide.
-	FRotator currentRotation = GetActorRotation();
-	SetActorRotation(FQuat::Slerp(currentRotation.Quaternion(), _hitNormal.ToOrientationQuat(), 0.025f));
+    if (HasAuthority())
+    {
+        // Deflect along the surface when we collide.
+        FRotator currentRotation = GetActorRotation();
+        SetActorRotation(FQuat::Slerp(currentRotation.Quaternion(), _hitNormal.ToOrientationQuat(), 0.025f));
+    }
 }
 
 // Called to bind functionality to input
