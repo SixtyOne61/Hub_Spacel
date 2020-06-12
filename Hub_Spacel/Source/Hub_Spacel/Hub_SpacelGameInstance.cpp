@@ -3,6 +3,15 @@
 
 #include "Hub_SpacelGameInstance.h"
 #include "Engine/World.h"
+#include "Blueprint/UserWidget.h"
+
+UHub_SpacelGameInstance::UHub_SpacelGameInstance(FObjectInitializer const& _objectInitialize)
+{
+    ConstructorHelpers::FClassFinder<UUserWidget> mainMenuBpClass(TEXT("/Game/05_UI/WBP_MainMenu"));
+    if (!ensure(mainMenuBpClass.Class != nullptr)) return;
+
+    MainMenuClass = mainMenuBpClass.Class;
+}
 
 void UHub_SpacelGameInstance::CreateServer() const
 {
@@ -28,4 +37,9 @@ void UHub_SpacelGameInstance::JoinServer() const
     if (!ensure(playerController != nullptr)) return;
 
     playerController->ClientTravel("192.168.1.82", ETravelType::TRAVEL_Absolute);
+}
+
+void UHub_SpacelGameInstance::Init()
+{
+    UE_LOG(LogTemp, Warning, TEXT("Found class %s"), *MainMenuClass->GetName());
 }

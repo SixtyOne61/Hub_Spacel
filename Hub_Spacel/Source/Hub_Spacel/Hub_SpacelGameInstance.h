@@ -15,11 +15,16 @@ class HUB_SPACEL_API UHub_SpacelGameInstance : public UGameInstance
 	GENERATED_BODY()
 
 public:
+    UHub_SpacelGameInstance(FObjectInitializer const& _objectInitialize);
+
     UFUNCTION(BlueprintCallable)
     void CreateServer() const;
 
     UFUNCTION(BlueprintCallable)
     void JoinServer() const;
+
+    /* override init */
+    virtual void Init() override;
 	
 public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -28,4 +33,7 @@ public:
     TSubclassOf<class ADefaultSubMachine> SubMachineModuleClass = nullptr;
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TSubclassOf<class ADefaultEngine> EngineModuleClass = nullptr;
+
+private:
+    TSubclassOf<class UUserWidget> MainMenuClass = nullptr;
 };
