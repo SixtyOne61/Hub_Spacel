@@ -70,6 +70,20 @@ void AHub_Pawn::BeginPlay()
 {
 	Super::BeginPlay();
 
+    // before check authority
+
+    // save spring arm default size
+    if (this->SpringArm)
+    {
+        this->m_springArmDefaultSize = this->SpringArm->TargetArmLength;
+    }
+
+    // save camera default field of view
+    if (this->Camera)
+    {
+        this->m_fieldOfViewDefault = this->Camera->FieldOfView;
+    }
+
     if (!HasAuthority())
     {
         return;
@@ -92,18 +106,6 @@ void AHub_Pawn::BeginPlay()
             }
         }
     }
-
-    // save spring arm default size
-    if (this->SpringArm)
-    {
-        this->m_springArmDefaultSize = this->SpringArm->TargetArmLength;
-    }
-
-    // save camera default field of view
-    if (this->Camera)
-    {
-        this->m_fieldOfViewDefault = this->Camera->FieldOfView;
-    }
     
     SetReplicates(true);
     SetReplicateMovement(true);
@@ -112,6 +114,9 @@ void AHub_Pawn::BeginPlay()
 // Called every frame
 void AHub_Pawn::Tick(float _deltaTime)
 {
+    // Call any parent class Tick implementation
+    Super::Tick(_deltaTime);
+
     if (HasAuthority())
     {
         GEngine->AddOnScreenDebugMessage(-1, 0.f, FColor::Red, FString::SanitizeFloat(m_currentForwardSpeed));
@@ -135,8 +140,7 @@ void AHub_Pawn::Tick(float _deltaTime)
         snapTarget(_deltaTime);
     }
 
-	// Call any parent class Tick implementation
-	Super::Tick(_deltaTime);
+    cameraZoom(_deltaTime);
 }
 
 void AHub_Pawn::NotifyHit(class UPrimitiveComponent* _myComp, class AActor* _other, class UPrimitiveComponent* _otherComp, bool _bSelfMoved, FVector _hitLocation, FVector _hitNormal, FVector _normalImpulse, const FHitResult& _hit)
@@ -245,7 +249,7 @@ void AHub_Pawn::serverRPCSetMoveRight_Implementation(float _val)
 
 void AHub_Pawn::serverRPCSetMoveTargetUp_Implementation(float _val)
 {
-    if (!this->m_isSnap)
+    if (!this->IsSnap)
     {
         return;
     }
@@ -257,7 +261,7 @@ void AHub_Pawn::serverRPCSetMoveTargetUp_Implementation(float _val)
 
 void AHub_Pawn::serverRPCSetMoveTargetRight_Implementation(float _val)
 {
-    if (!this->m_isSnap)
+    if (!this->IsSnap)
     {
         return;
     }
@@ -271,16 +275,11 @@ void AHub_Pawn::serverRPCSetSnap_Implementation(bool _val)
 {
     if (_val)
     {
-        this->m_isSnap = true;
-
-        if (this->Camera)
-        {
-            this->Camera->FieldOfView = this->FieldOfViewOnFocus;
-        }
+        this->IsSnap = true;
     }
     else
     {
-        this->m_isSnap = false;
+        this->IsSnap = false;
         this->m_progressResetSnap = this->TimeToResetSnap;
 
         if (ADefaultShell * shellModule = Cast<ADefaultShell>(this->ShellModule->GetChildActor()))
@@ -293,11 +292,23 @@ void AHub_Pawn::serverRPCSetSnap_Implementation(bool _val)
         }
 
         resetCrosshair();
+    }
+}
 
-        if (this->Camera)
-        {
-            this->Camera->FieldOfView = this->m_fieldOfViewDefault;
-        }
+void AHub_Pawn::clientRPCSetSnap_Implementation(bool _val)
+{
+    if (!IsLocallyControlled() || this->Camera == nullptr)
+    {
+        return;
+    }
+
+    if (_val)
+    {
+        this->Camera->FieldOfView = this->FieldOfViewOnFocus;
+    }
+    else
+    {
+        this->Camera->FieldOfView = this->m_fieldOfViewDefault;
     }
 }
 
@@ -370,6 +381,7 @@ void AHub_Pawn::fireLaser(float _deltaTime)
                 {
                     // TO DO init bullet
                     pLaser->SetReplicates(true);
+                    pLaser->SetReplicateMovement(true);
                     UGameplayStatics::FinishSpawningActor(pLaser, transform);
                     if (UProjectileMovementComponent * comp = Cast<UProjectileMovementComponent>(pLaser->GetComponentByClass(UProjectileMovementComponent::StaticClass())))
                     {
@@ -416,7 +428,10 @@ void AHub_Pawn::snapTarget(float _deltaTime)
         shellMesh = shellModule->ProceduralMesh;
     }
 
-    if (!this->m_isSnap)
+    UEngine* engine = GEngine;
+    if (!ensure(engine != nullptr)) return;
+
+    if (!this->IsSnap)
     {
         // move actor to shell orientation
         if (shellMesh && this->m_progressResetSnap != 0.0f)
@@ -428,19 +443,8 @@ void AHub_Pawn::snapTarget(float _deltaTime)
             shellMesh->SetRelativeRotation(r1);
             AddActorLocalRotation(r2);
         }
-
-        // unzoom
-        if (this->Camera && this->m_timeToUpdateFieldOfView != 0.0f)
-        {
-            this->Camera->FieldOfView = FMath::Lerp(this->m_fieldOfViewDefault, this->FieldOfViewOnFocus, this->m_timeToUpdateFieldOfView);
-            this->m_timeToUpdateFieldOfView -= _deltaTime;
-            if (this->m_timeToUpdateFieldOfView < 0.0f)
-            {
-                this->m_timeToUpdateFieldOfView = 0.0f;
-            }
-        }
     }
-    else if (GEngine->GameViewport && GEngine->GameViewport->Viewport)
+    else if (engine->GameViewport && engine->GameViewport->Viewport)
     {
         // rotate to snap
         APlayerController const* playerController = Cast<APlayerController>(GetController());
@@ -454,32 +458,24 @@ void AHub_Pawn::snapTarget(float _deltaTime)
         {
             FVector const& actorLocation = GetActorLocation();
             FVector target = actorLocation + worldDirection * 1000.0f;
-            FRotator rot = UKismetMathLibrary::FindLookAtRotation(actorLocation, target);
+            FRotator rot = UKismetMathLibrary::FindLookAtRotation(actorLocation, target); // TO DO : make MakeRotateFrom instead
 
             FRotator deltaRot = GetActorRotation();
             deltaRot += (rot - deltaRot) * SensibilitySnap;
 
             RootComponent->SetWorldRotation(rot);
         }
-
-        // zoom
-        if (this->Camera && this->m_timeToUpdateFieldOfView != 1.0f)
-        {
-            this->Camera->FieldOfView = FMath::Lerp(this->m_fieldOfViewDefault, this->FieldOfViewOnFocus, this->m_timeToUpdateFieldOfView);
-            this->m_timeToUpdateFieldOfView += _deltaTime;
-            if (this->m_timeToUpdateFieldOfView > 1.0f)
-            {
-                this->m_timeToUpdateFieldOfView = 1.0f;
-            }
-        }
     }
 }
 
 void AHub_Pawn::resetCrosshair()
 {
-    if (GEngine->GameViewport && GEngine->GameViewport->Viewport)
+    UEngine* engine = GEngine;
+    if (!ensure(engine != nullptr)) return;
+
+    if (engine->GameViewport && engine->GameViewport->Viewport)
     {
-        this->m_viewportSize = FVector2D(GEngine->GameViewport->Viewport->GetSizeXY());
+        this->m_viewportSize = FVector2D(engine->GameViewport->Viewport->GetSizeXY());
         this->CrosshairPosition = this->m_viewportSize / 2.0f;
     }
 }
@@ -487,7 +483,7 @@ void AHub_Pawn::resetCrosshair()
 void AHub_Pawn::initMeshModules()
 {
     // Shell module
-    if (ProceduralSpaceShipBase)
+    if (this->ProceduralSpaceShipBase)
     {
         TArray<TSharedPtr<ChainedLocation>> const& chainedLocationBase = this->ProceduralSpaceShipBase->getEdges();
         TArray<FVector> locationBase;
@@ -505,7 +501,37 @@ void AHub_Pawn::initMeshModules()
     initModule<ADefaultEngine>(this->EngineModule, {});
 }
 
+void AHub_Pawn::cameraZoom(float _deltaTime)
+{
+    if (!IsLocallyControlled() && this->Camera == nullptr)
+    {
+        return;
+    }
+
+    if (!this->IsSnap && this->m_timeToUpdateFieldOfView != 0.0f)
+    {
+        // unzoom
+        this->Camera->FieldOfView = FMath::Lerp(this->m_fieldOfViewDefault, this->FieldOfViewOnFocus, this->m_timeToUpdateFieldOfView);
+        this->m_timeToUpdateFieldOfView -= _deltaTime;
+        if (this->m_timeToUpdateFieldOfView < 0.0f)
+        {
+            this->m_timeToUpdateFieldOfView = 0.0f;
+        }
+    }
+    else if(this->IsSnap && this->m_timeToUpdateFieldOfView != 1.0f)
+    {
+        // zoom
+        this->Camera->FieldOfView = FMath::Lerp(this->m_fieldOfViewDefault, this->FieldOfViewOnFocus, this->m_timeToUpdateFieldOfView);
+        this->m_timeToUpdateFieldOfView += _deltaTime;
+        if (this->m_timeToUpdateFieldOfView > 1.0f)
+        {
+            this->m_timeToUpdateFieldOfView = 1.0f;
+        }
+    }
+}
+
 void AHub_Pawn::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const
 {
     DOREPLIFETIME(AHub_Pawn, CrosshairPosition);
+    DOREPLIFETIME(AHub_Pawn, IsSnap);
 }

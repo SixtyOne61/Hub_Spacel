@@ -57,6 +57,9 @@ protected:
     UFUNCTION(Reliable, Server)
     void serverRPCSetSnap(bool _val);
 
+    UFUNCTION(Reliable, Client)
+    void clientRPCSetSnap(bool _val);
+
 protected:
 	/* bind function */
 	void input_FireOn();
@@ -89,6 +92,9 @@ protected:
 
     /* init all module */
     void initMeshModules();
+
+    /* camera zoom manage */
+    void cameraZoom(float _deltaTime);
 
 protected:
     UPROPERTY(Category = "UI", EditAnywhere, BlueprintReadOnly, Replicated)
@@ -144,6 +150,10 @@ protected:
     UPROPERTY(Category = "Module", VisibleAnywhere, BlueprintReadOnly)
     class UChildActorComponent* EngineModule = nullptr;
 
+    /* true if we snap for look at of mesh */
+    UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Replicated)
+    bool IsSnap = false;
+
 private:
 	/* speed */
 	float m_currentForwardSpeed = 0.0f;
@@ -155,8 +165,6 @@ private:
 	/* move right / roll */
 	float m_currentRollSpeed = 0.0f;
 
-    /* true if we snap for look at of mesh */
-    bool m_isSnap = false;
     /* default rotator value for snap */
     FRotator m_defaultRotation = FRotator::ZeroRotator;
     /* progress reset snap when we release snap for back to default value and set actor rotation */

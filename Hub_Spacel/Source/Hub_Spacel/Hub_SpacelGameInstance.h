@@ -13,6 +13,13 @@ UCLASS()
 class HUB_SPACEL_API UHub_SpacelGameInstance : public UGameInstance
 {
 	GENERATED_BODY()
+
+public:
+    UFUNCTION(BlueprintCallable)
+    void CreateServer() const;
+
+    UFUNCTION(BlueprintCallable)
+    void JoinServer() const;
 	
 public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
