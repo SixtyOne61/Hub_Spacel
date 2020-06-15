@@ -149,6 +149,8 @@ protected:
     class UChildActorComponent* ShellModule = nullptr;
     UPROPERTY(Category = "Module", VisibleAnywhere, BlueprintReadOnly)
     class UChildActorComponent* EngineModule = nullptr;
+    UPROPERTY(Category = "Module", VisibleAnywhere, BlueprintReadOnly)
+    class UChildActorComponent* HookModule = nullptr;
 
     /* true if we snap for look at of mesh */
     UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Replicated)

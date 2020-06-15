@@ -21,6 +21,7 @@
 #include "Source/Gameplay/Bullet/DefaultSubMachine.h"
 #include "Source/Gameplay/Shell/DefaultShell.h"
 #include "Source/Gameplay/Power/DefaultEngine.h"
+#include "Source/Gameplay/Hook/HookComponent.h"
 #include "Hub_SpacelGameInstance.h"
 #include "UnrealNetwork.h"
 #include <functional>
@@ -52,6 +53,9 @@ AHub_Pawn::AHub_Pawn()
 
     EngineModule = CreateDefaultSubobject<UChildActorComponent>(TEXT("EngineModule"));
     EngineModule->SetupAttachment(RootComponent);
+
+    HookModule = CreateDefaultSubobject<UChildActorComponent>(TEXT("HookModule"));
+    HookModule->SetupAttachment(RootComponent);
 
     // Create a spring arm component
     SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm0"));
@@ -195,6 +199,9 @@ void AHub_Pawn::SetupModule(TSubclassOf<ADefaultSubMachine> _subMachine, TSubcla
         this->EngineModule->SetChildActorClass(_engine);
         this->EngineModule->CreateChildActor();
     }
+
+    this->HookModule->SetChildActorClass(AHookComponent::StaticClass());
+    this->HookModule->CreateChildActor();
 }
 
 void AHub_Pawn::serverRPCSetFireOn_Implementation(bool _val)

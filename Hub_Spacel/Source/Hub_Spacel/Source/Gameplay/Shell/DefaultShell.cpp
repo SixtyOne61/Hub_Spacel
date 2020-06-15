@@ -46,9 +46,6 @@ bool ADefaultShell::GenerateMesh(TArray<FVector> const& _ignoreCoord)
         return false;
     }
 
-    FVector const& location = GetActorLocation();
-    ProceduralMesh->SetWorldLocation(location);
-
     FVector cubeSize = FVector(15.0f, 15.0f, 15.0f);
     this->ProceduralMesh->setCubeSize(cubeSize);
     TArray<TSharedPtr<ChainedLocation>> chainedLocations;
