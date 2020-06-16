@@ -3,6 +3,7 @@
 
 #include "HookComponent.h"
 #include "Components/SceneComponent.h"
+#include "Components/BoxComponent.h"
 #include "Source/Mesh/SpacelProceduralMeshComponent.h"
 #include "Materials/MaterialInstance.h"
 
@@ -17,6 +18,9 @@ AHookComponent::AHookComponent()
     ProceduralMesh = CreateDefaultSubobject<USpacelProceduralMeshComponent>(TEXT("ProceduralMesh"));
     ProceduralMesh->bUseAsyncCooking = true;
     ProceduralMesh->SetupAttachment(RootComponent);
+
+    BoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComponent"));
+    BoxComponent->SetupAttachment(RootComponent);
 }
 
 void AHookComponent::BeginPlay()
@@ -39,6 +43,8 @@ void AHookComponent::Tick(float DeltaTime)
 
 bool AHookComponent::GenerateHook(float _innerRadius)
 {
+    if (!ensure(ProceduralMesh != nullptr)) return false;
+
     FVector cubeSize = FVector(15.0f, 15.0f, 15.0f);
     this->ProceduralMesh->setCubeSize(cubeSize);
     
@@ -62,24 +68,28 @@ bool AHookComponent::GenerateHook(float _innerRadius)
             chainedLocations.Add(MakeShareable(new ChainedLocation(loc, cubeSize)));
         }
     }
-    /*
-    int8 z = 0;
-    for (int8 y = -_innerRadius; y <= _innerRadius; y += 15)
+
+    float maxZ = _innerRadius * FMath::Sin(FMath::DegreesToRadians(90));
+    float radius = _innerRadius / 2.0f;
+    for (uint16 deg = 30; deg <= 150; deg += 15)
     {
+        float rad = FMath::DegreesToRadians(deg);
+        y = radius * FMath::Cos(rad);
+        z = maxZ + radius * FMath::Sin(rad);
+
         FVector loc = FVector(x, y, z);
         chainedLocations.Add(MakeShareable(new ChainedLocation(loc, cubeSize)));
-
-        if (z != 0)
-        {
-            loc = FVector(x, y, -z);
-            chainedLocations.Add(MakeShareable(new ChainedLocation(loc, cubeSize)));
-        }
-
-        z = (y > 0 ? z - 15 : z + 15);
-    }*/
+    }
 
     this->ProceduralMesh->setEdges(std::forward<TArray<TSharedPtr<ChainedLocation>>>(chainedLocations));
     this->ProceduralMesh->generateMesh(std::move(FName("Player")));
     this->ProceduralMesh->SetMaterial(0, Mat);
+
+    // init box
+    if (!ensure(BoxComponent != nullptr)) return false;
+
+    BoxComponent->SetBoxExtent(FVector(5.0f, radius, radius * FMath::Sin(FMath::DegreesToRadians(90))), true);
+    BoxComponent->SetRelativeLocation(FVector(0.0f, -radius/2.0f, maxZ));
+
     return true;
 }

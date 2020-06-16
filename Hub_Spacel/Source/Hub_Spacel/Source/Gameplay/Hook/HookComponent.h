@@ -34,4 +34,6 @@ public:
     class USpacelProceduralMeshComponent* ProceduralMesh = nullptr;
     UPROPERTY(Category = "Mesh", EditAnywhere, BlueprintReadWrite)
     class UMaterialInstance* Mat = nullptr;
+    UPROPERTY(Category = "Hook", EditAnywhere, BlueprintReadWrite)
+    class UBoxComponent* BoxComponent = nullptr;
 };
