@@ -35,6 +35,10 @@ public:
     UFUNCTION(BlueprintCallable)
     void SetupModule(TSubclassOf<ADefaultSubMachine> _subMachine, TSubclassOf<ADefaultShell> _shell, TSubclassOf<ADefaultEngine> _engine);
 
+    /* for create Hook */
+    UFUNCTION(BlueprintCallable)
+    void CreateHook();
+
 protected:
     UFUNCTION(Reliable, Server)
     void serverRPCSetFireOn(bool _val);

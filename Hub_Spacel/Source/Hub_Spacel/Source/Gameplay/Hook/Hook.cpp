@@ -1,13 +1,13 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "HookComponent.h"
+#include "Hook.h"
 #include "Components/SceneComponent.h"
 #include "Components/BoxComponent.h"
 #include "Source/Mesh/SpacelProceduralMeshComponent.h"
 #include "Materials/MaterialInstance.h"
 
-AHookComponent::AHookComponent()
+AHook::AHook()
 {
     // Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
     PrimaryActorTick.bCanEverTick = false;
@@ -23,7 +23,7 @@ AHookComponent::AHookComponent()
     BoxComponent->SetupAttachment(RootComponent);
 }
 
-void AHookComponent::BeginPlay()
+void AHook::BeginPlay()
 {
     Super::BeginPlay();
 
@@ -36,18 +36,13 @@ void AHookComponent::BeginPlay()
     }
 }
 
-void AHookComponent::Tick(float DeltaTime)
-{
-    Super::Tick(DeltaTime);
-}
-
-bool AHookComponent::GenerateHook(float _innerRadius)
+bool AHook::GenerateHook(float _innerRadius)
 {
     if (!ensure(ProceduralMesh != nullptr)) return false;
 
     FVector cubeSize = FVector(15.0f, 15.0f, 15.0f);
     this->ProceduralMesh->setCubeSize(cubeSize);
-    
+
     TArray<TSharedPtr<ChainedLocation>> chainedLocations;
 
     float x = 0.0f;
@@ -61,8 +56,8 @@ bool AHookComponent::GenerateHook(float _innerRadius)
 
         FVector loc = FVector(x, y, z);
         chainedLocations.Add(MakeShareable(new ChainedLocation(loc, cubeSize)));
-        
-        if (z !=0)
+
+        if (z != 0)
         {
             loc = FVector(x, y, -z);
             chainedLocations.Add(MakeShareable(new ChainedLocation(loc, cubeSize)));
@@ -89,7 +84,7 @@ bool AHookComponent::GenerateHook(float _innerRadius)
     if (!ensure(BoxComponent != nullptr)) return false;
 
     BoxComponent->SetBoxExtent(FVector(5.0f, radius, radius * FMath::Sin(FMath::DegreesToRadians(90))), true);
-    BoxComponent->SetRelativeLocation(FVector(0.0f, -radius/2.0f, maxZ));
+    BoxComponent->SetRelativeLocation(FVector(0.0f, 0.0f, maxZ + radius / 3.0f));
 
     return true;
 }

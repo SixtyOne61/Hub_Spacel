@@ -21,7 +21,7 @@
 #include "Source/Gameplay/Bullet/DefaultSubMachine.h"
 #include "Source/Gameplay/Shell/DefaultShell.h"
 #include "Source/Gameplay/Power/DefaultEngine.h"
-#include "Source/Gameplay/Hook/HookComponent.h"
+#include "Source/Gameplay/Hook/Hook.h"
 #include "Hub_SpacelGameInstance.h"
 #include "UnrealNetwork.h"
 #include <functional>
@@ -200,8 +200,19 @@ void AHub_Pawn::SetupModule(TSubclassOf<ADefaultSubMachine> _subMachine, TSubcla
         this->EngineModule->CreateChildActor();
     }
 
-    this->HookModule->SetChildActorClass(AHookComponent::StaticClass());
+    this->HookModule->SetChildActorClass(AHook::StaticClass());
     this->HookModule->CreateChildActor();
+}
+
+void AHub_Pawn::CreateHook()
+{
+    if (!this->HookModule)
+    {
+        return;
+    }
+
+    AHook* module = Cast<AHook>(HookModule->GetChildActor());
+    module->GenerateHook(135);
 }
 
 void AHub_Pawn::serverRPCSetFireOn_Implementation(bool _val)

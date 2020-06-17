@@ -4,26 +4,22 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "HookComponent.generated.h"
+#include "Hook.generated.h"
 
-/**
- * 
- */
 UCLASS()
-class HUB_SPACEL_API AHookComponent : public AActor
+class HUB_SPACEL_API AHook : public AActor
 {
 	GENERATED_BODY()
 	
-public:
-    AHookComponent();
+public:	
+	// Sets default values for this actor's properties
+	AHook();
 
 protected:
-    virtual void BeginPlay() override;
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
 
 public:
-    // Called every frame
-    virtual void Tick(float DeltaTime) override;
-
     UFUNCTION(BlueprintCallable)
     virtual bool GenerateHook(float _innerRadius);
 
