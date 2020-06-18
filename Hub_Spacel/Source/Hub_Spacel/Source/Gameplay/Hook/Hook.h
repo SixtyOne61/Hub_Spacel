@@ -23,6 +23,10 @@ public:
     UFUNCTION(BlueprintCallable)
     virtual bool GenerateHook(float _innerRadius);
 
+    /* End overlap event */
+    UFUNCTION()
+    void OnBeginOverlap(class UPrimitiveComponent* _overlappedComponent, class AActor* _otherActor, class UPrimitiveComponent* _otherComp, int32 _otherBodyIndex, bool _bFromSweep, const FHitResult& _sweepResult);
+
 public:
     UPROPERTY(Category = "Root", EditAnywhere, BlueprintReadWrite)
     class USceneComponent* Root = nullptr;

@@ -3,34 +3,17 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
+#include "Source/ProceduralActor.h"
 #include "DefaultShell.generated.h"
 
 UCLASS()
-class HUB_SPACEL_API ADefaultShell : public AActor
+class HUB_SPACEL_API ADefaultShell : public AProceduralActor
 {
 	GENERATED_BODY()
 	
-public:	
-	// Sets default values for this actor's properties
-	ADefaultShell();
-
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
-    UFUNCTION(BlueprintCallable)
-    virtual bool GenerateMesh(TArray<FVector> const& _ignoreCoord);
+public:
+    ADefaultShell();
 
 public:
-    UPROPERTY(Category = "Root", EditAnywhere, BlueprintReadWrite)
-    class USceneComponent* Root = nullptr;
-    UPROPERTY(Category = "Mesh", VisibleDefaultsOnly, BlueprintReadOnly)
-    class USpacelProceduralMeshComponent* ProceduralMesh = nullptr;
-    UPROPERTY(Category = "Mesh", EditAnywhere, BlueprintReadWrite)
-    class UMaterialInstance* Mat = nullptr;
+    virtual bool GenerateMesh(TArray<FVector> const& _ignoreCoord) override;
 };

@@ -8,40 +8,19 @@
 
 // Sets default values
 ADefaultEngine::ADefaultEngine()
+    : AProceduralActor()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
-
-    Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
-    RootComponent = Root;
-
-    ProceduralMesh = CreateDefaultSubobject<USpacelProceduralMeshComponent>(TEXT("ProceduralMesh"));
-    ProceduralMesh->bUseAsyncCooking = true;
-    ProceduralMesh->SetupAttachment(RootComponent);
 }
 
 // Called when the game starts or when spawned
 void ADefaultEngine::BeginPlay()
 {
 	Super::BeginPlay();
-
-    if (HasAuthority())
-    {
-        SetReplicates(true);
-        SetReplicateMovement(true);
-    }
-}
-
-// Called every frame
-void ADefaultEngine::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
 }
 
 bool ADefaultEngine::GenerateMesh(TArray<FVector> const& _ignoreCoord)
 {
-    if (!ProceduralMesh)
+    if (!this->ProceduralMesh)
     {
         return false;
     }

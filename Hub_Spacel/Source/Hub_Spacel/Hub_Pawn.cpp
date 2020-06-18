@@ -22,6 +22,7 @@
 #include "Source/Gameplay/Shell/DefaultShell.h"
 #include "Source/Gameplay/Power/DefaultEngine.h"
 #include "Source/Gameplay/Hook/Hook.h"
+#include "Source/Gameplay/Hook/Rod.h"
 #include "Hub_SpacelGameInstance.h"
 #include "UnrealNetwork.h"
 #include <functional>
@@ -57,6 +58,9 @@ AHub_Pawn::AHub_Pawn()
     HookModule = CreateDefaultSubobject<UChildActorComponent>(TEXT("HookModule"));
     HookModule->SetupAttachment(RootComponent);
 
+    RodModule = CreateDefaultSubobject<UChildActorComponent>(TEXT("RodModule"));
+    RodModule->SetupAttachment(RootComponent);
+
     // Create a spring arm component
     SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm0"));
     SpringArm->SetupAttachment(ProceduralSpaceShipBase);	// Attach SpringArm to RootComponent
@@ -79,13 +83,13 @@ void AHub_Pawn::BeginPlay()
     // save spring arm default size
     if (this->SpringArm)
     {
-        this->m_springArmDefaultSize = this->SpringArm->TargetArmLength;
+        m_springArmDefaultSize = this->SpringArm->TargetArmLength;
     }
 
     // save camera default field of view
     if (this->Camera)
     {
-        this->m_fieldOfViewDefault = this->Camera->FieldOfView;
+        m_fieldOfViewDefault = this->Camera->FieldOfView;
     }
 
     if (!HasAuthority())
@@ -94,7 +98,7 @@ void AHub_Pawn::BeginPlay()
     }
 
     UHub_SpacelGameInstance* gameInstance = Cast<UHub_SpacelGameInstance>(GetGameInstance());
-    SetupModule(gameInstance->SubMachineModuleClass, gameInstance->ShellModuleClass, gameInstance->EngineModuleClass);
+    SetupModule(gameInstance->SubMachineModuleClass, gameInstance->ShellModuleClass, gameInstance->EngineModuleClass, gameInstance->RodModuleClass);
 
     generateMesh();
     resetCrosshair();
@@ -106,7 +110,7 @@ void AHub_Pawn::BeginPlay()
         {
             if (shellModule->ProceduralMesh)
             {
-                this->m_defaultRotation = shellModule->ProceduralMesh->GetRelativeTransform().Rotator();
+                m_defaultRotation = shellModule->ProceduralMesh->GetRelativeTransform().Rotator();
             }
         }
     }
@@ -126,16 +130,16 @@ void AHub_Pawn::Tick(float _deltaTime)
         GEngine->AddOnScreenDebugMessage(-1, 0.f, FColor::Red, FString::SanitizeFloat(m_currentForwardSpeed));
         GEngine->AddOnScreenDebugMessage(-1, 0.f, FColor::Red, this->GetActorLocation().ToString());
         // move
-        FVector localMove = FVector(this->m_currentForwardSpeed * _deltaTime, 0.f, 0.f);
+        FVector localMove = FVector(m_currentForwardSpeed * _deltaTime, 0.f, 0.f);
 
         // Move plan forwards (with sweep so we stop when we collide with things)
         AddActorLocalOffset(localMove, true);
 
         // rotation
         FRotator deltaRotation(0.f, 0.f, 0.f);
-        deltaRotation.Pitch = this->m_currentPitchSpeed * _deltaTime;
-        deltaRotation.Yaw = this->m_currentYawSpeed * _deltaTime;
-        deltaRotation.Roll = this->m_currentRollSpeed * _deltaTime;
+        deltaRotation.Pitch = m_currentPitchSpeed * _deltaTime;
+        deltaRotation.Yaw = m_currentYawSpeed * _deltaTime;
+        deltaRotation.Roll = m_currentRollSpeed * _deltaTime;
 
         // rotate ship
         AddActorLocalRotation(deltaRotation);
@@ -180,7 +184,7 @@ void AHub_Pawn::SetupPlayerInputComponent(UInputComponent* _playerInputComponent
     _playerInputComponent->BindAction("Fire", IE_Released, this, &AHub_Pawn::input_FireOff);
 }
 
-void AHub_Pawn::SetupModule(TSubclassOf<ADefaultSubMachine> _subMachine, TSubclassOf<ADefaultShell> _shell, TSubclassOf<ADefaultEngine> _engine)
+void AHub_Pawn::SetupModule(TSubclassOf<ADefaultSubMachine> _subMachine, TSubclassOf<ADefaultShell> _shell, TSubclassOf<ADefaultEngine> _engine, TSubclassOf<ARod> _rod)
 {
     if (_subMachine)
     {
@@ -200,6 +204,12 @@ void AHub_Pawn::SetupModule(TSubclassOf<ADefaultSubMachine> _subMachine, TSubcla
         this->EngineModule->CreateChildActor();
     }
 
+    if (_rod)
+    {
+        this->RodModule->SetChildActorClass(_rod);
+        this->RodModule->CreateChildActor();
+    }
+
     this->HookModule->SetChildActorClass(AHook::StaticClass());
     this->HookModule->CreateChildActor();
 }
@@ -212,7 +222,13 @@ void AHub_Pawn::CreateHook()
     }
 
     AHook* module = Cast<AHook>(HookModule->GetChildActor());
+    // TO DO expose radius
     module->GenerateHook(135);
+}
+
+void AHub_Pawn::SetHook(AActor * _hooker /*= nullptr*/)
+{
+    m_hooker = _hooker;
 }
 
 void AHub_Pawn::serverRPCSetFireOn_Implementation(bool _val)
@@ -517,6 +533,9 @@ void AHub_Pawn::initMeshModules()
 
     // Engine module
     initModule<ADefaultEngine>(this->EngineModule, {});
+
+    // Rod module
+    initModule<ARod>(this->RodModule, {});
 }
 
 void AHub_Pawn::cameraZoom(float _deltaTime)

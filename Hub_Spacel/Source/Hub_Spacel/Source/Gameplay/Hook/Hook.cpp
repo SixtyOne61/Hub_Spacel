@@ -6,6 +6,7 @@
 #include "Components/BoxComponent.h"
 #include "Source/Mesh/SpacelProceduralMeshComponent.h"
 #include "Materials/MaterialInstance.h"
+#include "Hub_Pawn.h"
 
 AHook::AHook()
 {
@@ -33,6 +34,8 @@ void AHook::BeginPlay()
         SetReplicateMovement(true);
 
         GenerateHook(135);
+
+        BoxComponent->OnComponentBeginOverlap.AddDynamic(this, &AHook::OnBeginOverlap);
     }
 }
 
@@ -79,12 +82,31 @@ bool AHook::GenerateHook(float _innerRadius)
     this->ProceduralMesh->setEdges(std::forward<TArray<TSharedPtr<ChainedLocation>>>(chainedLocations));
     this->ProceduralMesh->generateMesh(std::move(FName("Player")));
     this->ProceduralMesh->SetMaterial(0, Mat);
+    this->ProceduralMesh->SetCollisionProfileName("NoCollision");
 
     // init box
     if (!ensure(BoxComponent != nullptr)) return false;
 
     BoxComponent->SetBoxExtent(FVector(5.0f, radius, radius * FMath::Sin(FMath::DegreesToRadians(90))), true);
     BoxComponent->SetRelativeLocation(FVector(0.0f, 0.0f, maxZ + radius / 3.0f));
+    BoxComponent->SetCollisionProfileName("Hook");
 
     return true;
+}
+
+void AHook::OnBeginOverlap(class UPrimitiveComponent* _overlappedComponent, class AActor* _otherActor, class UPrimitiveComponent* _otherComp, int32 _otherBodyIndex, bool _bFromSweep, const FHitResult& _sweepResult)
+{
+    if (!_otherActor)
+    {
+        return;
+    }
+
+    /*if (AHub_Pawn * otherPawn = Cast<AHub_Pawn>(_otherActor))
+    {
+        // follow this pawn
+        if (AHub_Pawn * parent = Cast<AHub_Pawn>(GetParentActor()))
+        {
+            parent->SetHook(_otherActor);
+        }
+    }*/
 }

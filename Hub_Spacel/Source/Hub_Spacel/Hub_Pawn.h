@@ -33,11 +33,15 @@ public:
 
     /* for setup all module of ship */
     UFUNCTION(BlueprintCallable)
-    void SetupModule(TSubclassOf<ADefaultSubMachine> _subMachine, TSubclassOf<ADefaultShell> _shell, TSubclassOf<ADefaultEngine> _engine);
+    void SetupModule(TSubclassOf<ADefaultSubMachine> _subMachine, TSubclassOf<ADefaultShell> _shell, TSubclassOf<ADefaultEngine> _engine, TSubclassOf<ARod> _rod);
 
     /* for create Hook */
     UFUNCTION(BlueprintCallable)
     void CreateHook();
+
+    /* for Hook our pawn by param actor */
+    UFUNCTION(BlueprintCallable)
+    void SetHook(AActor * _hooker = nullptr);
 
 protected:
     UFUNCTION(Reliable, Server)
@@ -155,6 +159,8 @@ protected:
     class UChildActorComponent* EngineModule = nullptr;
     UPROPERTY(Category = "Module", VisibleAnywhere, BlueprintReadOnly)
     class UChildActorComponent* HookModule = nullptr;
+    UPROPERTY(Category = "Module", VisibleAnywhere, BlueprintReadOnly)
+    class UChildActorComponent* RodModule = nullptr;
 
     /* true if we snap for look at of mesh */
     UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Replicated)
@@ -194,6 +200,9 @@ private:
     float m_fieldOfViewDefault = 0.0f;
     /* time to update field of view */
     float m_timeToUpdateFieldOfView = 0.0f;
+
+    /* actor who hook us */
+    AActor* m_hooker = nullptr;
 
 public:
 	// -- get

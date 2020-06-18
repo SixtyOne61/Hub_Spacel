@@ -33,6 +33,8 @@ public:
     TSubclassOf<class ADefaultSubMachine> SubMachineModuleClass = nullptr;
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TSubclassOf<class ADefaultEngine> EngineModuleClass = nullptr;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TSubclassOf<class ARod> RodModuleClass = nullptr;
 
 private:
     TSubclassOf<class UUserWidget> MainMenuClass = nullptr;
