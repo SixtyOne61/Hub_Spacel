@@ -22,4 +22,8 @@ protected:
 public:
     /* override */
     virtual bool GenerateMesh(TArray<FVector> const& _ignoreCoord) override;
+
+public:
+    UPROPERTY(Category = "Hook", EditAnywhere, BlueprintReadWrite)
+    class UBoxComponent* BoxComponent = nullptr;
 };

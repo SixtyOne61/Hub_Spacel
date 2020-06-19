@@ -3,12 +3,14 @@
 #include "Rod.h"
 #include "Source/Mesh/SpacelProceduralMeshComponent.h"
 #include "Materials/MaterialInstance.h"
+#include "Components/BoxComponent.h"
 
 // Sets default values
 ARod::ARod()
     : AProceduralActor()
 {
-
+    BoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComponent"));
+    BoxComponent->SetupAttachment(RootComponent);
 }
 
 // Called when the game starts or when spawned
@@ -77,7 +79,7 @@ bool ARod::GenerateMesh(TArray<FVector> const& _ignoreCoord)
     };
 
     this->ProceduralMesh->setEdges(std::forward<TArray<TSharedPtr<ChainedLocation>>>(chainedLocations));
-    this->ProceduralMesh->generateMesh(std::move(FName("Player")));
+    this->ProceduralMesh->generateMesh(std::move(FName("Player"))); // TO DO : change profile ?
     this->ProceduralMesh->SetMaterial(0, Mat);
     return true;
 }

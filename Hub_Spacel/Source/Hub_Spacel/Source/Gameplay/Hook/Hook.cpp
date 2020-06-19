@@ -101,12 +101,14 @@ void AHook::OnBeginOverlap(class UPrimitiveComponent* _overlappedComponent, clas
         return;
     }
 
-    /*if (AHub_Pawn * otherPawn = Cast<AHub_Pawn>(_otherActor))
+    if (_overlappedComponent->ComponentHasTag(FName(TEXT("HookBox"))))
     {
-        // follow this pawn
-        if (AHub_Pawn * parent = Cast<AHub_Pawn>(GetParentActor()))
+        if (_overlappedComponent->ComponentHasTag(FName(TEXT("RodBox"))))
         {
-            parent->SetHook(_otherActor);
+            if (AHub_Pawn * parent = Cast<AHub_Pawn>(GetParentActor()))
+            {
+                parent->SetHook(_otherActor);
+            }
         }
-    }*/
+    }
 }
