@@ -30,22 +30,50 @@ bool ARod::GenerateMesh(TArray<FVector> const& _ignoreCoord)
 
     TArray<TSharedPtr<ChainedLocation>> chainedLocations =
     {
-        MakeShareable(new ChainedLocation(FVector(-120.0f, 15.0f, 0.0f), cubeSize)),
-        MakeShareable(new ChainedLocation(FVector(-120.0f, -15.0f, 0.0f), cubeSize)),
+        MakeShareable(new ChainedLocation(FVector(30.0f, 0.0f, -120.0f), cubeSize)),
+        MakeShareable(new ChainedLocation(FVector(15.0f, 0.0f, -120.0f), cubeSize)),
+        MakeShareable(new ChainedLocation(FVector(0.0f, 0.0f, -120.0f), cubeSize)),
+        MakeShareable(new ChainedLocation(FVector(-15.0f, 0.0f, -120.0f), cubeSize)),
+        MakeShareable(new ChainedLocation(FVector(-30.0f, 0.0f, -120.0f), cubeSize)),
+        
+        MakeShareable(new ChainedLocation(FVector(30.0f, 0.0f, -135.0f), cubeSize)),
+        MakeShareable(new ChainedLocation(FVector(15.0f, 0.0f, -135.0f), cubeSize)),
+        MakeShareable(new ChainedLocation(FVector(0.0f, 0.0f, -135.0f), cubeSize)),
+        MakeShareable(new ChainedLocation(FVector(-15.0f, 0.0f, -135.0f), cubeSize)),
+        MakeShareable(new ChainedLocation(FVector(-30.0f, 0.0f, -135.0f), cubeSize)),
 
-        MakeShareable(new ChainedLocation(FVector(-120.0f, 15.0f, 15.0f), cubeSize)),
-        MakeShareable(new ChainedLocation(FVector(-120.0f, -15.0f, 15.0f), cubeSize)),
+        MakeShareable(new ChainedLocation(FVector(15.0f, 0.0f, -150.0f), cubeSize)),
+        MakeShareable(new ChainedLocation(FVector(0.0f, 0.0f, -150.0f), cubeSize)),
+        MakeShareable(new ChainedLocation(FVector(-15.0f, 0.0f, -150.0f), cubeSize)),
+        MakeShareable(new ChainedLocation(FVector(-30.0f, 0.0f, -150.0f), cubeSize)),
 
-        MakeShareable(new ChainedLocation(FVector(-120.0f, 15.0f, -15.0f), cubeSize)),
-        MakeShareable(new ChainedLocation(FVector(-120.0f, -15.0f, -15.0f), cubeSize)),
+        MakeShareable(new ChainedLocation(FVector(15.0f, 0.0f, -165.0f), cubeSize)),
+        MakeShareable(new ChainedLocation(FVector(0.0f, 0.0f, -165.0f), cubeSize)),
+        MakeShareable(new ChainedLocation(FVector(-15.0f, 0.0f, -165.0f), cubeSize)),
+        MakeShareable(new ChainedLocation(FVector(-30.0f, 0.0f, -165.0f), cubeSize)),
 
-        MakeShareable(new ChainedLocation(FVector(-120.0f, 0.0f, 30.0f), cubeSize)),
-        MakeShareable(new ChainedLocation(FVector(-120.0f, 15.0f, 30.0f), cubeSize)),
-        MakeShareable(new ChainedLocation(FVector(-120.0f, -15.0f, 30.0f), cubeSize)),
+        MakeShareable(new ChainedLocation(FVector(0.0f, 0.0f, -180.0f), cubeSize)),
+        MakeShareable(new ChainedLocation(FVector(-15.0f, 0.0f, -180.0f), cubeSize)),
+        MakeShareable(new ChainedLocation(FVector(-30.0f, 0.0f, -180.0f), cubeSize)),
 
-        MakeShareable(new ChainedLocation(FVector(-120.0f, 0.0f, -30.0f), cubeSize)),
-        MakeShareable(new ChainedLocation(FVector(-120.0f, 15.0f, -30.0f), cubeSize)),
-        MakeShareable(new ChainedLocation(FVector(-120.0f, -15.0f, -30.0f), cubeSize)),
+        MakeShareable(new ChainedLocation(FVector(0.0f, 0.0f, -195.0f), cubeSize)),
+        MakeShareable(new ChainedLocation(FVector(-15.0f, 0.0f, -195.0f), cubeSize)),
+        MakeShareable(new ChainedLocation(FVector(-30.0f, 0.0f, -195.0f), cubeSize)),
+
+        MakeShareable(new ChainedLocation(FVector(0.0f, 0.0f, -210.0f), cubeSize)),
+        MakeShareable(new ChainedLocation(FVector(-15.0f, 0.0f, -210.0f), cubeSize)),
+        MakeShareable(new ChainedLocation(FVector(-30.0f, 0.0f, -210.0f), cubeSize)),
+
+        MakeShareable(new ChainedLocation(FVector(-15.0f, 0.0f, -225.0f), cubeSize)),
+        MakeShareable(new ChainedLocation(FVector(-30.0f, 0.0f, -225.0f), cubeSize)),
+
+        MakeShareable(new ChainedLocation(FVector(-15.0f, 0.0f, -240.0f), cubeSize)),
+        MakeShareable(new ChainedLocation(FVector(-30.0f, 0.0f, -240.0f), cubeSize)),
+
+        MakeShareable(new ChainedLocation(FVector(-30.0f, 0.0f, -255.0f), cubeSize)),
+        MakeShareable(new ChainedLocation(FVector(-30.0f, 0.0f, -270.0f), cubeSize)),
+        MakeShareable(new ChainedLocation(FVector(-30.0f, 0.0f, -285.0f), cubeSize)),
+        MakeShareable(new ChainedLocation(FVector(-30.0f, 0.0f, -300.0f), cubeSize)),
     };
 
     this->ProceduralMesh->setEdges(std::forward<TArray<TSharedPtr<ChainedLocation>>>(chainedLocations));
