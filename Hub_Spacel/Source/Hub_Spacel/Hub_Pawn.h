@@ -8,7 +8,7 @@
 #include "Hub_Enum.h"
 #include "Hub_Pawn.generated.h"
 
-static int32 DebugDrawSpawnBullet = 0;
+static int32 SDebugDrawSpawnBullet = 0;
 
 UCLASS()
 class HUB_SPACEL_API AHub_Pawn : public APawn
