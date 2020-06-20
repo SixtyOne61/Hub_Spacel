@@ -33,7 +33,7 @@ public:
 
     /* for setup all module of ship */
     UFUNCTION(BlueprintCallable)
-    void SetupModule(TSubclassOf<ADefaultSubMachine> _subMachine, TSubclassOf<ADefaultShell> _shell, TSubclassOf<ADefaultEngine> _engine, TSubclassOf<ARod> _rod);
+    void SetupModule(TSubclassOf<ADefaultSubMachine> _subMachine, TSubclassOf<ADefaultShell> _shell, TSubclassOf<ADefaultEngine> _engine);
 
     /* for create Hook */
     UFUNCTION(BlueprintCallable)
@@ -165,6 +165,11 @@ protected:
     /* true if we snap for look at of mesh */
     UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Replicated)
     bool IsSnap = false;
+
+    UPROPERTY(Category = "Setup", EditAnywhere, BlueprintReadWrite)
+    TSubclassOf<class ARod> RodModuleClass = nullptr;
+    UPROPERTY(Category = "Setup", EditAnywhere, BlueprintReadWrite)
+    TSubclassOf<class AHook> HookModuleClass = nullptr;
 
 private:
 	/* speed */

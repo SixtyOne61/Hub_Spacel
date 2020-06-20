@@ -36,4 +36,6 @@ public:
     class UMaterialInstance* Mat = nullptr;
     UPROPERTY(Category = "Hook", EditAnywhere, BlueprintReadWrite)
     class UBoxComponent* BoxComponent = nullptr;
+    UPROPERTY(Category = "Setup", EditAnywhere, BlueprintReadWrite)
+    float InnerRadius = 0.0f;
 };

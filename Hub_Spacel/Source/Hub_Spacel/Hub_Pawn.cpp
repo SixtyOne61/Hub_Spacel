@@ -98,7 +98,7 @@ void AHub_Pawn::BeginPlay()
     }
 
     UHub_SpacelGameInstance* gameInstance = Cast<UHub_SpacelGameInstance>(GetGameInstance());
-    SetupModule(gameInstance->SubMachineModuleClass, gameInstance->ShellModuleClass, gameInstance->EngineModuleClass, gameInstance->RodModuleClass);
+    SetupModule(gameInstance->SubMachineModuleClass, gameInstance->ShellModuleClass, gameInstance->EngineModuleClass);
 
     generateMesh();
     resetCrosshair();
@@ -184,7 +184,7 @@ void AHub_Pawn::SetupPlayerInputComponent(UInputComponent* _playerInputComponent
     _playerInputComponent->BindAction("Fire", IE_Released, this, &AHub_Pawn::input_FireOff);
 }
 
-void AHub_Pawn::SetupModule(TSubclassOf<ADefaultSubMachine> _subMachine, TSubclassOf<ADefaultShell> _shell, TSubclassOf<ADefaultEngine> _engine, TSubclassOf<ARod> _rod)
+void AHub_Pawn::SetupModule(TSubclassOf<ADefaultSubMachine> _subMachine, TSubclassOf<ADefaultShell> _shell, TSubclassOf<ADefaultEngine> _engine)
 {
     if (_subMachine)
     {
@@ -204,24 +204,26 @@ void AHub_Pawn::SetupModule(TSubclassOf<ADefaultSubMachine> _subMachine, TSubcla
         this->EngineModule->CreateChildActor();
     }
 
-    if (_rod)
+    if (RodModuleClass)
     {
-        this->RodModule->SetChildActorClass(_rod);
+        this->RodModule->SetChildActorClass(RodModuleClass);
         this->RodModule->CreateChildActor();
     }
 
-    this->HookModule->SetChildActorClass(AHook::StaticClass());
-    this->HookModule->CreateChildActor();
+    if (HookModuleClass)
+    {
+        this->HookModule->SetChildActorClass(HookModuleClass);
+        this->HookModule->CreateChildActor();
+    }
 }
 
 void AHub_Pawn::CreateHook()
 {
-    if (!this->HookModule)
-    {
-        return;
-    }
+    if (!ensure(this->HookModule != nullptr)) return;
 
-    AHook* module = Cast<AHook>(HookModule->GetChildActor());
+    AHook* module = Cast<AHook>(this->HookModule->GetChildActor());
+    if (!module) return;
+
     // TO DO expose radius
     module->GenerateHook(135);
 }

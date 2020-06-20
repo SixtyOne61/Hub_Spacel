@@ -10,6 +10,7 @@ ARod::ARod()
     : AProceduralActor()
 {
     BoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComponent"));
+    BoxComponent->ComponentTags.Add(FName(TEXT("RodBox")));
     BoxComponent->SetupAttachment(RootComponent);
 }
 
@@ -81,6 +82,7 @@ bool ARod::GenerateMesh(TArray<FVector> const& _ignoreCoord)
     this->ProceduralMesh->setEdges(std::forward<TArray<TSharedPtr<ChainedLocation>>>(chainedLocations));
     this->ProceduralMesh->generateMesh(std::move(FName("Player"))); // TO DO : change profile ?
     this->ProceduralMesh->SetMaterial(0, Mat);
+
     return true;
 }
 

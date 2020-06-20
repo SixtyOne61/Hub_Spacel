@@ -21,6 +21,7 @@ AHook::AHook()
     ProceduralMesh->SetupAttachment(RootComponent);
 
     BoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComponent"));
+    BoxComponent->ComponentTags.Add(FName(TEXT("HookBox")));
     BoxComponent->SetupAttachment(RootComponent);
 }
 
@@ -51,7 +52,7 @@ bool AHook::GenerateHook(float _innerRadius)
     float x = 0.0f;
     float y = 0.0f;
     float z = 0.0f;
-    for (uint16 deg = 0; deg <= 180; deg += 15)
+    for (uint16 deg = 30; deg <= 150; deg += 15)
     {
         float rad = FMath::DegreesToRadians(deg);
         y = _innerRadius * FMath::Cos(rad);
@@ -59,12 +60,6 @@ bool AHook::GenerateHook(float _innerRadius)
 
         FVector loc = FVector(x, y, z);
         chainedLocations.Add(MakeShareable(new ChainedLocation(loc, cubeSize)));
-
-        if (z != 0)
-        {
-            loc = FVector(x, y, -z);
-            chainedLocations.Add(MakeShareable(new ChainedLocation(loc, cubeSize)));
-        }
     }
 
     float maxZ = _innerRadius * FMath::Sin(FMath::DegreesToRadians(90));
@@ -84,31 +79,22 @@ bool AHook::GenerateHook(float _innerRadius)
     this->ProceduralMesh->SetMaterial(0, Mat);
     this->ProceduralMesh->SetCollisionProfileName("NoCollision");
 
-    // init box
-    if (!ensure(BoxComponent != nullptr)) return false;
-
-    BoxComponent->SetBoxExtent(FVector(5.0f, radius, radius * FMath::Sin(FMath::DegreesToRadians(90))), true);
-    BoxComponent->SetRelativeLocation(FVector(0.0f, 0.0f, maxZ + radius / 3.0f));
-    BoxComponent->SetCollisionProfileName("Hook");
-
     return true;
 }
 
 void AHook::OnBeginOverlap(class UPrimitiveComponent* _overlappedComponent, class AActor* _otherActor, class UPrimitiveComponent* _otherComp, int32 _otherBodyIndex, bool _bFromSweep, const FHitResult& _sweepResult)
 {
-    if (!_otherActor)
+    if (!_otherActor || !_otherComp)
     {
         return;
     }
 
-    if (_overlappedComponent->ComponentHasTag(FName(TEXT("HookBox"))))
+    if (_overlappedComponent->ComponentHasTag(FName(TEXT("HookBox")))
+        && _otherComp->ComponentHasTag(FName(TEXT("RodBox"))))
     {
-        if (_overlappedComponent->ComponentHasTag(FName(TEXT("RodBox"))))
+        if (AHub_Pawn * parent = Cast<AHub_Pawn>(GetParentActor()))
         {
-            if (AHub_Pawn * parent = Cast<AHub_Pawn>(GetParentActor()))
-            {
-                parent->SetHook(_otherActor);
-            }
+            parent->SetHook(_otherActor);
         }
     }
 }
