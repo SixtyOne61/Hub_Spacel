@@ -42,35 +42,43 @@ AHub_Pawn::AHub_Pawn()
 
     // create procedural mesh component
     ProceduralSpaceShipBase = CreateDefaultSubobject<USpacelProceduralMeshComponent>(TEXT("ProceduralBase0"));
+    if (!ensure(ProceduralSpaceShipBase != nullptr)) return;
     ProceduralSpaceShipBase->bUseAsyncCooking = true;
     RootComponent = ProceduralSpaceShipBase;
 
     // init module of ship
     SubMachineModule = CreateDefaultSubobject<UChildActorComponent>(TEXT("SubMachineModule"));
+    if (!ensure(SubMachineModule != nullptr)) return;
     SubMachineModule->SetupAttachment(RootComponent);
 
     ShellModule = CreateDefaultSubobject<UChildActorComponent>(TEXT("ShellModule"));
+    if (!ensure(ShellModule != nullptr)) return;
     ShellModule->SetupAttachment(RootComponent);
 
     EngineModule = CreateDefaultSubobject<UChildActorComponent>(TEXT("EngineModule"));
+    if (!ensure(EngineModule != nullptr)) return;
     EngineModule->SetupAttachment(RootComponent);
 
     HookModule = CreateDefaultSubobject<UChildActorComponent>(TEXT("HookModule"));
+    if (!ensure(HookModule != nullptr)) return;
     HookModule->SetupAttachment(RootComponent);
 
     RodModule = CreateDefaultSubobject<UChildActorComponent>(TEXT("RodModule"));
+    if (!ensure(RodModule != nullptr)) return;
     RodModule->SetupAttachment(RootComponent);
 
     // Create a spring arm component
     SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm0"));
+    if (!ensure(SpringArm != nullptr)) return;
     SpringArm->SetupAttachment(ProceduralSpaceShipBase);	// Attach SpringArm to RootComponent
 
     // Create camera component 
     Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera0"));
+    if (!ensure(Camera != nullptr)) return;
     Camera->SetupAttachment(SpringArm, USpringArmComponent::SocketName); // Attach the camera
     Camera->bUsePawnControlRotation = false; // Don't rotate camera with controller
 
-    generateMesh();
+    this->generateMesh();
 }
 
 // Called when the game starts or when spawned
@@ -81,42 +89,37 @@ void AHub_Pawn::BeginPlay()
     // before check authority
 
     // save spring arm default size
-    if (this->SpringArm)
-    {
-        m_springArmDefaultSize = this->SpringArm->TargetArmLength;
-    }
+    if (!ensure(this->SpringArm != nullptr)) return;
+    m_springArmDefaultSize = this->SpringArm->TargetArmLength;
 
     // save camera default field of view
-    if (this->Camera)
-    {
-        m_fieldOfViewDefault = this->Camera->FieldOfView;
-    }
+    if (!ensure(this->Camera != nullptr)) return;
+    m_fieldOfViewDefault = this->Camera->FieldOfView;
 
-    if (!HasAuthority())
+    if (!this->HasAuthority())
     {
         return;
     }
 
-    UHub_SpacelGameInstance* gameInstance = Cast<UHub_SpacelGameInstance>(GetGameInstance());
-    SetupModule(gameInstance->SubMachineModuleClass, gameInstance->ShellModuleClass, gameInstance->EngineModuleClass);
+    UHub_SpacelGameInstance* gameInstance = Cast<UHub_SpacelGameInstance>(this->GetGameInstance());
+    if (!ensure(gameInstance != nullptr)) return;
+    this->SetupModule(gameInstance->SubMachineModuleClass, gameInstance->ShellModuleClass, gameInstance->EngineModuleClass);
 
-    generateMesh();
-    resetCrosshair();
-    initMeshModules();
+    this->generateMesh();
+    this->resetCrosshair();
+    this->initMeshModules();
 
-    if (this->ShellModule)
+    if (!ensure(this->ShellModule != nullptr)) return;
+    if (ADefaultShell * shellModule = Cast<ADefaultShell>(this->ShellModule->GetChildActor()))
     {
-        if (ADefaultShell * shellModule = Cast<ADefaultShell>(this->ShellModule->GetChildActor()))
+        if (shellModule->ProceduralMesh)
         {
-            if (shellModule->ProceduralMesh)
-            {
-                m_defaultRotation = shellModule->ProceduralMesh->GetRelativeTransform().Rotator();
-            }
+            m_defaultRotation = shellModule->ProceduralMesh->GetRelativeTransform().Rotator();
         }
     }
     
-    SetReplicates(true);
-    SetReplicateMovement(true);
+    this->SetReplicates(true);
+    this->SetReplicateMovement(true);
 }
 
 // Called every frame
@@ -225,7 +228,8 @@ void AHub_Pawn::CreateHook()
     if (!module) return;
 
     // TO DO expose radius
-    module->GenerateHook(135);
+    module->InnerRadius = 135;
+    module->GenerateMesh({});
 }
 
 void AHub_Pawn::SetHook(AActor * _hooker /*= nullptr*/)

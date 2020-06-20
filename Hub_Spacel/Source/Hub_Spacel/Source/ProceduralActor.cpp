@@ -13,9 +13,11 @@ AProceduralActor::AProceduralActor()
 	PrimaryActorTick.bCanEverTick = false;
 
     Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
+    if (!ensure(Root != nullptr)) return;
     RootComponent = Root;
 
     ProceduralMesh = CreateDefaultSubobject<USpacelProceduralMeshComponent>(TEXT("ProceduralMesh"));
+    if (!ensure(ProceduralMesh != nullptr)) return;
     ProceduralMesh->bUseAsyncCooking = true;
     ProceduralMesh->SetupAttachment(RootComponent);
 }
@@ -30,17 +32,10 @@ void AProceduralActor::BeginPlay()
 {
 	Super::BeginPlay();
 
-    if (HasAuthority())
+    if (this->HasAuthority())
     {
-        SetReplicates(true);
-        SetReplicateMovement(true);
+        this->SetReplicates(true);
+        this->SetReplicateMovement(true);
     }
-}
-
-// Called every frame
-void AProceduralActor::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
 }
 
