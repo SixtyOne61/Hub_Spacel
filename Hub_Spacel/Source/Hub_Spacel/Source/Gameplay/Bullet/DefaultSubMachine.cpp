@@ -12,13 +12,14 @@ ADefaultSubMachine::ADefaultSubMachine()
 	PrimaryActorTick.bCanEverTick = true;
 
     Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
+    if (!ensure(Root != nullptr)) return;
     RootComponent = Root;
 
     DefaultBulletSpawner = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("DefaultBulletSpawner"));
+    if (!ensure(DefaultBulletSpawner != nullptr)) return;
     DefaultBulletSpawner->SetEnableGravity(false);
     DefaultBulletSpawner->SetGenerateOverlapEvents(false);
     DefaultBulletSpawner->SetCollisionProfileName("NoCollision");
-    DefaultBulletSpawner->SetupAttachment(RootComponent);
     DefaultBulletSpawner->SetupAttachment(RootComponent);
 
     m_bulletSpawners.Add(DefaultBulletSpawner);
@@ -29,10 +30,10 @@ void ADefaultSubMachine::BeginPlay()
 {
     Super::BeginPlay();
 
-    if (HasAuthority())
+    if (this->HasAuthority())
     {
-        SetReplicates(true);
-        SetReplicateMovement(true);
+        this->SetReplicates(true);
+        this->SetReplicateMovement(true);
     }
 }
 
@@ -45,29 +46,29 @@ void ADefaultSubMachine::Tick(float DeltaTime)
 
 bool ADefaultSubMachine::getWoldLocationBulletSpawner(FVector& _out)
 {
-    if (this->m_idBulletSpawner >= this->m_bulletSpawners.Num())
+    if (m_idBulletSpawner >= m_bulletSpawners.Num())
     {
         // reset, but never happen
-        this->m_idBulletSpawner = 0;
+        m_idBulletSpawner = 0;
         return false;
     }
 
     auto lb_nextId = [&]()
     {
-        ++this->m_idBulletSpawner;
-        if (this->m_idBulletSpawner >= this->m_bulletSpawners.Num())
+        ++m_idBulletSpawner;
+        if (m_idBulletSpawner >= m_bulletSpawners.Num())
         {
-            this->m_idBulletSpawner = 0;
+            m_idBulletSpawner = 0;
         }
     };
 
-    if (!this->m_bulletSpawners[this->m_idBulletSpawner])
+    if (!m_bulletSpawners[m_idBulletSpawner])
     {
         lb_nextId();
         return false;
     }
 
-    _out = this->m_bulletSpawners[this->m_idBulletSpawner]->GetComponentTransform().GetLocation();
+    _out = m_bulletSpawners[m_idBulletSpawner]->GetComponentTransform().GetLocation();
     lb_nextId();
     return true;
 }

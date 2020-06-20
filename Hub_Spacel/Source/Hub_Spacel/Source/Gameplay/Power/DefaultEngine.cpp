@@ -20,13 +20,11 @@ void ADefaultEngine::BeginPlay()
 
 bool ADefaultEngine::GenerateMesh(TArray<FVector> const& _ignoreCoord)
 {
-    if (!this->ProceduralMesh)
-    {
-        return false;
-    }
+    if (!ensure(this->ProceduralMesh != nullptr)) return false;
 
     FVector cubeSize = FVector(15.0f, 15.0f, 15.0f);
     this->ProceduralMesh->setCubeSize(cubeSize);
+    // TO DO : expose
     int8 radius = 120;
     TArray<TSharedPtr<ChainedLocation>> chainedLocations =
     {
@@ -63,7 +61,7 @@ bool ADefaultEngine::GenerateMesh(TArray<FVector> const& _ignoreCoord)
 
     this->ProceduralMesh->setEdges(std::forward<TArray<TSharedPtr<ChainedLocation>>>(chainedLocations));
     this->ProceduralMesh->generateMesh(std::move(FName("Player")));
-    this->ProceduralMesh->SetMaterial(0, Mat);
+    this->ProceduralMesh->SetMaterial(0, this->Mat);
     return true;
 }
 

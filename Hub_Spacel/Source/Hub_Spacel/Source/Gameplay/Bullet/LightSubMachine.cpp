@@ -10,6 +10,7 @@ ALightSubMachine::ALightSubMachine()
     auto lb_initSpawner = [&](FName&& _name, UStaticMeshComponent*& _comp)
     {
         _comp = CreateDefaultSubobject<UStaticMeshComponent>(_name);
+        if (!ensure(_comp != nullptr)) return;
         _comp->SetEnableGravity(false);
         _comp->SetGenerateOverlapEvents(false);
         _comp->SetCollisionProfileName("NoCollision");
@@ -17,11 +18,11 @@ ALightSubMachine::ALightSubMachine()
         m_bulletSpawners.Add(_comp);
     };
 
-    lb_initSpawner(TEXT("BulletSpawner1"), BulletSpawner1);
-    lb_initSpawner(TEXT("BulletSpawner2"), BulletSpawner2);
-    lb_initSpawner(TEXT("BulletSpawner3"), BulletSpawner3);
-    lb_initSpawner(TEXT("BulletSpawner4"), BulletSpawner4);
-    lb_initSpawner(TEXT("BulletSpawner5"), BulletSpawner5);
-    lb_initSpawner(TEXT("BulletSpawner6"), BulletSpawner6);
-    lb_initSpawner(TEXT("BulletSpawner7"), BulletSpawner7);
+    lb_initSpawner(TEXT("BulletSpawner1"), this->BulletSpawner1);
+    lb_initSpawner(TEXT("BulletSpawner2"), this->BulletSpawner2);
+    lb_initSpawner(TEXT("BulletSpawner3"), this->BulletSpawner3);
+    lb_initSpawner(TEXT("BulletSpawner4"), this->BulletSpawner4);
+    lb_initSpawner(TEXT("BulletSpawner5"), this->BulletSpawner5);
+    lb_initSpawner(TEXT("BulletSpawner6"), this->BulletSpawner6);
+    lb_initSpawner(TEXT("BulletSpawner7"), this->BulletSpawner7);
 }

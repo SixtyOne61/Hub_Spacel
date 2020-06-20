@@ -17,10 +17,12 @@ ALaserBullet::ALaserBullet()
     ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovement"));
 
     ProjectileCollisionComponent = CreateDefaultSubobject<USphereComponent>(TEXT("ProjectileCollision"));
+    if (!ensure(ProjectileCollisionComponent != nullptr)) return;
     ProjectileCollisionComponent->SetCollisionProfileName(CollisionProfileName);
     RootComponent = ProjectileCollisionComponent;
 
     LaserMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("LaserMesh"));
+    if (!ensure(LaserMeshComponent != nullptr)) return;
     LaserMeshComponent->SetupAttachment(ProjectileCollisionComponent);
 }
 
@@ -31,10 +33,10 @@ void ALaserBullet::BeginPlay()
 	
     setupMaterial();
 
-    if (HasAuthority())
+    if (this->HasAuthority())
     {
-        SetReplicates(true);
-        SetReplicateMovement(true);
+        this->SetReplicates(true);
+        this->SetReplicateMovement(true);
     }
 }
 
@@ -48,16 +50,14 @@ void ALaserBullet::Tick(float DeltaTime)
 void ALaserBullet::setupMaterial()
 {
     // setup material
-    if (!MatBullet)
-    {
-        return;
-    }
+    if (!ensure(this->MatBullet != nullptr)) return;
+    if (!ensure(this->LaserMeshComponent != nullptr)) return;
 
-    if (UMaterialInstanceDynamic * customMat = UMaterialInstanceDynamic::Create(MatBullet, LaserMeshComponent))
+    if (UMaterialInstanceDynamic * customMat = UMaterialInstanceDynamic::Create(this->MatBullet, this->LaserMeshComponent))
     {
-        LaserMeshComponent->CustomDepthStencilValue = 3;
-        LaserMeshComponent->bRenderCustomDepth = true;
-        LaserMeshComponent->SetMaterial(0, customMat);
+        this->LaserMeshComponent->CustomDepthStencilValue = 3;
+        this->LaserMeshComponent->bRenderCustomDepth = true;
+        this->LaserMeshComponent->SetMaterial(0, customMat);
     }
 }
 

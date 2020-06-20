@@ -15,5 +15,6 @@ public:
     ADefaultShell();
 
 public:
+    /* override */
     virtual bool GenerateMesh(TArray<FVector> const& _ignoreCoord) override;
 };
