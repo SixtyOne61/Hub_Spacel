@@ -72,10 +72,8 @@ bool AHook::GenerateMesh(TArray<FVector> const& _ignoreCoord)
 
 void AHook::OnBeginOverlap(class UPrimitiveComponent* _overlappedComponent, class AActor* _otherActor, class UPrimitiveComponent* _otherComp, int32 _otherBodyIndex, bool _bFromSweep, const FHitResult& _sweepResult)
 {
-    if (!_otherActor || !_otherComp)
-    {
-        return;
-    }
+    if (!ensure(_otherActor != nullptr)) return;
+    if (!ensure(_otherComp != nullptr)) return;
 
     if (_overlappedComponent->ComponentHasTag(FName(TEXT("HookBox")))
         && _otherComp->ComponentHasTag(FName(TEXT("RodBox"))))

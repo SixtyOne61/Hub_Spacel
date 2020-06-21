@@ -39,7 +39,7 @@ void ChainedLocation::addNeighbor(EFace _face, TSharedPtr<ChainedLocation> _neig
 
 void ChainedLocation::removeMeToOtherFace()
 {
-	for (auto pair : m_neighbor)
+	for (auto const& pair : m_neighbor)
 	{
 		pair.Value->removeFace(m_center);
 	}
@@ -50,6 +50,11 @@ void ChainedLocation::removeFace(FVector const& _location)
 {
 	for(int i = 0; i < m_neighbor.Num(); ++i)
 	{
+        if (!m_neighbor[i].Value.IsValid())
+        {
+            continue;
+        }
+
 		if (m_neighbor[i].Value->getCenter() == _location)
 		{
 			m_mask ^= m_neighbor[i].Key;

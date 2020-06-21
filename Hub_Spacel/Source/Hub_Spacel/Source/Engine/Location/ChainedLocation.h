@@ -24,6 +24,7 @@ class HUB_SPACEL_API ChainedLocation
 {
 public:
 	ChainedLocation(FVector const& _center, FVector const& _size);
+    ChainedLocation(ChainedLocation const&) = delete;
 	~ChainedLocation();
 
 	// -- get / set
@@ -39,13 +40,13 @@ public:
 			&& EnumHasAllFlags(m_mask, EFace::Left);
 	}
 
-	// -- add a neighbor
+	/* add a neighbor */
 	void addNeighbor(EFace _face, TSharedPtr<ChainedLocation> _neighbor);
-	// -- remove this objet to other face
+	/* remove this objet to other face */
 	void removeMeToOtherFace();
-	// -- remove a face
+	/* remove a face */
 	void removeFace(FVector const& _location);
-	// -- create box with world location
+	/* create box with world location */
 	void createBox(FVector const& _location);
 
 private:

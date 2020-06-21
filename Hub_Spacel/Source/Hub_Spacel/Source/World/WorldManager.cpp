@@ -11,6 +11,7 @@ AWorldManager::AWorldManager()
 	PrimaryActorTick.bCanEverTick = false;
 
     Delimiter = CreateDefaultSubobject<UBoxComponent>(TEXT("Delimiter"));
+    if (!ensure(Delimiter != nullptr)) return;
     RootComponent = Delimiter;
 }
 

@@ -15,8 +15,7 @@ AEnvironmentManager::AEnvironmentManager()
 	, CubeSize(FVector::ZeroVector)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
-	SetReplicates(true);
+	PrimaryActorTick.bCanEverTick = false;
 }
 
 void AEnvironmentManager::init(FVector2D const& _bornX, FVector2D const& _bornY, FVector2D const& _bornZ, FVector const& _cubeSize)
@@ -32,28 +31,29 @@ void AEnvironmentManager::BeginPlay()
 {
 	Super::BeginPlay();
 
+    if (this->HasAuthority())
+    {
+        this->SetReplicates(true);
+    }
+
 	// create procedural world
 	createProceduralWorld();
 
-	// init all procedural mesh
-	for (auto proceduralMesh : this->m_proceduralMeshComponents)
-	{
-		if (!proceduralMesh)
-		{
-			continue;
-		}
+    if (!ensure(MatAsteroid != nullptr)) return;
 
-		proceduralMesh->setOwnerLocation(GetActorLocation());
+	// init all procedural mesh
+	for (auto proceduralMesh : m_proceduralMeshComponents)
+	{
+        if (!ensure(proceduralMesh != nullptr)) continue;
+
+		proceduralMesh->setOwnerLocation(this->GetActorLocation());
         proceduralMesh->generateMesh(std::move(FName("BlockAll")));
-        if (MatAsteroid)
+        if (UMaterialInstanceDynamic * customMat = UMaterialInstanceDynamic::Create(this->MatAsteroid, proceduralMesh))
         {
-            if (UMaterialInstanceDynamic * customMat = UMaterialInstanceDynamic::Create(this->MatAsteroid, proceduralMesh))
-            {
-                customMat->SetScalarParameterValue(TEXT("Trickness"), this->TricknessValue);
-                proceduralMesh->SetMaterial(0, customMat);
-                proceduralMesh->SetRenderCustomDepth(true);
-                proceduralMesh->SetCustomDepthStencilValue(this->StencilValue);
-            }
+            customMat->SetScalarParameterValue(TEXT("Trickness"), this->TricknessValue);
+            proceduralMesh->SetMaterial(0, customMat);
+            proceduralMesh->SetRenderCustomDepth(true);
+            proceduralMesh->SetCustomDepthStencilValue(this->StencilValue);
         }
 	}
 }
@@ -143,7 +143,7 @@ void AEnvironmentManager::createProceduralWorld()
         if (info.isValid())
         {
             // max item in next object
-            this->m_currentObject.Reserve(max - id);
+            m_currentObject.Reserve(max - id);
 
             addNeighboor(info, list);
             // add component
@@ -158,7 +158,7 @@ void AEnvironmentManager::createProceduralWorld()
 
 void AEnvironmentManager::addNeighboor(CoordInfo& _info, TArray<CoordInfo> & _list)
 {
-    this->m_currentObject.Add(_info.m_chainedLocation);
+    m_currentObject.Add(_info.m_chainedLocation);
     _info.m_use = true;
 
     auto lb_addNeighboor = [&](EFace _face)
@@ -184,28 +184,28 @@ void AEnvironmentManager::addNeighboor(CoordInfo& _info, TArray<CoordInfo> & _li
 
 void AEnvironmentManager::addProceduralMesh()
 {
-	UWorld* const world = GetWorld();
-	if (world)
-	{
-		FVector location = FVector(BornX.X, BornY.X, BornZ.X);
+	UWorld* const world = this->GetWorld();
+    if (!ensure(world != nullptr)) return;
 
-		USpacelProceduralMeshComponent* proceduralMesh = NewObject<USpacelProceduralMeshComponent>(this);
-		proceduralMesh->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepWorldTransform);
-		proceduralMesh->RegisterComponent();
+    FVector location = FVector(this->BornX.X, this->BornY.X, this->BornZ.X);
 
-		proceduralMesh->SetWorldLocation(location);
-		proceduralMesh->bUseAsyncCooking = true;
-		proceduralMesh->setCubeSize(CubeSize);
-		proceduralMesh->setEdges(std::forward<TArray<TSharedPtr<ChainedLocation>>>(this->m_currentObject));
-        proceduralMesh->SetCastShadow(false);
-		this->m_currentObject.Empty();
+    USpacelProceduralMeshComponent* proceduralMesh = NewObject<USpacelProceduralMeshComponent>(this);
+    if (!ensure(proceduralMesh != nullptr)) return;
+    proceduralMesh->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepWorldTransform);
+    proceduralMesh->RegisterComponent();
 
-        this->m_proceduralMeshComponents.Add(proceduralMesh);
-	}
+    proceduralMesh->SetWorldLocation(location);
+    proceduralMesh->bUseAsyncCooking = true;
+    proceduralMesh->setCubeSize(this->CubeSize);
+    proceduralMesh->setEdges(std::forward<TArray<TSharedPtr<ChainedLocation>>>(m_currentObject));
+    proceduralMesh->SetCastShadow(false);
+    m_currentObject.Empty();
+
+    m_proceduralMeshComponents.Add(proceduralMesh);
 }
 
 float AEnvironmentManager::getNoise(FVector const& _location) const
 {
     // increase float broke bloc, increase int (octave) add more bloc
-    return SpacelNoise::getInstance()->getOctaveNoise((_location.X + BornX.X) * 0.00007f, (_location.Y + BornY.X) * 0.00007f, (_location.Z + BornZ.X) * 0.00007f, 2);
+    return SpacelNoise::getInstance()->getOctaveNoise((_location.X + this->BornX.X) * 0.00007f, (_location.Y + this->BornY.X) * 0.00007f, (_location.Z + this->BornZ.X) * 0.00007f, 2);
 }

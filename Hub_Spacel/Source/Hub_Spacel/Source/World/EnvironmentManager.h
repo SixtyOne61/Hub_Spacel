@@ -21,7 +21,7 @@ struct CoordInfo
 
     inline bool isValid() const
     {
-        return this->m_noiseValue > 0.75f && !this->m_use;
+        return m_noiseValue > 0.75f && !m_use;
     }
 };
 
