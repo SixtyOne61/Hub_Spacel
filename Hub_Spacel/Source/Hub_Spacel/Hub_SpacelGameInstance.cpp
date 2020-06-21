@@ -33,13 +33,46 @@ void UHub_SpacelGameInstance::JoinServer() const
 
     engine->AddOnScreenDebugMessage(0, 5.0f, FColor::Green, TEXT("Joining Server"));
 
-    APlayerController* playerController = GetFirstLocalPlayerController();
+    APlayerController* playerController = this->GetFirstLocalPlayerController();
     if (!ensure(playerController != nullptr)) return;
 
-    playerController->ClientTravel("192.168.1.82", ETravelType::TRAVEL_Absolute);
+    playerController->ClientTravel("192.168.1.77", ETravelType::TRAVEL_Absolute);
+}
+
+void UHub_SpacelGameInstance::LoadMenu()
+{
+    if (!ensure(this->MainMenuClass != nullptr)) return;
+    UUserWidget* mainMenu = CreateWidget<UUserWidget>(this, this->MainMenuClass);
+    if (!ensure(mainMenu != nullptr)) return;
+
+    mainMenu->bIsFocusable = true;
+    mainMenu->AddToViewport();
+
+    APlayerController* playerController = this->GetFirstLocalPlayerController();
+    if (!ensure(playerController != nullptr)) return;
+
+    FInputModeUIOnly inputMode;
+    inputMode.SetWidgetToFocus(mainMenu->TakeWidget());
+    inputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+
+    // set input mode to player controller
+    playerController->SetInputMode(inputMode);
+    playerController->bShowMouseCursor = true;
 }
 
 void UHub_SpacelGameInstance::Init()
 {
     UE_LOG(LogTemp, Warning, TEXT("Found class %s"), *MainMenuClass->GetName());
+}
+
+void UHub_SpacelGameInstance::ResetInputMode() const
+{
+    APlayerController* playerController = this->GetFirstLocalPlayerController();
+    if (!ensure(playerController != nullptr)) return;
+
+    FInputModeGameOnly inputMode;
+    inputMode.SetConsumeCaptureMouseDown(false);
+
+    playerController->SetInputMode(inputMode);
+    playerController->bShowMouseCursor = false;
 }

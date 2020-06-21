@@ -23,6 +23,13 @@ public:
     UFUNCTION(BlueprintCallable)
     void JoinServer() const;
 
+    UFUNCTION(BlueprintCallable)
+    void LoadMenu();
+
+    /* reset input mode for first player controller */
+    UFUNCTION(BlueprintCallable)
+    void ResetInputMode() const;
+
     /* override init */
     virtual void Init() override;
 	
