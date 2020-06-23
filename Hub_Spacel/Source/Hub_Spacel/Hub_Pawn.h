@@ -82,7 +82,7 @@ protected:
     void input_SnapOn();
     void input_SnapOff();
 
-	/* TO DO network */
+	/* network */
     void fireLaser(float _deltaTime);
 
     /* function call for generate our mesh */
