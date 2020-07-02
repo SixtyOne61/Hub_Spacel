@@ -62,7 +62,7 @@ void UHub_SpacelGameInstance::LoadMenu()
 
 void UHub_SpacelGameInstance::Init()
 {
-    UE_LOG(LogTemp, Warning, TEXT("Found class %s"), *MainMenuClass->GetName());
+    UE_LOG(LogTemp, Warning, TEXT("Found class %s"), *this->MainMenuClass->GetName());
 }
 
 void UHub_SpacelGameInstance::ResetInputMode() const
