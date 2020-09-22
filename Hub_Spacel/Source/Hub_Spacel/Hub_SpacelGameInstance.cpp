@@ -7,7 +7,7 @@
 
 UHub_SpacelGameInstance::UHub_SpacelGameInstance(FObjectInitializer const& _objectInitialize)
 {
-    ConstructorHelpers::FClassFinder<UUserWidget> mainMenuBpClass(TEXT("/Game/05_UI/WBP_MainMenu"));
+    ConstructorHelpers::FClassFinder<UUserWidget> mainMenuBpClass(TEXT("/Game/UI/MainMenu/WBP_MainMenu"));
     if (!ensure(mainMenuBpClass.Class != nullptr)) return;
 
     MainMenuClass = mainMenuBpClass.Class;
