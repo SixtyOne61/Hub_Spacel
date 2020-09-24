@@ -10,9 +10,9 @@ AWorldManager::AWorldManager()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 
-    Delimiter = CreateDefaultSubobject<UBoxComponent>(TEXT("Delimiter"));
-    if (!ensure(Delimiter != nullptr)) return;
-    RootComponent = Delimiter;
+    BoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("Delimiter"));
+    if (!ensure(BoxComponent != nullptr)) return;
+    RootComponent = BoxComponent;
 }
 
 // Called when the game starts or when spawned
@@ -26,17 +26,16 @@ void AWorldManager::BeginPlay()
 void AWorldManager::spawnChunckEnvironment()
 {
 	UWorld* const world = GetWorld();
-	if (!world || !this->Delimiter)
-	{
-		return;
-	}
+    if (!ensure(world != nullptr)) return;
 
     // define chunck size by number of chunk
-    FVector chunckSize = FVector(this->Delimiter->GetScaledBoxExtent().X / this->NbChunck,
-        this->Delimiter->GetScaledBoxExtent().Y / this->NbChunck,
-        this->Delimiter->GetScaledBoxExtent().Z / this->NbChunck);
+    if (!ensure(this->BoxComponent != nullptr)) return;
+    FVector const& scaleBoxExtent = this->BoxComponent->GetScaledBoxExtent();
+    FVector chunckSize = FVector(scaleBoxExtent.X / this->NbChunck,
+                                scaleBoxExtent.Y / this->NbChunck,
+                                scaleBoxExtent.Z / this->NbChunck);
 
-    FVector offset = this->Delimiter->GetScaledBoxExtent();
+    FVector offset = scaleBoxExtent;
     offset /= 2;
 
     // define cube size
@@ -56,11 +55,11 @@ void AWorldManager::spawnChunckEnvironment()
                 transform.SetLocation(location);
 
                 // start spawning actor
-                AEnvironmentManager* environment = world->SpawnActorDeferred<AEnvironmentManager>(EnvironmentClass, transform);
+                AEnvironmentManager* environment = world->SpawnActorDeferred<AEnvironmentManager>(this->EnvironmentClass, transform);
                 if (environment)
                 {
                     // init component
-                    environment->init(FVector2D(location.X, location.X + chunckSize.X), FVector2D(location.Y, location.Y + chunckSize.Y), FVector2D(location.Z, location.Z + chunckSize.Z), this->CubeSize);
+                    environment->Init(FVector2D(location.X, location.X + chunckSize.X), FVector2D(location.Y, location.Y + chunckSize.Y), FVector2D(location.Z, location.Z + chunckSize.Z), this->CubeSize);
                     environment->FinishSpawning(transform);
                 }
             }

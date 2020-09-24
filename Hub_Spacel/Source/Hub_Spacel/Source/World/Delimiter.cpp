@@ -22,11 +22,11 @@ void ADelimiter::BeginPlay()
     if (this->HasAuthority())
     {
         if (!ensure(this->BoxComponent != nullptr)) return;
-        this->BoxComponent->OnComponentEndOverlap.AddDynamic(this, &ADelimiter::OnEndOverlap);
+        this->BoxComponent->OnComponentEndOverlap.AddDynamic(this, &ADelimiter::OnEndOverlapEvent);
     }
 }
 
-void ADelimiter::OnEndOverlap(class UPrimitiveComponent* _overlappedComp, class AActor* _otherActor, class UPrimitiveComponent* _otherComp, int32 _otherBodyIndex)
+void ADelimiter::OnEndOverlapEvent(class UPrimitiveComponent* _overlappedComp, class AActor* _otherActor, class UPrimitiveComponent* _otherComp, int32 _otherBodyIndex)
 {
     if (!ensure(_otherActor != nullptr)) return;
 

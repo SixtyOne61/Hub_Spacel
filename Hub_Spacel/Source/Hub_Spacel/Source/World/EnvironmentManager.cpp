@@ -18,7 +18,7 @@ AEnvironmentManager::AEnvironmentManager()
 	PrimaryActorTick.bCanEverTick = false;
 }
 
-void AEnvironmentManager::init(FVector2D const& _bornX, FVector2D const& _bornY, FVector2D const& _bornZ, FVector const& _cubeSize)
+void AEnvironmentManager::Init(FVector2D const& _bornX, FVector2D const& _bornY, FVector2D const& _bornZ, FVector const& _cubeSize)
 {
 	this->BornX = _bornX;
 	this->BornY = _bornY;
@@ -42,7 +42,7 @@ void AEnvironmentManager::BeginPlay()
     if (!ensure(MatAsteroid != nullptr)) return;
 
 	// init all procedural mesh
-	for (auto proceduralMesh : m_proceduralMeshComponents)
+	for (auto proceduralMesh : this->ProceduralMeshComponents)
 	{
         if (!ensure(proceduralMesh != nullptr)) continue;
 
@@ -201,7 +201,7 @@ void AEnvironmentManager::addProceduralMesh()
     proceduralMesh->SetCastShadow(false);
     m_currentObject.Empty();
 
-    m_proceduralMeshComponents.Add(proceduralMesh);
+    this->ProceduralMeshComponents.Add(proceduralMesh);
 }
 
 float AEnvironmentManager::getNoise(FVector const& _location) const

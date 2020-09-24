@@ -35,7 +35,7 @@ public:
 	AEnvironmentManager();
 
 	/* init actor, call on spawn */
-	void init(FVector2D const& _bornX, FVector2D const& _bornY, FVector2D const& _bornZ, FVector const& _cubeSize);
+	void Init(FVector2D const& _bornX, FVector2D const& _bornY, FVector2D const& _bornZ, FVector const& _cubeSize);
 
 protected:
 	// Called when the game starts or when spawned
@@ -62,7 +62,6 @@ public:
     UPROPERTY(Category = "Material", EditAnywhere, BlueprintReadWrite)
     float TricknessValue = 2.0f;
 
-protected:
 	UPROPERTY(VisibleAnywhere, Category = "Settings")
 	FVector2D BornX;
 	UPROPERTY(VisibleAnywhere, Category = "Settings")
@@ -73,7 +72,7 @@ protected:
 	FVector CubeSize;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Component")
-	TArray<class USpacelProceduralMeshComponent*> m_proceduralMeshComponents;
+	TArray<class USpacelProceduralMeshComponent*> ProceduralMeshComponents;
 
 private:
     TArray<TSharedPtr<ChainedLocation>> m_currentObject;
