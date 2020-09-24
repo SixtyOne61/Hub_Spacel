@@ -4,13 +4,11 @@
 #include "Hub_SpacelGameInstance.h"
 #include "Engine/World.h"
 #include "Blueprint/UserWidget.h"
+#include "Source/Factory/SpacelFactory.h"
 
 UHub_SpacelGameInstance::UHub_SpacelGameInstance(FObjectInitializer const& _objectInitialize)
 {
-    ConstructorHelpers::FClassFinder<UUserWidget> mainMenuBpClass(TEXT("/Game/UI/MainMenu/WBP_MainMenu"));
-    if (!ensure(mainMenuBpClass.Class != nullptr)) return;
-
-    MainMenuClass = mainMenuBpClass.Class;
+    m_mainMenuClass = SpacelFactory::FindClass<UUserWidget>(TEXT("/Game/UI/MainMenu/WBP_MainMenu"));
 }
 
 void UHub_SpacelGameInstance::CreateServer() const
@@ -41,8 +39,8 @@ void UHub_SpacelGameInstance::JoinServer() const
 
 void UHub_SpacelGameInstance::LoadMenu()
 {
-    if (!ensure(this->MainMenuClass != nullptr)) return;
-    UUserWidget* mainMenu = CreateWidget<UUserWidget>(this, this->MainMenuClass);
+    if (!ensure(m_mainMenuClass != nullptr)) return;
+    UUserWidget* mainMenu = CreateWidget<UUserWidget>(this, m_mainMenuClass);
     if (!ensure(mainMenu != nullptr)) return;
 
     mainMenu->bIsFocusable = true;
@@ -62,7 +60,7 @@ void UHub_SpacelGameInstance::LoadMenu()
 
 void UHub_SpacelGameInstance::Init()
 {
-    UE_LOG(LogTemp, Warning, TEXT("Found class %s"), *this->MainMenuClass->GetName());
+    UE_LOG(LogTemp, Warning, TEXT("Found class %s"), *this->m_mainMenuClass->GetName());
 }
 
 void UHub_SpacelGameInstance::ResetInputMode() const

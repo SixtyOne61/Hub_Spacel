@@ -1,0 +1,19 @@
+Variable global : int gMyGlobalVar = 0;
+Membre public : int MyPublicMember = 0;
+Membre privée/protected : int m_myPrivateMember = 0;
+Delegate : FDelegate OnEventDelegate; toujours en public et en UProperty
+
+Methode public : void MyPublicFunc();
+Methode privée/protected : void myPrivateFunc();
+Paramètre de méthode : void myFunc(int _param);
+
+server method : void serverRPCFunc();
+client method : void clientRPCFunc();
+
+this devant les membres public
+this devant les methodes public
+
+BP_ devant les blueprints
+M_ devant les material et M_MatInst pour les instances
+NS_ devant les niagara system
+DTA_ devant les data asset

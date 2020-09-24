@@ -42,5 +42,5 @@ public:
     TSubclassOf<class ADefaultEngine> EngineModuleClass = nullptr;
 
 private:
-    TSubclassOf<class UUserWidget> MainMenuClass = nullptr;
+    TSubclassOf<class UUserWidget> m_mainMenuClass = nullptr;
 };
