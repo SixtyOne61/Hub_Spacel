@@ -11,6 +11,26 @@ UHub_SpacelGameInstance::UHub_SpacelGameInstance(FObjectInitializer const& _obje
     m_mainMenuClass = SpacelFactory::FindClass<UUserWidget>(TEXT("/Game/UI/MainMenu/WBP_MainMenu"));
 }
 
+TArray<FServerDesc> const& UHub_SpacelGameInstance::GetServers() const
+{
+    return this->ServerFinderHandle.GetServers();
+}
+
+void UHub_SpacelGameInstance::JoinServer(FText _ip) const
+{
+    UEngine* engine = this->GetEngine();
+    if (!ensure(engine != nullptr)) return;
+
+    engine->AddOnScreenDebugMessage(0, 5.0f, FColor::Green, TEXT("Joining Server"));
+
+    UWorld* world = this->GetWorld();
+    if (!ensure(world != nullptr)) return;
+
+    FString cmd = "Open ";
+    cmd.Append(_ip.ToString());
+    world->Exec(world, *cmd);
+}
+
 void UHub_SpacelGameInstance::CreateServer() const
 {
     UWorld* world = GetWorld();
@@ -24,7 +44,7 @@ void UHub_SpacelGameInstance::CreateServer() const
     world->ServerTravel("/Game/03_Level/Standalone/InGameLevel?listen");
 }
 
-void UHub_SpacelGameInstance::JoinServer() const
+void UHub_SpacelGameInstance::JoinServerOld() const
 {
     UEngine* engine = GetEngine();
     if (!ensure(engine != nullptr)) return;

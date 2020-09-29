@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
+#include "Hub_Spacel/Source/Server/ServerFinder.h"
+#include "Hub_Spacel/Source/Server/ServerDesc.h"
 #include "Hub_SpacelGameInstance.generated.h"
 
 /**
@@ -18,10 +20,16 @@ public:
     UHub_SpacelGameInstance(FObjectInitializer const& _objectInitialize);
 
     UFUNCTION(BlueprintCallable)
+    TArray<FServerDesc> const& GetServers() const;
+
+    UFUNCTION(BlueprintCallable)
+    void JoinServer(FText _ip) const;
+
+    UFUNCTION(BlueprintCallable)
     void CreateServer() const;
 
     UFUNCTION(BlueprintCallable)
-    void JoinServer() const;
+    void JoinServerOld() const;
 
     UFUNCTION(BlueprintCallable)
     void LoadMenu();
@@ -43,4 +51,7 @@ public:
 
 private:
     TSubclassOf<class UUserWidget> m_mainMenuClass = nullptr;
+
+    // server finder handle, use for find available server
+    ServerFinder ServerFinderHandle = ServerFinder();
 };
