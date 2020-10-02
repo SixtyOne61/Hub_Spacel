@@ -5,6 +5,7 @@
 #include "Engine/World.h"
 #include "Blueprint/UserWidget.h"
 #include "Source/Factory/SpacelFactory.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 UHub_SpacelGameInstance::UHub_SpacelGameInstance(FObjectInitializer const& _objectInitialize)
 {
@@ -14,6 +15,11 @@ UHub_SpacelGameInstance::UHub_SpacelGameInstance(FObjectInitializer const& _obje
 TArray<FServerDesc> const& UHub_SpacelGameInstance::GetServers() const
 {
     return this->ServerFinderHandle.GetServers();
+}
+
+void UHub_SpacelGameInstance::CleanServers()
+{
+    this->ServerFinderHandle.CleanServers();
 }
 
 void UHub_SpacelGameInstance::JoinServer(FText _ip) const
@@ -26,35 +32,9 @@ void UHub_SpacelGameInstance::JoinServer(FText _ip) const
     UWorld* world = this->GetWorld();
     if (!ensure(world != nullptr)) return;
 
-    FString cmd = "Open ";
+    FString cmd = "open ";
     cmd.Append(_ip.ToString());
-    world->Exec(world, *cmd);
-}
-
-void UHub_SpacelGameInstance::CreateServer() const
-{
-    UWorld* world = GetWorld();
-    if (!ensure(world != nullptr)) return;
-
-    UEngine* engine = GetEngine();
-    if (!ensure(engine != nullptr)) return;
-
-    engine->AddOnScreenDebugMessage(0, 5.0f, FColor::Green, TEXT("Create Server"));
-
-    world->ServerTravel("/Game/03_Level/Standalone/InGameLevel?listen");
-}
-
-void UHub_SpacelGameInstance::JoinServerOld() const
-{
-    UEngine* engine = GetEngine();
-    if (!ensure(engine != nullptr)) return;
-
-    engine->AddOnScreenDebugMessage(0, 5.0f, FColor::Green, TEXT("Joining Server"));
-
-    APlayerController* playerController = this->GetFirstLocalPlayerController();
-    if (!ensure(playerController != nullptr)) return;
-
-    playerController->ClientTravel("192.168.1.77", ETravelType::TRAVEL_Absolute);
+    UKismetSystemLibrary::ExecuteConsoleCommand(world, cmd, this->GetFirstLocalPlayerController());
 }
 
 void UHub_SpacelGameInstance::LoadMenu()
@@ -80,13 +60,20 @@ void UHub_SpacelGameInstance::LoadMenu()
 
 void UHub_SpacelGameInstance::Init()
 {
-    UE_LOG(LogTemp, Warning, TEXT("Found class %s"), *this->m_mainMenuClass->GetName());
+    UWorld* world = this->GetWorld();
+    if (!ensure(world != nullptr)) return;
+
+    FString cmd = "NetworkVersionOverride 12345";
+    world->Exec(world, *cmd);
 }
 
 void UHub_SpacelGameInstance::ResetInputMode() const
 {
     APlayerController* playerController = this->GetFirstLocalPlayerController();
-    if (!ensure(playerController != nullptr)) return;
+    if (playerController == nullptr)
+    {
+        return;
+    }
 
     FInputModeGameOnly inputMode;
     inputMode.SetConsumeCaptureMouseDown(false);

@@ -23,13 +23,10 @@ public:
     TArray<FServerDesc> const& GetServers() const;
 
     UFUNCTION(BlueprintCallable)
+    void CleanServers();
+
+    UFUNCTION(BlueprintCallable)
     void JoinServer(FText _ip) const;
-
-    UFUNCTION(BlueprintCallable)
-    void CreateServer() const;
-
-    UFUNCTION(BlueprintCallable)
-    void JoinServerOld() const;
 
     UFUNCTION(BlueprintCallable)
     void LoadMenu();

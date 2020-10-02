@@ -17,6 +17,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	inline TArray<FServerDesc> const& GetServers() const { return m_servers; }
 
+    UFUNCTION(BlueprintCallable)
+    void CleanServers();
 
 private:
 	// server list
