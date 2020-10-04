@@ -21,6 +21,12 @@ AShipPawn::AShipPawn()
     ShipBaseComponent->SetIsReplicated(true);
     RootComponent = ShipBaseComponent;
 
+    ShipEngineComponent = CreateDefaultSubobject<USpacelProceduralMeshComponent>(TEXT("ShipEngine"));
+    if (!ensure(ShipEngineComponent != nullptr)) return;
+    ShipEngineComponent->bUseAsyncCooking = true;
+    ShipEngineComponent->SetIsReplicated(true);
+    ShipEngineComponent->SetupAttachment(ShipBaseComponent);
+
     ShipPawnMovement = CreateDefaultSubobject<UShipPawnMovement>(TEXT("ShipPawnMovement"));
     if (!ensure(ShipPawnMovement != nullptr)) return;
     ShipPawnMovement->SetIsReplicated(true);

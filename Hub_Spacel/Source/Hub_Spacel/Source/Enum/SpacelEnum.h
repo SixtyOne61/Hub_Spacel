@@ -20,3 +20,10 @@ enum class ERegionType : uint8
     OC UMETA(DisplayName = "OC"),
     ASIA UMETA(DisplayName = "ASIA"),
 };
+
+UENUM(BlueprintType)
+enum class EEngineType : uint8
+{
+    Default UMETA(DisplayName = "Default"),
+    Small UMETA(DisplayName = "Small"),
+};

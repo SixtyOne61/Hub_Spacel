@@ -35,8 +35,11 @@ private:
     void move();
 
 public:
-    UPROPERTY(Category = "Component", VisibleDefaultsOnly, BlueprintReadOnly)
+    UPROPERTY(Category = "Ship", VisibleDefaultsOnly, BlueprintReadOnly)
     class USpacelProceduralMeshComponent* ShipBaseComponent = nullptr;
+
+    UPROPERTY(Category = "Ship", VisibleDefaultsOnly, BlueprintReadOnly)
+    class USpacelProceduralMeshComponent* ShipEngineComponent = nullptr;
 
     UPROPERTY(Category = "Component", VisibleDefaultsOnly, BlueprintReadOnly)
     class USpringArmComponent* SpringArmComponent;
