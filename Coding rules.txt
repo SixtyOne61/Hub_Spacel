@@ -9,6 +9,9 @@ Methode event : public OnXXXEvent()
 Methode public : void MyPublicFunc();
 Methode privée/protected : void myPrivateFunc();
 Paramètre de méthode : void myFunc(int _param);
+Methode server side : RPCServerMyFunc();
+Methode client side : RPCClientMyFunc();
+OnRep Methode : public OnRep_MyFunc();
 
 server method : void serverRPCFunc();
 client method : void clientRPCFunc();

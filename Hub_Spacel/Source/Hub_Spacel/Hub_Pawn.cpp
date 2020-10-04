@@ -42,7 +42,7 @@ AHub_Pawn::AHub_Pawn()
 	PrimaryActorTick.bCanEverTick = true;
 
     // create procedural mesh component
-    ProceduralSpaceShipBase = CreateDefaultSubobject<USpacelProceduralMeshComponent>(TEXT("ProceduralBase0"));
+    ProceduralSpaceShipBase = CreateDefaultSubobject<USpacelProceduralMeshComponent>(TEXT("ProceduralBase"));
     if (!ensure(ProceduralSpaceShipBase != nullptr)) return;
     ProceduralSpaceShipBase->bUseAsyncCooking = true;
     RootComponent = ProceduralSpaceShipBase;
