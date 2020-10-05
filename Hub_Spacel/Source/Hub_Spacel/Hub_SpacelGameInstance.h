@@ -6,7 +6,6 @@
 #include "Engine/GameInstance.h"
 #include "Hub_Spacel/Source/Server/ServerFinder.h"
 #include "Hub_Spacel/Source/Server/ServerDesc.h"
-#include "Hub_Spacel/Source/Enum/SpacelEnum.h"
 #include "Hub_SpacelGameInstance.generated.h"
 
 /**
@@ -47,8 +46,8 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TSubclassOf<class ADefaultEngine> EngineModuleClass = nullptr;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    EEngineType ShipEngineType = EEngineType::Default;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Bitmask, BitmaskEnum = "EShipModuleType"))
+    uint8 ShipModuleType = 0x0;
 
 private:
     TSubclassOf<class UUserWidget> m_mainMenuClass = nullptr;

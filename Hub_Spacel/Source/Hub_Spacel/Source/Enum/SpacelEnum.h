@@ -21,9 +21,11 @@ enum class ERegionType : uint8
     ASIA UMETA(DisplayName = "ASIA"),
 };
 
-UENUM(BlueprintType)
-enum class EEngineType : uint8
+UENUM(BlueprintType, meta = (Bitflags, UseEnumValuesAsMaskValuesInEditor = "true"))
+enum class EShipModuleType : uint8
 {
-    Default UMETA(DisplayName = "Default"),
-    Small UMETA(DisplayName = "Small"),
+    Empty = 0x00,
+    EngineDefault = 0x01,
+    EngineSmall = 0x02,
 };
+//ENUM_CLASS_FLAGS(EShipModuleType);
