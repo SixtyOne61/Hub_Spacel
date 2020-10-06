@@ -16,8 +16,8 @@ class HUB_SPACEL_API ASpacelPlayerState : public APlayerState
 	
 public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Bitmask, BitmaskEnum = "EShipModuleType"))
-    uint8 ShipBaseModuleType = 0x0;
+    uint8 ShipBaseModuleType = 0x01;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Bitmask, BitmaskEnum = "EShipModuleType"))
-    uint8 ShipEngineModuleType = 0x0;
+    uint8 ShipEngineModuleType = 0x02;
 };

@@ -3,6 +3,8 @@
 #include "CoreMinimal.h"
 #include "Hub_Enum.generated.h"
 
+// TO DO DELETE
+
 UENUM(BlueprintType)
 enum class ESubMachine : uint8
 {

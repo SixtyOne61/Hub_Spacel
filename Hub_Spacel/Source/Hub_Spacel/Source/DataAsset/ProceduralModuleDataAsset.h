@@ -19,5 +19,14 @@ public:
     uint8 UniqueModuleType = 0x0;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FString Path = "";
+    FName Name = "";
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    class UMaterialInstance* Material = nullptr;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FVector CubeSize = FVector::ZeroVector;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TArray<FVector> MeshSetup;
 };

@@ -53,9 +53,6 @@ void AShipPawn::BeginPlay()
 {
 	Super::BeginPlay();
 
-    // procedural mesh haven't built-in replication 
-    buildShip();
-
     if (this->HasAuthority())
     {
         this->SetReplicates(true);
@@ -68,10 +65,23 @@ void AShipPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+    if (!m_isBuild)
+    {
+        // wait player state before start building
+        if (this->GetPlayerState() != nullptr)
+        {
+            initShip();
+            m_isBuild = true;
+        }
+    }
+
     move();
 
-    if (this->HasAuthority())
+    if(m_isBuild)
     {
+        // update spring arm size
+        if (!ensure(this->SpringArmComponent != nullptr)) return;
+        this->SpringArmComponent->TargetArmLength = m_springArmDefaultSize + m_springArmDefaultSize * this->PercentSpeed * this->MultiplierSpringArmSize;
     }
 }
 
@@ -87,46 +97,45 @@ void AShipPawn::buildShip()
     ASpacelPlayerState * spacelPlayerState = this->GetPlayerState<ASpacelPlayerState>();
     if (!ensure(spacelPlayerState != nullptr)) return;
 
-    UProceduralModuleDataAsset const* proceduralModuleDataAsset = this->ModuleDataAsset->GetModule(spacelPlayerState->ShipBaseModuleType);
-    if (proceduralModuleDataAsset == nullptr)
-    {
-        return;
-    }
-
-    FVector location = this->GetActorLocation();
-    buildProceduralModule(this->ShipBaseComponent, proceduralModuleDataAsset->Path, location);
-
-    if (!ensure(this->ShipBaseComponent != nullptr)) return;
     FVector const& location = this->GetActorLocation();
-    this->ShipBaseComponent->SetWorldLocation(location);
-
-    FVector cubeSize = FVector(15.0f, 15.0f, 15.0f);
-    this->ShipBaseComponent->setCubeSize(cubeSize);
-    TArray<TSharedPtr<ChainedLocation>> chainedLocations =
-    {
-        MakeShareable(new ChainedLocation(FVector(-15,0,0), cubeSize)),
-        MakeShareable(new ChainedLocation(FVector(0,0,0), cubeSize)),
-        MakeShareable(new ChainedLocation(FVector(15,0,0), cubeSize)),
-        MakeShareable(new ChainedLocation(FVector(0,15,0), cubeSize)),
-        MakeShareable(new ChainedLocation(FVector(0,-15,0), cubeSize)),
-        MakeShareable(new ChainedLocation(FVector(0,0,15), cubeSize)),
-        MakeShareable(new ChainedLocation(FVector(0,0,-15), cubeSize)),
-    };
-    this->ShipBaseComponent->setEdges(std::forward<TArray<TSharedPtr<ChainedLocation>>>(chainedLocations));
-    this->ShipBaseComponent->generateMesh(std::move(FName("Player")));
-    this->ShipBaseComponent->SetMaterial(0, this->MatBase);
+    buildProceduralModule(this->ShipBaseComponent, this->ModuleDataAsset->GetModule(spacelPlayerState->ShipBaseModuleType), location);
+    buildProceduralModule(this->ShipEngineComponent, this->ModuleDataAsset->GetModule(spacelPlayerState->ShipEngineModuleType), location);
 }
 
-void AShipPawn::buildProceduralModule(USpacelProceduralMeshComponent * _component, FString const& _path, FVector const& _location)
+void AShipPawn::buildProceduralModule(USpacelProceduralMeshComponent * _component, class UProceduralModuleDataAsset const* _module, FVector const& _location)
 {
     if (!ensure(_component != nullptr)) return;
-    // read xml
+    if (!ensure(_module != nullptr)) return;
+
+    _component->SetWorldLocation(_location);
+    FVector const& cubeSize = _module->CubeSize;
+    _component->setCubeSize(cubeSize);
+    TArray<TSharedPtr<ChainedLocation>> chainedLocations;
+    chainedLocations.Reserve(_module->MeshSetup.Num());
+    for (auto const& loc : _module->MeshSetup)
+    {
+        chainedLocations.Add(MakeShareable(new ChainedLocation(loc, cubeSize)));
+    }
+
+    _component->setEdges(std::forward<TArray<TSharedPtr<ChainedLocation>>>(chainedLocations));
+    _component->generateMesh(_module->Name);
+    _component->SetMaterial(0, _module->Material);
 }
 
 void AShipPawn::move()
 {
     if(!ensure(this->ShipPawnMovement != nullptr)) return;
     this->ShipPawnMovement->AddInputVector(this->GetActorForwardVector() * this->MaxForwardSpeed * this->PercentSpeed);
+}
+
+void AShipPawn::initShip()
+{
+    // save spring arm default size
+    if (!ensure(this->SpringArmComponent != nullptr)) return;
+    m_springArmDefaultSize = this->SpringArmComponent->TargetArmLength;
+
+    // procedural mesh haven't built-in replication 
+    buildShip();
 }
 
 void AShipPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetimeProps) const

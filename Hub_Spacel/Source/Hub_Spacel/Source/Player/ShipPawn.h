@@ -32,10 +32,13 @@ private:
     void buildShip();
 
     /* build a module */
-    void buildProceduralModule(class USpacelProceduralMeshComponent * _component, FString const& _path, FVector const& _location);
+    void buildProceduralModule(class USpacelProceduralMeshComponent * _component, class UProceduralModuleDataAsset const* _module, FVector const& _location);
 
     /* move ship */
     void move();
+
+    /* init all ship module and camera */
+    void initShip();
 
 public:
     UPROPERTY(Category = "Ship", VisibleDefaultsOnly, BlueprintReadOnly)
@@ -56,8 +59,8 @@ public:
     UPROPERTY(Category = "Movement", EditAnywhere, BlueprintReadWrite)
     float MaxForwardSpeed = 6000.0f;
 
-    UPROPERTY(Category = "Material", EditAnywhere, BlueprintReadWrite)
-    class UMaterialInstance* MatBase = nullptr;
+    UPROPERTY(Category = "Camera", EditAnywhere, BlueprintReadWrite)
+    float MultiplierSpringArmSize = 2.0f;
 
     UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
     class UShipModuleDataAsset* ModuleDataAsset = nullptr;
@@ -66,4 +69,11 @@ protected:
     /* current percent speed value 0.0f - 1.0f */
     UPROPERTY(Replicated)
     float PercentSpeed = 0.0f;
+
+private:
+    /* Check if we have build ship TO DO better */
+    bool m_isBuild = false;
+
+    /* default spring arm size */
+    float m_springArmDefaultSize = 0.0f;
 };
