@@ -93,7 +93,8 @@ void AShipPawn::buildShip()
         return;
     }
 
-    buildProceduralModule(this->ShipBaseComponent, proceduralModuleDataAsset->Path);
+    FVector location = this->GetActorLocation();
+    buildProceduralModule(this->ShipBaseComponent, proceduralModuleDataAsset->Path, location);
 
     if (!ensure(this->ShipBaseComponent != nullptr)) return;
     FVector const& location = this->GetActorLocation();
@@ -116,8 +117,9 @@ void AShipPawn::buildShip()
     this->ShipBaseComponent->SetMaterial(0, this->MatBase);
 }
 
-void AShipPawn::buildProceduralModule(USpacelProceduralMeshComponent * _component, FString const& _path)
+void AShipPawn::buildProceduralModule(USpacelProceduralMeshComponent * _component, FString const& _path, FVector const& _location)
 {
+    if (!ensure(_component != nullptr)) return;
     // read xml
 }
 

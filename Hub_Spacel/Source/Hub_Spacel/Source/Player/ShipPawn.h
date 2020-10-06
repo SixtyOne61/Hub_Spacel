@@ -32,7 +32,7 @@ private:
     void buildShip();
 
     /* build a module */
-    void buildProceduralModule(class USpacelProceduralMeshComponent * _component, FString const& _path);
+    void buildProceduralModule(class USpacelProceduralMeshComponent * _component, FString const& _path, FVector const& _location);
 
     /* move ship */
     void move();
