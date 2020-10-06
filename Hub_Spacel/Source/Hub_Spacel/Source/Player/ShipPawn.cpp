@@ -8,6 +8,9 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "Source/Mesh/SpacelProceduralMeshComponent.h"
+#include "Source/Player/SpacelPlayerState.h"
+#include "Source/DataAsset/ShipModuleDataAsset.h"
+#include "Source/DataAsset/ProceduralModuleDataAsset.h"
 
 // Sets default values
 AShipPawn::AShipPawn()
@@ -79,6 +82,19 @@ void AShipPawn::NotifyHit(class UPrimitiveComponent* _myComp, class AActor* _oth
 
 void AShipPawn::buildShip()
 {
+    if (!ensure(this->ModuleDataAsset != nullptr)) return;
+
+    ASpacelPlayerState * spacelPlayerState = this->GetPlayerState<ASpacelPlayerState>();
+    if (!ensure(spacelPlayerState != nullptr)) return;
+
+    UProceduralModuleDataAsset const* proceduralModuleDataAsset = this->ModuleDataAsset->GetModule(spacelPlayerState->ShipBaseModuleType);
+    if (proceduralModuleDataAsset == nullptr)
+    {
+        return;
+    }
+
+    buildProceduralModule(this->ShipBaseComponent, proceduralModuleDataAsset->Path);
+
     if (!ensure(this->ShipBaseComponent != nullptr)) return;
     FVector const& location = this->GetActorLocation();
     this->ShipBaseComponent->SetWorldLocation(location);
@@ -98,6 +114,11 @@ void AShipPawn::buildShip()
     this->ShipBaseComponent->setEdges(std::forward<TArray<TSharedPtr<ChainedLocation>>>(chainedLocations));
     this->ShipBaseComponent->generateMesh(std::move(FName("Player")));
     this->ShipBaseComponent->SetMaterial(0, this->MatBase);
+}
+
+void AShipPawn::buildProceduralModule(USpacelProceduralMeshComponent * _component, FString const& _path)
+{
+    // read xml
 }
 
 void AShipPawn::move()

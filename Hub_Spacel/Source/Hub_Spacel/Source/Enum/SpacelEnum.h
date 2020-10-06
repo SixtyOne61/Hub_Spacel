@@ -25,7 +25,8 @@ UENUM(BlueprintType, meta = (Bitflags, UseEnumValuesAsMaskValuesInEditor = "true
 enum class EShipModuleType : uint8
 {
     Empty = 0x00,
-    EngineDefault = 0x01,
-    EngineSmall = 0x02,
+    BaseDefault = 0x01,
+    EngineDefault = 0x02,
+    EngineSmall = 0x04,
 };
 //ENUM_CLASS_FLAGS(EShipModuleType);

@@ -46,9 +46,6 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TSubclassOf<class ADefaultEngine> EngineModuleClass = nullptr;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Bitmask, BitmaskEnum = "EShipModuleType"))
-    uint8 ShipModuleType = 0x0;
-
 private:
     TSubclassOf<class UUserWidget> m_mainMenuClass = nullptr;
 

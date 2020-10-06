@@ -31,6 +31,9 @@ private:
     /* build ship with all module */
     void buildShip();
 
+    /* build a module */
+    void buildProceduralModule(class USpacelProceduralMeshComponent * _component, FString const& _path);
+
     /* move ship */
     void move();
 
@@ -55,6 +58,9 @@ public:
 
     UPROPERTY(Category = "Material", EditAnywhere, BlueprintReadWrite)
     class UMaterialInstance* MatBase = nullptr;
+
+    UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
+    class UShipModuleDataAsset* ModuleDataAsset = nullptr;
 
 protected:
     /* current percent speed value 0.0f - 1.0f */

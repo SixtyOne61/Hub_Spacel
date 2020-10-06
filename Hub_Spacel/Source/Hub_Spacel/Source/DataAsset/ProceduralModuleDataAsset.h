@@ -16,5 +16,8 @@ class HUB_SPACEL_API UProceduralModuleDataAsset : public UDataAsset
 	
 public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (Bitmask, BitmaskEnum = "EShipModuleType", UseEnumValuesAsMaskValuesInEditor = "true"))
-    uint8 ModuleType = 0x0;
+    uint8 UniqueModuleType = 0x0;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FString Path = "";
 };
