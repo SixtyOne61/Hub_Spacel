@@ -20,4 +20,7 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Bitmask, BitmaskEnum = "EShipModuleType"))
     uint8 ShipEngineModuleType = 0x02;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Bitmask, BitmaskEnum = "EShipModuleType"))
+    uint8 ShipShellModuleType = 0x08;
 };

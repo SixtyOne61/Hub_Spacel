@@ -47,6 +47,9 @@ public:
     UPROPERTY(Category = "Ship", VisibleDefaultsOnly, BlueprintReadOnly)
     class USpacelProceduralMeshComponent* ShipEngineComponent = nullptr;
 
+    UPROPERTY(Category = "Ship", VisibleDefaultsOnly, BlueprintReadOnly)
+    class USpacelProceduralMeshComponent* ShipShellComponent = nullptr;
+
     UPROPERTY(Category = "Component", VisibleDefaultsOnly, BlueprintReadOnly)
     class USpringArmComponent* SpringArmComponent;
 

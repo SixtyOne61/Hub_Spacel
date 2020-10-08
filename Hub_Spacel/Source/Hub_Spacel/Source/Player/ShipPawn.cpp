@@ -30,6 +30,12 @@ AShipPawn::AShipPawn()
     ShipEngineComponent->SetIsReplicated(true);
     ShipEngineComponent->SetupAttachment(ShipBaseComponent);
 
+    ShipShellComponent = CreateDefaultSubobject<USpacelProceduralMeshComponent>(TEXT("ShipShell"));
+    if (!ensure(ShipShellComponent != nullptr)) return;
+    ShipShellComponent->bUseAsyncCooking = true;
+    ShipShellComponent->SetIsReplicated(true);
+    ShipShellComponent->SetupAttachment(ShipBaseComponent);
+
     ShipPawnMovement = CreateDefaultSubobject<UShipPawnMovement>(TEXT("ShipPawnMovement"));
     if (!ensure(ShipPawnMovement != nullptr)) return;
     ShipPawnMovement->SetIsReplicated(true);
@@ -100,6 +106,7 @@ void AShipPawn::buildShip()
     FVector const& location = this->GetActorLocation();
     buildProceduralModule(this->ShipBaseComponent, this->ModuleDataAsset->GetModule(spacelPlayerState->ShipBaseModuleType), location);
     buildProceduralModule(this->ShipEngineComponent, this->ModuleDataAsset->GetModule(spacelPlayerState->ShipEngineModuleType), location);
+    buildProceduralModule(this->ShipShellComponent, this->ModuleDataAsset->GetModule(spacelPlayerState->ShipShellModuleType), location);
 }
 
 void AShipPawn::buildProceduralModule(USpacelProceduralMeshComponent * _component, class UProceduralModuleDataAsset const* _module, FVector const& _location)

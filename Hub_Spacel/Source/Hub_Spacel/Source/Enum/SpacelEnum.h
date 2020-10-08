@@ -28,5 +28,5 @@ enum class EShipModuleType : uint8
     BaseDefault = 0x01,
     EngineDefault = 0x02,
     EngineSmall = 0x04,
+    ShellDefault = 0x08,
 };
-//ENUM_CLASS_FLAGS(EShipModuleType);
