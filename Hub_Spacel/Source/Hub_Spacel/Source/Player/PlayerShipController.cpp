@@ -9,11 +9,14 @@ void APlayerShipController::SetupInputComponent()
     Super::SetupInputComponent();
 
     this->InputComponent->BindAxis("Speed", this, &APlayerShipController::speed);
+    this->InputComponent->BindAxis("Turn", this, &APlayerShipController::turn);
+    this->InputComponent->BindAxis("FlightAttitude", this, &APlayerShipController::flightAttitude);
+    this->InputComponent->BindAxis("Up", this, &APlayerShipController::up);
 }
 
 void APlayerShipController::speed(float _val)
 {
-    if(FMath::IsNearlyZero(_val, 0.05f))
+    if (FMath::IsNearlyZero(_val, 0.05f))
     {
         return;
     }
@@ -36,4 +39,50 @@ void APlayerShipController::RPCServerSetSpeed_Implementation(float _val)
 
         shipPawn->PercentSpeed = this->PercentSpeed / 100.0f;
     }
+}
+
+void APlayerShipController::turn(float _val)
+{
+    if (FMath::IsNearlyZero(_val, 0.05f))
+    {
+        return;
+    }
+
+    this->RPCServerSetTurn(_val);
+}
+
+void APlayerShipController::RPCServerSetTurn_Implementation(float _val)
+{
+
+}
+
+void APlayerShipController::flightAttitude(float _val)
+{
+    if (FMath::IsNearlyZero(_val, 0.05f))
+    {
+        return;
+    }
+
+    this->RPCServerSetFlightAttitude(_val);
+}
+
+
+void APlayerShipController::RPCServerSetFlightAttitude_Implementation(float _val)
+{
+
+}
+
+void APlayerShipController::up(float _val)
+{
+    if (FMath::IsNearlyZero(_val, 0.05f))
+    {
+        return;
+    }
+
+    this->RPCServerSetUp(_val);
+}
+
+void APlayerShipController::RPCServerSetTurn_Implementation(float _val)
+{
+
 }
