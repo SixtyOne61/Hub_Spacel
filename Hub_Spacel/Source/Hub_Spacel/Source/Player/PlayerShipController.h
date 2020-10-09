@@ -48,4 +48,10 @@ public:
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
     float FlightAttitude = 0.0f;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+    float Turn = 0.0f;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+    float Up = 0.0f;
 };

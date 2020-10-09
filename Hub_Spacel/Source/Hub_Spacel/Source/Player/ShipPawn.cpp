@@ -139,8 +139,17 @@ void AShipPawn::move(float _deltaTime)
     if (this->PercentFlightAttitude != 0.0f)
     {
         deltaRotation.Roll += this->FlightAttitudeSpeed * this->PercentFlightAttitude * _deltaTime;
-        this->AddActorLocalRotation(deltaRotation);
     }
+    if (this->PercentTurn != 0.0f)
+    {
+        deltaRotation.Yaw += this->TurnSpeed * this->PercentTurn * _deltaTime;
+    }
+    if (this->PercentUp != 0.0f)
+    {
+        //deltaRotation.Pitch += this->UpSpeed * this->PercentUp * _deltaTime;
+    }
+
+    this->AddActorLocalRotation(deltaRotation);
 }
 
 void AShipPawn::initShip()
@@ -158,5 +167,7 @@ void AShipPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetim
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
     DOREPLIFETIME(AShipPawn, PercentSpeed);
     DOREPLIFETIME(AShipPawn, PercentFlightAttitude);
+    DOREPLIFETIME(AShipPawn, PercentTurn);
+    DOREPLIFETIME(AShipPawn, PercentUp);
 }
 

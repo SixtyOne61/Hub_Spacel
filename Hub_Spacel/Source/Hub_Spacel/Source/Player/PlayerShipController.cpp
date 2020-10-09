@@ -86,28 +86,76 @@ void APlayerShipController::turn(float _val)
 {
     if (FMath::IsNearlyZero(_val, 0.05f))
     {
-        return;
+        if (this->Turn != 0.0f)
+        {
+            this->Turn = 0.0f;
+            this->RPCServerSetTurn(this->Turn);
+        }
     }
-
-    this->RPCServerSetTurn(_val);
+    else if (_val > 0.0f)
+    {
+        if (this->Turn <= 0.0f)
+        {
+            this->Turn = 1.0f;
+            this->RPCServerSetTurn(this->Turn);
+        }
+    }
+    else if (_val < 0.0f)
+    {
+        if (this->Turn >= 0.0f)
+        {
+            this->Turn = -1.0f;
+            this->RPCServerSetTurn(this->Turn);
+        }
+    }
 }
 
 void APlayerShipController::RPCServerSetTurn_Implementation(float _val)
 {
+    AShipPawn* shipPawn = Cast<AShipPawn>(this->GetPawn());
+    if (shipPawn == nullptr)
+    {
+        return;
+    }
 
+    shipPawn->PercentTurn = _val;
 }
 
 void APlayerShipController::up(float _val)
 {
     if (FMath::IsNearlyZero(_val, 0.05f))
     {
-        return;
+        if (this->Up != 0.0f)
+        {
+            this->Up = 0.0f;
+            this->RPCServerSetUp(this->Up);
+        }
     }
-
-    this->RPCServerSetUp(_val);
+    else if (_val > 0.0f)
+    {
+        if (this->Up <= 0.0f)
+        {
+            this->Up = 1.0f;
+            this->RPCServerSetUp(this->Up);
+        }
+    }
+    else if (_val < 0.0f)
+    {
+        if (this->Up >= 0.0f)
+        {
+            this->Up = -1.0f;
+            this->RPCServerSetUp(this->Up);
+        }
+    }
 }
 
 void APlayerShipController::RPCServerSetUp_Implementation(float _val)
 {
+    AShipPawn* shipPawn = Cast<AShipPawn>(this->GetPawn());
+    if (shipPawn == nullptr)
+    {
+        return;
+    }
 
+    shipPawn->PercentUp = _val;
 }

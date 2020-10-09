@@ -65,6 +65,12 @@ public:
     UPROPERTY(Category = "Movement", EditAnywhere, BlueprintReadWrite)
     float FlightAttitudeSpeed = 30.0f;
 
+    UPROPERTY(Category = "Movement", EditAnywhere, BlueprintReadWrite)
+    float TurnSpeed = 30.0f;
+
+    UPROPERTY(Category = "Movement", EditAnywhere, BlueprintReadWrite)
+    float UpSpeed = 40.0f;
+
     UPROPERTY(Category = "Camera", EditAnywhere, BlueprintReadWrite)
     float MultiplierSpringArmSize = 2.0f;
 
@@ -79,6 +85,14 @@ protected:
     /* when flight attitude change -1.0f or 0.0f or 1.0f */
     UPROPERTY(Replicated)
     float PercentFlightAttitude = 0.0f;
+
+    /* when turn change -1.0f or 0.0f or 1.0f */
+    UPROPERTY(Replicated)
+    float PercentTurn = 0.0f;
+
+    /* when up change -1.0f or 0.0f or 1.0f */
+    UPROPERTY(Replicated)
+    float PercentUp = 0.0f;
 
 private:
     /* Check if we have build ship TO DO better */
