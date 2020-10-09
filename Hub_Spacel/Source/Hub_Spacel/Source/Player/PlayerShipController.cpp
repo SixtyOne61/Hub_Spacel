@@ -84,30 +84,7 @@ void APlayerShipController::RPCServerSetFlightAttitude_Implementation(float _val
 
 void APlayerShipController::turn(float _val)
 {
-    if (FMath::IsNearlyZero(_val, 0.05f))
-    {
-        if (this->Turn != 0.0f)
-        {
-            this->Turn = 0.0f;
-            this->RPCServerSetTurn(this->Turn);
-        }
-    }
-    else if (_val > 0.0f)
-    {
-        if (this->Turn <= 0.0f)
-        {
-            this->Turn = 1.0f;
-            this->RPCServerSetTurn(this->Turn);
-        }
-    }
-    else if (_val < 0.0f)
-    {
-        if (this->Turn >= 0.0f)
-        {
-            this->Turn = -1.0f;
-            this->RPCServerSetTurn(this->Turn);
-        }
-    }
+    readInput(_val, this->Turn, std::bind(&APlayerShipController::RPCServerSetTurn, this, std::placeholders::_1));
 }
 
 void APlayerShipController::RPCServerSetTurn_Implementation(float _val)
@@ -123,30 +100,7 @@ void APlayerShipController::RPCServerSetTurn_Implementation(float _val)
 
 void APlayerShipController::up(float _val)
 {
-    if (FMath::IsNearlyZero(_val, 0.05f))
-    {
-        if (this->Up != 0.0f)
-        {
-            this->Up = 0.0f;
-            this->RPCServerSetUp(this->Up);
-        }
-    }
-    else if (_val > 0.0f)
-    {
-        if (this->Up <= 0.0f)
-        {
-            this->Up = 1.0f;
-            this->RPCServerSetUp(this->Up);
-        }
-    }
-    else if (_val < 0.0f)
-    {
-        if (this->Up >= 0.0f)
-        {
-            this->Up = -1.0f;
-            this->RPCServerSetUp(this->Up);
-        }
-    }
+    readInput(_val, this->Up, std::bind(&APlayerShipController::RPCServerSetUp, this, std::placeholders::_1));
 }
 
 void APlayerShipController::RPCServerSetUp_Implementation(float _val)
@@ -158,4 +112,32 @@ void APlayerShipController::RPCServerSetUp_Implementation(float _val)
     }
 
     shipPawn->PercentUp = _val;
+}
+
+void APlayerShipController::readInput(int const& _val, float& _in, std::function<void(float)> _fnc)
+{
+    if (FMath::IsNearlyZero(_val, 0.05f))
+    {
+        if (_in != 0.0f)
+        {
+            _in = 0.0f;
+            _fnc(_in);
+        }
+    }
+    else if (_val > 0.0f)
+    {
+        if (_in <= 0.0f)
+        {
+            _in = 1.0f;
+            _fnc(_in);
+        }
+    }
+    else if (_val < 0.0f)
+    {
+        if (_in >= 0.0f)
+        {
+            _in = -1.0f;
+            _fnc(_in);
+        }
+    }
 }

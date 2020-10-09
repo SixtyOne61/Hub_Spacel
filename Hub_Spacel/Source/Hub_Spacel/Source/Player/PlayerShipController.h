@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
+#include <functional>
 #include "PlayerShipController.generated.h"
 
 /**
@@ -41,6 +42,9 @@ protected:
 
     UFUNCTION(Reliable, Server)
     void RPCServerSetUp(float _val);
+
+private:
+    void readInput(int const& _val, float& _in, std::function<void(float)> _fnc);
 
 public:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
