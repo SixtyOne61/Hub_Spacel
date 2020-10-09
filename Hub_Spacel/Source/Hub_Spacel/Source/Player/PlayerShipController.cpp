@@ -45,30 +45,7 @@ void APlayerShipController::RPCServerSetSpeed_Implementation(float _val)
 
 void APlayerShipController::flightAttitude(float _val)
 {
-    if (FMath::IsNearlyZero(_val, 0.05f))
-    {
-        if (this->FlightAttitude != 0.0f)
-        {
-            this->FlightAttitude = 0.0f;
-            this->RPCServerSetFlightAttitude(this->FlightAttitude);
-        }
-    }
-    else if (_val > 0.0f)
-    {
-        if (this->FlightAttitude <= 0.0f)
-        {
-            this->FlightAttitude = 1.0f;
-            this->RPCServerSetFlightAttitude(this->FlightAttitude);
-        }
-    }
-    else if (_val < 0.0f)
-    {
-        if (this->FlightAttitude >= 0.0f)
-        {
-            this->FlightAttitude = -1.0f;
-            this->RPCServerSetFlightAttitude(this->FlightAttitude);
-        }
-    }
+    readInput(_val, this->FlightAttitude, std::bind(&APlayerShipController::RPCServerSetFlightAttitude, this, std::placeholders::_1));
 }
 
 void APlayerShipController::RPCServerSetFlightAttitude_Implementation(float _val)

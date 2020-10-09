@@ -146,7 +146,7 @@ void AShipPawn::move(float _deltaTime)
     }
     if (this->PercentUp != 0.0f)
     {
-        //deltaRotation.Pitch += this->UpSpeed * this->PercentUp * _deltaTime;
+        deltaRotation.Pitch += this->UpSpeed * this->PercentUp * _deltaTime;
     }
 
     this->AddActorLocalRotation(deltaRotation);
