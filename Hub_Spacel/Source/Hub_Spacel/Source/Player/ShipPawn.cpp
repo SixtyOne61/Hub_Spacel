@@ -67,9 +67,9 @@ void AShipPawn::BeginPlay()
 }
 
 // Called every frame
-void AShipPawn::Tick(float DeltaTime)
+void AShipPawn::Tick(float _deltaTime)
 {
-	Super::Tick(DeltaTime);
+	Super::Tick(_deltaTime);
 
     if (!m_isBuild)
     {
@@ -81,7 +81,7 @@ void AShipPawn::Tick(float DeltaTime)
         }
     }
 
-    move();
+    move(_deltaTime);
 
     if(m_isBuild)
     {
@@ -106,7 +106,7 @@ void AShipPawn::buildShip()
     FVector const& location = this->GetActorLocation();
     buildProceduralModule(this->ShipBaseComponent, this->ModuleDataAsset->GetModule(spacelPlayerState->ShipBaseModuleType), location);
     buildProceduralModule(this->ShipEngineComponent, this->ModuleDataAsset->GetModule(spacelPlayerState->ShipEngineModuleType), location);
-    buildProceduralModule(this->ShipShellComponent, this->ModuleDataAsset->GetModule(spacelPlayerState->ShipShellModuleType), location);
+    //buildProceduralModule(this->ShipShellComponent, this->ModuleDataAsset->GetModule(spacelPlayerState->ShipShellModuleType), location);
 }
 
 void AShipPawn::buildProceduralModule(USpacelProceduralMeshComponent * _component, class UProceduralModuleDataAsset const* _module, FVector const& _location)
@@ -129,10 +129,18 @@ void AShipPawn::buildProceduralModule(USpacelProceduralMeshComponent * _componen
     _component->SetMaterial(0, _module->Material);
 }
 
-void AShipPawn::move()
+void AShipPawn::move(float _deltaTime)
 {
     if(!ensure(this->ShipPawnMovement != nullptr)) return;
-    this->ShipPawnMovement->AddInputVector(this->GetActorForwardVector() * this->MaxForwardSpeed * this->PercentSpeed);
+    this->ShipPawnMovement->AddInputVector(this->GetActorForwardVector() * this->MaxForwardSpeed * this->PercentSpeed * _deltaTime);
+
+    // rotation
+    FRotator deltaRotation(0.f, 0.f, 0.f);
+    if (this->PercentFlightAttitude != 0.0f)
+    {
+        deltaRotation.Roll += this->FlightAttitudeSpeed * this->PercentFlightAttitude * _deltaTime;
+        this->AddActorLocalRotation(deltaRotation);
+    }
 }
 
 void AShipPawn::initShip()
@@ -149,5 +157,6 @@ void AShipPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetim
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
     DOREPLIFETIME(AShipPawn, PercentSpeed);
+    DOREPLIFETIME(AShipPawn, PercentFlightAttitude);
 }
 

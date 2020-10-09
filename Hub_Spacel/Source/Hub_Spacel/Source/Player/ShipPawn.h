@@ -22,7 +22,7 @@ public:
     virtual void BeginPlay() override;
 
 	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+	virtual void Tick(float _deltaTime) override;
 
     // Called when something hit pawn
     virtual void NotifyHit(class UPrimitiveComponent* _myComp, class AActor* _other, class UPrimitiveComponent* _otherComp, bool _bSelfMoved, FVector _hitLocation, FVector _hitNormal, FVector _normalImpulse, const FHitResult& _hit) override;
@@ -35,7 +35,7 @@ private:
     void buildProceduralModule(class USpacelProceduralMeshComponent * _component, class UProceduralModuleDataAsset const* _module, FVector const& _location);
 
     /* move ship */
-    void move();
+    void move(float _deltaTime);
 
     /* init all ship module and camera */
     void initShip();
@@ -62,6 +62,9 @@ public:
     UPROPERTY(Category = "Movement", EditAnywhere, BlueprintReadWrite)
     float MaxForwardSpeed = 6000.0f;
 
+    UPROPERTY(Category = "Movement", EditAnywhere, BlueprintReadWrite)
+    float FlightAttitudeSpeed = 30.0f;
+
     UPROPERTY(Category = "Camera", EditAnywhere, BlueprintReadWrite)
     float MultiplierSpringArmSize = 2.0f;
 
@@ -72,6 +75,10 @@ protected:
     /* current percent speed value 0.0f - 1.0f */
     UPROPERTY(Replicated)
     float PercentSpeed = 0.0f;
+
+    /* when flight attitude change -1.0f or 0.0f or 1.0f */
+    UPROPERTY(Replicated)
+    float PercentFlightAttitude = 0.0f;
 
 private:
     /* Check if we have build ship TO DO better */

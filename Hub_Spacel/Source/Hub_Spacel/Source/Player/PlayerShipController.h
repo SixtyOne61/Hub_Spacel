@@ -24,17 +24,17 @@ protected:
     UFUNCTION(Reliable, Server)
     void RPCServerSetSpeed(float _val);
 
-    /* call when input turn change */
-    virtual void turn(float _val);
-
-    UFUNCTION(Reliable, Server)
-    void RPCServerSetTurn(float _val);
-
     /* call when input flight attitude change */
     virtual void flightAttitude(float _val);
 
     UFUNCTION(Reliable, Server)
     void RPCServerSetFlightAttitude(float _val);
+
+    /* call when input turn change */
+    virtual void turn(float _val);
+
+    UFUNCTION(Reliable, Server)
+    void RPCServerSetTurn(float _val);
 
     /* call when input up change */
     virtual void up(float _val);
@@ -43,6 +43,9 @@ protected:
     void RPCServerSetUp(float _val);
 
 public:
-    UPROPERTY(Category = "Speed", VisibleAnywhere, BlueprintReadOnly)
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
     float PercentSpeed = 0.0f;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+    float FlightAttitude = 0.0f;
 };

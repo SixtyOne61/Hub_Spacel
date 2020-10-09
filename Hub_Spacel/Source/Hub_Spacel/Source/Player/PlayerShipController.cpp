@@ -8,9 +8,11 @@ void APlayerShipController::SetupInputComponent()
 {
     Super::SetupInputComponent();
 
+    // joystick left
     this->InputComponent->BindAxis("Speed", this, &APlayerShipController::speed);
-    this->InputComponent->BindAxis("Turn", this, &APlayerShipController::turn);
     this->InputComponent->BindAxis("FlightAttitude", this, &APlayerShipController::flightAttitude);
+    // joystick right
+    this->InputComponent->BindAxis("Turn", this, &APlayerShipController::turn);
     this->InputComponent->BindAxis("Up", this, &APlayerShipController::up);
 }
 
@@ -41,6 +43,45 @@ void APlayerShipController::RPCServerSetSpeed_Implementation(float _val)
     }
 }
 
+void APlayerShipController::flightAttitude(float _val)
+{
+    if (FMath::IsNearlyZero(_val, 0.05f))
+    {
+        if (this->FlightAttitude != 0.0f)
+        {
+            this->FlightAttitude = 0.0f;
+            this->RPCServerSetFlightAttitude(this->FlightAttitude);
+        }
+    }
+    else if (_val > 0.0f)
+    {
+        if (this->FlightAttitude <= 0.0f)
+        {
+            this->FlightAttitude = 1.0f;
+            this->RPCServerSetFlightAttitude(this->FlightAttitude);
+        }
+    }
+    else if (_val < 0.0f)
+    {
+        if (this->FlightAttitude >= 0.0f)
+        {
+            this->FlightAttitude = -1.0f;
+            this->RPCServerSetFlightAttitude(this->FlightAttitude);
+        }
+    }
+}
+
+void APlayerShipController::RPCServerSetFlightAttitude_Implementation(float _val)
+{
+    AShipPawn* shipPawn = Cast<AShipPawn>(this->GetPawn());
+    if (shipPawn == nullptr)
+    {
+        return;
+    }
+
+    shipPawn->PercentFlightAttitude = _val;
+}
+
 void APlayerShipController::turn(float _val)
 {
     if (FMath::IsNearlyZero(_val, 0.05f))
@@ -56,22 +97,6 @@ void APlayerShipController::RPCServerSetTurn_Implementation(float _val)
 
 }
 
-void APlayerShipController::flightAttitude(float _val)
-{
-    if (FMath::IsNearlyZero(_val, 0.05f))
-    {
-        return;
-    }
-
-    this->RPCServerSetFlightAttitude(_val);
-}
-
-
-void APlayerShipController::RPCServerSetFlightAttitude_Implementation(float _val)
-{
-
-}
-
 void APlayerShipController::up(float _val)
 {
     if (FMath::IsNearlyZero(_val, 0.05f))
@@ -82,7 +107,7 @@ void APlayerShipController::up(float _val)
     this->RPCServerSetUp(_val);
 }
 
-void APlayerShipController::RPCServerSetTurn_Implementation(float _val)
+void APlayerShipController::RPCServerSetUp_Implementation(float _val)
 {
 
 }
