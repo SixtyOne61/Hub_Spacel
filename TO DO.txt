@@ -5,7 +5,33 @@ Clean BP_SpacelGameMode not use
 Clean Hub_SpacelGameMode not use
 Clean Hub_Pawn not use
 Clean Hub_Enum not use
-Clean AProceduralActor with child class not use
 Clean input
 
+Use xml for create map / module
+
+Add weapon
+
+Clean AProceduralActor with child class not use
+
+Make tuto for use aws for dedicated server : https://www.youtube.com/watch?v=QHB1H6eM-vc
+Make tuto for create a server queue system : https://www.youtube.com/watch?v=u2Si2y2hviA
+
+Interface du jeu - Main menu; avec "My story" qui est une timeline, join server qui sera fait, 
+création du vaisseau par défaut.
+Remplissage des équipes automatique
+Arriver sur un server, interface avec visionnage de son équipe, changement de son vaisseau
+Après 30s, démarrage d'une partie
+Durée d'une partie de 10 min
+Ecran de fin
+Retour au main menu
+
+Backlog :
 add rotation on UShipPawnMovement
+shield gameplay / self shield
+smart rocket gameplay / ray gun
+iem gameplay (fx carré de perte de controle, la couleur du carré est celle de l'équipe) / furtivité
+define rules for create ship module
+give life gameplay / repair gameplay
+collecte ressource / create ressource on map
+map limitation
+volumetric cloud
