@@ -6,6 +6,7 @@
 #include "Materials/MaterialInstance.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Hub_Spacel/Source/Mesh/SpacelProceduralMeshComponent.h"
+#include "XmlFile.h"
 
 // Sets default values
 AEnvironmentManager::AEnvironmentManager()
@@ -36,8 +37,11 @@ void AEnvironmentManager::BeginPlay()
         this->SetReplicates(true);
     }
 
-	// create procedural world
-	createProceduralWorld();
+    if (!isXmlIsValid())
+    {
+        // create procedural world
+        createProceduralWorld();
+    }
 
     if (!ensure(MatAsteroid != nullptr)) return;
 
@@ -154,6 +158,14 @@ void AEnvironmentManager::createProceduralWorld()
         }
         ++id;
     }
+
+    // create xml file
+    FXmlFile file;
+    if (file.LoadFile("<root>\n</root>", EConstructMethod::ConstructFromBuffer))
+    {
+        FString s = FPaths::GameDir() + "Content/Xml/Gold/" + this->GetActorLocation().ToString() + ".xml";
+        file.Save(s);
+    }
 }
 
 void AEnvironmentManager::addNeighboor(CoordInfo& _info, TArray<CoordInfo> & _list)
@@ -208,4 +220,14 @@ float AEnvironmentManager::getNoise(FVector const& _location) const
 {
     // increase float broke bloc, increase int (octave) add more bloc
     return SpacelNoise::getInstance()->getOctaveNoise((_location.X + this->BornX.X) * 0.00007f, (_location.Y + this->BornY.X) * 0.00007f, (_location.Z + this->BornZ.X) * 0.00007f, 2);
+}
+
+bool AEnvironmentManager::isXmlIsValid() const
+{
+    FXmlFile file;
+    if (!file.LoadFile(FPaths::GameDir() + "Content/Xml/Gold/" + this->GetActorLocation().ToString()))
+    {
+        return false;
+    }
+    return false;
 }

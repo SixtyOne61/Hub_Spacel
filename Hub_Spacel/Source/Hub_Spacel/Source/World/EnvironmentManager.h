@@ -53,6 +53,9 @@ protected:
     /* get noise value */
     float getNoise(FVector const& _location) const;
 
+    /* return true if an xml is found and he is valid */
+    bool isXmlIsValid() const;
+
 public:
     /* Material for asteroid */
     UPROPERTY(Category = "Material", EditAnywhere, BlueprintReadWrite)
