@@ -1,13 +1,9 @@
 TO DO
 
-Clean BP_SpaceShip not use
-Clean BP_SpacelGameMode not use
-Clean Hub_SpacelGameMode not use
-Clean Hub_Pawn not use
-Clean Hub_Enum not use
-Clean input
-
 Use xml for create map / module
+
+Clean BP_SpaceShip not use
+Clean Hub_Pawn not use
 
 Add weapon
 
@@ -24,6 +20,8 @@ Après 30s, démarrage d'une partie
 Durée d'une partie de 10 min
 Ecran de fin
 Retour au main menu
+
+Use "ConstructionScript" of pawn, only for editor, for create ship in editor
 
 Backlog :
 add rotation on UShipPawnMovement

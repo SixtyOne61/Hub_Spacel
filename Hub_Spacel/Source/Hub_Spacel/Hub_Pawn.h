@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
 #include "GameFramework/Character.h"
-#include "Hub_Enum.h"
 #include "Hub_Pawn.generated.h"
 
 static int32 SDebugDrawSpawnBullet = 0;
