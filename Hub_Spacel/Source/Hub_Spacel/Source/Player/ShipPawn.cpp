@@ -11,12 +11,14 @@
 #include "Source/Player/SpacelPlayerState.h"
 #include "Source/DataAsset/ShipModuleDataAsset.h"
 #include "Source/DataAsset/ProceduralModuleDataAsset.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 // Sets default values
 AShipPawn::AShipPawn()
 {
     // Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
     PrimaryActorTick.bCanEverTick = true;
+    bAlwaysRelevant = true;
 
     ShipBaseComponent = CreateDefaultSubobject<USpacelProceduralMeshComponent>(TEXT("ShipBase"));
     if (!ensure(ShipBaseComponent != nullptr)) return;
@@ -39,6 +41,7 @@ AShipPawn::AShipPawn()
     ShipPawnMovement = CreateDefaultSubobject<UShipPawnMovement>(TEXT("ShipPawnMovement"));
     if (!ensure(ShipPawnMovement != nullptr)) return;
     ShipPawnMovement->SetIsReplicated(true);
+    this->ShipPawnMovement->UpdatedComponent = RootComponent;
 
     // Create a spring arm component
     SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
@@ -64,6 +67,8 @@ void AShipPawn::BeginPlay()
         this->SetReplicates(true);
         this->SetReplicateMovement(true);
     }
+
+    this->ShipPawnMovement->SetComponentTickEnabled(true);
 }
 
 // Called every frame
@@ -81,7 +86,10 @@ void AShipPawn::Tick(float _deltaTime)
         }
     }
 
-    move(_deltaTime);
+    if (this->HasAuthority())
+    {
+        RPCServerMove(_deltaTime);
+    }
 
     if(m_isBuild)
     {
@@ -129,11 +137,8 @@ void AShipPawn::buildProceduralModule(USpacelProceduralMeshComponent * _componen
     _component->SetMaterial(0, _module->Material);
 }
 
-void AShipPawn::move(float _deltaTime)
+void AShipPawn::RPCServerMove_Implementation(float const& _deltaTime)
 {
-    if(!ensure(this->ShipPawnMovement != nullptr)) return;
-    this->ShipPawnMovement->AddInputVector(this->GetActorForwardVector() * this->MaxForwardSpeed * this->PercentSpeed * _deltaTime);
-
     // rotation
     FRotator deltaRotation(0.f, 0.f, 0.f);
     if (this->PercentFlightAttitude != 0.0f)
@@ -150,6 +155,19 @@ void AShipPawn::move(float _deltaTime)
     }
 
     this->AddActorLocalRotation(deltaRotation);
+
+    FVector velocity = this->GetActorForwardVector() * this->MaxForwardSpeed * this->PercentSpeed;// * _deltaTime;
+    if (!ensure(this->ShipPawnMovement != nullptr)) return;
+    this->ShipPawnMovement->SetVelocityInLocalSpace(velocity);
+
+    RPCClientMove(velocity, deltaRotation);
+}
+
+void AShipPawn::RPCClientMove_Implementation(FVector const& _velocity, FRotator const& _deltaRotation)
+{
+    this->AddActorLocalRotation(_deltaRotation);
+    if (!ensure(this->ShipPawnMovement != nullptr)) return;
+    this->ShipPawnMovement->SetVelocityInLocalSpace(_velocity);
 }
 
 void AShipPawn::initShip()

@@ -34,8 +34,13 @@ private:
     /* build a module */
     void buildProceduralModule(class USpacelProceduralMeshComponent * _component, class UProceduralModuleDataAsset const* _module, FVector const& _location);
 
-    /* move ship */
-    void move(float _deltaTime);
+    /* move ship server */
+    UFUNCTION(Reliable, Server)
+    void RPCServerMove(float const& _deltaTime);
+
+    /* move ship client */
+    UFUNCTION(Unreliable, NetMulticast)
+    void RPCClientMove(FVector const& _velocity, FRotator const& _deltaRotation);
 
     /* init all ship module and camera */
     void initShip();
