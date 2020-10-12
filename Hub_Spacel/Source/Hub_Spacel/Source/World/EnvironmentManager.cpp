@@ -8,6 +8,7 @@
 #include "Hub_Spacel/Source/Mesh/SpacelProceduralMeshComponent.h"
 #include "XmlFile.h"
 #include "XmlNode.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 AEnvironmentManager::AEnvironmentManager()
@@ -38,13 +39,15 @@ void AEnvironmentManager::BeginPlay()
         this->SetReplicates(true);
     }
 
-    if (!isXmlIsValid())
+    if (!readXml())
     {
-        // create procedural world
+#if WITH_EDITOR
+        // create procedural world, and create xml
         createProceduralWorld();
+#endif // WITH_EDITOR
     }
 
-    if (!ensure(MatAsteroid != nullptr)) return;
+    if (!ensure(this->MatAsteroid != nullptr)) return;
 
 	// init all procedural mesh
 	for (auto proceduralMesh : this->ProceduralMeshComponents)
@@ -172,8 +175,9 @@ void AEnvironmentManager::createProceduralWorld()
 
         if (idMesh != 0)
         {
-            FString s = FPaths::ProjectDir() + "Content/Xml/Gold/" + this->GetActorLocation().ToString() + ".xml";
-            file.Save(s);
+            bool isGold = UGameplayStatics::GetCurrentLevelName(this->GetWorld()).Contains("InGameLevel");
+            FString path = FPaths::ProjectDir() + (isGold ? "Content/Xml/Gold/" : "Content/Xml/Test/") + this->GetActorLocation().ToString() + ".xml";
+            file.Save(path);
         }
     }
 }
@@ -206,11 +210,6 @@ void AEnvironmentManager::addNeighboor(CoordInfo& _info, TArray<CoordInfo> & _li
 
 void AEnvironmentManager::addProceduralMesh(class FXmlFile * _file, int const& _idMesh)
 {
-	UWorld* const world = this->GetWorld();
-    if (!ensure(world != nullptr)) return;
-
-    FVector location = FVector(this->BornX.X, this->BornY.X, this->BornZ.X);
-
     FXmlNode * node = (*_file).GetRootNode();
     if (node != nullptr)
     {
@@ -222,9 +221,71 @@ void AEnvironmentManager::addProceduralMesh(class FXmlFile * _file, int const& _
         node->AppendChildNode(FString::FromInt(_idMesh), content);
     }
 
+    createProceduralMeshComponent();
+}
+
+float AEnvironmentManager::getNoise(FVector const& _location) const
+{
+    // increase float broke bloc, increase int (octave) add more bloc
+    return SpacelNoise::getInstance()->getOctaveNoise((_location.X + this->BornX.X) * 0.00007f, (_location.Y + this->BornY.X) * 0.00007f, (_location.Z + this->BornZ.X) * 0.00007f, 2);
+}
+
+bool AEnvironmentManager::readXml()
+{
+    bool isGold = UGameplayStatics::GetCurrentLevelName(this->GetWorld()).Contains("InGameLevel");
+    FString path = FPaths::ProjectDir() + (isGold ? "Content/Xml/Gold/" : "Content/Xml/Test/") + this->GetActorLocation().ToString() + ".xml";
+
+    FXmlFile file;
+    if (!file.LoadFile(path))
+    {
+        return false;
+    }
+
+    FXmlNode * rootNode = file.GetRootNode();
+    if (rootNode == nullptr)
+    {
+        return false;
+    }
+
+    TArray<FXmlNode*> const& childrenMesh = rootNode->GetChildrenNodes();
+    for (auto * nodeMesh : childrenMesh)
+    {
+        // node contain all information for one mesh
+        if (nodeMesh == nullptr)
+        {
+            continue;
+        }
+
+        TArray<FXmlNode*> const& childrenLocation = nodeMesh->GetChildrenNodes();
+        for (auto * nodeLocation : childrenLocation)
+        {
+            if (nodeLocation == nullptr)
+            {
+                continue;
+            }
+
+            int id = FCString::Atoi(*(nodeLocation->GetAttribute("id")));
+            FVector center = FVector::ZeroVector, size = FVector::ZeroVector;
+            center.InitFromString(nodeLocation->GetAttribute("center"));
+            size.InitFromString(nodeLocation->GetAttribute("size"));
+
+            // TO DO : add neighboor
+            m_currentObject.Add(MakeShareable(new ChainedLocation(center, size, id)));
+        }
+
+        createProceduralMeshComponent();
+    }
+
+    return true;
+}
+
+void AEnvironmentManager::createProceduralMeshComponent()
+{
+    FVector location = FVector(this->BornX.X, this->BornY.X, this->BornZ.X);
+
     USpacelProceduralMeshComponent* proceduralMesh = NewObject<USpacelProceduralMeshComponent>(this);
     if (!ensure(proceduralMesh != nullptr)) return;
-    proceduralMesh->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepWorldTransform);
+    proceduralMesh->AttachToComponent(this->RootComponent, FAttachmentTransformRules::KeepWorldTransform);
     proceduralMesh->RegisterComponent();
 
     proceduralMesh->SetWorldLocation(location);
@@ -235,20 +296,4 @@ void AEnvironmentManager::addProceduralMesh(class FXmlFile * _file, int const& _
     m_currentObject.Empty();
 
     this->ProceduralMeshComponents.Add(proceduralMesh);
-}
-
-float AEnvironmentManager::getNoise(FVector const& _location) const
-{
-    // increase float broke bloc, increase int (octave) add more bloc
-    return SpacelNoise::getInstance()->getOctaveNoise((_location.X + this->BornX.X) * 0.00007f, (_location.Y + this->BornY.X) * 0.00007f, (_location.Z + this->BornZ.X) * 0.00007f, 2);
-}
-
-bool AEnvironmentManager::isXmlIsValid() const
-{
-    FXmlFile file;
-    if (!file.LoadFile(FPaths::GameDir() + "Content/Xml/Gold/" + this->GetActorLocation().ToString()))
-    {
-        return false;
-    }
-    return false;
 }

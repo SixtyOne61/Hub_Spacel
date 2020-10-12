@@ -2,6 +2,10 @@ TO DO
 
 Use xml for create map / module
 
+Utiliser un character à la place d'un pawn, 
+setup le character movement
+mettre comme static mesh la base du vaisseau (la partie rouge, qui est indestructible)
+
 Clean BP_SpaceShip not use
 Clean Hub_Pawn not use
 

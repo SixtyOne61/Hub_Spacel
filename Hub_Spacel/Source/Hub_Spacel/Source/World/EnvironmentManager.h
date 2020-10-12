@@ -54,7 +54,10 @@ protected:
     float getNoise(FVector const& _location) const;
 
     /* return true if an xml is found and he is valid */
-    bool isXmlIsValid() const;
+    bool readXml();
+
+    /* create procedural mesh component */
+    void createProceduralMeshComponent();
 
 public:
     /* Material for asteroid */
