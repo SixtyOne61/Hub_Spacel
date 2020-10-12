@@ -47,7 +47,7 @@ bool AHook::GenerateMesh(TArray<FVector> const& _ignoreCoord)
         z = this->InnerRadius * FMath::Sin(rad);
 
         FVector loc = FVector(x, y, z);
-        chainedLocations.Add(MakeShareable(new ChainedLocation(loc, cubeSize)));
+        chainedLocations.Add(MakeShareable(new ChainedLocation(loc, cubeSize, -1)));
     }
 
     float maxZ = this->InnerRadius * FMath::Sin(FMath::DegreesToRadians(90));
@@ -59,7 +59,7 @@ bool AHook::GenerateMesh(TArray<FVector> const& _ignoreCoord)
         z = maxZ + radius * FMath::Sin(rad);
 
         FVector loc = FVector(x, y, z);
-        chainedLocations.Add(MakeShareable(new ChainedLocation(loc, cubeSize)));
+        chainedLocations.Add(MakeShareable(new ChainedLocation(loc, cubeSize, -1)));
     }
 
     this->ProceduralMesh->setEdges(std::forward<TArray<TSharedPtr<ChainedLocation>>>(chainedLocations));

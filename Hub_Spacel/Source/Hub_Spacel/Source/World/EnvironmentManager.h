@@ -48,7 +48,7 @@ protected:
     void addNeighboor(CoordInfo & _info, TArray<CoordInfo> & _list);
 
 	/* spawn asteroid */
-	void addProceduralMesh();
+	void addProceduralMesh(class FXmlFile * _file, int const& _idMesh);
 
     /* get noise value */
     float getNoise(FVector const& _location) const;

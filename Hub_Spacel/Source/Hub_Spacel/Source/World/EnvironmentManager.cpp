@@ -7,6 +7,7 @@
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Hub_Spacel/Source/Mesh/SpacelProceduralMeshComponent.h"
 #include "XmlFile.h"
+#include "XmlNode.h"
 
 // Sets default values
 AEnvironmentManager::AEnvironmentManager()
@@ -123,10 +124,10 @@ void AEnvironmentManager::createProceduralWorld()
                 CoordInfo current = CoordInfo({ noise, false });
                 if (current.isValid()) // if valide we will check neighboor
                 {
-                    current.m_chainedLocation = MakeShareable(new ChainedLocation(location, this->CubeSize));
-
                     int currIdx = 0;
                     lb_createIndex(x, y, z, currIdx); // it will be a valid index
+
+                    current.m_chainedLocation = MakeShareable(new ChainedLocation(location, this->CubeSize, currIdx));
 
                     // we have already estimate right, top, back
                     lb_neighboor(x - 1, y, z, current, currIdx, EFace::Right, EFace::Left);
@@ -141,30 +142,39 @@ void AEnvironmentManager::createProceduralWorld()
 
     int id = 0;
     int max = list.Num();
-    while (id < max)
+
+    // check if we have object
+    if (id < max)
     {
-        CoordInfo & info = list[id];
-        if (info.isValid())
+        // create xml file
+        FXmlFile file;
+        file.LoadFile("<root>\n</root>", EConstructMethod::ConstructFromBuffer);
+
+        int idMesh = 0;
+        while (id < max)
         {
-            // max item in next object
-            m_currentObject.Reserve(max - id);
+            CoordInfo & info = list[id];
+            if (info.isValid())
+            {
+                // max item in next object
+                m_currentObject.Reserve(max - id);
 
-            addNeighboor(info, list);
-            // add component
-            addProceduralMesh();
+                addNeighboor(info, list);
+                // add component
+                addProceduralMesh(&file, idMesh);
 
-            // don't need to remove item in array, info.isValid() will be false if we already use item
-            // and we don't remove it, because our system keep index !
+                // don't need to remove item in array, info.isValid() will be false if we already use item
+                // and we don't remove it, because our system keep index !
+                ++idMesh;
+            }
+            ++id;
         }
-        ++id;
-    }
 
-    // create xml file
-    FXmlFile file;
-    if (file.LoadFile("<root>\n</root>", EConstructMethod::ConstructFromBuffer))
-    {
-        FString s = FPaths::GameDir() + "Content/Xml/Gold/" + this->GetActorLocation().ToString() + ".xml";
-        file.Save(s);
+        if (idMesh != 0)
+        {
+            FString s = FPaths::ProjectDir() + "Content/Xml/Gold/" + this->GetActorLocation().ToString() + ".xml";
+            file.Save(s);
+        }
     }
 }
 
@@ -194,12 +204,23 @@ void AEnvironmentManager::addNeighboor(CoordInfo& _info, TArray<CoordInfo> & _li
     lb_addNeighboor(EFace::Left);
 }
 
-void AEnvironmentManager::addProceduralMesh()
+void AEnvironmentManager::addProceduralMesh(class FXmlFile * _file, int const& _idMesh)
 {
 	UWorld* const world = this->GetWorld();
     if (!ensure(world != nullptr)) return;
 
     FVector location = FVector(this->BornX.X, this->BornY.X, this->BornZ.X);
+
+    FXmlNode * node = (*_file).GetRootNode();
+    if (node != nullptr)
+    {
+        FString content = "\n";
+        for (auto const& loc : m_currentObject)
+        {
+            content.Append(loc->getXml() + "\n");
+        }
+        node->AppendChildNode(FString::FromInt(_idMesh), content);
+    }
 
     USpacelProceduralMeshComponent* proceduralMesh = NewObject<USpacelProceduralMeshComponent>(this);
     if (!ensure(proceduralMesh != nullptr)) return;

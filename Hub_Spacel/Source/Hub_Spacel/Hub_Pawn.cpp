@@ -449,13 +449,13 @@ void AHub_Pawn::generateMesh()
     this->ProceduralSpaceShipBase->setCubeSize(cubeSize);
     TArray<TSharedPtr<ChainedLocation>> chainedLocations =
     {
-        MakeShareable(new ChainedLocation(FVector(-15,0,0), cubeSize)),
-        MakeShareable(new ChainedLocation(FVector(0,0,0), cubeSize)),
-        MakeShareable(new ChainedLocation(FVector(15,0,0), cubeSize)),
-        MakeShareable(new ChainedLocation(FVector(0,15,0), cubeSize)),
-        MakeShareable(new ChainedLocation(FVector(0,-15,0), cubeSize)),
-        MakeShareable(new ChainedLocation(FVector(0,0,15), cubeSize)),
-        MakeShareable(new ChainedLocation(FVector(0,0,-15), cubeSize)),
+        MakeShareable(new ChainedLocation(FVector(-15,0,0), cubeSize, -1)),
+        MakeShareable(new ChainedLocation(FVector(0,0,0), cubeSize, -1)),
+        MakeShareable(new ChainedLocation(FVector(15,0,0), cubeSize, -1)),
+        MakeShareable(new ChainedLocation(FVector(0,15,0), cubeSize, -1)),
+        MakeShareable(new ChainedLocation(FVector(0,-15,0), cubeSize, -1)),
+        MakeShareable(new ChainedLocation(FVector(0,0,15), cubeSize, -1)),
+        MakeShareable(new ChainedLocation(FVector(0,0,-15), cubeSize, -1)),
     };
     this->ProceduralSpaceShipBase->setEdges(std::forward<TArray<TSharedPtr<ChainedLocation>>>(chainedLocations));
     this->ProceduralSpaceShipBase->generateMesh(std::move(FName("Player")));

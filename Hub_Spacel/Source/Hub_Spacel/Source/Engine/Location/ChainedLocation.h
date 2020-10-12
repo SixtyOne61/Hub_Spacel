@@ -23,7 +23,7 @@ ENUM_CLASS_FLAGS(EFace);
 class HUB_SPACEL_API ChainedLocation
 {
 public:
-	ChainedLocation(FVector const& _center, FVector const& _size);
+	ChainedLocation(FVector const& _center, FVector const& _size, int const& _id);
     ChainedLocation(ChainedLocation const&) = delete;
 	~ChainedLocation();
 
@@ -49,6 +49,11 @@ public:
 	/* create box with world location */
 	void createBox(FVector const& _location);
 
+    /* return all data with xml format */
+    FString getXml() const;
+    /* return id */
+    inline int const& getId() const { return m_id; }
+
 private:
 	// center of edgde
 	FVector m_center;
@@ -60,4 +65,6 @@ private:
 	FBox m_box;
 	// neighbor list
 	TArray<TPair<EFace, TSharedPtr<ChainedLocation>>> m_neighbor;
+    // id
+    int m_id = -1;
 };

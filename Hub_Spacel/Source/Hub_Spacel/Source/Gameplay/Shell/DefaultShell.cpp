@@ -36,7 +36,7 @@ bool ADefaultShell::GenerateMesh(TArray<FVector> const& _ignoreCoord)
                 {
                     continue;
                 }
-                chainedLocations.Add(MakeShareable(new ChainedLocation(loc, cubeSize)));
+                chainedLocations.Add(MakeShareable(new ChainedLocation(loc, cubeSize, -1)));
             }
         }
     }

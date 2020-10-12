@@ -12,6 +12,8 @@ Clean AProceduralActor with child class not use
 Make tuto for use aws for dedicated server : https://www.youtube.com/watch?v=QHB1H6eM-vc
 Make tuto for create a server queue system : https://www.youtube.com/watch?v=u2Si2y2hviA
 
+Tuto long mais qui gére tout ce qu'on voudrait faire en multi : https://www.youtube.com/watch?v=tOy0xYaP3wA
+
 Interface du jeu - Main menu; avec "My story" qui est une timeline, join server qui sera fait, 
 création du vaisseau par défaut.
 Remplissage des équipes automatique

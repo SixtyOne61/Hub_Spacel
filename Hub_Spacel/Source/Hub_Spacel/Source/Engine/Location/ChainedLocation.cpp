@@ -3,10 +3,11 @@
 
 #include "ChainedLocation.h"
 
-ChainedLocation::ChainedLocation(FVector const& _center, FVector const& _size)
+ChainedLocation::ChainedLocation(FVector const& _center, FVector const& _size, int const& _id)
 	: m_center(_center)
 	, m_size(_size)
 	, m_mask(EFace::None)
+    , m_id(_id)
 {
 	FVector half = m_size / 2.0f;
 
@@ -79,4 +80,18 @@ void ChainedLocation::createBox(FVector const& _location)
         {worldCenter.X + half.X, worldCenter.Y + half.Y, worldCenter.Z + half.Z},
         {worldCenter.X - half.X, worldCenter.Y + half.Y, worldCenter.Z + half.Z} };
 	m_box = FBox(points);
+}
+
+FString ChainedLocation::getXml() const
+{
+    FString xml;
+
+    xml = "<location id=\"" + FString::FromInt(m_id) + "\" center=\"" + m_center.ToString() + "\" size=\"" + m_size.ToString() + "\">";
+    for (auto const& pair : m_neighbor)
+    {
+        xml.Append("\n<face type=\"" + FString::FromInt((int)pair.Key) + "\" id=\"" + FString::FromInt(pair.Value->getId()) + "\"/>");
+    }
+    xml.Append("\n</location>");
+
+    return std::move(xml);
 }

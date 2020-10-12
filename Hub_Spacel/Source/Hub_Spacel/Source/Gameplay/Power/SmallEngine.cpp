@@ -14,22 +14,22 @@ bool ASmallEngine::GenerateMesh(TArray<FVector> const& _ignoreCoord)
 
     TArray<TSharedPtr<ChainedLocation>> chainedLocations =
     {
-        MakeShareable(new ChainedLocation(FVector(-120.0f, 15.0f, 0.0f), cubeSize)),
-        MakeShareable(new ChainedLocation(FVector(-120.0f, -15.0f, 0.0f), cubeSize)),
+        MakeShareable(new ChainedLocation(FVector(-120.0f, 15.0f, 0.0f), cubeSize, -1)),
+        MakeShareable(new ChainedLocation(FVector(-120.0f, -15.0f, 0.0f), cubeSize, -1)),
 
-        MakeShareable(new ChainedLocation(FVector(-120.0f, 15.0f, 15.0f), cubeSize)),
-        MakeShareable(new ChainedLocation(FVector(-120.0f, -15.0f, 15.0f), cubeSize)),
+        MakeShareable(new ChainedLocation(FVector(-120.0f, 15.0f, 15.0f), cubeSize, -1)),
+        MakeShareable(new ChainedLocation(FVector(-120.0f, -15.0f, 15.0f), cubeSize, -1)),
 
-        MakeShareable(new ChainedLocation(FVector(-120.0f, 15.0f, -15.0f), cubeSize)),
-        MakeShareable(new ChainedLocation(FVector(-120.0f, -15.0f, -15.0f), cubeSize)),
+        MakeShareable(new ChainedLocation(FVector(-120.0f, 15.0f, -15.0f), cubeSize, -1)),
+        MakeShareable(new ChainedLocation(FVector(-120.0f, -15.0f, -15.0f), cubeSize, -1)),
 
-        MakeShareable(new ChainedLocation(FVector(-120.0f, 0.0f, 30.0f), cubeSize)),
-        MakeShareable(new ChainedLocation(FVector(-120.0f, 15.0f, 30.0f), cubeSize)),
-        MakeShareable(new ChainedLocation(FVector(-120.0f, -15.0f, 30.0f), cubeSize)),
+        MakeShareable(new ChainedLocation(FVector(-120.0f, 0.0f, 30.0f), cubeSize, -1)),
+        MakeShareable(new ChainedLocation(FVector(-120.0f, 15.0f, 30.0f), cubeSize, -1)),
+        MakeShareable(new ChainedLocation(FVector(-120.0f, -15.0f, 30.0f), cubeSize, -1)),
 
-        MakeShareable(new ChainedLocation(FVector(-120.0f, 0.0f, -30.0f), cubeSize)),
-        MakeShareable(new ChainedLocation(FVector(-120.0f, 15.0f, -30.0f), cubeSize)),
-        MakeShareable(new ChainedLocation(FVector(-120.0f, -15.0f, -30.0f), cubeSize)),
+        MakeShareable(new ChainedLocation(FVector(-120.0f, 0.0f, -30.0f), cubeSize, -1)),
+        MakeShareable(new ChainedLocation(FVector(-120.0f, 15.0f, -30.0f), cubeSize, -1)),
+        MakeShareable(new ChainedLocation(FVector(-120.0f, -15.0f, -30.0f), cubeSize, -1)),
     };
 
     this->ProceduralMesh->setEdges(std::forward<TArray<TSharedPtr<ChainedLocation>>>(chainedLocations));

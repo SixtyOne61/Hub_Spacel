@@ -129,7 +129,7 @@ void AShipPawn::buildProceduralModule(USpacelProceduralMeshComponent * _componen
     chainedLocations.Reserve(_module->MeshSetup.Num());
     for (auto const& loc : _module->MeshSetup)
     {
-        chainedLocations.Add(MakeShareable(new ChainedLocation(loc, cubeSize)));
+        chainedLocations.Add(MakeShareable(new ChainedLocation(loc, cubeSize, -1)));
     }
 
     _component->setEdges(std::forward<TArray<TSharedPtr<ChainedLocation>>>(chainedLocations));
