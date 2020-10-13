@@ -39,12 +39,17 @@ public:
     virtual void Init() override;
 	
 public:
+    // deprecated
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TSubclassOf<class ADefaultShell> ShellModuleClass = nullptr;
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TSubclassOf<class ADefaultSubMachine> SubMachineModuleClass = nullptr;
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TSubclassOf<class ADefaultEngine> EngineModuleClass = nullptr;
+    // deprecated
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly)
+    bool GenerateMap = true;
 
 private:
     TSubclassOf<class UUserWidget> m_mainMenuClass = nullptr;

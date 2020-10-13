@@ -42,13 +42,10 @@ protected:
 	virtual void BeginPlay() override;
 
     /* full generate world */
-	void createProceduralWorld();
+	void generateEnvironment();
 
     /* recurcive call */
-    void addNeighboor(CoordInfo & _info, TArray<CoordInfo> & _list);
-
-	/* spawn asteroid */
-	void addProceduralMesh(class FXmlFile * _file, int const& _idMesh);
+    void findMeshPoint(CoordInfo & _info, TArray<CoordInfo> & _list, FString & _xmlContent);
 
     /* get noise value */
     float getNoise(FVector const& _location) const;
@@ -56,7 +53,7 @@ protected:
     /* return true if an xml is found and he is valid */
     bool readXml();
 
-    /* create procedural mesh component */
+    /* create USpacelProceduralMeshComponent with m_currentObject information, then reset m_currentObject */
     void createProceduralMeshComponent();
 
 public:

@@ -6,6 +6,7 @@
 #include "Materials/MaterialInstance.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Hub_Spacel/Source/Mesh/SpacelProceduralMeshComponent.h"
+#include "Hub_Spacel/Hub_SpacelGameInstance.h"
 #include "XmlFile.h"
 #include "XmlNode.h"
 #include "Kismet/GameplayStatics.h"
@@ -39,34 +40,23 @@ void AEnvironmentManager::BeginPlay()
         this->SetReplicates(true);
     }
 
-    if (!readXml())
+    UHub_SpacelGameInstance * spacelGameInstance = Cast<UHub_SpacelGameInstance>(this->GetGameInstance());
+    if (!ensure(spacelGameInstance != nullptr)) return;
+
+    // create xml or only read it
+    if (spacelGameInstance->GenerateMap)
     {
-#if WITH_EDITOR
         // create procedural world, and create xml
-        createProceduralWorld();
-#endif // WITH_EDITOR
+        generateEnvironment();
     }
-
-    if (!ensure(this->MatAsteroid != nullptr)) return;
-
-	// init all procedural mesh
-	for (auto proceduralMesh : this->ProceduralMeshComponents)
-	{
-        if (!ensure(proceduralMesh != nullptr)) continue;
-
-		proceduralMesh->setOwnerLocation(this->GetActorLocation());
-        proceduralMesh->generateMesh(std::move(FName("BlockAll")));
-        if (UMaterialInstanceDynamic * customMat = UMaterialInstanceDynamic::Create(this->MatAsteroid, proceduralMesh))
-        {
-            customMat->SetScalarParameterValue(TEXT("Trickness"), this->TricknessValue);
-            proceduralMesh->SetMaterial(0, customMat);
-            proceduralMesh->SetRenderCustomDepth(true);
-            proceduralMesh->SetCustomDepthStencilValue(this->StencilValue);
-        }
-	}
+    else
+    {
+        // create procedural world, but only read info from xml
+        readXml();
+    }
 }
 
-void AEnvironmentManager::createProceduralWorld()
+void AEnvironmentManager::generateEnvironment()
 {
     int maxX = (this->BornX.Y - this->BornX.X) / this->CubeSize.X;
     int maxY = (this->BornY.Y - this->BornY.X) / this->CubeSize.Y;
@@ -76,9 +66,10 @@ void AEnvironmentManager::createProceduralWorld()
     TArray<CoordInfo> list;
     list.Reserve(size);
 
-    // creer un vector, pour chaque element, on calcul les index des précédents voisins qu'on a forcément déjà rencontré,
-    // et on les link entre eux si cela remplis 
-    // puis on refera un parcours à la fin pour séparer en différent mesh
+    // create vector, for each element, we calculate last index of previoux neighboor,
+    // we already meet them
+    // then link between them if their match condition
+    // at least, we will make a new loop for cut mesh
 
     // create index
     auto lb_createIndex = [&maxY, &maxZ](int _x, int _y, int _z, int& _index) -> bool
@@ -152,6 +143,9 @@ void AEnvironmentManager::createProceduralWorld()
         // create xml file
         FXmlFile file;
         file.LoadFile("<root>\n</root>", EConstructMethod::ConstructFromBuffer);
+        // root node
+        FXmlNode * node = file.GetRootNode();
+        if (!ensure(node != nullptr)) return;
 
         int idMesh = 0;
         while (id < max)
@@ -162,9 +156,12 @@ void AEnvironmentManager::createProceduralWorld()
                 // max item in next object
                 m_currentObject.Reserve(max - id);
 
-                addNeighboor(info, list);
+                FString content = "\n";
+                findMeshPoint(info, list, content);
                 // add component
-                addProceduralMesh(&file, idMesh);
+                createProceduralMeshComponent();
+
+                node->AppendChildNode(FString::FromInt(idMesh), content);
 
                 // don't need to remove item in array, info.isValid() will be false if we already use item
                 // and we don't remove it, because our system keep index !
@@ -182,9 +179,10 @@ void AEnvironmentManager::createProceduralWorld()
     }
 }
 
-void AEnvironmentManager::addNeighboor(CoordInfo& _info, TArray<CoordInfo> & _list)
+void AEnvironmentManager::findMeshPoint(CoordInfo& _info, TArray<CoordInfo> & _list, FString & _xmlContent)
 {
     m_currentObject.Add(_info.m_chainedLocation);
+    _xmlContent.Append(_info.m_chainedLocation->getXml() + "\n");
     _info.m_use = true;
 
     auto lb_addNeighboor = [&](EFace _face)
@@ -195,7 +193,7 @@ void AEnvironmentManager::addNeighboor(CoordInfo& _info, TArray<CoordInfo> & _li
             CoordInfo& next = _list[idx];
             if (!next.m_use)
             {
-                addNeighboor(next, _list);
+                findMeshPoint(next, _list, _xmlContent);
             }
         }
     };
@@ -206,22 +204,6 @@ void AEnvironmentManager::addNeighboor(CoordInfo& _info, TArray<CoordInfo> & _li
     lb_addNeighboor(EFace::Top);
     lb_addNeighboor(EFace::Right);
     lb_addNeighboor(EFace::Left);
-}
-
-void AEnvironmentManager::addProceduralMesh(class FXmlFile * _file, int const& _idMesh)
-{
-    FXmlNode * node = (*_file).GetRootNode();
-    if (node != nullptr)
-    {
-        FString content = "\n";
-        for (auto const& loc : m_currentObject)
-        {
-            content.Append(loc->getXml() + "\n");
-        }
-        node->AppendChildNode(FString::FromInt(_idMesh), content);
-    }
-
-    createProceduralMeshComponent();
 }
 
 float AEnvironmentManager::getNoise(FVector const& _location) const
@@ -293,7 +275,20 @@ void AEnvironmentManager::createProceduralMeshComponent()
     proceduralMesh->setCubeSize(this->CubeSize);
     proceduralMesh->setEdges(std::forward<TArray<TSharedPtr<ChainedLocation>>>(m_currentObject));
     proceduralMesh->SetCastShadow(false);
+    proceduralMesh->setOwnerLocation(this->GetActorLocation());
+    proceduralMesh->generateMesh(std::move(FName("BlockAll")));
+
+    if (UMaterialInstanceDynamic * customMat = UMaterialInstanceDynamic::Create(this->MatAsteroid, proceduralMesh))
+    {
+        customMat->SetScalarParameterValue(TEXT("Trickness"), this->TricknessValue);
+        proceduralMesh->SetMaterial(0, customMat);
+        proceduralMesh->SetRenderCustomDepth(true);
+        proceduralMesh->SetCustomDepthStencilValue(this->StencilValue);
+    }
+
+    // reset current object
     m_currentObject.Empty();
 
+    // add to list
     this->ProceduralMeshComponents.Add(proceduralMesh);
 }

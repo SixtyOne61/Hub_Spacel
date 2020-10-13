@@ -25,30 +25,26 @@ void AWorldManager::BeginPlay()
 
 void AWorldManager::spawnChunckEnvironment()
 {
-	UWorld* const world = GetWorld();
+	UWorld* const world = this->GetWorld();
     if (!ensure(world != nullptr)) return;
 
     // define chunck size by number of chunk
     if (!ensure(this->BoxComponent != nullptr)) return;
-    FVector const& scaleBoxExtent = this->BoxComponent->GetScaledBoxExtent();
-    FVector chunckSize = FVector(scaleBoxExtent.X / this->NbChunck,
-                                scaleBoxExtent.Y / this->NbChunck,
-                                scaleBoxExtent.Z / this->NbChunck);
+    int chunckSize = this->NbCubePerChunckPerAxis * this->CubeSize;
+    int environmentSize = this->NbChunckPerAxis * this->NbCubePerChunckPerAxis * this->CubeSize;
+    FVector box = FVector(environmentSize, environmentSize, environmentSize);
+    this->BoxComponent->InitBoxExtent(box);
 
-    FVector offset = scaleBoxExtent;
-    offset /= 2;
+    FVector offset = box / 2.0f;
 
-    // define cube size
-    this->CubeSize = chunckSize / this->NbCubeByChunck;
-
-    for (int x = 0; x < this->NbChunck; ++x) 
+    for (int x = 0; x < this->NbChunckPerAxis; ++x) 
     {
-        for (int y = 0; y < this->NbChunck; ++y)
+        for (int y = 0; y < this->NbChunckPerAxis; ++y)
         {
-            for (int z = 0; z < this->NbChunck; ++z)
+            for (int z = 0; z < this->NbChunckPerAxis; ++z)
             {
                 // new location
-                FVector location(x * chunckSize.X - offset.X, y * chunckSize.Y - offset.Y, z * chunckSize.Z - offset.Z);
+                FVector location(x * chunckSize - offset.X, y * chunckSize - offset.Y, z * chunckSize - offset.Z);
 
                 // add it to transform
                 FTransform transform;
@@ -59,7 +55,7 @@ void AWorldManager::spawnChunckEnvironment()
                 if (environment)
                 {
                     // init component
-                    environment->Init(FVector2D(location.X, location.X + chunckSize.X), FVector2D(location.Y, location.Y + chunckSize.Y), FVector2D(location.Z, location.Z + chunckSize.Z), this->CubeSize);
+                    environment->Init(FVector2D(location.X, location.X + chunckSize), FVector2D(location.Y, location.Y + chunckSize), FVector2D(location.Z, location.Z + chunckSize), FVector(this->CubeSize, this->CubeSize, this->CubeSize));
                     environment->FinishSpawning(transform);
                 }
             }

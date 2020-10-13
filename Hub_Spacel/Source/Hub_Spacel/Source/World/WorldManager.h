@@ -27,13 +27,13 @@ public:
     class UBoxComponent* BoxComponent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
-	int NbChunck = 0;
+	uint8 NbChunckPerAxis = 0;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
-    int NbCubeByChunck = 0;
+    uint8 NbCubePerChunckPerAxis = 0;
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settings")
-    FVector CubeSize = FVector::ZeroVector;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
+    int32 CubeSize = 0;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Procedural")
 	TSubclassOf<class AEnvironmentManager> EnvironmentClass;

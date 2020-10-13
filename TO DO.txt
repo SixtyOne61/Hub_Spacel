@@ -11,6 +11,8 @@ Clean Hub_Pawn not use
 
 Add weapon
 
+voir pour spawn les environnement manager dans la map en editor pour gagner du temps sur le loading
+
 Clean AProceduralActor with child class not use
 
 Make tuto for use aws for dedicated server : https://www.youtube.com/watch?v=QHB1H6eM-vc
