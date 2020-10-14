@@ -29,13 +29,16 @@ UCLASS()
 class HUB_SPACEL_API AEnvironmentManager : public AActor
 {
 	GENERATED_BODY()
+
+    friend class AWorldManager;
 	
 public:	
 	// Sets default values for this actor's properties
 	AEnvironmentManager();
 
-	/* init actor, call on spawn */
-	void Init(FVector2D const& _bornX, FVector2D const& _bornY, FVector2D const& _bornZ, FVector const& _cubeSize);
+private:
+	/* init actor, call by World Manager, most of time on editor, we keep  */
+	void init(FVector2D const& _bornX, FVector2D const& _bornY, FVector2D const& _bornZ, FVector const& _cubeSize);
 
 protected:
 	// Called when the game starts or when spawned
@@ -45,13 +48,10 @@ protected:
 	void generateEnvironment();
 
     /* recurcive call */
-    void findMeshPoint(CoordInfo & _info, TArray<CoordInfo> & _list, FString & _xmlContent);
+    void findMeshPoint(CoordInfo & _info, TArray<CoordInfo> & _list);
 
     /* get noise value */
     float getNoise(FVector const& _location) const;
-
-    /* return true if an xml is found and he is valid */
-    bool readXml();
 
     /* create USpacelProceduralMeshComponent with m_currentObject information, then reset m_currentObject */
     void createProceduralMeshComponent();

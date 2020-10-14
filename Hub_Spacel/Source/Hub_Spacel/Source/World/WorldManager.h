@@ -15,12 +15,12 @@ public:
 	// Sets default values for this actor's properties
 	AWorldManager();
 
+    UFUNCTION(BlueprintCallable)
+    void SpawnEnvironment() const;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-	/* spawn chunck environment */
-	void spawnChunckEnvironment();
 
 public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")

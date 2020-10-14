@@ -15,17 +15,10 @@ AWorldManager::AWorldManager()
     RootComponent = BoxComponent;
 }
 
-// Called when the game starts or when spawned
-void AWorldManager::BeginPlay()
+void AWorldManager::SpawnEnvironment() const
 {
-	Super::BeginPlay();
-	
-	spawnChunckEnvironment();
-}
-
-void AWorldManager::spawnChunckEnvironment()
-{
-	UWorld* const world = this->GetWorld();
+#ifdef WITH_EDITOR
+    UWorld* const world = this->GetWorld();
     if (!ensure(world != nullptr)) return;
 
     // define chunck size by number of chunk
@@ -37,7 +30,7 @@ void AWorldManager::spawnChunckEnvironment()
 
     FVector offset = box / 2.0f;
 
-    for (int x = 0; x < this->NbChunckPerAxis; ++x) 
+    for (int x = 0; x < this->NbChunckPerAxis; ++x)
     {
         for (int y = 0; y < this->NbChunckPerAxis; ++y)
         {
@@ -55,11 +48,19 @@ void AWorldManager::spawnChunckEnvironment()
                 if (environment)
                 {
                     // init component
-                    environment->Init(FVector2D(location.X, location.X + chunckSize), FVector2D(location.Y, location.Y + chunckSize), FVector2D(location.Z, location.Z + chunckSize), FVector(this->CubeSize, this->CubeSize, this->CubeSize));
+                    environment->init(FVector2D(location.X, location.X + chunckSize), FVector2D(location.Y, location.Y + chunckSize), FVector2D(location.Z, location.Z + chunckSize), FVector(this->CubeSize, this->CubeSize, this->CubeSize));
                     environment->FinishSpawning(transform);
                 }
             }
         }
     }
+#endif // WITH_EDITOR
 }
+
+// Called when the game starts or when spawned
+void AWorldManager::BeginPlay()
+{
+	Super::BeginPlay();
+}
+
 

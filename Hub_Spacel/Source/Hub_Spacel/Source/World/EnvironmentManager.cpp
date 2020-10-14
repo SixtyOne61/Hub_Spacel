@@ -7,9 +7,6 @@
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Hub_Spacel/Source/Mesh/SpacelProceduralMeshComponent.h"
 #include "Hub_Spacel/Hub_SpacelGameInstance.h"
-#include "XmlFile.h"
-#include "XmlNode.h"
-#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 AEnvironmentManager::AEnvironmentManager()
@@ -22,12 +19,14 @@ AEnvironmentManager::AEnvironmentManager()
 	PrimaryActorTick.bCanEverTick = false;
 }
 
-void AEnvironmentManager::Init(FVector2D const& _bornX, FVector2D const& _bornY, FVector2D const& _bornZ, FVector const& _cubeSize)
+void AEnvironmentManager::init(FVector2D const& _bornX, FVector2D const& _bornY, FVector2D const& _bornZ, FVector const& _cubeSize)
 {
 	this->BornX = _bornX;
 	this->BornY = _bornY;
 	this->BornZ = _bornZ;
 	this->CubeSize = _cubeSize;
+
+    generateEnvironment();
 }
 
 // Called when the game starts or when spawned
@@ -38,21 +37,6 @@ void AEnvironmentManager::BeginPlay()
     if (this->HasAuthority())
     {
         this->SetReplicates(true);
-    }
-
-    UHub_SpacelGameInstance * spacelGameInstance = Cast<UHub_SpacelGameInstance>(this->GetGameInstance());
-    if (!ensure(spacelGameInstance != nullptr)) return;
-
-    // create xml or only read it
-    if (spacelGameInstance->GenerateMap)
-    {
-        // create procedural world, and create xml
-        generateEnvironment();
-    }
-    else
-    {
-        // create procedural world, but only read info from xml
-        readXml();
     }
 }
 
@@ -140,14 +124,6 @@ void AEnvironmentManager::generateEnvironment()
     // check if we have object
     if (id < max)
     {
-        // create xml file
-        FXmlFile file;
-        file.LoadFile("<root>\n</root>", EConstructMethod::ConstructFromBuffer);
-        // root node
-        FXmlNode * node = file.GetRootNode();
-        if (!ensure(node != nullptr)) return;
-
-        int idMesh = 0;
         while (id < max)
         {
             CoordInfo & info = list[id];
@@ -156,33 +132,21 @@ void AEnvironmentManager::generateEnvironment()
                 // max item in next object
                 m_currentObject.Reserve(max - id);
 
-                FString content = "\n";
-                findMeshPoint(info, list, content);
+                findMeshPoint(info, list);
                 // add component
                 createProceduralMeshComponent();
 
-                node->AppendChildNode(FString::FromInt(idMesh), content);
-
                 // don't need to remove item in array, info.isValid() will be false if we already use item
                 // and we don't remove it, because our system keep index !
-                ++idMesh;
             }
             ++id;
-        }
-
-        if (idMesh != 0)
-        {
-            bool isGold = UGameplayStatics::GetCurrentLevelName(this->GetWorld()).Contains("InGameLevel");
-            FString path = FPaths::ProjectDir() + (isGold ? "Content/Xml/Gold/" : "Content/Xml/Test/") + this->GetActorLocation().ToString() + ".xml";
-            file.Save(path);
         }
     }
 }
 
-void AEnvironmentManager::findMeshPoint(CoordInfo& _info, TArray<CoordInfo> & _list, FString & _xmlContent)
+void AEnvironmentManager::findMeshPoint(CoordInfo& _info, TArray<CoordInfo> & _list)
 {
     m_currentObject.Add(_info.m_chainedLocation);
-    _xmlContent.Append(_info.m_chainedLocation->getXml() + "\n");
     _info.m_use = true;
 
     auto lb_addNeighboor = [&](EFace _face)
@@ -193,7 +157,7 @@ void AEnvironmentManager::findMeshPoint(CoordInfo& _info, TArray<CoordInfo> & _l
             CoordInfo& next = _list[idx];
             if (!next.m_use)
             {
-                findMeshPoint(next, _list, _xmlContent);
+                findMeshPoint(next, _list);
             }
         }
     };
@@ -210,55 +174,6 @@ float AEnvironmentManager::getNoise(FVector const& _location) const
 {
     // increase float broke bloc, increase int (octave) add more bloc
     return SpacelNoise::getInstance()->getOctaveNoise((_location.X + this->BornX.X) * 0.00007f, (_location.Y + this->BornY.X) * 0.00007f, (_location.Z + this->BornZ.X) * 0.00007f, 2);
-}
-
-bool AEnvironmentManager::readXml()
-{
-    bool isGold = UGameplayStatics::GetCurrentLevelName(this->GetWorld()).Contains("InGameLevel");
-    FString path = FPaths::ProjectDir() + (isGold ? "Content/Xml/Gold/" : "Content/Xml/Test/") + this->GetActorLocation().ToString() + ".xml";
-
-    FXmlFile file;
-    if (!file.LoadFile(path))
-    {
-        return false;
-    }
-
-    FXmlNode * rootNode = file.GetRootNode();
-    if (rootNode == nullptr)
-    {
-        return false;
-    }
-
-    TArray<FXmlNode*> const& childrenMesh = rootNode->GetChildrenNodes();
-    for (auto * nodeMesh : childrenMesh)
-    {
-        // node contain all information for one mesh
-        if (nodeMesh == nullptr)
-        {
-            continue;
-        }
-
-        TArray<FXmlNode*> const& childrenLocation = nodeMesh->GetChildrenNodes();
-        for (auto * nodeLocation : childrenLocation)
-        {
-            if (nodeLocation == nullptr)
-            {
-                continue;
-            }
-
-            int id = FCString::Atoi(*(nodeLocation->GetAttribute("id")));
-            FVector center = FVector::ZeroVector, size = FVector::ZeroVector;
-            center.InitFromString(nodeLocation->GetAttribute("center"));
-            size.InitFromString(nodeLocation->GetAttribute("size"));
-
-            // TO DO : add neighboor
-            m_currentObject.Add(MakeShareable(new ChainedLocation(center, size, id)));
-        }
-
-        createProceduralMeshComponent();
-    }
-
-    return true;
 }
 
 void AEnvironmentManager::createProceduralMeshComponent()

@@ -48,9 +48,6 @@ public:
     TSubclassOf<class ADefaultEngine> EngineModuleClass = nullptr;
     // deprecated
 
-    UPROPERTY(EditAnywhere, BlueprintReadOnly)
-    bool GenerateMap = true;
-
 private:
     TSubclassOf<class UUserWidget> m_mainMenuClass = nullptr;
 
