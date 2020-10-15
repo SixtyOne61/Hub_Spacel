@@ -25,8 +25,5 @@ public:
     class UMaterialInstance* Material = nullptr;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FVector CubeSize = FVector::ZeroVector;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    TArray<FVector> MeshSetup;
+    FString Path = "";
 };

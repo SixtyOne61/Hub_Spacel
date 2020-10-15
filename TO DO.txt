@@ -1,9 +1,5 @@
 TO DO
 
-Use xml for create map / module
-
-voir pour spawn les environnement manager dans la map en editor pour gagner du temps sur le loading
-
 Utiliser un character à la place d'un pawn, 
 setup le character movement
 mettre comme static mesh la base du vaisseau (la partie rouge, qui est indestructible)
@@ -30,8 +26,6 @@ Durée d'une partie de 10 min
 Ecran de fin
 Retour au main menu
 
-Use "ConstructionScript" of pawn, only for editor, for create ship in editor
-
 Backlog :
 add rotation on UShipPawnMovement
 shield gameplay / self shield
@@ -40,88 +34,25 @@ iem gameplay (fx carré de perte de controle, la couleur du carré est celle de 
 define rules for create ship module
 give life gameplay / repair gameplay
 collecte ressource / create ressource on map
-map limitation
+map limitation cube / fx
 volumetric cloud
 
 
 
 
-Create xml file :
-// create xml file
+Create module xml :
 FXmlFile file;
 file.LoadFile("<root>\n</root>", EConstructMethod::ConstructFromBuffer);
+
 // root node
 FXmlNode * node = file.GetRootNode();
 FString content = "\n";
+content += "<Size val=\"" + cubeSize.ToString() + "\"/>\n";
 
- FString xml;
+content.Append("<Location val=\"" + loc.ToString() + "\"/>\n");
 
-    xml = "<location id=\"" + FString::FromInt(m_id) + "\" center=\"" + m_center.ToString() + "\" size=\"" + m_size.ToString() + "\">";
-    for (auto const& pair : m_neighbor)
-    {
-        xml.Append("\n<face type=\"" + FString::FromInt((int)pair.Key) + "\" id=\"" + FString::FromInt(pair.Value->getId()) + "\"/>");
-    }
-    xml.Append("\n</location>");
-	
-	
-node->AppendChildNode(FString::FromInt(idMesh), content);
-
-
-bool isGold = UGameplayStatics::GetCurrentLevelName(this->GetWorld()).Contains("InGameLevel");
-FString path = FPaths::ProjectDir() + (isGold ? "Content/Xml/Gold/" : "Content/Xml/Test/") + this->GetActorLocation().ToString() + ".xml";
+node->AppendChildNode("Mod", content);
+FString path = FPaths::ProjectDir() + "Content/Xml/Module/" + _module->Name.ToString() + ".xml";
 file.Save(path);
-
-
-
-
-
-Read Xml :
-bool AEnvironmentManager::readXml()
-{
-    bool isGold = UGameplayStatics::GetCurrentLevelName(this->GetWorld()).Contains("InGameLevel");
-    FString path = FPaths::ProjectDir() + (isGold ? "Content/Xml/Gold/" : "Content/Xml/Test/") + this->GetActorLocation().ToString() + ".xml";
-
-    FXmlFile file;
-    if (!file.LoadFile(path))
-    {
-        return false;
-    }
-
-    FXmlNode * rootNode = file.GetRootNode();
-    if (rootNode == nullptr)
-    {
-        return false;
-    }
-
-    TArray<FXmlNode*> const& childrenMesh = rootNode->GetChildrenNodes();
-    for (auto * nodeMesh : childrenMesh)
-    {
-        // node contain all information for one mesh
-        if (nodeMesh == nullptr)
-        {
-            continue;
-        }
-
-        TArray<FXmlNode*> const& childrenLocation = nodeMesh->GetChildrenNodes();
-        for (auto * nodeLocation : childrenLocation)
-        {
-            if (nodeLocation == nullptr)
-            {
-                continue;
-            }
-
-            int id = FCString::Atoi(*(nodeLocation->GetAttribute("id")));
-            FVector center = FVector::ZeroVector, size = FVector::ZeroVector;
-            center.InitFromString(nodeLocation->GetAttribute("center"));
-            size.InitFromString(nodeLocation->GetAttribute("size"));
-
-            // TO DO : add neighboor
-            m_currentObject.Add(MakeShareable(new ChainedLocation(center, size, id)));
-        }
-
-        createProceduralMeshComponent();
-    }
-
-    return true;
-}
+	
 		

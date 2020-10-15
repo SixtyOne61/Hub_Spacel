@@ -12,6 +12,8 @@
 #include "Source/DataAsset/ShipModuleDataAsset.h"
 #include "Source/DataAsset/ProceduralModuleDataAsset.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "XmlFile.h"
+#include "XmlNode.h"
 
 // Sets default values
 AShipPawn::AShipPawn()
@@ -76,13 +78,12 @@ void AShipPawn::Tick(float _deltaTime)
 {
 	Super::Tick(_deltaTime);
 
-    if (!m_isBuild)
+    if (!m_springArmDefaultSize.has_value())
     {
         // wait player state before start building
         if (this->GetPlayerState() != nullptr)
         {
             initShip();
-            m_isBuild = true;
         }
     }
 
@@ -91,11 +92,11 @@ void AShipPawn::Tick(float _deltaTime)
         RPCServerMove(_deltaTime);
     }
 
-    if(m_isBuild)
+    if(m_springArmDefaultSize.has_value())
     {
         // update spring arm size
         if (!ensure(this->SpringArmComponent != nullptr)) return;
-        this->SpringArmComponent->TargetArmLength = m_springArmDefaultSize + m_springArmDefaultSize * this->PercentSpeed * this->MultiplierSpringArmSize;
+        this->SpringArmComponent->TargetArmLength = m_springArmDefaultSize.value() + m_springArmDefaultSize.value() * this->PercentSpeed * this->MultiplierSpringArmSize;
     }
 }
 
@@ -122,19 +123,52 @@ void AShipPawn::buildProceduralModule(USpacelProceduralMeshComponent * _componen
     if (!ensure(_component != nullptr)) return;
     if (!ensure(_module != nullptr)) return;
 
-    _component->SetWorldLocation(_location);
-    FVector const& cubeSize = _module->CubeSize;
-    _component->setCubeSize(cubeSize);
-    TArray<TSharedPtr<ChainedLocation>> chainedLocations;
-    chainedLocations.Reserve(_module->MeshSetup.Num());
-    for (auto const& loc : _module->MeshSetup)
+    FString path = FPaths::ProjectDir() + _module->Path;
+    FXmlFile file;
+    if (!file.LoadFile(path))
     {
-        chainedLocations.Add(MakeShareable(new ChainedLocation(loc, cubeSize, -1)));
+        return;
     }
 
-    _component->setEdges(std::forward<TArray<TSharedPtr<ChainedLocation>>>(chainedLocations));
-    _component->generateMesh(_module->Name);
-    _component->SetMaterial(0, _module->Material);
+    FXmlNode * rootNode = file.GetRootNode();
+    if (rootNode == nullptr)
+    {
+        return;
+    }
+
+    FXmlNode const* modNode = rootNode->GetFirstChildNode();
+    if (modNode == nullptr)
+    {
+        return;
+    }
+
+    TArray<FXmlNode*> const& childrenNodes = modNode->GetChildrenNodes();
+    if (childrenNodes.Num() && childrenNodes[0] && childrenNodes[0]->GetTag() == "Size")
+    {
+        FVector cubeSize;
+        cubeSize.InitFromString(childrenNodes[0]->GetAttribute("val"));
+
+        _component->SetWorldLocation(_location);
+        _component->setCubeSize(cubeSize);
+
+        TArray<TSharedPtr<ChainedLocation>> chainedLocations;
+        chainedLocations.Reserve(childrenNodes.Num() - 1);
+
+        FVector loc;
+        unsigned int nbNode = (unsigned int)childrenNodes.Num();
+        for (unsigned int i = 1; i < nbNode; ++i)
+        {
+            if (FXmlNode const* node = childrenNodes[i])
+            {
+                loc.InitFromString(node->GetAttribute("val"));
+                chainedLocations.Add(MakeShareable(new ChainedLocation(loc, cubeSize, -1)));
+            }
+        }
+
+        _component->setEdges(std::forward<TArray<TSharedPtr<ChainedLocation>>>(chainedLocations));
+        _component->generateMesh(_module->Name);
+        _component->SetMaterial(0, _module->Material);
+    }
 }
 
 void AShipPawn::RPCServerMove_Implementation(float const& _deltaTime)

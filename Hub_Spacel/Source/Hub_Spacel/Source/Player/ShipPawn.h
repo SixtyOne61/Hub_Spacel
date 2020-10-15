@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
+#include <optional>
 #include "ShipPawn.generated.h"
 
 UCLASS()
@@ -100,9 +101,6 @@ protected:
     float PercentUp = 0.0f;
 
 private:
-    /* Check if we have build ship TO DO better */
-    bool m_isBuild = false;
-
     /* default spring arm size */
-    float m_springArmDefaultSize = 0.0f;
+    std::optional<float> m_springArmDefaultSize = std::nullopt;
 };
