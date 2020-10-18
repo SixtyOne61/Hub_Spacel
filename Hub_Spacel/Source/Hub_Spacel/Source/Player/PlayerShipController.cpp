@@ -2,7 +2,7 @@
 
 
 #include "PlayerShipController.h"
-#include "ShipPawn.h"
+#include "ShipCharacter.h"
 
 void APlayerShipController::SetupInputComponent()
 {
@@ -33,13 +33,13 @@ void APlayerShipController::RPCServerSetSpeed_Implementation(float _val)
     if (newPercent != this->PercentSpeed)
     {
         this->PercentSpeed = newPercent;
-        AShipPawn* shipPawn = Cast<AShipPawn>(this->GetPawn());
-        if (shipPawn == nullptr)
+        AShipCharacter* shipCharacter = Cast<AShipCharacter>(this->GetPawn());
+        if (shipCharacter == nullptr)
         {
             return;
         }
 
-        shipPawn->PercentSpeed = this->PercentSpeed / 100.0f;
+        shipCharacter->PercentSpeed = this->PercentSpeed / 100.0f;
     }
 }
 
@@ -50,13 +50,13 @@ void APlayerShipController::flightAttitude(float _val)
 
 void APlayerShipController::RPCServerSetFlightAttitude_Implementation(float _val)
 {
-    AShipPawn* shipPawn = Cast<AShipPawn>(this->GetPawn());
-    if (shipPawn == nullptr)
+    AShipCharacter* shipCharacter = Cast<AShipCharacter>(this->GetPawn());
+    if (shipCharacter == nullptr)
     {
         return;
     }
 
-    shipPawn->PercentFlightAttitude = _val;
+    shipCharacter->PercentFlightAttitude = _val;
 }
 
 void APlayerShipController::turn(float _val)
@@ -66,13 +66,13 @@ void APlayerShipController::turn(float _val)
 
 void APlayerShipController::RPCServerSetTurn_Implementation(float _val)
 {
-    AShipPawn* shipPawn = Cast<AShipPawn>(this->GetPawn());
-    if (shipPawn == nullptr)
+    AShipCharacter* shipCharacter = Cast<AShipCharacter>(this->GetPawn());
+    if (shipCharacter == nullptr)
     {
         return;
     }
 
-    shipPawn->PercentTurn = _val;
+    shipCharacter->PercentTurn = _val;
 }
 
 void APlayerShipController::up(float _val)
@@ -82,13 +82,13 @@ void APlayerShipController::up(float _val)
 
 void APlayerShipController::RPCServerSetUp_Implementation(float _val)
 {
-    AShipPawn* shipPawn = Cast<AShipPawn>(this->GetPawn());
-    if (shipPawn == nullptr)
+    AShipCharacter* shipCharacter = Cast<AShipCharacter>(this->GetPawn());
+    if (shipCharacter == nullptr)
     {
         return;
     }
 
-    shipPawn->PercentUp = _val;
+    shipCharacter->PercentUp = _val;
 }
 
 void APlayerShipController::readInput(int const& _val, float& _in, std::function<void(float)> _fnc)
