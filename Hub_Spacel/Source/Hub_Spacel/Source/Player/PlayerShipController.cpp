@@ -57,6 +57,8 @@ void APlayerShipController::RPCServerSetFlightAttitude_Implementation(float _val
     }
 
     shipPawn->PercentFlightAttitude = _val;
+    // OnRep isn't call on server, but we need this call
+    shipPawn->OnRep_PercentFlightAttitude();
 }
 
 void APlayerShipController::turn(float _val)
@@ -73,6 +75,8 @@ void APlayerShipController::RPCServerSetTurn_Implementation(float _val)
     }
 
     shipPawn->PercentTurn = _val;
+    // OnRep isn't call on server, but we need this call
+    shipPawn->OnRep_PercentTurn();
 }
 
 void APlayerShipController::up(float _val)
@@ -89,6 +93,8 @@ void APlayerShipController::RPCServerSetUp_Implementation(float _val)
     }
 
     shipPawn->PercentUp = _val;
+    // OnRep isn't call on server, but we need this call
+    shipPawn->OnRep_PercentUp();
 }
 
 void APlayerShipController::readInput(int const& _val, float& _in, std::function<void(float)> _fnc)

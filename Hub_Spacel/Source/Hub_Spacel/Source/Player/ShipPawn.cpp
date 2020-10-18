@@ -4,16 +4,20 @@
 #include "ShipPawn.h"
 #include "ShipPawnMovement.h"
 #include "Materials/MaterialInstance.h"
-#include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "Source/Mesh/SpacelProceduralMeshComponent.h"
 #include "Source/Player/SpacelPlayerState.h"
-#include "Source/DataAsset/ShipModuleDataAsset.h"
-#include "Source/DataAsset/ProceduralModuleDataAsset.h"
-#include "Kismet/KismetSystemLibrary.h"
 #include "XmlFile.h"
 #include "XmlNode.h"
+#include "Camera/CameraComponent.h"
+#include "Components/PrimitiveComponent.h"
+#include "Components/PoseableMeshComponent.h"
+#include "Components/StaticMeshComponent.h"
+#include "Kismet/KismetMathLibrary.h"
+#include "Source/DataAsset/ShipModuleDataAsset.h"
+#include "Source/DataAsset/ProceduralModuleDataAsset.h"
+#include "Source/Enum/SpacelEnum.h"
 
 // Sets default values
 AShipPawn::AShipPawn()
@@ -22,41 +26,44 @@ AShipPawn::AShipPawn()
     PrimaryActorTick.bCanEverTick = true;
     bAlwaysRelevant = true;
 
-    ShipBaseComponent = CreateDefaultSubobject<USpacelProceduralMeshComponent>(TEXT("ShipBase"));
+    DriverMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Driver_00"));
+    if (!ensure(DriverMeshComponent != nullptr)) return;
+    RootComponent = DriverMeshComponent;
+
+    BaseShipMeshComponent = CreateDefaultSubobject<UPoseableMeshComponent>(TEXT("ShipBase_00"));
+    if (!ensure(BaseShipMeshComponent != nullptr)) return;
+    BaseShipMeshComponent->SetupAttachment(RootComponent);
+
+    ShipEngineComponent = CreateDefaultSubobject<USpacelProceduralMeshComponent>(TEXT("ShipEngine_00"));
+    if (!ensure(ShipEngineComponent != nullptr)) return;
+    ShipEngineComponent->bUseAsyncCooking = true;
+    ShipEngineComponent->SetupAttachment(BaseShipMeshComponent);
+
+    ShipShellComponent = CreateDefaultSubobject<USpacelProceduralMeshComponent>(TEXT("ShipShell_00"));
+    if (!ensure(ShipShellComponent != nullptr)) return;
+    ShipShellComponent->bUseAsyncCooking = true;
+    ShipShellComponent->SetupAttachment(BaseShipMeshComponent);
+
+    // Create a spring arm component
+    SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm_00"));
+    if (!ensure(SpringArmComponent != nullptr)) return;
+    SpringArmComponent->SetupAttachment(BaseShipMeshComponent);
+
+    // Create camera component 
+    CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera_00"));
+    if (!ensure(CameraComponent != nullptr)) return;
+    CameraComponent->SetupAttachment(SpringArmComponent, USpringArmComponent::SocketName); // Attach the camera
+
+    /*ShipBaseComponent = CreateDefaultSubobject<USpacelProceduralMeshComponent>(TEXT("ShipBase_00"));
     if (!ensure(ShipBaseComponent != nullptr)) return;
     ShipBaseComponent->bUseAsyncCooking = true;
     ShipBaseComponent->SetIsReplicated(true);
     RootComponent = ShipBaseComponent;
 
-    ShipEngineComponent = CreateDefaultSubobject<USpacelProceduralMeshComponent>(TEXT("ShipEngine"));
-    if (!ensure(ShipEngineComponent != nullptr)) return;
-    ShipEngineComponent->bUseAsyncCooking = true;
-    ShipEngineComponent->SetIsReplicated(true);
-    ShipEngineComponent->SetupAttachment(ShipBaseComponent);
-
-    ShipShellComponent = CreateDefaultSubobject<USpacelProceduralMeshComponent>(TEXT("ShipShell"));
-    if (!ensure(ShipShellComponent != nullptr)) return;
-    ShipShellComponent->bUseAsyncCooking = true;
-    ShipShellComponent->SetIsReplicated(true);
-    ShipShellComponent->SetupAttachment(ShipBaseComponent);
-
-    ShipPawnMovement = CreateDefaultSubobject<UShipPawnMovement>(TEXT("ShipPawnMovement"));
+    ShipPawnMovement = CreateDefaultSubobject<UShipPawnMovement>(TEXT("ShipPawnMovement_00"));
     if (!ensure(ShipPawnMovement != nullptr)) return;
     ShipPawnMovement->SetIsReplicated(true);
-    this->ShipPawnMovement->UpdatedComponent = RootComponent;
-
-    // Create a spring arm component
-    SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
-    if (!ensure(SpringArmComponent != nullptr)) return;
-    SpringArmComponent->SetIsReplicated(true);
-    SpringArmComponent->SetupAttachment(ShipBaseComponent);	// Attach SpringArm to RootComponent
-
-    // Create camera component 
-    CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
-    if (!ensure(CameraComponent != nullptr)) return;
-    CameraComponent->SetupAttachment(SpringArmComponent, USpringArmComponent::SocketName); // Attach the camera
-    CameraComponent->bUsePawnControlRotation = false; // Don't rotate camera with controller
-    CameraComponent->SetIsReplicated(true);
+    this->ShipPawnMovement->UpdatedComponent = RootComponent;*/
 }
 
 // Called when the game starts or when spawned
@@ -64,13 +71,13 @@ void AShipPawn::BeginPlay()
 {
 	Super::BeginPlay();
 
-    if (this->HasAuthority())
+    /*if (this->HasAuthority())
     {
         this->SetReplicates(true);
         this->SetReplicateMovement(true);
     }
 
-    this->ShipPawnMovement->SetComponentTickEnabled(true);
+    this->ShipPawnMovement->SetComponentTickEnabled(true);*/
 }
 
 // Called every frame
@@ -78,7 +85,12 @@ void AShipPawn::Tick(float _deltaTime)
 {
 	Super::Tick(_deltaTime);
 
-    if (!m_springArmDefaultSize.has_value())
+    if (this->HasAuthority())
+    {
+        RPCServerMove(_deltaTime);
+    }
+
+    /*if (!m_springArmDefaultSize.has_value())
     {
         // wait player state before start building
         if (this->GetPlayerState() != nullptr)
@@ -97,25 +109,63 @@ void AShipPawn::Tick(float _deltaTime)
         // update spring arm size
         if (!ensure(this->SpringArmComponent != nullptr)) return;
         this->SpringArmComponent->TargetArmLength = m_springArmDefaultSize.value() + m_springArmDefaultSize.value() * this->PercentSpeed * this->MultiplierSpringArmSize;
-    }
+    }*/
 }
 
-void AShipPawn::NotifyHit(class UPrimitiveComponent* _myComp, class AActor* _other, class UPrimitiveComponent* _otherComp, bool _bSelfMoved, FVector _hitLocation, FVector _hitNormal, FVector _normalImpulse, const FHitResult& _hit)
+void AShipPawn::OnRep_PercentSpeed()
 {
 
 }
 
-void AShipPawn::buildShip()
+void AShipPawn::OnRep_PercentFlightAttitude()
+{
+    if (!ensure(this->DriverMeshComponent != nullptr)) return;
+
+    FVector dir = this->DriverMeshComponent->GetForwardVector() * this->PercentFlightAttitude * this->FlightAttitudeSpeed;
+    dir = FMath::Lerp(FVector::ZeroVector, dir, 0.1f);
+
+    this->DriverMeshComponent->AddTorqueInDegrees(dir, NAME_None, true);
+}
+
+void AShipPawn::OnRep_PercentTurn()
+{
+    if (!ensure(this->DriverMeshComponent != nullptr)) return;
+
+    FVector dir = this->DriverMeshComponent->GetUpVector() * this->PercentTurn * this->TurnSpeed;
+    dir = FMath::Lerp(FVector::ZeroVector, dir, 0.1f);
+
+    this->DriverMeshComponent->AddTorqueInDegrees(dir, NAME_None, true);
+}
+
+void AShipPawn::OnRep_PercentUp()
+{
+    if (!ensure(this->DriverMeshComponent != nullptr)) return;
+
+    FVector dir = this->DriverMeshComponent->GetRightVector() * this->PercentUp * this->UpSpeed;
+    dir = FMath::Lerp(FVector::ZeroVector, dir, 0.1f);
+
+    this->DriverMeshComponent->AddTorqueInDegrees(dir, NAME_None, true);
+}
+
+void AShipPawn::BuildShip()
 {
     if (!ensure(this->ModuleDataAsset != nullptr)) return;
 
-    ASpacelPlayerState * spacelPlayerState = this->GetPlayerState<ASpacelPlayerState>();
-    if (!ensure(spacelPlayerState != nullptr)) return;
-
     FVector const& location = this->GetActorLocation();
-    buildProceduralModule(this->ShipBaseComponent, this->ModuleDataAsset->GetModule(spacelPlayerState->ShipBaseModuleType), location);
-    buildProceduralModule(this->ShipEngineComponent, this->ModuleDataAsset->GetModule(spacelPlayerState->ShipEngineModuleType), location);
-    buildProceduralModule(this->ShipShellComponent, this->ModuleDataAsset->GetModule(spacelPlayerState->ShipShellModuleType), location);
+    ASpacelPlayerState * spacelPlayerState = this->GetPlayerState<ASpacelPlayerState>();
+    if (spacelPlayerState)
+    {
+        buildProceduralModule(this->ShipEngineComponent, this->ModuleDataAsset->GetModule(spacelPlayerState->ShipEngineModuleType), location);
+        buildProceduralModule(this->ShipShellComponent, this->ModuleDataAsset->GetModule(spacelPlayerState->ShipShellModuleType), location);
+    }
+    else
+    {
+#ifdef  WITH_EDITOR
+        // only for editor mode
+        buildProceduralModule(this->ShipEngineComponent, this->ModuleDataAsset->GetModule((uint8)EShipModuleType::EngineDefault), location);
+        buildProceduralModule(this->ShipShellComponent, this->ModuleDataAsset->GetModule((uint8)EShipModuleType::ShellDefault), location);
+#endif //  WITH_EDITOR
+    }
 }
 
 void AShipPawn::buildProceduralModule(USpacelProceduralMeshComponent * _component, class UProceduralModuleDataAsset const* _module, FVector const& _location)
@@ -166,52 +216,37 @@ void AShipPawn::buildProceduralModule(USpacelProceduralMeshComponent * _componen
         }
 
         _component->setEdges(std::forward<TArray<TSharedPtr<ChainedLocation>>>(chainedLocations));
-        _component->generateMesh(_module->Name);
+        _component->generateMesh("NoCollision");
         _component->SetMaterial(0, _module->Material);
     }
 }
 
 void AShipPawn::RPCServerMove_Implementation(float const& _deltaTime)
 {
-    // rotation
-    FRotator deltaRotation(0.f, 0.f, 0.f);
-    if (this->PercentFlightAttitude != 0.0f)
-    {
-        deltaRotation.Roll += this->FlightAttitudeSpeed * this->PercentFlightAttitude * _deltaTime;
-    }
-    if (this->PercentTurn != 0.0f)
-    {
-        deltaRotation.Yaw += this->TurnSpeed * this->PercentTurn * _deltaTime;
-    }
-    if (this->PercentUp != 0.0f)
-    {
-        deltaRotation.Pitch += this->UpSpeed * this->PercentUp * _deltaTime;
-    }
+    if (!ensure(this->DriverMeshComponent != nullptr)) return;
 
-    this->AddActorLocalRotation(deltaRotation);
+    FVector angularVelocity = UKismetMathLibrary::NegateVector(this->DriverMeshComponent->GetPhysicsAngularVelocityInDegrees());
+    angularVelocity *= 2.0f;
 
-    FVector velocity = this->GetActorForwardVector() * this->MaxForwardSpeed * this->PercentSpeed;// * _deltaTime;
-    if (!ensure(this->ShipPawnMovement != nullptr)) return;
-    this->ShipPawnMovement->SetVelocityInLocalSpace(velocity);
+    this->DriverMeshComponent->AddTorqueInDegrees(angularVelocity, NAME_None, true);
 
-    RPCClientMove(velocity, deltaRotation);
+    RPCClientMove(angularVelocity);
 }
 
-void AShipPawn::RPCClientMove_Implementation(FVector const& _velocity, FRotator const& _deltaRotation)
+void AShipPawn::RPCClientMove_Implementation(FVector const& _angularVelocity)
 {
-    this->AddActorLocalRotation(_deltaRotation);
-    if (!ensure(this->ShipPawnMovement != nullptr)) return;
-    this->ShipPawnMovement->SetVelocityInLocalSpace(_velocity);
+    if (!ensure(this->DriverMeshComponent != nullptr)) return;
+    this->DriverMeshComponent->AddTorqueInDegrees(_angularVelocity, NAME_None, true);
 }
 
 void AShipPawn::initShip()
 {
     // save spring arm default size
-    if (!ensure(this->SpringArmComponent != nullptr)) return;
-    m_springArmDefaultSize = this->SpringArmComponent->TargetArmLength;
+    //if (!ensure(this->SpringArmComponent != nullptr)) return;
+    //m_springArmDefaultSize = this->SpringArmComponent->TargetArmLength;
 
     // procedural mesh haven't built-in replication 
-    buildShip();
+    //BuildShip();
 }
 
 void AShipPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetimeProps) const

@@ -25,12 +25,22 @@ public:
 	// Called every frame
 	virtual void Tick(float _deltaTime) override;
 
-    // Called when something hit pawn
-    virtual void NotifyHit(class UPrimitiveComponent* _myComp, class AActor* _other, class UPrimitiveComponent* _otherComp, bool _bSelfMoved, FVector _hitLocation, FVector _hitNormal, FVector _normalImpulse, const FHitResult& _hit) override;
+    UFUNCTION()
+    void OnRep_PercentSpeed();
+
+    UFUNCTION()
+    void OnRep_PercentFlightAttitude();
+
+    UFUNCTION()
+    void OnRep_PercentTurn();
+
+    UFUNCTION()
+    void OnRep_PercentUp();
 
 private:
     /* build ship with all module */
-    void buildShip();
+    UFUNCTION(BlueprintCallable)
+    void BuildShip();
 
     /* build a module */
     void buildProceduralModule(class USpacelProceduralMeshComponent * _component, class UProceduralModuleDataAsset const* _module, FVector const& _location);
@@ -41,14 +51,17 @@ private:
 
     /* move ship client */
     UFUNCTION(Unreliable, NetMulticast)
-    void RPCClientMove(FVector const& _velocity, FRotator const& _deltaRotation);
+    void RPCClientMove(FVector const& _angularVelocity);
 
     /* init all ship module and camera */
     void initShip();
 
 public:
     UPROPERTY(Category = "Ship", VisibleDefaultsOnly, BlueprintReadOnly)
-    class USpacelProceduralMeshComponent* ShipBaseComponent = nullptr;
+    class UStaticMeshComponent* DriverMeshComponent = nullptr;
+
+    UPROPERTY(Category = "Ship", VisibleDefaultsOnly, BlueprintReadOnly)
+    class UPoseableMeshComponent* BaseShipMeshComponent = nullptr;
 
     UPROPERTY(Category = "Ship", VisibleDefaultsOnly, BlueprintReadOnly)
     class USpacelProceduralMeshComponent* ShipEngineComponent = nullptr;
@@ -57,13 +70,10 @@ public:
     class USpacelProceduralMeshComponent* ShipShellComponent = nullptr;
 
     UPROPERTY(Category = "Component", VisibleDefaultsOnly, BlueprintReadOnly)
-    class USpringArmComponent* SpringArmComponent;
+    class USpringArmComponent* SpringArmComponent = nullptr;
 
     UPROPERTY(Category = "Component", VisibleDefaultsOnly, BlueprintReadOnly)
-    class UCameraComponent* CameraComponent;
-
-    UPROPERTY(Category = "Movement", VisibleDefaultsOnly, BlueprintReadOnly)
-    class UShipPawnMovement* ShipPawnMovement = nullptr;
+    class UCameraComponent* CameraComponent = nullptr;
 
     UPROPERTY(Category = "Movement", EditAnywhere, BlueprintReadWrite)
     float MaxForwardSpeed = 6000.0f;
@@ -77,30 +87,24 @@ public:
     UPROPERTY(Category = "Movement", EditAnywhere, BlueprintReadWrite)
     float UpSpeed = 40.0f;
 
-    UPROPERTY(Category = "Camera", EditAnywhere, BlueprintReadWrite)
-    float MultiplierSpringArmSize = 2.0f;
-
     UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
     class UShipModuleDataAsset* ModuleDataAsset = nullptr;
 
 protected:
     /* current percent speed value 0.0f - 1.0f */
-    UPROPERTY(Replicated)
+    UPROPERTY(ReplicatedUsing = "OnRep_PercentSpeed")
     float PercentSpeed = 0.0f;
 
     /* when flight attitude change -1.0f or 0.0f or 1.0f */
-    UPROPERTY(Replicated)
+    UPROPERTY(ReplicatedUsing = "OnRep_PercentFlightAttitude")
     float PercentFlightAttitude = 0.0f;
 
     /* when turn change -1.0f or 0.0f or 1.0f */
-    UPROPERTY(Replicated)
+    UPROPERTY(ReplicatedUsing = "OnRep_PercentTurn")
     float PercentTurn = 0.0f;
 
     /* when up change -1.0f or 0.0f or 1.0f */
-    UPROPERTY(Replicated)
+    UPROPERTY(ReplicatedUsing = "OnRep_PercentUp")
     float PercentUp = 0.0f;
 
-private:
-    /* default spring arm size */
-    std::optional<float> m_springArmDefaultSize = std::nullopt;
 };

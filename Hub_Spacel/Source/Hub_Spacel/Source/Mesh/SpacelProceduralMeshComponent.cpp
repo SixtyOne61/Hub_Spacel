@@ -204,7 +204,7 @@ void USpacelProceduralMeshComponent::generateMesh(FName _collisionProfileName)
 	// setup collision
 	SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
     SetCollisionProfileName(this->m_collisionProfileName);
-	bUseComplexAsSimpleCollision = true;
+	bUseComplexAsSimpleCollision = false;
 	SetNotifyRigidBodyCollision(true);
 
 	CreateMeshSection_LinearColor(0, vertices, triangles, normals, UV0, vertexColors, TArray<FProcMeshTangent>(), true);
@@ -267,17 +267,17 @@ void USpacelProceduralMeshComponent::onHit(class UPrimitiveComponent* _comp, cla
 
     if (DebugDrawProceduralMeshCollision == 1)
     {
-        DrawDebugSphere(GetWorld(), _otherActor->GetActorLocation(), 70.0f, 12, FColor::Blue, false, 30.0f, 128, 10.0f);
-        DrawDebugSphere(GetWorld(), _hit.ImpactPoint, 100.0f, 12, FColor::Red, false, 30.0f, 128, 10.0f);
+        DrawDebugSphere(this->GetWorld(), _otherActor->GetActorLocation(), 70.0f, 12, FColor::Blue, false, 30.0f, 128, 10.0f);
+        DrawDebugSphere(this->GetWorld(), _hit.ImpactPoint, 100.0f, 12, FColor::Red, false, 30.0f, 128, 10.0f);
     }
 
 	// check if it's a bullet type
     if (hit(_hit.ImpactPoint))
     {
-        _otherActor->Destroy();
+        //_otherActor->Destroy();
     }
     else
     {
-        _otherActor->Destroy();
+        //_otherActor->Destroy();
     }
 }
