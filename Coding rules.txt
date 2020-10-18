@@ -24,4 +24,3 @@ M_ devant les material et M_MatInst pour les instances
 NS_ devant les niagara system
 DTA_ devant les data asset
 WBP_ devant les widget blueprints
-SKEL_ devant les skeletal mesh
