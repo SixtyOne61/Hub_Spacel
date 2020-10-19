@@ -51,11 +51,11 @@ public:
     float PercentSpeed = 0.0f;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-    float FlightAttitude = 0.0f;
+    float PercentFlightAttitude = 0.0f;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-    float Turn = 0.0f;
+    float PercentTurn = 0.0f;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-    float Up = 0.0f;
+    float PercentUp = 0.0f;
 };

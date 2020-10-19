@@ -229,14 +229,23 @@ void AShipPawn::RPCServerMove_Implementation(float const& _deltaTime)
     angularVelocity *= 2.0f;
 
     this->DriverMeshComponent->AddTorqueInDegrees(angularVelocity, NAME_None, true);
+    this->DriverMeshComponent->AddForce(FVector(0.0f, 0.0f, -1500.0f), NAME_None, true);
 
-    RPCClientMove(angularVelocity);
+    FVector const& linearVelocity = this->DriverMeshComponent->GetPhysicsLinearVelocity(NAME_None);
+    FVector newVelocity = this->DriverMeshComponent->GetForwardVector() * this->MaxForwardSpeed * this->PercentSpeed;
+    newVelocity = FMath::Lerp(linearVelocity, newVelocity, 0.01f);
+
+    this->DriverMeshComponent->SetPhysicsLinearVelocity(newVelocity);
+
+    RPCClientMove(angularVelocity, newVelocity);
 }
 
-void AShipPawn::RPCClientMove_Implementation(FVector const& _angularVelocity)
+void AShipPawn::RPCClientMove_Implementation(FVector const& _angularVelocity, FVector const& _linearVelocity)
 {
     if (!ensure(this->DriverMeshComponent != nullptr)) return;
     this->DriverMeshComponent->AddTorqueInDegrees(_angularVelocity, NAME_None, true);
+    this->DriverMeshComponent->AddForce(FVector(0.0f, 0.0f, -1500.0f), NAME_None, true);
+    this->DriverMeshComponent->SetPhysicsLinearVelocity(_linearVelocity);
 }
 
 void AShipPawn::initShip()

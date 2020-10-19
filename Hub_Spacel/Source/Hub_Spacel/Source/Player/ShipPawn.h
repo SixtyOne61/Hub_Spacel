@@ -51,7 +51,7 @@ private:
 
     /* move ship client */
     UFUNCTION(Unreliable, NetMulticast)
-    void RPCClientMove(FVector const& _angularVelocity);
+    void RPCClientMove(FVector const& _angularVelocity, FVector const& _linearVelocity);
 
     /* init all ship module and camera */
     void initShip();

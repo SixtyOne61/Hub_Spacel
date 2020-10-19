@@ -18,11 +18,6 @@ void APlayerShipController::SetupInputComponent()
 
 void APlayerShipController::speed(float _val)
 {
-    if (FMath::IsNearlyZero(_val, 0.05f))
-    {
-        return;
-    }
-
     this->RPCServerSetSpeed(_val);
 }
 
@@ -45,7 +40,7 @@ void APlayerShipController::RPCServerSetSpeed_Implementation(float _val)
 
 void APlayerShipController::flightAttitude(float _val)
 {
-    readInput(_val, this->FlightAttitude, std::bind(&APlayerShipController::RPCServerSetFlightAttitude, this, std::placeholders::_1));
+    readInput(_val, this->PercentFlightAttitude, std::bind(&APlayerShipController::RPCServerSetFlightAttitude, this, std::placeholders::_1));
 }
 
 void APlayerShipController::RPCServerSetFlightAttitude_Implementation(float _val)
@@ -56,7 +51,7 @@ void APlayerShipController::RPCServerSetFlightAttitude_Implementation(float _val
         return;
     }
 
-    shipPawn->PercentFlightAttitude = _val;
+    shipPawn->PercentFlightAttitude = _val / 100.0f;
     // OnRep isn't call on server, but we need this call
     shipPawn->OnRep_PercentFlightAttitude();
 }
@@ -74,7 +69,7 @@ void APlayerShipController::RPCServerSetTurn_Implementation(float _val)
         return;
     }
 
-    shipPawn->PercentTurn = _val;
+    shipPawn->PercentTurn = _val / 100.0f;
     // OnRep isn't call on server, but we need this call
     shipPawn->OnRep_PercentTurn();
 }
@@ -92,35 +87,40 @@ void APlayerShipController::RPCServerSetUp_Implementation(float _val)
         return;
     }
 
-    shipPawn->PercentUp = _val;
+    shipPawn->PercentUp = _val / 100.0f;
     // OnRep isn't call on server, but we need this call
     shipPawn->OnRep_PercentUp();
 }
 
 void APlayerShipController::readInput(int const& _val, float& _in, std::function<void(float)> _fnc)
 {
+    std::optional<float> newPercent { };
     if (FMath::IsNearlyZero(_val, 0.05f))
     {
         if (_in != 0.0f)
         {
-            _in = 0.0f;
-            _fnc(_in);
+            newPercent = 0.0f;
         }
     }
     else if (_val > 0.0f)
     {
         if (_in <= 0.0f)
         {
-            _in = 1.0f;
-            _fnc(_in);
+            newPercent = 0.0f;
         }
+        newPercent = FMath::Clamp(_in + _val, 0.0f, 100.0f);
     }
     else if (_val < 0.0f)
     {
         if (_in >= 0.0f)
         {
-            _in = -1.0f;
-            _fnc(_in);
+            newPercent = 0.0f;
         }
+        newPercent = FMath::Clamp(_in + _val, -100.0f, 0.0f);
+    }
+
+    if (newPercent.has_value() && newPercent.value() != _in)
+    {
+        _fnc(_in);
     }
 }
