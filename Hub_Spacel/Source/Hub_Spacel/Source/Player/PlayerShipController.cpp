@@ -16,26 +16,48 @@ void APlayerShipController::SetupInputComponent()
     this->InputComponent->BindAxis("Up", this, &APlayerShipController::up);
 }
 
+void APlayerShipController::BeginPlay()
+{
+    Super::BeginPlay();
+
+    UWorld* world = this->GetWorld();
+    if (!ensure(world != nullptr)) return;
+
+    // reduce server call, only update speed by this loop timer
+    FTimerDelegate speedUpdateCallback;
+    timerCallback.BindLambda([&]
+    {
+        if (m_lastSpeedInput.has_value())
+        {
+            float newPercent = FMath::Clamp(this->PercentSpeed + m_lastSpeedInput.value(), 0.0f, 100.0f);
+            if (newPercent != this->PercentSpeed)
+            {
+                this->RPCServerSetSpeed(newPercent);
+            }
+            m_lastSpeedInput.reset();
+        }
+    });
+
+    FTimerHandle speedTimerHandle;
+    world->GetTimerManager().SetTimer(speedTimerHandle, speedUpdateCallback, 0.1f, true);
+}
+
 void APlayerShipController::speed(float _val)
 {
-    this->RPCServerSetSpeed(_val);
+    m_lastSpeedInput = _val;
 }
 
 void APlayerShipController::RPCServerSetSpeed_Implementation(float _val)
 {
-    // TO DO better
-    float newPercent = FMath::Clamp(this->PercentSpeed + _val, 0.0f, 100.0f);
-    if (newPercent != this->PercentSpeed)
+    AShipPawn* shipPawn = Cast<AShipPawn>(this->GetPawn());
+    if (shipPawn == nullptr)
     {
-        this->PercentSpeed = newPercent;
-        AShipPawn* shipPawn = Cast<AShipPawn>(this->GetPawn());
-        if (shipPawn == nullptr)
-        {
-            return;
-        }
-
-        shipPawn->PercentSpeed = this->PercentSpeed / 100.0f;
+        return;
     }
+
+    shipPawn->PercentSpeed = _val / 100.0f;
+    // OnRep isn't call on server, but we need this call
+    shipPawn->OnRep_PercentSpeed();
 }
 
 void APlayerShipController::flightAttitude(float _val)

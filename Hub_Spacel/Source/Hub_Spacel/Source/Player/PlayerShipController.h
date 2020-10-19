@@ -13,10 +13,12 @@
 UCLASS()
 class HUB_SPACEL_API APlayerShipController : public APlayerController
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
 public:
     virtual void SetupInputComponent() override;
+
+    virtual void BeginPlay() override;
 	
 protected:
     /* call when input speed change */
@@ -58,4 +60,7 @@ public:
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
     float PercentUp = 0.0f;
+
+private:
+    std::optional<float> m_lastSpeedInput {}
 };
