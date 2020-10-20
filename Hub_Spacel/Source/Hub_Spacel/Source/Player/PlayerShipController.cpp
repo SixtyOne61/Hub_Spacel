@@ -32,6 +32,7 @@ void APlayerShipController::BeginPlay()
             float newPercent = FMath::Clamp(this->PercentSpeed + m_lastSpeedInput.value(), 0.0f, 100.0f);
             if (newPercent != this->PercentSpeed)
             {
+                this->PercentSpeed = newPercent;
                 this->RPCServerSetSpeed(newPercent);
             }
             m_lastSpeedInput.reset();
@@ -44,7 +45,7 @@ void APlayerShipController::BeginPlay()
 
 void APlayerShipController::speed(float _val)
 {
-    m_lastSpeedInput = _val;
+    m_lastSpeedInput = _val * 2;
 }
 
 void APlayerShipController::RPCServerSetSpeed_Implementation(float _val)
@@ -126,7 +127,7 @@ void APlayerShipController::readInput(int const& _val, float& _in, std::function
     }
     else if (_val > 0.0f)
     {
-        if (_in <= 0.0f)
+        if (_in < 0.0f)
         {
             newPercent = 0.0f;
         }
@@ -134,15 +135,16 @@ void APlayerShipController::readInput(int const& _val, float& _in, std::function
     }
     else if (_val < 0.0f)
     {
-        if (_in >= 0.0f)
+        if (_in > 0.0f)
         {
             newPercent = 0.0f;
         }
         newPercent = FMath::Clamp(_in + _val, -100.0f, 0.0f);
     }
 
-    if (newPercent.has_value() && newPercent.value() != _in)
+    if (newPercent.has_value())
     {
+        _in = newPercent.value();
         _fnc(_in);
     }
 }
