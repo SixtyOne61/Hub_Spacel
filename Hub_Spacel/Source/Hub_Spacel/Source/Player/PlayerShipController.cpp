@@ -25,7 +25,7 @@ void APlayerShipController::BeginPlay()
 
     // reduce server call, only update speed by this loop timer
     FTimerDelegate speedUpdateCallback;
-    timerCallback.BindLambda([&]
+    speedUpdateCallback.BindLambda([&]
     {
         if (m_lastSpeedInput.has_value())
         {
@@ -80,7 +80,7 @@ void APlayerShipController::RPCServerSetFlightAttitude_Implementation(float _val
 
 void APlayerShipController::turn(float _val)
 {
-    readInput(_val, this->Turn, std::bind(&APlayerShipController::RPCServerSetTurn, this, std::placeholders::_1));
+    readInput(_val, this->PercentTurn, std::bind(&APlayerShipController::RPCServerSetTurn, this, std::placeholders::_1));
 }
 
 void APlayerShipController::RPCServerSetTurn_Implementation(float _val)
@@ -98,7 +98,7 @@ void APlayerShipController::RPCServerSetTurn_Implementation(float _val)
 
 void APlayerShipController::up(float _val)
 {
-    readInput(_val, this->Up, std::bind(&APlayerShipController::RPCServerSetUp, this, std::placeholders::_1));
+    readInput(_val, this->PercentUp, std::bind(&APlayerShipController::RPCServerSetUp, this, std::placeholders::_1));
 }
 
 void APlayerShipController::RPCServerSetUp_Implementation(float _val)
