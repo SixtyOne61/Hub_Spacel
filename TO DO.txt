@@ -1,11 +1,12 @@
 TO DO
 
-Changer la size des cubes des mobules à 100 cm, 
-
-Donner le bon point de spawn pour chaque player
 Détection de hit des bullets
+Donner le bon point de spawn pour chaque player
+
+Trier les favoris 
 
 Clean cube size, keep size only on cube manage multi size
+Changer la size des cubes des mobules à 100 cm,
 
 Make tuto for use aws for dedicated server : https://www.youtube.com/watch?v=QHB1H6eM-vc
 Make tuto for create a server queue system : https://www.youtube.com/watch?v=u2Si2y2hviA
@@ -22,7 +23,6 @@ Ecran de fin
 Retour au main menu
 
 Backlog :
-add rotation on UShipPawnMovement
 shield gameplay / self shield
 smart rocket gameplay / ray gun
 iem gameplay (fx carré de perte de controle, la couleur du carré est celle de l'équipe) / furtivité
@@ -30,7 +30,7 @@ define rules for create ship module
 give life gameplay / repair gameplay
 collecte ressource / create ressource on map
 map limitation cube / fx
-volumetric cloud
+volumetric cloud : https://www.youtube.com/watch?v=McBiRCSWM9Q
 
 
 
