@@ -1,21 +1,11 @@
 TO DO
 
-refaire le systeme d'acquisition des inputs on doit toujours renvoyer la valeur capturé
-comme avec la speed
-
-Utiliser un character à la place d'un pawn, 
-setup le character movement
-mettre comme static mesh la base du vaisseau (la partie rouge, qui est indestructible)
-
 Changer la size des cubes des mobules à 100 cm, 
 
-Clean BP_SpaceShip not use
-Clean Hub_Pawn not use
-
-Add weapon
+Donner le bon point de spawn pour chaque player
+Détection de hit des bullets
 
 Clean cube size, keep size only on cube manage multi size
-Clean AProceduralActor with child class not use
 
 Make tuto for use aws for dedicated server : https://www.youtube.com/watch?v=QHB1H6eM-vc
 Make tuto for create a server queue system : https://www.youtube.com/watch?v=u2Si2y2hviA

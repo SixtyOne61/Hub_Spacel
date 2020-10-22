@@ -46,6 +46,13 @@ protected:
     UFUNCTION(Reliable, Server)
     void RPCServerSetUp(float _val);
 
+    /* call when fire input is used */
+    void fireOn();
+    void fireOff();
+
+    UFUNCTION(Reliable, Server)
+    void RPCServerFire(bool _on);
+
 private:
     void readInput(int const& _val, float& _in, std::function<void(float)> _fnc);
 

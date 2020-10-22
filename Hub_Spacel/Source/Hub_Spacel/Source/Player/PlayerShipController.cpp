@@ -14,6 +14,10 @@ void APlayerShipController::SetupInputComponent()
     // joystick right
     this->InputComponent->BindAxis("Turn", this, &APlayerShipController::turn);
     this->InputComponent->BindAxis("Up", this, &APlayerShipController::up);
+
+    // shoot
+    this->InputComponent->BindAction("Fire", IE_Pressed, this, &APlayerShipController::fireOn);
+    this->InputComponent->BindAction("Fire", IE_Released, this, &APlayerShipController::fireOff);
 }
 
 void APlayerShipController::BeginPlay()
@@ -57,8 +61,6 @@ void APlayerShipController::RPCServerSetSpeed_Implementation(float _val)
     }
 
     shipPawn->PercentSpeed = _val / 100.0f;
-    // OnRep isn't call on server, but we need this call
-    shipPawn->OnRep_PercentSpeed();
 }
 
 void APlayerShipController::flightAttitude(float _val)
@@ -113,6 +115,27 @@ void APlayerShipController::RPCServerSetUp_Implementation(float _val)
     shipPawn->PercentUp = _val / 100.0f;
     // OnRep isn't call on server, but we need this call
     shipPawn->OnRep_PercentUp();
+}
+
+void APlayerShipController::fireOn()
+{
+    this->RPCServerFire(true);
+}
+
+void APlayerShipController::fireOff()
+{
+    this->RPCServerFire(false);
+}
+
+void APlayerShipController::RPCServerFire_Implementation(bool _on)
+{
+    AShipPawn* shipPawn = Cast<AShipPawn>(this->GetPawn());
+    if (shipPawn == nullptr)
+    {
+        return;
+    }
+
+    shipPawn->m_isFire = _on;
 }
 
 void APlayerShipController::readInput(int const& _val, float& _in, std::function<void(float)> _fnc)

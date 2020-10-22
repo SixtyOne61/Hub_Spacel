@@ -26,9 +26,6 @@ public:
 	virtual void Tick(float _deltaTime) override;
 
     UFUNCTION()
-    void OnRep_PercentSpeed();
-
-    UFUNCTION()
     void OnRep_PercentFlightAttitude();
 
     UFUNCTION()
@@ -53,8 +50,8 @@ private:
     UFUNCTION(Unreliable, NetMulticast)
     void RPCClientMove(FVector const& _angularVelocity, FVector const& _linearVelocity);
 
-    /* init all ship module and camera */
-    void initShip();
+    /* only efficient on server */
+    void fire(float const& _deltaTime);
 
 public:
     UPROPERTY(Category = "Ship", VisibleDefaultsOnly, BlueprintReadOnly)
@@ -69,30 +66,24 @@ public:
     UPROPERTY(Category = "Ship", VisibleDefaultsOnly, BlueprintReadOnly)
     class USpacelProceduralMeshComponent* ShipShellComponent = nullptr;
 
+    UPROPERTY(Category = "Ship", VisibleDefaultsOnly, BlueprintReadOnly)
+    class UStaticMeshComponent* SubMachineComponent = nullptr;
+
     UPROPERTY(Category = "Component", VisibleDefaultsOnly, BlueprintReadOnly)
     class USpringArmComponent* SpringArmComponent = nullptr;
 
     UPROPERTY(Category = "Component", VisibleDefaultsOnly, BlueprintReadOnly)
     class UCameraComponent* CameraComponent = nullptr;
 
-    UPROPERTY(Category = "Movement", EditAnywhere, BlueprintReadWrite)
-    float MaxForwardSpeed = 6000.0f;
-
-    UPROPERTY(Category = "Movement", EditAnywhere, BlueprintReadWrite)
-    float FlightAttitudeSpeed = 30.0f;
-
-    UPROPERTY(Category = "Movement", EditAnywhere, BlueprintReadWrite)
-    float TurnSpeed = 30.0f;
-
-    UPROPERTY(Category = "Movement", EditAnywhere, BlueprintReadWrite)
-    float UpSpeed = 40.0f;
+    UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
+    class UPlayerDataAsset* PlayerDataAsset = nullptr;
 
     UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
     class UShipModuleDataAsset* ModuleDataAsset = nullptr;
 
 protected:
     /* current percent speed value 0.0f - 1.0f */
-    UPROPERTY(ReplicatedUsing = "OnRep_PercentSpeed")
+    UPROPERTY(Replicated)
     float PercentSpeed = 0.0f;
 
     /* when flight attitude change -1.0f or 0.0f or 1.0f */
@@ -107,4 +98,9 @@ protected:
     UPROPERTY(ReplicatedUsing = "OnRep_PercentUp")
     float PercentUp = 0.0f;
 
+    /* use only on server, say if we are in fire */
+    std::optional<bool> m_isFire { };
+
+    /* current time between next bullet */
+    float m_fireCountDown { };
 };

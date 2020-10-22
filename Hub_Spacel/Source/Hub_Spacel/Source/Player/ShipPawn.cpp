@@ -2,21 +2,23 @@
 
 
 #include "ShipPawn.h"
-#include "ShipPawnMovement.h"
-#include "Materials/MaterialInstance.h"
-#include "GameFramework/SpringArmComponent.h"
+//#include "Materials/MaterialInstance.h"
 #include "Net/UnrealNetwork.h"
-#include "Source/Mesh/SpacelProceduralMeshComponent.h"
-#include "Source/Player/SpacelPlayerState.h"
 #include "XmlFile.h"
 #include "XmlNode.h"
 #include "Camera/CameraComponent.h"
+#include "GameFramework/SpringArmComponent.h"
+#include "GameFramework/ProjectileMovementComponent.h"
 #include "Components/PrimitiveComponent.h"
 #include "Components/PoseableMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Kismet/GameplayStatics.h"
 #include "Source/DataAsset/ShipModuleDataAsset.h"
 #include "Source/DataAsset/ProceduralModuleDataAsset.h"
+#include "Source/DataAsset/PlayerDataAsset.h"
+#include "Source/Mesh/SpacelProceduralMeshComponent.h"
+#include "Source/Player/SpacelPlayerState.h"
 #include "Source/Enum/SpacelEnum.h"
 
 // Sets default values
@@ -44,6 +46,10 @@ AShipPawn::AShipPawn()
     ShipShellComponent->bUseAsyncCooking = true;
     ShipShellComponent->SetupAttachment(BaseShipMeshComponent);
 
+    SubMachineComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SubMachine_00"));
+    if (!ensure(SubMachineComponent != nullptr)) return;
+    SubMachineComponent->SetupAttachment(BaseShipMeshComponent);
+
     // Create a spring arm component
     SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm_00"));
     if (!ensure(SpringArmComponent != nullptr)) return;
@@ -53,31 +59,12 @@ AShipPawn::AShipPawn()
     CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera_00"));
     if (!ensure(CameraComponent != nullptr)) return;
     CameraComponent->SetupAttachment(SpringArmComponent, USpringArmComponent::SocketName); // Attach the camera
-
-    /*ShipBaseComponent = CreateDefaultSubobject<USpacelProceduralMeshComponent>(TEXT("ShipBase_00"));
-    if (!ensure(ShipBaseComponent != nullptr)) return;
-    ShipBaseComponent->bUseAsyncCooking = true;
-    ShipBaseComponent->SetIsReplicated(true);
-    RootComponent = ShipBaseComponent;
-
-    ShipPawnMovement = CreateDefaultSubobject<UShipPawnMovement>(TEXT("ShipPawnMovement_00"));
-    if (!ensure(ShipPawnMovement != nullptr)) return;
-    ShipPawnMovement->SetIsReplicated(true);
-    this->ShipPawnMovement->UpdatedComponent = RootComponent;*/
 }
 
 // Called when the game starts or when spawned
 void AShipPawn::BeginPlay()
 {
 	Super::BeginPlay();
-
-    /*if (this->HasAuthority())
-    {
-        this->SetReplicates(true);
-        this->SetReplicateMovement(true);
-    }
-
-    this->ShipPawnMovement->SetComponentTickEnabled(true);*/
 }
 
 // Called every frame
@@ -88,40 +75,17 @@ void AShipPawn::Tick(float _deltaTime)
     if (this->HasAuthority())
     {
         RPCServerMove(_deltaTime);
+
+        fire(_deltaTime);
     }
-
-    /*if (!m_springArmDefaultSize.has_value())
-    {
-        // wait player state before start building
-        if (this->GetPlayerState() != nullptr)
-        {
-            initShip();
-        }
-    }
-
-    if (this->HasAuthority())
-    {
-        RPCServerMove(_deltaTime);
-    }
-
-    if(m_springArmDefaultSize.has_value())
-    {
-        // update spring arm size
-        if (!ensure(this->SpringArmComponent != nullptr)) return;
-        this->SpringArmComponent->TargetArmLength = m_springArmDefaultSize.value() + m_springArmDefaultSize.value() * this->PercentSpeed * this->MultiplierSpringArmSize;
-    }*/
-}
-
-void AShipPawn::OnRep_PercentSpeed()
-{
-
 }
 
 void AShipPawn::OnRep_PercentFlightAttitude()
 {
     if (!ensure(this->DriverMeshComponent != nullptr)) return;
+    if (!ensure(this->PlayerDataAsset != nullptr)) return;
 
-    FVector dir = this->DriverMeshComponent->GetForwardVector() * this->PercentFlightAttitude * this->FlightAttitudeSpeed;
+    FVector dir = this->DriverMeshComponent->GetForwardVector() * this->PercentFlightAttitude * this->PlayerDataAsset->FlightAttitudeSpeed;
     dir = FMath::Lerp(FVector::ZeroVector, dir, 0.1f);
 
     this->DriverMeshComponent->AddTorqueInDegrees(dir, NAME_None, true);
@@ -130,8 +94,9 @@ void AShipPawn::OnRep_PercentFlightAttitude()
 void AShipPawn::OnRep_PercentTurn()
 {
     if (!ensure(this->DriverMeshComponent != nullptr)) return;
+    if (!ensure(this->PlayerDataAsset != nullptr)) return;
 
-    FVector dir = this->DriverMeshComponent->GetUpVector() * this->PercentTurn * this->TurnSpeed;
+    FVector dir = this->DriverMeshComponent->GetUpVector() * this->PercentTurn * this->PlayerDataAsset->TurnSpeed;
     dir = FMath::Lerp(FVector::ZeroVector, dir, 0.1f);
 
     this->DriverMeshComponent->AddTorqueInDegrees(dir, NAME_None, true);
@@ -140,8 +105,9 @@ void AShipPawn::OnRep_PercentTurn()
 void AShipPawn::OnRep_PercentUp()
 {
     if (!ensure(this->DriverMeshComponent != nullptr)) return;
+    if (!ensure(this->PlayerDataAsset != nullptr)) return;
 
-    FVector dir = this->DriverMeshComponent->GetRightVector() * this->PercentUp * this->UpSpeed;
+    FVector dir = this->DriverMeshComponent->GetRightVector() * this->PercentUp * this->PlayerDataAsset->UpSpeed;
     dir = FMath::Lerp(FVector::ZeroVector, dir, 0.1f);
 
     this->DriverMeshComponent->AddTorqueInDegrees(dir, NAME_None, true);
@@ -224,6 +190,7 @@ void AShipPawn::buildProceduralModule(USpacelProceduralMeshComponent * _componen
 void AShipPawn::RPCServerMove_Implementation(float const& _deltaTime)
 {
     if (!ensure(this->DriverMeshComponent != nullptr)) return;
+    if (!ensure(this->PlayerDataAsset != nullptr)) return;
 
     FVector angularVelocity = UKismetMathLibrary::NegateVector(this->DriverMeshComponent->GetPhysicsAngularVelocityInDegrees());
     angularVelocity *= 2.0f;
@@ -231,7 +198,7 @@ void AShipPawn::RPCServerMove_Implementation(float const& _deltaTime)
     this->DriverMeshComponent->AddTorqueInDegrees(angularVelocity, NAME_None, true);
 
     FVector const& linearVelocity = this->DriverMeshComponent->GetPhysicsLinearVelocity(NAME_None);
-    FVector newVelocity = this->DriverMeshComponent->GetForwardVector() * this->MaxForwardSpeed * this->PercentSpeed;
+    FVector newVelocity = this->DriverMeshComponent->GetForwardVector() * this->PlayerDataAsset->MaxForwardSpeed * this->PercentSpeed;
     newVelocity = FMath::Lerp(linearVelocity, newVelocity, 0.01f);
 
     this->DriverMeshComponent->SetPhysicsLinearVelocity(newVelocity);
@@ -246,14 +213,45 @@ void AShipPawn::RPCClientMove_Implementation(FVector const& _angularVelocity, FV
     this->DriverMeshComponent->SetPhysicsLinearVelocity(_linearVelocity);
 }
 
-void AShipPawn::initShip()
+void AShipPawn::fire(float const& _deltaTime)
 {
-    // save spring arm default size
-    //if (!ensure(this->SpringArmComponent != nullptr)) return;
-    //m_springArmDefaultSize = this->SpringArmComponent->TargetArmLength;
+    if (!ensure(this->PlayerDataAsset != nullptr)) return;
+    if (!ensure(this->PlayerDataAsset->BulletClass != nullptr)) return;
+    if (!ensure(this->SubMachineComponent != nullptr)) return;
+    UWorld * world = this->GetWorld();
+    if (!ensure(world != nullptr)) return;
 
-    // procedural mesh haven't built-in replication 
-    //BuildShip();
+    // check if we have boolean for fire (only set on server)
+    if (m_isFire.has_value() && m_isFire.value() && m_fireCountDown <= 0.0f)
+    {
+        FVector location = this->SubMachineComponent->GetRelativeLocation() + this->GetActorLocation();
+        FTransform transform {};
+        transform.SetLocation(location);
+        transform.SetRotation(this->GetActorRotation().Quaternion());
+
+        AActor* laser = Cast<AActor>(UGameplayStatics::BeginDeferredActorSpawnFromClass(world, this->PlayerDataAsset->BulletClass, transform));
+        if (laser)
+        {
+            // init bullet
+            laser->SetReplicates(true);
+            laser->SetReplicateMovement(true);
+            UGameplayStatics::FinishSpawningActor(laser, transform);
+            if (UProjectileMovementComponent * comp = Cast<UProjectileMovementComponent>(laser->GetComponentByClass(UProjectileMovementComponent::StaticClass())))
+            {
+                comp->SetVelocityInLocalSpace(FVector(1, 0, 0) * comp->InitialSpeed);
+            }
+        }
+
+        // reset count down
+        m_fireCountDown = this->PlayerDataAsset->TimeBetweenFire;
+    }
+    else if (m_fireCountDown != 0.0f)
+    {
+        // we can't use timer manager here, because we want to keep timer when we release trigger
+        // if player spam trigger and use timer manager, we will just spam the first tick of the handle timer
+        // and throw many bullet
+        m_fireCountDown -= _deltaTime;
+    }
 }
 
 void AShipPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetimeProps) const

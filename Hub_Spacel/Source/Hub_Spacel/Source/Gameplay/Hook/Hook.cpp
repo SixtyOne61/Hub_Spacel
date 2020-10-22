@@ -6,7 +6,6 @@
 #include "Components/BoxComponent.h"
 #include "Source/Mesh/SpacelProceduralMeshComponent.h"
 #include "Materials/MaterialInstance.h"
-#include "Hub_Pawn.h"
 
 AHook::AHook()
     : AProceduralActor()
@@ -78,9 +77,9 @@ void AHook::OnBeginOverlap(class UPrimitiveComponent* _overlappedComponent, clas
     if (_overlappedComponent->ComponentHasTag(FName(TEXT("HookBox")))
         && _otherComp->ComponentHasTag(FName(TEXT("RodBox"))))
     {
-        if (AHub_Pawn * parent = Cast<AHub_Pawn>(this->GetParentActor()))
-        {
-            parent->SetHook(_otherActor);
-        }
+        //if (AHub_Pawn * parent = Cast<AHub_Pawn>(this->GetParentActor()))
+        //{
+        //    parent->SetHook(_otherActor);
+        //}
     }
 }
