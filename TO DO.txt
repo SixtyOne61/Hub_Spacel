@@ -1,11 +1,10 @@
 TO DO
 
-Détection de hit des bullets
+BUG : tous les hits des bullets ne sont pas détecté
 Donner le bon point de spawn pour chaque player
 
 Trier les favoris 
 
-Clean cube size, keep size only on cube manage multi size
 Changer la size des cubes des mobules à 100 cm,
 
 Make tuto for use aws for dedicated server : https://www.youtube.com/watch?v=QHB1H6eM-vc
