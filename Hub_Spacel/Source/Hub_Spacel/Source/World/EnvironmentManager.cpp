@@ -7,6 +7,7 @@
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Hub_Spacel/Source/Mesh/SpacelProceduralMeshComponent.h"
 #include "Hub_Spacel/Hub_SpacelGameInstance.h"
+#include "Source/Mesh/LocationInformation.h"
 
 // Sets default values
 AEnvironmentManager::AEnvironmentManager()
@@ -47,8 +48,9 @@ void AEnvironmentManager::generateEnvironment()
     int maxZ = (this->BornZ.Y - this->BornZ.X) / this->CubeSize.Z;
     int size = maxX * maxY * maxZ;
 
-    TArray<CoordInfo> list;
+    TArray<FLocationInformation> list;
     list.Reserve(size);
+    list.SetNum(size);
 
     // create vector, for each element, we calculate last index of previoux neighboor,
     // we already meet them
@@ -58,12 +60,7 @@ void AEnvironmentManager::generateEnvironment()
     // create index
     auto lb_createIndex = [&maxY, &maxZ](int _x, int _y, int _z, int& _index) -> bool
     {
-        auto lb_valid = [](int _value) -> bool
-        {
-            return _value >= 0;
-        };
-
-        if (lb_valid(_x) && lb_valid(_y) && lb_valid(_z))
+        if (_x >= 0 && _y >= 0 && _z >= 0)
         {
             _index = _z + _y * maxZ + _x * maxY * maxZ;
             return true;
@@ -72,19 +69,21 @@ void AEnvironmentManager::generateEnvironment()
     };
 
     // fill
-    auto lb_neighboor = [&list, &lb_createIndex](int _x, int _y, int _z, CoordInfo& _info, int _currIdx, EFace _f1, EFace _f2)
+    auto lb_neighboor = [&list, &lb_createIndex](int _x, int _y, int _z, FLocationInformation& _info, EFace _f1, EFace _f2)
     {
         int id = 0;
         if (lb_createIndex(_x, _y, _z, id))
         {
-            CoordInfo& ref = list[id];
+            FLocationInformation& ref = list[id];
             if (ref.isValid())
             {
-                ref.m_chainedLocation->addNeighbor(_f1, _info.m_chainedLocation);
-                ref.m_neighboor[_f1] = _currIdx;
+                ref.m_neighboor[_f1] = &_info;
+                ref.setNeighboorId(_f1, _info.Index);
+                ref.Mask |= _f1;
 
-                _info.m_chainedLocation->addNeighbor(_f2, ref.m_chainedLocation);
-                _info.m_neighboor[_f2] = id;
+                _info.m_neighboor[_f2] = &ref;
+                _info.setNeighboorId(_f2, ref.Index);
+                _info.Mask |= _f2;
             }
         }
     };
@@ -95,25 +94,28 @@ void AEnvironmentManager::generateEnvironment()
         {
             for (int z = 0; z < maxZ; ++z)
             {
-                FVector location = FVector(x * this->CubeSize.X, y * this->CubeSize.Y, z * this->CubeSize.Z);
+                FVector location { x * this->CubeSize.X, y * this->CubeSize.Y, z * this->CubeSize.Z };
                 float noise = getNoise(location);
 
-                // create current object
-                CoordInfo current = CoordInfo({ noise, false });
-                if (current.isValid()) // if valide we will check neighboor
-                {
-                    int currIdx = 0;
-                    lb_createIndex(x, y, z, currIdx); // it will be a valid index
+                FLocationInformation currentNode { noise, false };
 
-                    current.m_chainedLocation = MakeShareable(new ChainedLocation(location, this->CubeSize, currIdx));
+                // check if we have a valid noise
+                if (currentNode.isValid())
+                {
+                    // create index of current Node
+                    int currentIndex = 0;
+                    // we are valid, so we can have a valid index
+                    lb_createIndex(x, y, z, currentIndex);
+                    currentNode.Index = currentIndex;
+                    currentNode.Location = location;
 
                     // we have already estimate right, top, back
-                    lb_neighboor(x - 1, y, z, current, currIdx, EFace::Right, EFace::Left);
-                    lb_neighboor(x, y - 1, z, current, currIdx, EFace::Top, EFace::Bot);
-                    lb_neighboor(x, y, z - 1, current, currIdx, EFace::Back, EFace::Front);
+                    lb_neighboor(x - 1, y, z, currentNode, EFace::Right, EFace::Left);
+                    lb_neighboor(x, y - 1, z, currentNode, EFace::Top, EFace::Bot);
+                    lb_neighboor(x, y, z - 1, currentNode, EFace::Back, EFace::Front);
+                    
+                    list[currentIndex] = std::move(currentNode);
                 }
-
-                list.Add(current);
             }
         }
     }
@@ -122,42 +124,53 @@ void AEnvironmentManager::generateEnvironment()
     int max = list.Num();
 
     // check if we have object
-    if (id < max)
+    if (id >= max)
     {
-        while (id < max)
+        return;
+    }
+
+    while (id < max)
+    {
+        FLocationInformation & startComponent = list[id];
+        if (startComponent.isValid())
         {
-            CoordInfo & info = list[id];
-            if (info.isValid())
-            {
-                // max item in next object
-                m_currentObject.Reserve(max - id);
+            TArray<FLocationInformation> nextObject;
+            // max item in next object
+            nextObject.Reserve(size);
+            nextObject.SetNum(size);
 
-                findMeshPoint(info, list);
-                // add component
-                createProceduralMeshComponent();
+            int nbPoint = 0;
+            findMeshPoint(startComponent, nextObject, list, nbPoint);
+            // add component
+            createProceduralMeshComponent(std::move(nextObject), nbPoint);
 
-                // don't need to remove item in array, info.isValid() will be false if we already use item
-                // and we don't remove it, because our system keep index !
-            }
-            ++id;
+            // don't need to remove item in array, info.isValid() will be false if we already use item
+            // and we don't remove it, because our system keep index !
         }
+        ++id;
     }
 }
 
-void AEnvironmentManager::findMeshPoint(CoordInfo& _info, TArray<CoordInfo> & _list)
+void AEnvironmentManager::findMeshPoint(FLocationInformation& _node, TArray<FLocationInformation> & _currentObject, TArray<FLocationInformation> & _list, int & _nbPoint)
 {
-    m_currentObject.Add(_info.m_chainedLocation);
-    _info.m_use = true;
+    if (_node.Index == -1)
+    {
+        return;
+    }
+
+    _node.Used = true;
+    _currentObject[_node.Index] = _node;
+    _nbPoint++;
 
     auto lb_addNeighboor = [&](EFace _face)
     {
-        int idx = _info.m_neighboor[_face];
-        if (idx != -1)
+        int const& id = _node.getNeighboorId(_face);
+        if (id != -1)
         {
-            CoordInfo& next = _list[idx];
-            if (!next.m_use)
+            FLocationInformation & nextNode = _list[id];
+            if (!nextNode.Used)
             {
-                findMeshPoint(next, _list);
+                findMeshPoint(nextNode, _currentObject, _list, _nbPoint);
             }
         }
     };
@@ -176,7 +189,7 @@ float AEnvironmentManager::getNoise(FVector const& _location) const
     return SpacelNoise::getInstance()->getOctaveNoise((_location.X + this->BornX.X) * 0.00007f, (_location.Y + this->BornY.X) * 0.00007f, (_location.Z + this->BornZ.X) * 0.00007f, 2);
 }
 
-void AEnvironmentManager::createProceduralMeshComponent()
+void AEnvironmentManager::createProceduralMeshComponent(TArray<FLocationInformation> && _locations, int const& _nbPoint)
 {
     FVector location = FVector(this->BornX.X, this->BornY.X, this->BornZ.X);
 
@@ -188,10 +201,10 @@ void AEnvironmentManager::createProceduralMeshComponent()
     proceduralMesh->SetWorldLocation(location);
     proceduralMesh->bUseAsyncCooking = true;
     proceduralMesh->setCubeSize(this->CubeSize);
-    proceduralMesh->setEdges(std::forward<TArray<TSharedPtr<ChainedLocation>>>(m_currentObject));
+    proceduralMesh->setEdges(std::move(_locations));
     proceduralMesh->SetCastShadow(false);
     proceduralMesh->setOwnerLocation(this->GetActorLocation());
-    proceduralMesh->generateMesh(std::move(FName("BlockAll")));
+    proceduralMesh->generateMesh(std::move(FName("BlockAll")), _nbPoint);
 
     if (UMaterialInstanceDynamic * customMat = UMaterialInstanceDynamic::Create(this->MatAsteroid, proceduralMesh))
     {
@@ -200,9 +213,6 @@ void AEnvironmentManager::createProceduralMeshComponent()
         proceduralMesh->SetRenderCustomDepth(true);
         proceduralMesh->SetCustomDepthStencilValue(this->StencilValue);
     }
-
-    // reset current object
-    m_currentObject.Empty();
 
     // add to list
     this->ProceduralMeshComponents.Add(proceduralMesh);

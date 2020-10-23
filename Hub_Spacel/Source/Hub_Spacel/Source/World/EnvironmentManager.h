@@ -4,26 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Hub_Spacel/Source/Engine/Location/ChainedLocation.h"
+#include "Source/Mesh/LocationInformation.h"
+#include <optional>
 #include "EnvironmentManager.generated.h"
-
-// only for c++
-struct CoordInfo
-{
-    float m_noiseValue = 0.0f;
-    bool m_use = 0.0f;
-
-    TSharedPtr<ChainedLocation> m_chainedLocation = nullptr;
-
-    TMap<EFace, int> m_neighboor = { {EFace::Back, -1}, {EFace::Front, -1},
-                                            {EFace::Bot, -1}, {EFace::Top, -1},
-                                            {EFace::Right, -1}, {EFace::Left, -1} };
-
-    inline bool isValid() const
-    {
-        return m_noiseValue > 0.75f && !m_use;
-    }
-};
 
 UCLASS()
 class HUB_SPACEL_API AEnvironmentManager : public AActor
@@ -48,13 +31,13 @@ protected:
 	void generateEnvironment();
 
     /* recurcive call */
-    void findMeshPoint(CoordInfo & _info, TArray<CoordInfo> & _list);
+    void findMeshPoint(FLocationInformation& _node, TArray<FLocationInformation> & _currentObject, TArray<FLocationInformation> & _list, int & _nbPoint);
 
     /* get noise value */
     float getNoise(FVector const& _location) const;
 
     /* create USpacelProceduralMeshComponent with m_currentObject information, then reset m_currentObject */
-    void createProceduralMeshComponent();
+    void createProceduralMeshComponent(TArray<FLocationInformation> && _locations, int const& _nbPoint);
 
 public:
     /* Material for asteroid */
@@ -76,7 +59,4 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Component")
 	TArray<class USpacelProceduralMeshComponent*> ProceduralMeshComponents;
-
-private:
-    TArray<TSharedPtr<ChainedLocation>> m_currentObject;
 };

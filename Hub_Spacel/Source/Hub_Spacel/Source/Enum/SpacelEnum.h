@@ -30,3 +30,16 @@ enum class EShipModuleType : uint8
     EngineSmall = 0x04,
     ShellDefault = 0x08,
 };
+
+UENUM(BlueprintType, meta = (Bitflags, UseEnumValuesAsMaskValuesInEditor = "true"))
+enum class EFace : uint8
+{
+    None = 0,
+    Top = 1 << 0,
+    Bot = 1 << 1,
+    Front = 1 << 2,
+    Back = 1 << 3,
+    Right = 1 << 4,
+    Left = 1 << 5,
+};
+ENUM_CLASS_FLAGS(EFace);

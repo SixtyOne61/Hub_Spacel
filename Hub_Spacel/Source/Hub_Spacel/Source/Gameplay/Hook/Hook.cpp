@@ -29,7 +29,7 @@ void AHook::BeginPlay()
 
 bool AHook::GenerateMesh(TArray<FVector> const& _ignoreCoord)
 {
-    if (!ensure(this->ProceduralMesh != nullptr)) return false;
+    /*if (!ensure(this->ProceduralMesh != nullptr)) return false;
 
     FVector cubeSize = FVector(15.0f, 15.0f, 15.0f);
     this->ProceduralMesh->setCubeSize(cubeSize);
@@ -65,7 +65,7 @@ bool AHook::GenerateMesh(TArray<FVector> const& _ignoreCoord)
     this->ProceduralMesh->generateMesh(std::move(FName("Player")));
     this->ProceduralMesh->SetMaterial(0, this->Mat);
     this->ProceduralMesh->SetCollisionProfileName("NoCollision");
-
+    */
     return true;
 }
 

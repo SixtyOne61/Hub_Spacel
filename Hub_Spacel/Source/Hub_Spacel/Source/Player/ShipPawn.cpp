@@ -2,7 +2,6 @@
 
 
 #include "ShipPawn.h"
-//#include "Materials/MaterialInstance.h"
 #include "Net/UnrealNetwork.h"
 #include "XmlFile.h"
 #include "XmlNode.h"
@@ -20,6 +19,7 @@
 #include "Source/Mesh/SpacelProceduralMeshComponent.h"
 #include "Source/Player/SpacelPlayerState.h"
 #include "Source/Enum/SpacelEnum.h"
+#include "Source/Mesh/LocationInformation.h"
 
 // Sets default values
 AShipPawn::AShipPawn()
@@ -167,8 +167,10 @@ void AShipPawn::buildProceduralModule(USpacelProceduralMeshComponent * _componen
         _component->SetWorldLocation(_location);
         _component->setCubeSize(cubeSize);
 
-        TArray<TSharedPtr<ChainedLocation>> chainedLocations;
-        chainedLocations.Reserve(childrenNodes.Num() - 1);
+        TArray<FLocationInformation> locations;
+        int size = childrenNodes.Num();
+        locations.Reserve(size);
+        locations.SetNum(size);
 
         FVector loc;
         unsigned int nbNode = (unsigned int)childrenNodes.Num();
@@ -177,12 +179,13 @@ void AShipPawn::buildProceduralModule(USpacelProceduralMeshComponent * _componen
             if (FXmlNode const* node = childrenNodes[i])
             {
                 loc.InitFromString(node->GetAttribute("val"));
-                chainedLocations.Add(MakeShareable(new ChainedLocation(loc, cubeSize, -1)));
+                locations[i].Location = loc;
+                locations[i].Used = true;
             }
         }
 
-        _component->setEdges(std::forward<TArray<TSharedPtr<ChainedLocation>>>(chainedLocations));
-        _component->generateMesh("NoCollision");
+        _component->setEdges(std::move(locations));
+        _component->generateMesh("NoCollision", locations.Num());
         _component->SetMaterial(0, _module->Material);
     }
 }
