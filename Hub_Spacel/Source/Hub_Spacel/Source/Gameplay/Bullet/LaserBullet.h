@@ -27,6 +27,9 @@ private:
     /* setup material of bullet */
     void setupMaterial();
 
+    UFUNCTION()
+    void OnComponentHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit);
+
 public:
     UPROPERTY(EditAnywhere, Category = "Default")
     class UProjectileMovementComponent* ProjectileMovementComponent = nullptr;

@@ -19,6 +19,7 @@ ALaserBullet::ALaserBullet()
     ProjectileCollisionComponent = CreateDefaultSubobject<USphereComponent>(TEXT("ProjectileCollision"));
     if (!ensure(ProjectileCollisionComponent != nullptr)) return;
     ProjectileCollisionComponent->SetCollisionProfileName(CollisionProfileName);
+    ProjectileCollisionComponent->OnComponentHit.AddDynamic(this, &ALaserBullet::OnComponentHit);
     RootComponent = ProjectileCollisionComponent;
 
     LaserMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("LaserMesh"));
@@ -61,3 +62,7 @@ void ALaserBullet::setupMaterial()
     }
 }
 
+void ALaserBullet::OnComponentHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit)
+{
+    this->Destroy();
+}
