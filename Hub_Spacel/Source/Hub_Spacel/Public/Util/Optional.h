@@ -27,12 +27,14 @@ namespace Util
         {
             m_hasValue = _mv.m_hasValue;
             m_value = std::move(_mv.m_value);
+            return *this;
         }
 
         Optional<T>& operator=(T _val)
         {
             m_value = _val;
             m_hasValue = true;
+            return *this;
         }
 
         bool hasValue() const
