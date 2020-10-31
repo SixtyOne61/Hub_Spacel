@@ -22,6 +22,10 @@
 		{
 			"Name": "NiagaraExtras",
 			"Enabled": true
+		},
+		{
+			"Name": "GameLiftServerSDK",
+			"Enabled": true
 		}
 	]
 }
