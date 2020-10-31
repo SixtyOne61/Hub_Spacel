@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
-#include <optional>
+#include "Source/Util/Optional.h"
 #include "ShipPawn.generated.h"
 
 UCLASS()
@@ -99,7 +99,7 @@ protected:
     float PercentUp = 0.0f;
 
     /* use only on server, say if we are in fire */
-    std::optional<bool> m_isFire { };
+    Util::Optional<bool> m_isFire { };
 
     /* current time between next bullet */
     float m_fireCountDown { };

@@ -7,7 +7,6 @@ public class Hub_Spacel : ModuleRules
 	public Hub_Spacel(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
-        CppStandard = CppStandardVersion.Cpp17;
 
         PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "ProceduralMeshComponent", "Hub_Spacel", "UMG", "XmlParser" });
     }

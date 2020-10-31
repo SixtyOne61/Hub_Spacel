@@ -240,7 +240,8 @@ bool USpacelProceduralMeshComponent::hit(FVector const& _impactPoint)
                     if (EnumHasAllFlags(locationInformation.Mask, _f1))
                     {
                         // safe check
-                        if (int id = locationInformation.getNeighboorId(_f1); id != -1)
+                        int id = locationInformation.getNeighboorId(_f1);
+                        if (id != -1)
                         {
                             FLocationInformation & neigboor = this->EdgesPosition[id];
                             if (neigboor.Used)

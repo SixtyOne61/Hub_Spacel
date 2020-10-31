@@ -225,7 +225,7 @@ void AShipPawn::fire(float const& _deltaTime)
     if (!ensure(world != nullptr)) return;
 
     // check if we have boolean for fire (only set on server)
-    if (m_isFire.has_value() && m_isFire.value() && m_fireCountDown <= 0.0f)
+    if (m_isFire.hasValue() && m_isFire.value() && m_fireCountDown <= 0.0f)
     {
         FVector location = this->SubMachineComponent->GetRelativeLocation() + this->GetActorLocation();
         FTransform transform {};

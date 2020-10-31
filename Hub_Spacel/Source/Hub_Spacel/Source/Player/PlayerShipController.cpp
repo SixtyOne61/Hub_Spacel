@@ -31,7 +31,7 @@ void APlayerShipController::BeginPlay()
     FTimerDelegate speedUpdateCallback;
     speedUpdateCallback.BindLambda([&]
     {
-        if (m_lastSpeedInput.has_value())
+        if (m_lastSpeedInput.hasValue())
         {
             float newPercent = FMath::Clamp(this->PercentSpeed + m_lastSpeedInput.value(), 0.0f, 100.0f);
             if (newPercent != this->PercentSpeed)
@@ -140,7 +140,7 @@ void APlayerShipController::RPCServerFire_Implementation(bool _on)
 
 void APlayerShipController::readInput(int const& _val, float& _in, std::function<void(float)> _fnc)
 {
-    std::optional<float> newPercent { };
+    Util::Optional<float> newPercent { };
     if (FMath::IsNearlyZero(_val, 0.05f))
     {
         if (_in != 0.0f)
@@ -165,7 +165,7 @@ void APlayerShipController::readInput(int const& _val, float& _in, std::function
         newPercent = FMath::Clamp(_in + _val, -100.0f, 0.0f);
     }
 
-    if (newPercent.has_value())
+    if (newPercent.hasValue())
     {
         _in = newPercent.value();
         _fnc(_in);

@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
 #include <functional>
-#include <optional>
+#include "Source/Util/Optional.h"
 #include "PlayerShipController.generated.h"
 
 /**
@@ -70,5 +70,5 @@ public:
     float PercentUp = 0.0f;
 
 private:
-    std::optional<float> m_lastSpeedInput {};
+    Util::Optional<float> m_lastSpeedInput { };
 };
