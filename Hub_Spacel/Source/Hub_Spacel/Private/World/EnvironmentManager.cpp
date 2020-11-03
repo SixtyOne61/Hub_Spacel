@@ -20,14 +20,14 @@ AEnvironmentManager::AEnvironmentManager()
 	PrimaryActorTick.bCanEverTick = false;
 }
 
-void AEnvironmentManager::init(FVector2D const& _bornX, FVector2D const& _bornY, FVector2D const& _bornZ, FVector const& _cubeSize)
+bool AEnvironmentManager::init(FVector2D const& _bornX, FVector2D const& _bornY, FVector2D const& _bornZ, FVector const& _cubeSize)
 {
 	this->BornX = _bornX;
 	this->BornY = _bornY;
 	this->BornZ = _bornZ;
 	this->CubeSize = _cubeSize;
 
-    generateEnvironment();
+    return generateEnvironment();
 }
 
 // Called when the game starts or when spawned
@@ -41,7 +41,7 @@ void AEnvironmentManager::BeginPlay()
     }
 }
 
-void AEnvironmentManager::generateEnvironment()
+bool AEnvironmentManager::generateEnvironment()
 {
     int maxX = (this->BornX.Y - this->BornX.X) / this->CubeSize.X;
     int maxY = (this->BornY.Y - this->BornY.X) / this->CubeSize.Y;
@@ -126,7 +126,7 @@ void AEnvironmentManager::generateEnvironment()
     // check if we have object
     if (id >= max)
     {
-        return;
+        return false;
     }
 
     while (id < max)
@@ -149,6 +149,8 @@ void AEnvironmentManager::generateEnvironment()
         }
         ++id;
     }
+
+    return ProceduralMeshComponents.Num() != 0;
 }
 
 void AEnvironmentManager::findMeshPoint(FLocationInformation& _node, TArray<FLocationInformation> & _currentObject, TArray<FLocationInformation> & _list, int & _nbPoint)
@@ -206,13 +208,10 @@ void AEnvironmentManager::createProceduralMeshComponent(TArray<FLocationInformat
     proceduralMesh->setOwnerLocation(this->GetActorLocation());
     proceduralMesh->generateMesh(std::move(FName("BlockAll")), _nbPoint);
 
-    if (UMaterialInstanceDynamic * customMat = UMaterialInstanceDynamic::Create(this->MatAsteroid, proceduralMesh))
-    {
-        customMat->SetScalarParameterValue(TEXT("Trickness"), this->TricknessValue);
-        proceduralMesh->SetMaterial(0, customMat);
-        proceduralMesh->SetRenderCustomDepth(true);
-        proceduralMesh->SetCustomDepthStencilValue(this->StencilValue);
-    }
+    //customMat->SetScalarParameterValue(TEXT("Trickness"), this->TricknessValue);
+    proceduralMesh->SetMaterial(0, this->MatAsteroid);
+    proceduralMesh->SetRenderCustomDepth(true);
+    proceduralMesh->SetCustomDepthStencilValue(this->StencilValue);
 
     // add to list
     this->ProceduralMeshComponents.Add(proceduralMesh);

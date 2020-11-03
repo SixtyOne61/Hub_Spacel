@@ -21,14 +21,14 @@ public:
 
 private:
 	/* init actor, call by World Manager, most of time on editor, we keep  */
-	void init(FVector2D const& _bornX, FVector2D const& _bornY, FVector2D const& _bornZ, FVector const& _cubeSize);
+	bool init(FVector2D const& _bornX, FVector2D const& _bornY, FVector2D const& _bornZ, FVector const& _cubeSize);
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
     /* full generate world */
-	void generateEnvironment();
+	bool generateEnvironment();
 
     /* recurcive call */
     void findMeshPoint(FLocationInformation& _node, TArray<FLocationInformation> & _currentObject, TArray<FLocationInformation> & _list, int & _nbPoint);
@@ -41,6 +41,7 @@ protected:
 
 public:
     /* Material for asteroid */
+	// TO DO change this material
     UPROPERTY(Category = "Material", EditAnywhere, BlueprintReadWrite)
     class UMaterialInstance* MatAsteroid = nullptr;
     UPROPERTY(Category = "Material", EditAnywhere, BlueprintReadWrite)

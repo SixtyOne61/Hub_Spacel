@@ -9,7 +9,7 @@ public class Hub_SpacelServerTarget : TargetRules
     public Hub_SpacelServerTarget(TargetInfo Target) : base(Target)
 	{
 		Type = TargetType.Server;
-		BuildEnvironment = TargetBuildEnvironment.Shared;
+		//DefaultBuildSettings = BuildSettingsVersion.V2;
 		ExtraModuleNames.Add("Hub_Spacel");
 	}
 }

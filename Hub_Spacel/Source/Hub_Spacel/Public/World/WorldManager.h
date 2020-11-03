@@ -27,13 +27,7 @@ public:
     class UBoxComponent* BoxComponent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
-	uint8 NbChunckPerAxis = 0;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
-    uint8 NbCubePerChunckPerAxis = 0;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
-    int32 CubeSize = 0;
+	class UWorldDataAsset* WorldDataAsset { nullptr };
 
 	UPROPERTY(EditDefaultsOnly, Category = "Procedural")
 	TSubclassOf<class AEnvironmentManager> EnvironmentClass;

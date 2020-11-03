@@ -51,8 +51,10 @@ protected:
 	/* location of owner */
 	FVector m_ownerLocation = FVector::ZeroVector;
 
-	/* list of all edges */
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	/* list of all edges */ 
+	// TO DO : for this moment we disable uproperty so we don't have save and we can't have destruction
+	// but we don't take 10 giga on ram
+    //UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TArray<FLocationInformation> EdgesPosition;
 
 	/* list of overlap object */
