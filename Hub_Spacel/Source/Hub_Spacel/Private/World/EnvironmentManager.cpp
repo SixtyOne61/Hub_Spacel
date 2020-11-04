@@ -150,7 +150,7 @@ bool AEnvironmentManager::generateEnvironment()
         ++id;
     }
 
-    return ProceduralMeshComponents.Num() != 0;
+    return this->ProceduralMeshComponents.Num() != 0;
 }
 
 void AEnvironmentManager::findMeshPoint(FLocationInformation& _node, TArray<FLocationInformation> & _currentObject, TArray<FLocationInformation> & _list, int & _nbPoint)
@@ -202,11 +202,11 @@ void AEnvironmentManager::createProceduralMeshComponent(TArray<FLocationInformat
 
     proceduralMesh->SetWorldLocation(location);
     proceduralMesh->bUseAsyncCooking = true;
-    proceduralMesh->setCubeSize(this->CubeSize);
-    proceduralMesh->setEdges(std::move(_locations));
+
     proceduralMesh->SetCastShadow(false);
-    proceduralMesh->setOwnerLocation(this->GetActorLocation());
-    proceduralMesh->generateMesh(std::move(FName("BlockAll")), _nbPoint);
+    proceduralMesh->CubeSize = this->CubeSize;
+    proceduralMesh->OwnerLocation = this->GetActorLocation();
+    proceduralMesh->generateMesh({ "BlockAll" }, _nbPoint, _locations);
 
     //customMat->SetScalarParameterValue(TEXT("Trickness"), this->TricknessValue);
     proceduralMesh->SetMaterial(0, this->MatAsteroid);

@@ -165,7 +165,7 @@ void AShipPawn::buildProceduralModule(USpacelProceduralMeshComponent * _componen
         cubeSize.InitFromString(childrenNodes[0]->GetAttribute("val"));
 
         _component->SetWorldLocation(_location);
-        _component->setCubeSize(cubeSize);
+        _component->CubeSize = cubeSize;
 
         TArray<FLocationInformation> locations;
         int size = childrenNodes.Num();
@@ -184,8 +184,7 @@ void AShipPawn::buildProceduralModule(USpacelProceduralMeshComponent * _componen
             }
         }
 
-        _component->setEdges(std::move(locations));
-        _component->generateMesh("NoCollision", locations.Num());
+        _component->generateMesh("NoCollision", locations.Num(), locations);
         _component->SetMaterial(0, _module->Material);
     }
 }
