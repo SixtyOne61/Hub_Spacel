@@ -1,83 +1,101 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "Hub_SpacelGameInstance.h"
-#include "Engine/World.h"
-#include "Blueprint/UserWidget.h"
-#include "Factory/SpacelFactory.h"
-#include "Kismet/KismetSystemLibrary.h"
+#include "Json.h"
+#include "JsonUtilities.h"
+#include "Hud/TextReaderComponent.h"
 
-UHub_SpacelGameInstance::UHub_SpacelGameInstance(FObjectInitializer const& _objectInitialize)
+UHub_SpacelGameInstance::UHub_SpacelGameInstance()
 {
-    m_mainMenuClass = SpacelFactory::FindClass<UUserWidget>(TEXT("/Game/UI/MainMenu/WBP_MainMenu"));
+    UTextReaderComponent* textReader = CreateDefaultSubobject<UTextReaderComponent>(TEXT("TextReaderComponent"));
+    if (!ensure(textReader != nullptr)) return;
+
+    ApiUrl = textReader->ReadFile("Urls/ApiUrl.txt");
+    HttpModule = &FHttpModule::Get();
 }
 
-TArray<FServerDesc> const& UHub_SpacelGameInstance::GetServers() const
+void UHub_SpacelGameInstance::Shutdown()
 {
-    return this->ServerFinderHandle.GetServers();
-}
+    Super::Shutdown();
 
-void UHub_SpacelGameInstance::CleanServers()
-{
-    this->ServerFinderHandle.CleanServers();
-}
-
-void UHub_SpacelGameInstance::JoinServer(FText _ip) const
-{
-    UEngine* engine = this->GetEngine();
-    if (!ensure(engine != nullptr)) return;
-
-    engine->AddOnScreenDebugMessage(0, 5.0f, FColor::Green, TEXT("Joining Server"));
-
-    UWorld* world = this->GetWorld();
-    if (!ensure(world != nullptr)) return;
-
-    FString cmd = "open ";
-    cmd.Append(_ip.ToString());
-    UKismetSystemLibrary::ExecuteConsoleCommand(world, cmd, this->GetFirstLocalPlayerController());
-}
-
-void UHub_SpacelGameInstance::LoadMenu()
-{
-    if (!ensure(m_mainMenuClass != nullptr)) return;
-    UUserWidget* mainMenu = CreateWidget<UUserWidget>(this, m_mainMenuClass);
-    if (!ensure(mainMenu != nullptr)) return;
-
-    mainMenu->bIsFocusable = true;
-    mainMenu->AddToViewport();
-
-    APlayerController* playerController = this->GetFirstLocalPlayerController();
-    if (!ensure(playerController != nullptr)) return;
-
-    FInputModeUIOnly inputMode;
-    inputMode.SetWidgetToFocus(mainMenu->TakeWidget());
-    inputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
-
-    // set input mode to player controller
-    playerController->SetInputMode(inputMode);
-    playerController->bShowMouseCursor = true;
-}
-
-void UHub_SpacelGameInstance::Init()
-{
-    UWorld* world = this->GetWorld();
-    if (!ensure(world != nullptr)) return;
-
-    FString cmd = "NetworkVersionOverride 12345";
-    world->Exec(world, *cmd);
-}
-
-void UHub_SpacelGameInstance::ResetInputMode() const
-{
-    APlayerController* playerController = this->GetFirstLocalPlayerController();
-    if (playerController == nullptr)
+    if (this->AccessToken.Len() > 0)
     {
-        return;
+        TSharedRef<IHttpRequest> invalidateTokensRequest = this->HttpModule->CreateRequest();
+        invalidateTokensRequest->SetURL(this->ApiUrl + "/invalidatetokens");
+        invalidateTokensRequest->SetVerb("GET");
+        invalidateTokensRequest->SetHeader("Content-Type", "application/json");
+        invalidateTokensRequest->SetHeader("Authorization", this->AccessToken);
+        invalidateTokensRequest->ProcessRequest();
     }
+}
 
-    FInputModeGameOnly inputMode;
-    inputMode.SetConsumeCaptureMouseDown(false);
+void UHub_SpacelGameInstance::SetCognitoTokens(FString _accessToken, FString _idToken, FString _refreshToken)
+{
+    this->AccessToken = _accessToken ;
+    this->IdToken = _idToken;
+    this->RefreshToken = _refreshToken;
 
-    playerController->SetInputMode(inputMode);
-    playerController->bShowMouseCursor = false;
+    //UE_LOG(LogTemp, Warning, TEXT("access token: %s"), *this->AccessToken);
+    //UE_LOG(LogTemp, Warning, TEXT("refresh token: %s"), *this->RefreshToken);
+
+    UWorld* world { this->GetWorld() };
+    if (!ensure(world != nullptr)) return;
+    world->GetTimerManager().SetTimer(this->RetrieveNewTokensHandle, this, &UHub_SpacelGameInstance::RetrieveNewTokens, 1.0f, false, 3300.0f);
+}
+
+void UHub_SpacelGameInstance::RetrieveNewTokens()
+{
+    if (this->AccessToken.Len() > 0 && this->RefreshToken.Len() > 0)
+    {
+        TSharedPtr<FJsonObject> requestObj { MakeShareable(new FJsonObject) };
+        requestObj->SetStringField("refreshToken", RefreshToken);
+
+        FString requestBody {};
+        TSharedRef<TJsonWriter<>> writer { TJsonWriterFactory<>::Create(&requestBody) };
+
+        if (FJsonSerializer::Serialize(requestObj.ToSharedRef(), writer))
+        {
+            TSharedRef<IHttpRequest> retrieveNewTokensRequest { this->HttpModule->CreateRequest() };
+            retrieveNewTokensRequest->OnProcessRequestComplete().BindUObject(this, &UHub_SpacelGameInstance::onRetrieveNewTokensResponseReceived);
+            retrieveNewTokensRequest->SetURL(this->ApiUrl + "/retrievenewtokens");
+            retrieveNewTokensRequest->SetVerb("POST");
+            retrieveNewTokensRequest->SetHeader("Content-Type", "application/json");
+            retrieveNewTokensRequest->SetHeader("Authorization", this->AccessToken);
+            retrieveNewTokensRequest->SetContentAsString(requestBody);
+            retrieveNewTokensRequest->ProcessRequest();
+        }
+        else
+        {
+            UWorld* world{ this->GetWorld() };
+            if (!ensure(world != nullptr)) return;
+            world->GetTimerManager().SetTimer(this->RetrieveNewTokensHandle, this, &UHub_SpacelGameInstance::RetrieveNewTokens, 1.0f, false, 30.0f);
+        }
+    }
+}
+
+void UHub_SpacelGameInstance::onRetrieveNewTokensResponseReceived(FHttpRequestPtr _request, FHttpResponsePtr _response, bool _bWasSuccessful)
+{
+    if (_bWasSuccessful)
+    {
+        TSharedPtr<FJsonObject> jsonObject;
+        TSharedRef<TJsonReader<>> reader { TJsonReaderFactory<>::Create(_response->GetContentAsString()) };
+        if (FJsonSerializer::Deserialize(reader, jsonObject))
+        {
+            if (!jsonObject->HasField("error"))
+            {
+                SetCognitoTokens(jsonObject->GetStringField("accessToken"), jsonObject->GetStringField("idToken"), this->RefreshToken);
+            }
+        }
+        else
+        {
+            UWorld* world{ this->GetWorld() };
+            if (!ensure(world != nullptr)) return;
+            world->GetTimerManager().SetTimer(this->RetrieveNewTokensHandle, this, &UHub_SpacelGameInstance::RetrieveNewTokens, 1.0f, false, 30.0f);
+        }
+    }
+    else
+    {
+        UWorld* world{ this->GetWorld() };
+        if (!ensure(world != nullptr)) return;
+        world->GetTimerManager().SetTimer(this->RetrieveNewTokensHandle, this, &UHub_SpacelGameInstance::RetrieveNewTokens, 1.0f, false, 30.0f);
+    }
 }

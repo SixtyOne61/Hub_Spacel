@@ -10,7 +10,8 @@
 			"LoadingPhase": "Default",
 			"AdditionalDependencies": [
 				"Engine",
-				"ProceduralMeshComponent"
+				"ProceduralMeshComponent",
+				"UMG"
 			]
 		}
 	],
@@ -25,6 +26,10 @@
 		},
 		{
 			"Name": "GameLiftServerSDK",
+			"Enabled": true
+		},
+		{
+			"Name": "WebBrowserWidget",
 			"Enabled": true
 		}
 	]

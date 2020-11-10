@@ -4,8 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
-#include "Server/ServerFinder.h"
-#include "Server/ServerDesc.h"
+#include "Runtime/Online/HTTP/Public/Http.h"
 #include "Hub_SpacelGameInstance.generated.h"
 
 /**
@@ -17,30 +16,35 @@ class HUB_SPACEL_API UHub_SpacelGameInstance : public UGameInstance
 	GENERATED_BODY()
 
 public:
-    UHub_SpacelGameInstance(FObjectInitializer const& _objectInitialize);
+    UHub_SpacelGameInstance();
 
-    UFUNCTION(BlueprintCallable)
-    TArray<FServerDesc> const& GetServers() const;
+    virtual void Shutdown() override;
 
-    UFUNCTION(BlueprintCallable)
-    void CleanServers();
-
-    UFUNCTION(BlueprintCallable)
-    void JoinServer(FText _ip) const;
-
-    UFUNCTION(BlueprintCallable)
-    void LoadMenu();
-
-    /* reset input mode for first player controller */
-    UFUNCTION(BlueprintCallable)
-    void ResetInputMode() const;
-
-    /* override init */
-    virtual void Init() override;
+    UFUNCTION()
+    void SetCognitoTokens(FString _accessToken, FString _idToken, FString _refreshToken);
 
 private:
-    TSubclassOf<class UUserWidget> m_mainMenuClass = nullptr;
+    UFUNCTION()
+    void RetrieveNewTokens();
 
-    // server finder handle, use for find available server
-    ServerFinder ServerFinderHandle = ServerFinder();
+    void onRetrieveNewTokensResponseReceived(FHttpRequestPtr _request, FHttpResponsePtr _response, bool _bWasSuccessful);
+
+public:
+    UPROPERTY()
+    FString AccessToken {};
+
+    UPROPERTY()
+    FString IdToken {};
+
+    UPROPERTY()
+    FString RefreshToken {};
+
+    UPROPERTY()
+    FTimerHandle RetrieveNewTokensHandle;
+
+private:
+    class FHttpModule* HttpModule { nullptr };
+
+    UPROPERTY()
+    FString ApiUrl {};
 };
