@@ -3,6 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Runtime/Online/HTTP/Public/Http.h"
+#include <functional>
 
 /**
  * 

@@ -19,6 +19,7 @@ public:
     UHub_SpacelGameInstance();
 
     virtual void Shutdown() override;
+    virtual void Init() override;
 
     UFUNCTION()
     void SetCognitoTokens(FString _accessToken, FString _idToken, FString _refreshToken);
@@ -26,8 +27,12 @@ public:
 private:
     UFUNCTION()
     void RetrieveNewTokens();
+    
+    UFUNCTION()
+    void GetResponseTime();
 
     void onRetrieveNewTokensResponseReceived(FHttpRequestPtr _request, FHttpResponsePtr _response, bool _bWasSuccessful);
+    void onGetResponseTimeResponseReceived(FHttpRequestPtr _request, FHttpResponsePtr _response, bool _bWasSuccessful);
 
 public:
     UPROPERTY()
@@ -40,11 +45,19 @@ public:
     FString RefreshToken {};
 
     UPROPERTY()
-    FTimerHandle RetrieveNewTokensHandle;
+    FTimerHandle RetrieveNewTokensHandle {};
+
+    UPROPERTY()
+    FTimerHandle GetResponseTimeHandle {};
+
+    TDoubleLinkedList<float> PlayerLatencies {};
 
 private:
     class FHttpModule* HttpModule { nullptr };
 
     UPROPERTY()
     FString ApiUrl {};
+
+    UPROPERTY()
+    FString RegionCode {};
 };

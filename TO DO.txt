@@ -20,6 +20,14 @@ Durée d'une partie de 10 min
 Ecran de fin
 Retour au main menu
 
+Pour choisir les spec de son vaisseau, on a 4pts à répartir dans trois branches de trois éléments.
+Cadence de tir + 33% / X / Missile tête cherceuse (triangle) + tour d'attaque
+Coque doublé / Bouclier perso / Bouclier sur allier (triangle) + tour de défense
+Vitesse + 33% / X / IEM (triangle) + tour parasite
+Une tour se creer en utilisant une partie des ressources que l'on a ramassé
+
+Map race avec vaisseau identique et raccourci
+
 Backlog :
 shield gameplay / self shield
 smart rocket gameplay / ray gun

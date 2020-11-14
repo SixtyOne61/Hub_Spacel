@@ -10,6 +10,7 @@ UHub_SpacelGameInstance::UHub_SpacelGameInstance()
     if (!ensure(textReader != nullptr)) return;
 
     ApiUrl = textReader->ReadFile("Urls/ApiUrl.txt");
+    RegionCode = textReader->ReadFile("Urls/RegionCode.txt");
     HttpModule = &FHttpModule::Get();
 }
 
@@ -26,6 +27,16 @@ void UHub_SpacelGameInstance::Shutdown()
         invalidateTokensRequest->SetHeader("Authorization", this->AccessToken);
         invalidateTokensRequest->ProcessRequest();
     }
+}
+
+void UHub_SpacelGameInstance::Init()
+{
+    Super::Init();
+
+    UWorld* world { this->GetWorld() };
+    if (!ensure(world != nullptr)) return;
+
+    world->GetTimerManager().SetTimer(this->GetResponseTimeHandle, this, &UHub_SpacelGameInstance::GetResponseTime, 1.0f, true, 1.0f);
 }
 
 void UHub_SpacelGameInstance::SetCognitoTokens(FString _accessToken, FString _idToken, FString _refreshToken)
@@ -98,4 +109,26 @@ void UHub_SpacelGameInstance::onRetrieveNewTokensResponseReceived(FHttpRequestPt
         if (!ensure(world != nullptr)) return;
         world->GetTimerManager().SetTimer(this->RetrieveNewTokensHandle, this, &UHub_SpacelGameInstance::RetrieveNewTokens, 1.0f, false, 30.0f);
     }
+}
+
+void UHub_SpacelGameInstance::GetResponseTime()
+{
+    TSharedRef<IHttpRequest> getResponseTimeRequest = this->HttpModule->CreateRequest();
+    getResponseTimeRequest->OnProcessRequestComplete().BindUObject(this, &UHub_SpacelGameInstance::onGetResponseTimeResponseReceived);
+    getResponseTimeRequest->SetURL("https://gamelift." + this->RegionCode + ".amazonaws.com");
+    getResponseTimeRequest->SetVerb("GET");
+    getResponseTimeRequest->ProcessRequest();
+}
+
+void UHub_SpacelGameInstance::onGetResponseTimeResponseReceived(FHttpRequestPtr _request, FHttpResponsePtr _response, bool _bWasSuccessful)
+{
+    if (this->PlayerLatencies.Num() >= 4)
+    {
+        this->PlayerLatencies.RemoveNode(PlayerLatencies.GetHead());
+    }
+
+    float responseTime = _request->GetElapsedTime() * 1000;
+    //UE_LOG(LogTemp, Warning, TEXT("response time in milliseconds: %s"), *FString::SanitizeFloat(responseTime));
+
+    this->PlayerLatencies.AddTail(responseTime);
 }

@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "Runtime/Online/HTTP/Public/Http.h"
+#include "Http.h"
 #include "MainMenuWidget.generated.h"
 
 /**
@@ -25,7 +25,23 @@ private:
 	UFUNCTION()
 	void HandleLoginUrlChange();
 
+	UFUNCTION()
+	void SetAveragePlayerLatency();
+
 	void onExchangeCodeForTokensResponseReceived(FHttpRequestPtr _request, FHttpResponsePtr _response, bool _bWasSuccessful);
+	void onGetPlayerDataResponseReceived(FHttpRequestPtr _request, FHttpResponsePtr _response, bool _bWasSuccessful);
+
+	template<class T>
+	T* initSafetyFromName(const FName& _name) const
+	{
+		T* obj = (T*)GetWidgetFromName(_name);
+		if (!ensure(obj != nullptr)) return nullptr;
+		return obj;
+	}
+
+public:
+	UPROPERTY()
+	FTimerHandle SetAveragePlayerLatencyHandle;
 
 private:
 	class FHttpModule* HttpModule { nullptr };
@@ -41,4 +57,22 @@ private:
 
 	UPROPERTY()
 	class UWebBrowser* WebBrowser { nullptr };
+
+	UPROPERTY()
+	class UButton* MatchmakingButton { nullptr };
+
+	UPROPERTY()
+	class UTextBlock* WinsTextBlock { nullptr };
+
+	UPROPERTY()
+	class UTextBlock* LossesTextBlock { nullptr };
+
+	UPROPERTY()
+	class UTextBlock* PingTextBlock { nullptr };
+
+	UPROPERTY()
+	class UTextBlock* MatchmakingEventTextBlock { nullptr };
+
+	UPROPERTY()
+	float AveragePlayerLatency;
 };

@@ -7,12 +7,15 @@
 #include "IWebBrowserCookieManager.h"
 #include "Json.h"
 #include "JsonUtilities.h"
+#include "Components/Button.h"
+#include "Components/TextBlock.h"
 #include "Hub_SpacelGameInstance.h"
+#include "Util/SimplyUI.h"
 
 UMainMenuWidget::UMainMenuWidget(FObjectInitializer const& _objectInitializer)
     : Super(_objectInitializer)
 {
-    UTextReaderComponent* textReader = CreateDefaultSubobject<UTextReaderComponent>(TEXT("TextReaderComponent"));
+    UTextReaderComponent* textReader { CreateDefaultSubobject<UTextReaderComponent>(TEXT("TextReaderComponent")) };
     if (!ensure(textReader != nullptr)) return;
 
     LoginUrl = textReader->ReadFile("Urls/LoginUrl.txt");
@@ -20,6 +23,8 @@ UMainMenuWidget::UMainMenuWidget(FObjectInitializer const& _objectInitializer)
     CallbackUrl = textReader->ReadFile("Urls/CallbackUrl.txt");
 
     HttpModule = &FHttpModule::Get();
+
+    AveragePlayerLatency = 60.0f;
 }
 
 void UMainMenuWidget::NativeConstruct()
@@ -27,14 +32,23 @@ void UMainMenuWidget::NativeConstruct()
     Super::NativeConstruct();
     bIsFocusable = true;
 
-    WebBrowser = (UWebBrowser*)GetWidgetFromName(TEXT("WebBrowser_Login"));
-    if (!ensure(WebBrowser != nullptr)) return;
+    WebBrowser = initSafetyFromName<UWebBrowser>(TEXT("WebBrowser_Login"));
+    MatchmakingButton = initSafetyFromName<UButton>(TEXT("Button_Matchmaking"));
+    WinsTextBlock = initSafetyFromName<UTextBlock>(TEXT("TextBlock_Wins"));
+    LossesTextBlock = initSafetyFromName<UTextBlock>(TEXT("TextBlock_Losses"));
+    PingTextBlock = initSafetyFromName<UTextBlock>(TEXT("TextBlock_Ping"));
+    MatchmakingEventTextBlock = initSafetyFromName<UTextBlock>(TEXT("TextBlock_MatchmakingEvent"));
 
-    IWebBrowserSingleton* webBrowserSingleton = IWebBrowserModule::Get().GetSingleton();
+    UWorld* world{ this->GetWorld() };
+    if (!ensure(world != nullptr)) return;
+
+    world->GetTimerManager().SetTimer(SetAveragePlayerLatencyHandle, this, &UMainMenuWidget::SetAveragePlayerLatency, 1.0f, true, 1.0f);
+
+    IWebBrowserSingleton* webBrowserSingleton { IWebBrowserModule::Get().GetSingleton() };
     if (!ensure(webBrowserSingleton != nullptr)) return;
 
-    TOptional<FString> defaultContext;
-    TSharedPtr<IWebBrowserCookieManager> cookieManager = webBrowserSingleton->GetCookieManager(defaultContext);
+    TOptional<FString> defaultContext { };
+    TSharedPtr<IWebBrowserCookieManager> cookieManager { webBrowserSingleton->GetCookieManager(defaultContext) };
 
     if (cookieManager.IsValid())
     {
@@ -66,11 +80,11 @@ void UMainMenuWidget::HandleLoginUrlChange()
                 {
                     parameterValue = parameterValue.Replace(*FString("#"), *FString(""));
                     
-                    TSharedPtr<FJsonObject> requestObj = MakeShareable(new FJsonObject);
+                    TSharedPtr<FJsonObject> requestObj { MakeShareable(new FJsonObject) };
                     requestObj->SetStringField(parameterName, parameterValue);
 
                     FString requestBody {};
-                    TSharedRef<TJsonWriter<>> writer = TJsonWriterFactory<>::Create(&requestBody);
+                    TSharedRef<TJsonWriter<>> writer { TJsonWriterFactory<>::Create(&requestBody) };
 
                     if (FJsonSerializer::Serialize(requestObj.ToSharedRef(), writer))
                     {
@@ -90,21 +104,104 @@ void UMainMenuWidget::HandleLoginUrlChange()
 
 void UMainMenuWidget::onExchangeCodeForTokensResponseReceived(FHttpRequestPtr _request, FHttpResponsePtr _response, bool _bWasSuccessful)
 {
-    if (_bWasSuccessful)
+    if (!_bWasSuccessful)
     {
-        TSharedPtr<FJsonObject> jsonObject;
-        TSharedRef<TJsonReader<>> reader = TJsonReaderFactory<>::Create(_response->GetContentAsString());
-        if (FJsonSerializer::Deserialize(reader, jsonObject))
-        {
-            if (!jsonObject->HasField("error"))
-            {
-                UHub_SpacelGameInstance* spacelGameInstance = Cast<UHub_SpacelGameInstance>(this->GetGameInstance());
-                if (!ensure(spacelGameInstance != nullptr)) return;
+        return;
+    }
 
-                spacelGameInstance->SetCognitoTokens(jsonObject->GetStringField("access_token"),
-                                                    jsonObject->GetStringField("id_token"),
-                                                    jsonObject->GetStringField("refresh_token"));
-            }
+    TSharedPtr<FJsonObject> jsonObject;
+    TSharedRef<TJsonReader<>> reader { TJsonReaderFactory<>::Create(_response->GetContentAsString()) };
+
+    if (!FJsonSerializer::Deserialize(reader, jsonObject))
+    {
+        return;
+    }
+
+    if (jsonObject->HasField("error"))
+    {
+        return;
+    }
+
+    UHub_SpacelGameInstance* spacelGameInstance { Cast<UHub_SpacelGameInstance>(this->GetGameInstance()) };
+    if (!ensure(spacelGameInstance != nullptr)) return;
+
+    FString accessToken { jsonObject->GetStringField("access_token") };
+    FString idToken { jsonObject->GetStringField("id_token") };
+    FString refreshToken { jsonObject->GetStringField("refresh_token") };
+
+    spacelGameInstance->SetCognitoTokens(accessToken, idToken, refreshToken);
+
+    if (!ensure(this->HttpModule != nullptr)) return;
+    TSharedRef<IHttpRequest> getPlayerDataRequest { this->HttpModule->CreateRequest() };
+    getPlayerDataRequest->OnProcessRequestComplete().BindUObject(this, &UMainMenuWidget::onGetPlayerDataResponseReceived);
+    getPlayerDataRequest->SetURL(this->ApiUrl + "/getplayerdata");
+    getPlayerDataRequest->SetVerb("GET");
+    getPlayerDataRequest->SetHeader("Authorization", accessToken);
+    getPlayerDataRequest->ProcessRequest();
+}
+
+void UMainMenuWidget::onGetPlayerDataResponseReceived(FHttpRequestPtr _request, FHttpResponsePtr _response, bool _bWasSuccessful)
+{
+    if (!_bWasSuccessful)
+    {
+        return;
+    }
+
+    TSharedPtr<FJsonObject> jsonObject;
+    TSharedRef<TJsonReader<>> reader { TJsonReaderFactory<>::Create(_response->GetContentAsString()) };
+
+    if (!FJsonSerializer::Deserialize(reader, jsonObject))
+    {
+        return;
+    }
+
+    if (jsonObject->HasField("error"))
+    {
+        return;
+    }
+
+    if (!jsonObject->HasField("playerData"))
+    {
+        return;
+    }
+
+    TSharedPtr<FJsonObject> playerData { jsonObject->GetObjectField("playerData") };
+
+    auto lb_set = [&playerData](UTextBlock* _text, FString&& _name)
+    {
+        if (!ensure(_text != nullptr)) return;
+        if (playerData->HasField(_name))
+        {
+            FString txt = playerData->GetObjectField(_name)->GetStringField("N");
+            _text->SetText(FText::FromString(_name + ": " + txt));
         }
+    };
+
+    lb_set(this->WinsTextBlock, "Wins");
+    lb_set(this->LossesTextBlock, "Losses");
+
+    SimpleUI::setVisibility({ESlateVisibility::Hidden}, 
+        std::make_tuple(this->WebBrowser));
+    SimpleUI::setVisibility({ ESlateVisibility::Visible },
+        std::make_tuple(this->MatchmakingButton, this->WinsTextBlock, this->LossesTextBlock, this->PingTextBlock, this->MatchmakingEventTextBlock));
+}
+
+void UMainMenuWidget::SetAveragePlayerLatency()
+{
+    UHub_SpacelGameInstance* spacelGameInstance { Cast<UHub_SpacelGameInstance>(this->GetGameInstance()) };
+    if (!ensure(spacelGameInstance != nullptr)) return;
+
+    float totalPlayerLatency = 0.0f;
+    for (float playerLatency : spacelGameInstance->PlayerLatencies)
+    {
+        totalPlayerLatency += playerLatency;
+    }
+
+    if (totalPlayerLatency > 0.0f)
+    {
+        this->AveragePlayerLatency = totalPlayerLatency / spacelGameInstance->PlayerLatencies.Num();
+        FString pingString = "Ping: " + FString::FromInt(FMath::RoundToInt(this->AveragePlayerLatency)) + "ms";
+        if (!ensure(this->PingTextBlock != nullptr)) return;
+        this->PingTextBlock->SetText(FText::FromString(pingString));
     }
 }
