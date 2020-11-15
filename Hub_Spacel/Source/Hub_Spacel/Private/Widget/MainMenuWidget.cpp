@@ -192,9 +192,10 @@ void UMainMenuWidget::SetAveragePlayerLatency()
         totalPlayerLatency += playerLatency;
     }
 
-    if (totalPlayerLatency > 0.0f)
+    int32 num = spacelGameInstance->PlayerLatencies.Num();
+    if (totalPlayerLatency > 0.0f && num != 0)
     {
-        this->AveragePlayerLatency = totalPlayerLatency / spacelGameInstance->PlayerLatencies.Num();
+        this->AveragePlayerLatency = totalPlayerLatency / num;
         FString pingString { "Ping: " + FString::FromInt(FMath::RoundToInt(this->AveragePlayerLatency)) + "ms" };
         if (!ensure(this->PingTextBlock != nullptr)) return;
         this->PingTextBlock->SetText(FText::FromString(pingString));
