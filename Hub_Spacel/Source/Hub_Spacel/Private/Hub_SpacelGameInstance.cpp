@@ -3,6 +3,7 @@
 #include "Json.h"
 #include "JsonUtilities.h"
 #include "Hud/TextReaderComponent.h"
+#include "Util/SimplyHttpRequest.h"
 
 UHub_SpacelGameInstance::UHub_SpacelGameInstance()
 {
@@ -20,12 +21,16 @@ void UHub_SpacelGameInstance::Shutdown()
 
     if (this->AccessToken.Len() > 0)
     {
-        TSharedRef<IHttpRequest> invalidateTokensRequest = this->HttpModule->CreateRequest();
-        invalidateTokensRequest->SetURL(this->ApiUrl + "/invalidatetokens");
-        invalidateTokensRequest->SetVerb("GET");
-        invalidateTokensRequest->SetHeader("Content-Type", "application/json");
-        invalidateTokensRequest->SetHeader("Authorization", this->AccessToken);
-        invalidateTokensRequest->ProcessRequest();
+        SimplyHttpRequest::processRequest(this->HttpModule,
+            this->ApiUrl + "/invalidatetokens", "GET",
+            TArray<FString>{"Content-Type", "application/json", "Authorization", this->AccessToken}, {});
+
+        //TSharedRef<IHttpRequest> invalidateTokensRequest = this->HttpModule->CreateRequest();
+        //invalidateTokensRequest->SetURL(this->ApiUrl + "/invalidatetokens");
+        //invalidateTokensRequest->SetVerb("GET");
+        //invalidateTokensRequest->SetHeader("Content-Type", "application/json");
+        //invalidateTokensRequest->SetHeader("Authorization", this->AccessToken);
+        //invalidateTokensRequest->ProcessRequest();
     }
 }
 
@@ -65,14 +70,10 @@ void UHub_SpacelGameInstance::RetrieveNewTokens()
 
         if (FJsonSerializer::Serialize(requestObj.ToSharedRef(), writer))
         {
-            TSharedRef<IHttpRequest> retrieveNewTokensRequest { this->HttpModule->CreateRequest() };
-            retrieveNewTokensRequest->OnProcessRequestComplete().BindUObject(this, &UHub_SpacelGameInstance::onRetrieveNewTokensResponseReceived);
-            retrieveNewTokensRequest->SetURL(this->ApiUrl + "/retrievenewtokens");
-            retrieveNewTokensRequest->SetVerb("POST");
-            retrieveNewTokensRequest->SetHeader("Content-Type", "application/json");
-            retrieveNewTokensRequest->SetHeader("Authorization", this->AccessToken);
-            retrieveNewTokensRequest->SetContentAsString(requestBody);
-            retrieveNewTokensRequest->ProcessRequest();
+            SimplyHttpRequest::processRequest(this->HttpModule, this,
+                &UHub_SpacelGameInstance::onRetrieveNewTokensResponseReceived,
+                this->ApiUrl + "/retrievenewtokens", "POST",
+                TArray<FString>{"Content-Type", "application/json", "Authorization", this->AccessToken}, requestBody);
         }
         else
         {

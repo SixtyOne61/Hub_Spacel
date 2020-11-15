@@ -11,6 +11,7 @@
 #include "Components/TextBlock.h"
 #include "Hub_SpacelGameInstance.h"
 #include "Util/SimplyUI.h"
+#include "Util/SimplyHttpRequest.h"
 
 UMainMenuWidget::UMainMenuWidget(FObjectInitializer const& _objectInitializer)
     : Super(_objectInitializer)
@@ -88,13 +89,10 @@ void UMainMenuWidget::HandleLoginUrlChange()
 
                     if (FJsonSerializer::Serialize(requestObj.ToSharedRef(), writer))
                     {
-                        TSharedRef<IHttpRequest> exchangeCodeForTokensRequest { this->HttpModule->CreateRequest() };
-                        exchangeCodeForTokensRequest->OnProcessRequestComplete().BindUObject(this, &UMainMenuWidget::onExchangeCodeForTokensResponseReceived);
-                        exchangeCodeForTokensRequest->SetURL(this->ApiUrl + "/exchangecodefortokens");
-                        exchangeCodeForTokensRequest->SetVerb("POST");
-                        exchangeCodeForTokensRequest->SetHeader("Content-Type", "application/json");
-                        exchangeCodeForTokensRequest->SetContentAsString(requestBody);
-                        exchangeCodeForTokensRequest->ProcessRequest();
+                        SimplyHttpRequest::processRequest(this->HttpModule, this,
+                            &UMainMenuWidget::onExchangeCodeForTokensResponseReceived, 
+                            this->ApiUrl + "/exchangecodefortokens", "POST", 
+                            TArray<FString>{"Content-Type", "application/json"}, requestBody);
                     }
                 }
             }
@@ -131,13 +129,10 @@ void UMainMenuWidget::onExchangeCodeForTokensResponseReceived(FHttpRequestPtr _r
 
     spacelGameInstance->SetCognitoTokens(accessToken, idToken, refreshToken);
 
-    if (!ensure(this->HttpModule != nullptr)) return;
-    TSharedRef<IHttpRequest> getPlayerDataRequest { this->HttpModule->CreateRequest() };
-    getPlayerDataRequest->OnProcessRequestComplete().BindUObject(this, &UMainMenuWidget::onGetPlayerDataResponseReceived);
-    getPlayerDataRequest->SetURL(this->ApiUrl + "/getplayerdata");
-    getPlayerDataRequest->SetVerb("GET");
-    getPlayerDataRequest->SetHeader("Authorization", accessToken);
-    getPlayerDataRequest->ProcessRequest();
+    SimplyHttpRequest::processRequest(this->HttpModule, this,
+        &UMainMenuWidget::onGetPlayerDataResponseReceived,
+        this->ApiUrl + "/getplayerdata", "GET",
+        TArray<FString>{"Authorization", accessToken}, {});
 }
 
 void UMainMenuWidget::onGetPlayerDataResponseReceived(FHttpRequestPtr _request, FHttpResponsePtr _response, bool _bWasSuccessful)
@@ -191,7 +186,7 @@ void UMainMenuWidget::SetAveragePlayerLatency()
     UHub_SpacelGameInstance* spacelGameInstance { Cast<UHub_SpacelGameInstance>(this->GetGameInstance()) };
     if (!ensure(spacelGameInstance != nullptr)) return;
 
-    float totalPlayerLatency = 0.0f;
+    float totalPlayerLatency { 0.0f };
     for (float playerLatency : spacelGameInstance->PlayerLatencies)
     {
         totalPlayerLatency += playerLatency;
@@ -200,7 +195,7 @@ void UMainMenuWidget::SetAveragePlayerLatency()
     if (totalPlayerLatency > 0.0f)
     {
         this->AveragePlayerLatency = totalPlayerLatency / spacelGameInstance->PlayerLatencies.Num();
-        FString pingString = "Ping: " + FString::FromInt(FMath::RoundToInt(this->AveragePlayerLatency)) + "ms";
+        FString pingString { "Ping: " + FString::FromInt(FMath::RoundToInt(this->AveragePlayerLatency)) + "ms" };
         if (!ensure(this->PingTextBlock != nullptr)) return;
         this->PingTextBlock->SetText(FText::FromString(pingString));
     }
