@@ -20,6 +20,7 @@ public:
 	
 protected:
 	virtual void NativeConstruct() override;
+	virtual void NativeDestruct() override;
 
 private:
 	UFUNCTION()
@@ -28,8 +29,17 @@ private:
 	UFUNCTION()
 	void SetAveragePlayerLatency();
 
+	UFUNCTION()
+	void PollMatchmaking();
+
 	void onExchangeCodeForTokensResponseReceived(FHttpRequestPtr _request, FHttpResponsePtr _response, bool _bWasSuccessful);
 	void onGetPlayerDataResponseReceived(FHttpRequestPtr _request, FHttpResponsePtr _response, bool _bWasSuccessful);
+	void onStartMatchmakingResponseReceived(FHttpRequestPtr _request, FHttpResponsePtr _response, bool _bWasSuccessful);
+	void onStopMatchmakingResponseReceived(FHttpRequestPtr _request, FHttpResponsePtr _response, bool _bWasSuccessful);
+	void onPollMatchmakingReceived(FHttpRequestPtr _request, FHttpResponsePtr _response, bool _bWasSuccessful);
+
+	UFUNCTION()
+	void OnMatchmakingButtonClicked();
 
 	template<class T>
 	T* initSafetyFromName(const FName& _name) const
@@ -39,9 +49,14 @@ private:
 		return obj;
 	}
 
+	void setMatchkingTextBlock(TOptional<FText> && _button, TOptional<FText> && _event);
+
 public:
 	UPROPERTY()
-	FTimerHandle SetAveragePlayerLatencyHandle;
+	FTimerHandle SetAveragePlayerLatencyHandle {};
+
+	UPROPERTY()
+	FTimerHandle PollMatchmakingHandle {};
 
 private:
 	class FHttpModule* HttpModule { nullptr };
@@ -54,6 +69,9 @@ private:
 
 	UPROPERTY()
 	FString CallbackUrl {};
+
+	UPROPERTY()
+	FString RegionCode {};
 
 	UPROPERTY()
 	class UWebBrowser* WebBrowser { nullptr };
@@ -74,5 +92,8 @@ private:
 	class UTextBlock* MatchmakingEventTextBlock { nullptr };
 
 	UPROPERTY()
-	float AveragePlayerLatency;
+	float AveragePlayerLatency {};
+
+	UPROPERTY()
+	bool SearchingForGame {};
 };

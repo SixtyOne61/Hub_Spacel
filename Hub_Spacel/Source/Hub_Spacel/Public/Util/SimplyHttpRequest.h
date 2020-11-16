@@ -32,7 +32,7 @@ namespace SimplyHttpRequest
     static void processRequest(class FHttpModule* _module, FString&& _url, FString&& _verb, TOptional<TArray<FString>>&& _header, TOptional<FString>&& _content)
     {
         if (!ensure(_module != nullptr)) return;
-        TSharedRef<IHttpRequest> request{ _module->CreateRequest() };
+        TSharedRef<IHttpRequest> request { _module->CreateRequest() };
         request->SetURL(_url);
         request->SetVerb(_verb);
         if (_header.IsSet())

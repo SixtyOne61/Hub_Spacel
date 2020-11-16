@@ -45,6 +45,9 @@ public:
     FString RefreshToken {};
 
     UPROPERTY()
+    FString MatchmakingTicketId {};
+
+    UPROPERTY()
     FTimerHandle RetrieveNewTokensHandle {};
 
     UPROPERTY()

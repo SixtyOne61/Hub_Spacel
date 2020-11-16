@@ -17,21 +17,34 @@ UHub_SpacelGameInstance::UHub_SpacelGameInstance()
 
 void UHub_SpacelGameInstance::Shutdown()
 {
-    Super::Shutdown();
+    UWorld* world{ this->GetWorld() };
+    if (!ensure(world != nullptr)) return;
+
+    world->GetTimerManager().ClearTimer(this->RetrieveNewTokensHandle);
+    world->GetTimerManager().ClearTimer(this->GetResponseTimeHandle);
 
     if (this->AccessToken.Len() > 0)
     {
+        if (this->MatchmakingTicketId.Len() > 0)
+        {
+            TSharedPtr<FJsonObject> requestObj { MakeShareable(new FJsonObject) };
+            requestObj->SetStringField("ticketId", this->MatchmakingTicketId);
+
+            FString requestBody;
+            TSharedRef<TJsonWriter<>> writer = TJsonWriterFactory<>::Create(&requestBody);
+            if (FJsonSerializer::Serialize(requestObj.ToSharedRef(), writer))
+            {
+                SimplyHttpRequest::processRequest(this->HttpModule, this->ApiUrl + "/stopmatchmaking",
+                    "POST", TArray<FString>{"Content-Type", "application/json", "Authorization", this->AccessToken}, requestBody);
+            }
+        }
+
         SimplyHttpRequest::processRequest(this->HttpModule,
             this->ApiUrl + "/invalidatetokens", "GET",
             TArray<FString>{"Content-Type", "application/json", "Authorization", this->AccessToken}, {});
-
-        //TSharedRef<IHttpRequest> invalidateTokensRequest = this->HttpModule->CreateRequest();
-        //invalidateTokensRequest->SetURL(this->ApiUrl + "/invalidatetokens");
-        //invalidateTokensRequest->SetVerb("GET");
-        //invalidateTokensRequest->SetHeader("Content-Type", "application/json");
-        //invalidateTokensRequest->SetHeader("Authorization", this->AccessToken);
-        //invalidateTokensRequest->ProcessRequest();
     }
+
+    Super::Shutdown();
 }
 
 void UHub_SpacelGameInstance::Init()
@@ -92,7 +105,7 @@ void UHub_SpacelGameInstance::onRetrieveNewTokensResponseReceived(FHttpRequestPt
         TSharedRef<TJsonReader<>> reader { TJsonReaderFactory<>::Create(_response->GetContentAsString()) };
         if (FJsonSerializer::Deserialize(reader, jsonObject))
         {
-            if (!jsonObject->HasField("error"))
+            if (jsonObject->HasField("accessToken") && jsonObject->HasField("idToken"))
             {
                 SetCognitoTokens(jsonObject->GetStringField("accessToken"), jsonObject->GetStringField("idToken"), this->RefreshToken);
             }
@@ -114,11 +127,10 @@ void UHub_SpacelGameInstance::onRetrieveNewTokensResponseReceived(FHttpRequestPt
 
 void UHub_SpacelGameInstance::GetResponseTime()
 {
-    TSharedRef<IHttpRequest> getResponseTimeRequest = this->HttpModule->CreateRequest();
-    getResponseTimeRequest->OnProcessRequestComplete().BindUObject(this, &UHub_SpacelGameInstance::onGetResponseTimeResponseReceived);
-    getResponseTimeRequest->SetURL("https://gamelift." + this->RegionCode + ".amazonaws.com");
-    getResponseTimeRequest->SetVerb("GET");
-    getResponseTimeRequest->ProcessRequest();
+    SimplyHttpRequest::processRequest(this->HttpModule, this,
+        &UHub_SpacelGameInstance::onGetResponseTimeResponseReceived,
+        "https://gamelift." + this->RegionCode + ".amazonaws.com",
+        "GET", {}, {});
 }
 
 void UHub_SpacelGameInstance::onGetResponseTimeResponseReceived(FHttpRequestPtr _request, FHttpResponsePtr _response, bool _bWasSuccessful)

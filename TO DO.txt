@@ -28,6 +28,8 @@ Une tour se creer en utilisant une partie des ressources que l'on a ramassé
 
 Map race avec vaisseau identique et raccourci
 
+Rules pour le matchmaking avec plusieurs équipes
+
 Backlog :
 shield gameplay / self shield
 smart rocket gameplay / ray gun
