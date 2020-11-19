@@ -3,6 +3,7 @@
 
 #include "PlayerShipController.h"
 #include "ShipPawn.h"
+#include "Kismet/GameplayStatics.h"
 
 void APlayerShipController::SetupInputComponent()
 {
@@ -18,6 +19,9 @@ void APlayerShipController::SetupInputComponent()
     // shoot
     this->InputComponent->BindAction("Fire", IE_Pressed, this, &APlayerShipController::fireOn);
     this->InputComponent->BindAction("Fire", IE_Released, this, &APlayerShipController::fireOff);
+
+    // extra
+    this->InputComponent->BindAction("ReturnToMainMenu", IE_Pressed, this, &APlayerShipController::returnToMainMenu);
 }
 
 void APlayerShipController::BeginPlay()
@@ -170,4 +174,11 @@ void APlayerShipController::readInput(int const& _val, float& _in, std::function
         _in = newPercent.value();
         _fnc(_in);
     }
+}
+
+void APlayerShipController::returnToMainMenu()
+{
+    FString levelName { "MainMenuMap" };
+
+    UGameplayStatics::OpenLevel(this->GetWorld(), FName(*levelName), false, "");
 }

@@ -53,6 +53,8 @@ private:
     /* only efficient on server */
     void fire(float const& _deltaTime);
 
+    virtual void OnRep_PlayerState() override;
+
 public:
     UPROPERTY(Category = "Ship", VisibleDefaultsOnly, BlueprintReadOnly)
     class UStaticMeshComponent* DriverMeshComponent = nullptr;

@@ -45,5 +45,13 @@ namespace SimpleUI
 	{
 		_obj.read(_tuples);
 	}
+
+    template<class T, class U>
+    static inline U* initSafetyFromName(T* _owner, const FName& _name)
+    {
+        U* obj = (U*)_owner->GetWidgetFromName(_name);
+        if (!ensure(obj != nullptr)) return nullptr;
+        return obj;
+    }
 }
 

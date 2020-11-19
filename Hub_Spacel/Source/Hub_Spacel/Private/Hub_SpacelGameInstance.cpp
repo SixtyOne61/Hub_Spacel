@@ -41,7 +41,7 @@ void UHub_SpacelGameInstance::Shutdown()
 
         SimplyHttpRequest::processRequest(this->HttpModule,
             this->ApiUrl + "/invalidatetokens", "GET",
-            TArray<FString>{"Content-Type", "application/json", "Authorization", this->AccessToken}, {});
+            TArray<FString>{"Authorization", this->AccessToken}, {});
     }
 
     Super::Shutdown();

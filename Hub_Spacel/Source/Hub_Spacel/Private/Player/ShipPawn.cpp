@@ -256,6 +256,21 @@ void AShipPawn::fire(float const& _deltaTime)
     }
 }
 
+void AShipPawn::OnRep_PlayerState()
+{
+    Super::OnRep_PlayerState();
+
+    ASpacelPlayerState* spacelPlayerState = Cast<ASpacelPlayerState>(this->GetPlayerState());
+    if (spacelPlayerState != nullptr)
+    {
+        FString teamName { spacelPlayerState->Team };
+        if (teamName.Len() > 0)
+        {
+            // TO DO : Change color for teammate and ennemy team and our pawn
+        }
+    }
+}
+
 void AShipPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetimeProps) const
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);

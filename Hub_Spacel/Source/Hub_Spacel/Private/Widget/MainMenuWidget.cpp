@@ -36,16 +36,16 @@ void UMainMenuWidget::NativeConstruct()
     Super::NativeConstruct();
     bIsFocusable = true;
 
-    WebBrowser = initSafetyFromName<UWebBrowser>(TEXT("WebBrowser_Login"));
-    MatchmakingButton = initSafetyFromName<UButton>(TEXT("Button_Matchmaking"));
+    WebBrowser = SimpleUI::initSafetyFromName<UUserWidget, UWebBrowser>(this, TEXT("WebBrowser_Login"));
+    MatchmakingButton = SimpleUI::initSafetyFromName<UUserWidget, UButton>(this, TEXT("Button_Matchmaking"));
     FScriptDelegate matchmakingDelegate {};
     matchmakingDelegate.BindUFunction(this, "OnMatchmakingButtonClicked");
     MatchmakingButton->OnClicked.Add(matchmakingDelegate);
 
-    WinsTextBlock = initSafetyFromName<UTextBlock>(TEXT("TextBlock_Wins"));
-    LossesTextBlock = initSafetyFromName<UTextBlock>(TEXT("TextBlock_Losses"));
-    PingTextBlock = initSafetyFromName<UTextBlock>(TEXT("TextBlock_Ping"));
-    MatchmakingEventTextBlock = initSafetyFromName<UTextBlock>(TEXT("TextBlock_MatchmakingEvent"));
+    WinsTextBlock = SimpleUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Wins"));
+    LossesTextBlock = SimpleUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Losses"));
+    PingTextBlock = SimpleUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Ping"));
+    MatchmakingEventTextBlock = SimpleUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_MatchmakingEvent"));
 
     UWorld* world{ this->GetWorld() };
     if (!ensure(world != nullptr)) return;
@@ -60,7 +60,7 @@ void UMainMenuWidget::NativeConstruct()
         SimplyHttpRequest::processRequest(this->HttpModule, this,
             &UMainMenuWidget::onGetPlayerDataResponseReceived,
             this->ApiUrl + "/getplayerdata", "GET",
-            TArray<FString>{"Content-Type", "application/json", "Authorization", accessToken}, {});
+            TArray<FString>{"Authorization", accessToken}, {});
     }
     else
     {
@@ -163,7 +163,7 @@ void UMainMenuWidget::onExchangeCodeForTokensResponseReceived(FHttpRequestPtr _r
     SimplyHttpRequest::processRequest(this->HttpModule, this,
         &UMainMenuWidget::onGetPlayerDataResponseReceived,
         this->ApiUrl + "/getplayerdata", "GET",
-        TArray<FString>{"Content-Type", "application/json", "Authorization", accessToken}, {});
+        TArray<FString>{"Authorization", accessToken}, {});
 }
 
 void UMainMenuWidget::onGetPlayerDataResponseReceived(FHttpRequestPtr _request, FHttpResponsePtr _response, bool _bWasSuccessful)

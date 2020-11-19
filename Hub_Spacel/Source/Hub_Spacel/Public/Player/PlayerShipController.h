@@ -53,6 +53,8 @@ protected:
     UFUNCTION(Reliable, Server)
     void RPCServerFire(bool _on);
 
+    void returnToMainMenu();
+
 private:
     void readInput(int const& _val, float& _in, std::function<void(float)> _fnc);
 

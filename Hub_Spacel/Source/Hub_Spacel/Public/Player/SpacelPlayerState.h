@@ -23,4 +23,15 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Bitmask, BitmaskEnum = "EShipModuleType"))
     uint8 ShipShellModuleType = 0x08;
+
+    /* Network */
+
+    UPROPERTY()
+    FString PlayerSessionId {};
+
+    UPROPERTY()
+    FString MatchmakingPlayerId {};
+
+    UPROPERTY(Replicated)
+    FString Team {};
 };

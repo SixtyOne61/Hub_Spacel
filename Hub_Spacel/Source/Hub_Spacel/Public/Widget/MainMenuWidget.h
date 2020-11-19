@@ -41,14 +41,6 @@ private:
 	UFUNCTION()
 	void OnMatchmakingButtonClicked();
 
-	template<class T>
-	T* initSafetyFromName(const FName& _name) const
-	{
-		T* obj = (T*)GetWidgetFromName(_name);
-		if (!ensure(obj != nullptr)) return nullptr;
-		return obj;
-	}
-
 	void setMatchkingTextBlock(TOptional<FText> && _button, TOptional<FText> && _event);
 
 public:
