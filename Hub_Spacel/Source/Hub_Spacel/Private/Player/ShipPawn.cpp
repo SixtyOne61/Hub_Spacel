@@ -13,9 +13,9 @@
 #include "Components/StaticMeshComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/GameplayStatics.h"
-#include "Hub_Spacel/Public/DataAsset/ShipModuleDataAsset.h"
-#include "Hub_Spacel/Public/DataAsset/ProceduralModuleDataAsset.h"
-#include "Hub_Spacel/Public/DataAsset/PlayerDataAsset.h"
+#include "DataAsset/ShipModuleDataAsset.h"
+#include "DataAsset/ProceduralModuleDataAsset.h"
+#include "DataAsset/PlayerDataAsset.h"
 #include "Mesh/SpacelProceduralMeshComponent.h"
 #include "Player/SpacelPlayerState.h"
 #include "Enum/SpacelEnum.h"
@@ -201,7 +201,7 @@ void AShipPawn::RPCServerMove_Implementation(float const& _deltaTime)
 
     FVector const& linearVelocity = this->DriverMeshComponent->GetPhysicsLinearVelocity(NAME_None);
     FVector newVelocity = this->DriverMeshComponent->GetForwardVector() * this->PlayerDataAsset->MaxForwardSpeed * this->PercentSpeed;
-    newVelocity = FMath::Lerp(linearVelocity, newVelocity, 0.01f);
+    newVelocity = FMath::Lerp(linearVelocity, newVelocity, 0.9f);
 
     this->DriverMeshComponent->SetPhysicsLinearVelocity(newVelocity);
 

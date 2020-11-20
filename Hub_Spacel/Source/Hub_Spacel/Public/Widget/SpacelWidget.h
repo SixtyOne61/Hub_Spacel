@@ -24,6 +24,9 @@ public:
 	UPROPERTY()
 	FTimerHandle SetAverragePlayerLatencyHandle {};
 
+	UPROPERTY()
+	FTimerHandle SetSpeedHandle {};
+
 protected:
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
@@ -38,6 +41,9 @@ private:
 	UFUNCTION()
 	void SetAverragePlayerLatency();
 
+	UFUNCTION()
+	void SetSpeed();
+
 private:
 	UPROPERTY()
 	class UTextBlock* TeamNameTextBlock { nullptr };
@@ -51,4 +57,6 @@ private:
 	UPROPERTY()
 	class UTextBlock* PingTextBlock { nullptr };
 
+	UPROPERTY()
+	class UTextBlock* SpeedTextBlock { nullptr };
 };

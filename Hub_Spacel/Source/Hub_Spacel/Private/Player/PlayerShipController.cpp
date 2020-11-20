@@ -4,6 +4,94 @@
 #include "PlayerShipController.h"
 #include "ShipPawn.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
+#include "Engine/World.h"
+#include "Util/SimplyMath.h"
+#include "DataAsset/PlayerDataAsset.h"
+
+float APlayerShipController::FUnlinearReachGoal::addValue(float _value, float _currentPercent)
+{
+    auto lb_reset = [&]()
+    {
+        // reset
+        m_values.Empty();
+        m_lastValue = 0.0f;
+        m_duration = 0.0f;
+        m_start = SimplyMath::Lerp(0.0f, 1.0f, _currentPercent);
+    };
+
+    auto lb_add = [&]()
+    {
+        if (m_values.Num() == 0)
+        {
+            if (!ensure(m_owner != nullptr)) return;
+            UWorld const* world = m_owner->GetWorld();
+            m_startTime = UGameplayStatics::GetTimeSeconds(world);
+        }
+        m_values.Add(TPair<float, float>(m_duration, _value));
+        m_lastValue = _value;
+    };
+
+    auto lb_addDuration = [&]()
+    {
+        if(!ensure(m_owner != nullptr)) return;
+        UWorld const* world = m_owner->GetWorld();
+        m_duration = (UGameplayStatics::GetTimeSeconds(world) - m_startTime);
+    };
+
+    auto lb_moy = [&]()
+    {
+        m_values.RemoveAll([&](auto const& _pair){
+            return m_duration - _pair.Key > 2.0f; // keep value in last 2s
+        });
+
+        if (m_values.Num() == 0)
+        {
+            return 0.0f;
+        }
+
+        float moy { };
+        for (auto const& value : m_values)
+        {
+            moy += value.Value;
+        }
+
+        return moy / m_values.Num();
+    };
+
+    if (FMath::IsNearlyZero(_value))
+    {
+        lb_reset();
+        return _currentPercent;
+    }
+
+    if (_value > 0.0f)
+    {
+        if (m_lastValue < 0.0f)
+        {
+            lb_reset();
+        }
+
+        lb_add();
+        lb_addDuration();
+        float moy = lb_moy();
+
+        return SimplyMath::InvLerp(0.0f, 1.0f, m_start + (m_duration * moy) / m_reachTimeUp);
+    }
+    else
+    {
+        if (m_lastValue > 0.0f)
+        {
+            lb_reset();
+        }
+
+        lb_add();
+        lb_addDuration();
+        float moy = lb_moy(); // will be negativ
+
+        return SimplyMath::InvLerp(0.0f, 1.0f, m_start + (m_duration * moy) / m_reachTimeDown);
+    }
+}
 
 void APlayerShipController::SetupInputComponent()
 {
@@ -27,44 +115,30 @@ void APlayerShipController::SetupInputComponent()
 void APlayerShipController::BeginPlay()
 {
     Super::BeginPlay();
-
-    UWorld* world = this->GetWorld();
-    if (!ensure(world != nullptr)) return;
-
-    // reduce server call, only update speed by this loop timer
-    FTimerDelegate speedUpdateCallback;
-    speedUpdateCallback.BindLambda([&]
-    {
-        if (m_lastSpeedInput.hasValue())
-        {
-            float newPercent = FMath::Clamp(this->PercentSpeed + m_lastSpeedInput.value(), 0.0f, 100.0f);
-            if (newPercent != this->PercentSpeed)
-            {
-                this->PercentSpeed = newPercent;
-                this->RPCServerSetSpeed(newPercent);
-            }
-            m_lastSpeedInput.reset();
-        }
-    });
-
-    FTimerHandle speedTimerHandle;
-    world->GetTimerManager().SetTimer(speedTimerHandle, speedUpdateCallback, 0.1f, true);
 }
 
 void APlayerShipController::speed(float _val)
 {
-    m_lastSpeedInput = _val * 2;
+    // TO DO : make this better, we can keep _val here, and send only relevant value
+    // in server, on tick continue to increase or decrease percent
+    this->RPCServerSetSpeed(_val);
 }
 
 void APlayerShipController::RPCServerSetSpeed_Implementation(float _val)
 {
     AShipPawn* shipPawn = Cast<AShipPawn>(this->GetPawn());
-    if (shipPawn == nullptr)
+    if (shipPawn == nullptr || shipPawn->PlayerDataAsset == nullptr)
     {
         return;
     }
 
-    shipPawn->PercentSpeed = _val / 100.0f;
+    if (!m_speed.IsSet())
+    {
+        // init
+        m_speed = TOptional<FUnlinearReachGoal>(FUnlinearReachGoal { this, shipPawn->PlayerDataAsset->ReachTimeUpSpeed, shipPawn->PlayerDataAsset->ReachTimeDownSpeed });
+    }
+
+    shipPawn->PercentSpeed = m_speed.GetValue().addValue(_val, shipPawn->PercentSpeed);
 }
 
 void APlayerShipController::flightAttitude(float _val)
@@ -178,7 +252,6 @@ void APlayerShipController::readInput(int const& _val, float& _in, std::function
 
 void APlayerShipController::returnToMainMenu()
 {
-    FString levelName { "MainMenuMap" };
-
+    FString levelName { "MainMenu" };
     UGameplayStatics::OpenLevel(this->GetWorld(), FName(*levelName), false, "");
 }

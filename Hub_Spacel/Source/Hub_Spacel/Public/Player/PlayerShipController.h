@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
 #include "Util/Optional.h"
+#include "Containers/Queue.h"
 #include <functional>
 #include "PlayerShipController.generated.h"
 
@@ -15,6 +16,40 @@ UCLASS()
 class HUB_SPACEL_API APlayerShipController : public APlayerController
 {
     GENERATED_BODY()
+
+
+    class FUnlinearReachGoal
+    {
+    public:
+        FUnlinearReachGoal(FUnlinearReachGoal const&) = delete;
+        FUnlinearReachGoal& operator=(FUnlinearReachGoal const&) = delete;
+
+        FUnlinearReachGoal(FUnlinearReachGoal&&) = default;
+        FUnlinearReachGoal& operator=(FUnlinearReachGoal &&) = default;
+
+        FUnlinearReachGoal(APlayerShipController* _owner, float _reachTimeUp, float _reachTimeDown)
+            : m_owner(_owner)
+            , m_reachTimeUp(_reachTimeUp)
+            , m_reachTimeDown(_reachTimeDown)
+        {
+            if (!ensure(m_owner != nullptr)) {}
+            if (!ensure(m_reachTimeUp != 0.0f)) {}
+            if (!ensure(m_reachTimeDown != 0.0f)) {}
+        }
+
+        float addValue(float _value, float _currentPercent);
+
+    private:
+        APlayerShipController* m_owner { nullptr };
+        const float m_reachTimeUp {};
+        const float m_reachTimeDown {};
+
+        TArray<TPair<float, float>> m_values;
+        float m_lastValue {};
+        float m_duration {};
+        float m_startTime {};
+        float m_start {};
+    };
 
 public:
     virtual void SetupInputComponent() override;
@@ -60,9 +95,6 @@ private:
 
 public:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-    float PercentSpeed = 0.0f;
-
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
     float PercentFlightAttitude = 0.0f;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
@@ -72,5 +104,5 @@ public:
     float PercentUp = 0.0f;
 
 private:
-    Util::Optional<float> m_lastSpeedInput { };
+    TOptional<FUnlinearReachGoal> m_speed {};
 };

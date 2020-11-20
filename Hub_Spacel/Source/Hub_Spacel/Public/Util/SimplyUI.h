@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include <tuple>
 
-namespace SimpleUI
+namespace SimplyUI
 {
 	struct FVisibility
 	{

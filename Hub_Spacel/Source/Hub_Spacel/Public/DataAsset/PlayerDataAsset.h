@@ -19,6 +19,12 @@ public:
     float MaxForwardSpeed = 6000.0f;
 
     UPROPERTY(Category = "Movement", EditAnywhere, BlueprintReadWrite)
+    float ReachTimeUpSpeed = 1.5f;
+
+    UPROPERTY(Category = "Movement", EditAnywhere, BlueprintReadWrite)
+    float ReachTimeDownSpeed = 0.75f;
+
+    UPROPERTY(Category = "Movement", EditAnywhere, BlueprintReadWrite)
     float FlightAttitudeSpeed = 30.0f;
 
     UPROPERTY(Category = "Movement", EditAnywhere, BlueprintReadWrite)

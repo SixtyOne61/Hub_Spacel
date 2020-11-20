@@ -13,6 +13,7 @@ class HUB_SPACEL_API AShipPawn : public APawn
 	GENERATED_BODY()
 
     friend class APlayerShipController;
+    friend class USpacelWidget;
 
 public:
 	// Sets default values for this pawn's properties

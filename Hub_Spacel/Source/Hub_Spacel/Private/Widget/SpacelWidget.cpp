@@ -8,15 +8,17 @@
 #include "Hub_SpacelGameInstance.h"
 #include "Kismet/GameplayStatics.h"
 #include "Util/SimplyUI.h"
+#include "Player/ShipPawn.h"
 
 void USpacelWidget::NativeConstruct()
 {
     Super::NativeConstruct();
 
-    TeamNameTextBlock = SimpleUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_TeamName"));
-    TeammateCountTextBlock = SimpleUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_TeammateCount"));
-    EventTextBlock = SimpleUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Event"));
-    PingTextBlock = SimpleUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Ping"));
+    TeamNameTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_TeamName"));
+    TeammateCountTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_TeammateCount"));
+    EventTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Event"));
+    PingTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Ping"));
+    SpeedTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Speed"));
 
     UWorld* world{ this->GetWorld() };
     if (!ensure(world != nullptr)) return;
@@ -24,6 +26,7 @@ void USpacelWidget::NativeConstruct()
     world->GetTimerManager().SetTimer(SetTeammateCountHandle, this, &USpacelWidget::SetTeammateCount, 1.0f, true, 1.0f);
     world->GetTimerManager().SetTimer(SetLatestEventHandle, this, &USpacelWidget::SetLatestEvent, 1.0f, true, 1.0f);
     world->GetTimerManager().SetTimer(SetAverragePlayerLatencyHandle, this, &USpacelWidget::SetAverragePlayerLatency, 1.0f, true, 1.0f);
+    world->GetTimerManager().SetTimer(SetSpeedHandle, this, &USpacelWidget::SetSpeed, 0.2f, true, 1.0f);
 }
 
 void USpacelWidget::NativeDestruct()
@@ -34,6 +37,7 @@ void USpacelWidget::NativeDestruct()
         world->GetTimerManager().ClearTimer(SetTeammateCountHandle);
         world->GetTimerManager().ClearTimer(SetLatestEventHandle);
         world->GetTimerManager().ClearTimer(SetAverragePlayerLatencyHandle);
+        world->GetTimerManager().ClearTimer(SetSpeedHandle);
     }
     Super::NativeDestruct();
 }
@@ -127,5 +131,17 @@ void USpacelWidget::SetAverragePlayerLatency()
         FString pingString{ "Ping: " + FString::FromInt(FMath::RoundToInt(averagePlayerLatency)) + "ms" };
         if (!ensure(this->PingTextBlock != nullptr)) return;
         this->PingTextBlock->SetText(FText::FromString(pingString));
+    }
+}
+
+void USpacelWidget::SetSpeed()
+{
+    UWorld* world{ this->GetWorld() };
+    if (!ensure(world != nullptr)) return;
+
+    AShipPawn* shipPawn = Cast<AShipPawn>(UGameplayStatics::GetPlayerPawn(world, 0));
+    if (shipPawn != nullptr && this->SpeedTextBlock != nullptr)
+    {
+        this->SpeedTextBlock->SetText(FText::FromString(FString::FromInt(FMath::RoundToInt(shipPawn->PercentSpeed * 100)) + " %"));
     }
 }

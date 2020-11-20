@@ -36,16 +36,16 @@ void UMainMenuWidget::NativeConstruct()
     Super::NativeConstruct();
     bIsFocusable = true;
 
-    WebBrowser = SimpleUI::initSafetyFromName<UUserWidget, UWebBrowser>(this, TEXT("WebBrowser_Login"));
-    MatchmakingButton = SimpleUI::initSafetyFromName<UUserWidget, UButton>(this, TEXT("Button_Matchmaking"));
+    WebBrowser = SimplyUI::initSafetyFromName<UUserWidget, UWebBrowser>(this, TEXT("WebBrowser_Login"));
+    MatchmakingButton = SimplyUI::initSafetyFromName<UUserWidget, UButton>(this, TEXT("Button_Matchmaking"));
     FScriptDelegate matchmakingDelegate {};
     matchmakingDelegate.BindUFunction(this, "OnMatchmakingButtonClicked");
     MatchmakingButton->OnClicked.Add(matchmakingDelegate);
 
-    WinsTextBlock = SimpleUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Wins"));
-    LossesTextBlock = SimpleUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Losses"));
-    PingTextBlock = SimpleUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Ping"));
-    MatchmakingEventTextBlock = SimpleUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_MatchmakingEvent"));
+    WinsTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Wins"));
+    LossesTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Losses"));
+    PingTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Ping"));
+    MatchmakingEventTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_MatchmakingEvent"));
 
     UWorld* world{ this->GetWorld() };
     if (!ensure(world != nullptr)) return;
@@ -201,9 +201,9 @@ void UMainMenuWidget::onGetPlayerDataResponseReceived(FHttpRequestPtr _request, 
     lb_set(this->WinsTextBlock, "Wins");
     lb_set(this->LossesTextBlock, "Losses");
 
-    SimpleUI::setVisibility({ESlateVisibility::Hidden}, 
+    SimplyUI::setVisibility({ESlateVisibility::Hidden}, 
         std::make_tuple(this->WebBrowser));
-    SimpleUI::setVisibility({ ESlateVisibility::Visible },
+    SimplyUI::setVisibility({ ESlateVisibility::Visible },
         std::make_tuple(this->MatchmakingButton, this->WinsTextBlock, this->LossesTextBlock, this->PingTextBlock, this->MatchmakingEventTextBlock));
 }
 
