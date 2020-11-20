@@ -25,7 +25,7 @@ float APlayerShipController::FUnlinearReachGoal::addValue(float _value, float _c
         if (m_values.Num() == 0)
         {
             if (!ensure(m_owner != nullptr)) return;
-            UWorld const* world = m_owner->GetWorld();
+            UWorld const* world { m_owner->GetWorld() };
             m_startTime = UGameplayStatics::GetTimeSeconds(world);
         }
         m_values.Add(TPair<float, float>(m_duration, _value));
@@ -35,7 +35,7 @@ float APlayerShipController::FUnlinearReachGoal::addValue(float _value, float _c
     auto lb_addDuration = [&]()
     {
         if(!ensure(m_owner != nullptr)) return;
-        UWorld const* world = m_owner->GetWorld();
+        UWorld const* world { m_owner->GetWorld() };
         m_duration = (UGameplayStatics::GetTimeSeconds(world) - m_startTime);
     };
 

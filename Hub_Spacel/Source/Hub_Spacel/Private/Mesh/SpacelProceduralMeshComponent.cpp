@@ -213,6 +213,8 @@ bool USpacelProceduralMeshComponent::hit(FVector const& _impactPoint)
     FProcMeshSection* procMeshSection = this->GetProcMeshSection(0);
     if (procMeshSection)
     {
+        //DrawDebugSphere(this->GetWorld(), procMeshSection->ProcVertexBuffer[0].Position, 100.0f, 12, FColor::Blue, false, 30.0f, 128, 10.0f);
+
         int32 nbRemove = procMeshSection->ProcVertexBuffer.RemoveAll([&](auto const _vert) -> bool
         {
             return FVector::Dist(_vert.Position + this->OwnerLocation, _impactPoint) <= radius;
@@ -267,11 +269,7 @@ void USpacelProceduralMeshComponent::addTriangles(TArray<int32> & _out, int _deb
 
 void USpacelProceduralMeshComponent::onHit(class UPrimitiveComponent* _comp, class AActor* _otherActor, class UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit)
 {
-    //if (DebugDrawProceduralMeshCollision == 1)
-    {
-        //DrawDebugSphere(this->GetWorld(), _otherActor->GetActorLocation(), 70.0f, 12, FColor::Blue, false, 30.0f, 128, 10.0f);
-        DrawDebugSphere(this->GetWorld(), _hit.ImpactPoint, 100.0f, 12, FColor::Red, false, 30.0f, 128, 10.0f);
-    }
+    //DrawDebugSphere(this->GetWorld(), _hit.ImpactPoint, 100.0f, 12, FColor::Red, false, 30.0f, 128, 10.0f);
 
 	// check if it's a bullet type
     hit(_hit.ImpactPoint);

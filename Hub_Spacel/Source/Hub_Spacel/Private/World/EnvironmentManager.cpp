@@ -39,6 +39,14 @@ void AEnvironmentManager::BeginPlay()
     {
         this->SetReplicates(true);
     }
+
+    for (USpacelProceduralMeshComponent* proceduralMeshComponent : ProceduralMeshComponents)
+    {
+        if (proceduralMeshComponent)
+        {
+            proceduralMeshComponent->OwnerLocation = this->GetActorLocation();
+        }
+    }
 }
 
 bool AEnvironmentManager::generateEnvironment()
