@@ -18,7 +18,6 @@ AFlyingGameMode::AFlyingGameMode()
 
     HttpModule = &FHttpModule::Get();
 
-    RemainingGameTime = 10 * 60;
     GameSessionActivated = false;
 }
 

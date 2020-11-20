@@ -109,6 +109,9 @@ public:
 	UPROPERTY()
 	FTimerHandle HandleGameSessionUpdateHandle {};
 
+	UPROPERTY()
+	int RemainingGameTime { 600 };
+
 private:
 	class FHttpModule* HttpModule { nullptr };
 
@@ -129,9 +132,6 @@ private:
 
 	UPROPERTY()
 	FString ServerPassword {};
-
-	UPROPERTY()
-	int RemainingGameTime {};
 
 	UPROPERTY()
 	bool GameSessionActivated {};
