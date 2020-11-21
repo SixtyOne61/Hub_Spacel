@@ -23,6 +23,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Generation")
 	void generateMesh(FName _profileName, int _nbPoint, TArray<FLocationInformation> & _locations);
 
+	UFUNCTION(BlueprintCallable, Category = "Generation")
+	void generateVoxelMesh(int32 _cubeSize);
+
 protected:
 	void addTriangles(TArray<int32> & _out, int _deb) const;
 

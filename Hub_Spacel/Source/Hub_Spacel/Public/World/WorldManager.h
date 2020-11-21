@@ -15,9 +15,6 @@ public:
 	// Sets default values for this actor's properties
 	AWorldManager();
 
-    UFUNCTION(BlueprintCallable)
-    void SpawnEnvironment() const;
-
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -29,6 +26,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
 	class UWorldDataAsset* WorldDataAsset { nullptr };
 
-	UPROPERTY(EditDefaultsOnly, Category = "Procedural")
-	TSubclassOf<class AEnvironmentManager> EnvironmentClass;
+	UPROPERTY(EditAnywhere, Category = "Settings")
+	TSubclassOf<class AChunck> ChunckClass { nullptr };
 };

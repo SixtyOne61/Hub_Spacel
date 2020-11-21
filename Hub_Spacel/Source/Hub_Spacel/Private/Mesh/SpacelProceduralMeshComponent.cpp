@@ -214,7 +214,6 @@ bool USpacelProceduralMeshComponent::hit(FVector const& _impactPoint)
     if (procMeshSection)
     {
         //DrawDebugSphere(this->GetWorld(), procMeshSection->ProcVertexBuffer[0].Position, 100.0f, 12, FColor::Blue, false, 30.0f, 128, 10.0f);
-
         int32 nbRemove = procMeshSection->ProcVertexBuffer.RemoveAll([&](auto const _vert) -> bool
         {
             return FVector::Dist(_vert.Position + this->OwnerLocation, _impactPoint) <= radius;
@@ -273,4 +272,179 @@ void USpacelProceduralMeshComponent::onHit(class UPrimitiveComponent* _comp, cla
 
 	// check if it's a bullet type
     hit(_hit.ImpactPoint);
+}
+
+void USpacelProceduralMeshComponent::generateVoxelMesh(int32 _cubeSize)
+{
+    // clear all
+    this->ClearAllMeshSections();
+    this->ClearCollisionConvexMeshes();
+
+    FVector halfCubeSize = FVector(_cubeSize / 2, _cubeSize / 2, _cubeSize / 2);
+
+    TArray<int32> triangles;
+    triangles.Reserve(6);
+
+    int maxSize = 24;
+    TArray<FVector> vertices;
+    vertices.Reserve(maxSize);
+    TArray<FVector> normals;
+    normals.Reserve(maxSize);
+    TArray<FLinearColor> vertexColors;
+    vertexColors.Reserve(maxSize);
+    TArray<FVector2D> UV0;
+    UV0.Reserve(maxSize);
+
+    FVector center { 0, 0, 0 };
+
+    // read mask from linkPos
+    {
+        int deb = vertices.Num();
+        vertices.Add(center + FVector(-halfCubeSize.X, halfCubeSize.Y, -halfCubeSize.Z));
+        vertices.Add(center + FVector(halfCubeSize.X, halfCubeSize.Y, -halfCubeSize.Z));
+        vertices.Add(center + FVector(halfCubeSize.X, halfCubeSize.Y, halfCubeSize.Z));
+        vertices.Add(center + FVector(-halfCubeSize.X, halfCubeSize.Y, halfCubeSize.Z));
+
+        UV0.Add(FVector2D(0, 0));
+        UV0.Add(FVector2D(1, 0));
+        UV0.Add(FVector2D(1, 1));
+        UV0.Add(FVector2D(0, 1));
+
+        vertexColors.Add(FLinearColor(1.f, 0.f, 0.f));
+        vertexColors.Add(FLinearColor(0.f, 0.f, 1.f));
+        vertexColors.Add(FLinearColor(1.f, 0.f, 0.f));
+        vertexColors.Add(FLinearColor(0.f, 1.f, 0.f));
+
+        normals.Add(FVector(0, 1, 0));
+        normals.Add(FVector(0, 1, 0));
+        normals.Add(FVector(0, 1, 0));
+        normals.Add(FVector(0, 1, 0));
+        addTriangles(triangles, deb);
+    }
+    {
+        int deb = vertices.Num();
+        vertices.Add(center + FVector(halfCubeSize.X, -halfCubeSize.Y, halfCubeSize.Z));
+        vertices.Add(center + FVector(halfCubeSize.X, -halfCubeSize.Y, -halfCubeSize.Z));
+        vertices.Add(center + FVector(-halfCubeSize.X, -halfCubeSize.Y, -halfCubeSize.Z));
+        vertices.Add(center + FVector(-halfCubeSize.X, -halfCubeSize.Y, halfCubeSize.Z));
+
+        UV0.Add(FVector2D(1, 1));
+        UV0.Add(FVector2D(1, 0));
+        UV0.Add(FVector2D(0, 0));
+        UV0.Add(FVector2D(0, 1));
+
+        vertexColors.Add(FLinearColor(0.f, 0.f, 1.f));
+        vertexColors.Add(FLinearColor(1.f, 0.f, 0.f));
+        vertexColors.Add(FLinearColor(1.f, 0.f, 0.f));
+        vertexColors.Add(FLinearColor(0.f, 1.f, 0.f));
+
+        normals.Add(FVector(0, -1, 0));
+        normals.Add(FVector(0, -1, 0));
+        normals.Add(FVector(0, -1, 0));
+        normals.Add(FVector(0, -1, 0));
+        addTriangles(triangles, deb);
+    }
+    {
+        int deb = vertices.Num();
+        vertices.Add(center + FVector(halfCubeSize.X, -halfCubeSize.Y, halfCubeSize.Z));
+        vertices.Add(center + FVector(halfCubeSize.X, halfCubeSize.Y, halfCubeSize.Z));
+        vertices.Add(center + FVector(halfCubeSize.X, halfCubeSize.Y, -halfCubeSize.Z));
+        vertices.Add(center + FVector(halfCubeSize.X, -halfCubeSize.Y, -halfCubeSize.Z));
+
+        UV0.Add(FVector2D(0, 1));
+        UV0.Add(FVector2D(1, 1));
+        UV0.Add(FVector2D(1, 0));
+        UV0.Add(FVector2D(0, 0));
+
+        vertexColors.Add(FLinearColor(0.f, 0.f, 1.f));
+        vertexColors.Add(FLinearColor(1.f, 0.f, 0.f));
+        vertexColors.Add(FLinearColor(1.f, 0.f, 0.f));
+        vertexColors.Add(FLinearColor(0.f, 1.f, 0.f));
+
+        normals.Add(FVector(0, 0, 1));
+        normals.Add(FVector(0, 0, 1));
+        normals.Add(FVector(0, 0, 1));
+        normals.Add(FVector(0, 0, 1));
+        addTriangles(triangles, deb);
+    }
+    {
+        int deb = vertices.Num();
+        vertices.Add(center + FVector(-halfCubeSize.X, -halfCubeSize.Y, halfCubeSize.Z));
+        vertices.Add(center + FVector(-halfCubeSize.X, -halfCubeSize.Y, -halfCubeSize.Z));
+        vertices.Add(center + FVector(-halfCubeSize.X, halfCubeSize.Y, -halfCubeSize.Z));
+        vertices.Add(center + FVector(-halfCubeSize.X, halfCubeSize.Y, halfCubeSize.Z));
+
+        UV0.Add(FVector2D(0, 1));
+        UV0.Add(FVector2D(0, 0));
+        UV0.Add(FVector2D(1, 0));
+        UV0.Add(FVector2D(0, 0));
+
+        vertexColors.Add(FLinearColor(0.f, 0.f, 1.f));
+        vertexColors.Add(FLinearColor(1.f, 0.f, 0.f));
+        vertexColors.Add(FLinearColor(1.f, 0.f, 0.f));
+        vertexColors.Add(FLinearColor(0.f, 1.f, 0.f));
+
+        normals.Add(FVector(0, 0, -1));
+        normals.Add(FVector(0, 0, -1));
+        normals.Add(FVector(0, 0, -1));
+        normals.Add(FVector(0, 0, -1));
+        addTriangles(triangles, deb);
+    }
+    {
+        int deb = vertices.Num();
+        vertices.Add(center + FVector(-halfCubeSize.X, halfCubeSize.Y, -halfCubeSize.Z));
+        vertices.Add(center + FVector(-halfCubeSize.X, -halfCubeSize.Y, -halfCubeSize.Z));
+        vertices.Add(center + FVector(halfCubeSize.X, -halfCubeSize.Y, -halfCubeSize.Z));
+        vertices.Add(center + FVector(halfCubeSize.X, halfCubeSize.Y, -halfCubeSize.Z));
+
+        UV0.Add(FVector2D(0, 1));
+        UV0.Add(FVector2D(0, 0));
+        UV0.Add(FVector2D(1, 0));
+        UV0.Add(FVector2D(1, 1));
+
+        vertexColors.Add(FLinearColor(0.f, 0.f, 1.f));
+        vertexColors.Add(FLinearColor(1.f, 0.f, 0.f));
+        vertexColors.Add(FLinearColor(1.f, 0.f, 0.f));
+        vertexColors.Add(FLinearColor(0.f, 1.f, 0.f));
+
+        normals.Add(FVector(1, 0, 0));
+        normals.Add(FVector(1, 0, 0));
+        normals.Add(FVector(1, 0, 0));
+        normals.Add(FVector(1, 0, 0));
+        addTriangles(triangles, deb);
+    }
+    {
+        int deb = vertices.Num();
+        vertices.Add(center + FVector(halfCubeSize.X, -halfCubeSize.Y, halfCubeSize.Z));
+        vertices.Add(center + FVector(-halfCubeSize.X, -halfCubeSize.Y, halfCubeSize.Z));
+        vertices.Add(center + FVector(-halfCubeSize.X, halfCubeSize.Y, halfCubeSize.Z));
+        vertices.Add(center + FVector(halfCubeSize.X, halfCubeSize.Y, halfCubeSize.Z));
+
+        UV0.Add(FVector2D(1, 0));
+        UV0.Add(FVector2D(0, 0));
+        UV0.Add(FVector2D(0, 1));
+        UV0.Add(FVector2D(1, 1));
+
+        vertexColors.Add(FLinearColor(0.f, 0.f, 1.f));
+        vertexColors.Add(FLinearColor(1.f, 0.f, 0.f));
+        vertexColors.Add(FLinearColor(1.f, 0.f, 0.f));
+        vertexColors.Add(FLinearColor(0.f, 1.f, 0.f));
+
+        normals.Add(FVector(-1, 0, 0));
+        normals.Add(FVector(-1, 0, 0));
+        normals.Add(FVector(-1, 0, 0));
+        normals.Add(FVector(-1, 0, 0));
+        addTriangles(triangles, deb);
+    }
+
+    // setup collision
+    this->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+    this->SetCollisionProfileName("BlockAll");
+    bUseComplexAsSimpleCollision = true;
+    this->SetNotifyRigidBodyCollision(true);
+
+    this->CreateMeshSection_LinearColor(0, vertices, triangles, normals, UV0, vertexColors, {}, true);
+
+    // Enable collision data
+    this->AddCollisionConvexMesh(vertices);
 }

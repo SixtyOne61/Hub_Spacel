@@ -1,9 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "Hub_Spacel/Public/World/WorldManager.h"
-#include "EnvironmentManager.h"
+#include "World/WorldManager.h"
+#include "World/Chunck.h"
 #include "DataAsset/WorldDataAsset.h"
 #include "Components/BoxComponent.h"
+#include "Mesh/SpacelProceduralMeshComponent.h"
 
 // Sets default values
 AWorldManager::AWorldManager()
@@ -16,10 +17,12 @@ AWorldManager::AWorldManager()
     RootComponent = BoxComponent;
 }
 
-void AWorldManager::SpawnEnvironment() const
+// Called when the game starts or when spawned
+void AWorldManager::BeginPlay()
 {
-#ifdef WITH_EDITOR
-    UWorld* const world = this->GetWorld();
+	Super::BeginPlay();
+
+    UWorld* const world { this->GetWorld() };
     if (!ensure(world != nullptr)) return;
 
     if (!ensure(this->WorldDataAsset != nullptr)) return;
@@ -51,28 +54,16 @@ void AWorldManager::SpawnEnvironment() const
 
                 // TO DO : we can do better, put init in static function and check if we need to spawn an actor
                 // start spawning actor
-                AEnvironmentManager* environment = world->SpawnActorDeferred<AEnvironmentManager>(this->EnvironmentClass, transform);
-                if (environment)
+                AChunck* chunck = world->SpawnActorDeferred<AChunck>(this->ChunckClass, transform);
+                if (chunck)
                 {
                     // init component
-                    bool isUsed = environment->init(FVector2D(location.X, location.X + chunckSize), FVector2D(location.Y, location.Y + chunckSize), FVector2D(location.Z, location.Z + chunckSize), FVector(cubeSize, cubeSize, cubeSize));
-                    environment->FinishSpawning(transform);
-
-                    if (isUsed == false)
-                    {
-                        environment->Destroy();
-                    }
+                    chunck->init(FVector2D(location.X, location.X + chunckSize), FVector2D(location.Y, location.Y + chunckSize), FVector2D(location.Z, location.Z + chunckSize), cubeSize);
+                    chunck->FinishSpawning(transform);
                 }
             }
         }
     }
-#endif // WITH_EDITOR
-}
-
-// Called when the game starts or when spawned
-void AWorldManager::BeginPlay()
-{
-	Super::BeginPlay();
 }
 
 
