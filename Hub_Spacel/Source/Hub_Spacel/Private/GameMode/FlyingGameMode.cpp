@@ -17,8 +17,6 @@ AFlyingGameMode::AFlyingGameMode()
     ApiUrl = textReader->ReadFile("Urls/ApiUrl.txt");
 
     HttpModule = &FHttpModule::Get();
-
-    GameSessionActivated = false;
 }
 
 void AFlyingGameMode::BeginPlay()
@@ -80,6 +78,71 @@ void AFlyingGameMode::BeginPlay()
         {
             FUpdateGameSessionState* state = (FUpdateGameSessionState*)_params;
             if (!ensure(state != nullptr)) return;
+
+            auto reason { _updateGameSessionObj.GetUpdateReason() };
+
+            switch(reason)
+            {
+                case Aws::GameLift::Server::Model::UpdateReason::MATCHMAKING_DATA_UPDATED:
+                {
+                    state->Reason = EUpdateReason::MATCHMAKING_DATA_UPDATED;
+
+                    auto gameSessionObj = _updateGameSessionObj.GetGameSession();
+                    FString matchmakerData{ gameSessionObj.GetMatchmakerData() };
+
+                    TSharedPtr<FJsonObject> jsonObject{};
+                    TSharedRef<TJsonReader<>> reader{ TJsonReaderFactory<>::Create(matchmakerData) };
+
+                    if (FJsonSerializer::Deserialize(reader, jsonObject))
+                    {
+                        TArray<TSharedPtr<FJsonValue>> teams{ jsonObject->GetArrayField("teams") };
+                        for (TSharedPtr<FJsonValue> team : teams)
+                        {
+                            TSharedPtr<FJsonObject> teamObj{ team->AsObject() };
+                            FString teamName{ teamObj->GetStringField("name") };
+
+                            TArray<TSharedPtr<FJsonValue>> players{ teamObj->GetArrayField("players") };
+
+                            for (TSharedPtr<FJsonValue> player : players)
+                            {
+                                TSharedPtr<FJsonObject> playerObj{ player->AsObject() };
+                                FString playerId{ playerObj->GetStringField("playerId") };
+
+                                TSharedPtr<FJsonObject> attributes{ playerObj->GetObjectField("attributes") };
+                                TSharedPtr<FJsonObject> skill{ attributes->GetObjectField("skill") };
+
+                                FString skillValue{ skill->GetStringField("valueAttribute") };
+
+                                auto skillAttributeValue{ new Aws::GameLift::Server::Model::AttributeValue(FCString::Atod(*skillValue)) };
+
+                                Aws::GameLift::Server::Model::Player awsPlayerObj;
+                                awsPlayerObj.SetPlayerId(TCHAR_TO_ANSI(*playerId));
+                                awsPlayerObj.SetTeam(TCHAR_TO_ANSI(*teamName));
+                                awsPlayerObj.AddPlayerAttribute("skill", *skillAttributeValue);
+
+                                state->PlayerIdToPlayer.Add(playerId, awsPlayerObj);
+                            }
+                        }
+                    }
+                }
+                break;
+
+                case Aws::GameLift::Server::Model::UpdateReason::BACKFILL_CANCELLED:
+                    state->Reason = EUpdateReason::BACKFILL_CANCELLED;
+                break;
+
+                case Aws::GameLift::Server::Model::UpdateReason::BACKFILL_FAILED:
+                    state->Reason = EUpdateReason::BACKFILL_FAILED;
+                break;
+
+                case Aws::GameLift::Server::Model::UpdateReason::BACKFILL_TIMED_OUT:
+                    state->Reason = EUpdateReason::BACKFILL_TIMED_OUT;
+                break;
+
+                default:
+                    state->Reason = EUpdateReason::NO_UPDATE_RECEIVED;
+                break;
+            }
         };
 
         auto onProcessTerminate = [](void* _params)
@@ -151,12 +214,6 @@ void AFlyingGameMode::BeginPlay()
 #endif
     this->GetWorldTimerManager().SetTimer(this->HandleGameSessionUpdateHandle, this, &AFlyingGameMode::HandleGameSessionUpdate, 1.0f, true, 5.0f);
     this->GetWorldTimerManager().SetTimer(this->HandleProcessTerminationHandle, this, &AFlyingGameMode::HandleProcessTermination, 1.0f, true, 5.0f);
-
-    // TO DO : FOR TEST
-    /*ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(this->GameState);
-    if (!ensure(spacelGameState != nullptr)) return;
-    spacelGameState->LatestEvent = "GameEnded";
-    spacelGameState->WinningTeam = "Team 1";*/
 }
 
 void AFlyingGameMode::PreLogin(FString const& _options, FString const& _address, FUniqueNetIdRepl const& _uniqueId, FString& _errorMessage)
@@ -226,6 +283,17 @@ void AFlyingGameMode::PreLogin(FString const& _options, FString const& _address,
 void AFlyingGameMode::Logout(class AController* _exiting)
 {
 #if WITH_GAMELIFT
+    if (this->LatestBackfillTicketId.Len() > 0)
+    {
+        auto gameSessionIdOutcome = Aws::GameLift::Server::GetGameSessionId();
+        if (gameSessionIdOutcome.IsSuccess())
+        {
+            FString gameSessionId{ gameSessionIdOutcome.GetResult() };
+            FString matchmakingConfigurationArn{ this->StartGameSessionState.MatchmakingConfigurationArn };
+            stopBackfillRequest(gameSessionId, matchmakingConfigurationArn, this->LatestBackfillTicketId);
+        }
+    }
+
     if (_exiting != nullptr)
     {
         ASpacelPlayerState* spacelPlayerState { Cast<ASpacelPlayerState>(_exiting->PlayerState) };
@@ -246,16 +314,6 @@ FString AFlyingGameMode::InitNewPlayer(class APlayerController* _newPlayerContro
 {
     FString initializedString { Super::InitNewPlayer(_newPlayerController, _uniqueId, _options, _portal) };
 
-    /*if (_newPlayerController != nullptr)
-    {
-        ASpacelPlayerState* playerState = Cast<ASpacelPlayerState>(_newPlayerController->PlayerState);
-        if (playerState != nullptr)
-        {
-            // TO DO : attribute right team
-            FMath::RandRange(0, 1) == 0 ? playerState->Team = "Team 1" : playerState->Team = "Team 2";
-        }
-    }*/
-
 #if WITH_GAMELIFT
     FString const& playerSessionId { UGameplayStatics::ParseOption(_options, "PlayerSessionId") };
     FString const& playerId { UGameplayStatics::ParseOption(_options, "PlayerId") };
@@ -268,7 +326,14 @@ FString AFlyingGameMode::InitNewPlayer(class APlayerController* _newPlayerContro
             spacelPlayerState->PlayerSessionId = *playerSessionId;
             spacelPlayerState->MatchmakingPlayerId = *playerId;
 
-            if (this->StartGameSessionState.PlayerIdToPlayer.Num() > 0
+            if (this->UpdateGameSessionState.PlayerIdToPlayer.Num() > 0
+                && this->UpdateGameSessionState.PlayerIdToPlayer.Contains(playerId))
+            {
+                auto playerObj{ this->UpdateGameSessionState.PlayerIdToPlayer.Find(playerId) };
+                FString const& team{ playerObj->GetTeam() };
+                spacelPlayerState->Team = *team;
+            }
+            else if (this->StartGameSessionState.PlayerIdToPlayer.Num() > 0
              && this->StartGameSessionState.PlayerIdToPlayer.Contains(playerId))
             {
                 auto playerObj { this->StartGameSessionState.PlayerIdToPlayer.Find(playerId) };
@@ -304,6 +369,7 @@ void AFlyingGameMode::EndGame()
     GetWorldTimerManager().ClearTimer(this->PickAWinningTeamHandle);
     GetWorldTimerManager().ClearTimer(this->HandleProcessTerminationHandle);
     GetWorldTimerManager().ClearTimer(this->HandleGameSessionUpdateHandle);
+    GetWorldTimerManager().ClearTimer(this->SuspendBackfillHandle);
 
 #if WITH_GAMELIFT
     Aws::GameLift::Server::TerminateGameSession();
@@ -359,6 +425,20 @@ void AFlyingGameMode::HandleProcessTermination()
         GetWorldTimerManager().ClearTimer(this->CountDownUntilGameOverHandle);
         GetWorldTimerManager().ClearTimer(this->HandleProcessTerminationHandle);
         GetWorldTimerManager().ClearTimer(this->HandleGameSessionUpdateHandle);
+        GetWorldTimerManager().ClearTimer(this->SuspendBackfillHandle);
+
+#if WITH_GAMELIFT
+        if(this->LatestBackfillTicketId.Len() > 0)
+        {
+            auto gameSessionIdOutcome { Aws::GameLift::Server::GetGameSessionId() };
+            if(gameSessionIdOutcome.IsSuccess())
+            {
+                FString gameSessionArn { gameSessionIdOutcome.GetResult() };
+                FString matchmakingConfigurationArn { this->StartGameSessionState.MatchmakingConfigurationArn };
+                stopBackfillRequest(gameSessionArn, matchmakingConfigurationArn, this->LatestBackfillTicketId);
+            }
+        }
+#endif
 
         FString processInterruptionMessage {};
 
@@ -384,16 +464,173 @@ void AFlyingGameMode::HandleProcessTermination()
 
 void AFlyingGameMode::HandleGameSessionUpdate()
 {
+#if WITH_GAMELIFT
     if (!this->GameSessionActivated && this->StartGameSessionState.Status)
     {
         this->GameSessionActivated = true;
 
+        m_expectedPlayers = this->StartGameSessionState.PlayerIdToPlayer;
+        this->WaitingForPlayersToJoin = true;
+
         GetWorldTimerManager().SetTimer(this->PickAWinningTeamHandle, this, &AFlyingGameMode::PickAWinningTeam, 1.0f, false, (float)this->RemainingGameTime);
+        GetWorldTimerManager().SetTimer(this->SuspendBackfillHandle, this, &AFlyingGameMode::SuspendBackfill, 1.0f, false, (float)(this->SuspendBackfillTime));
         GetWorldTimerManager().SetTimer(this->CountDownUntilGameOverHandle, this, &AFlyingGameMode::CountDownUntilGameOver, 1.0f, true, 0.0f);
     }
+    else if(this->WaitingForPlayersToJoin)
+    {
+        if(this->TimeSpentWaitingForPlayersToJoin < this->SuspendBackfillTime)
+        {
+            auto gameSessionIdOutcome = Aws::GameLift::Server::GetGameSessionId();
+            if (gameSessionIdOutcome.IsSuccess())
+            {
+                FString gameSessionId { FString(gameSessionIdOutcome.GetResult()) };
+
+                Aws::GameLift::Server::Model::DescribePlayerSessionsRequest describePlayerSessionsRequest {};
+                describePlayerSessionsRequest.SetGameSessionId(TCHAR_TO_ANSI(*gameSessionId));
+                describePlayerSessionsRequest.SetPlayerSessionStatusFilter("RESERVED");
+
+                auto describePlayerSessionOutcome = Aws::GameLift::Server::DescribePlayerSessions(describePlayerSessionsRequest);
+                if(describePlayerSessionOutcome.IsSuccess())
+                {
+                    auto describePlayerSessionResult = describePlayerSessionOutcome.GetResult();
+                    int count { describePlayerSessionResult.GetPlayerSessionCount() };
+                    if(count == 0)
+                    {
+                        this->UpdateGameSessionState.Reason = EUpdateReason::BACKFILL_COMPLETED;
+
+                        this->WaitingForPlayersToJoin = false;
+                        this->TimeSpentWaitingForPlayersToJoin = 0;
+                        return;
+                    }
+                }
+            }
+            this->TimeSpentWaitingForPlayersToJoin++;
+        }
+        else
+        {
+            this->UpdateGameSessionState.Reason = EUpdateReason::BACKFILL_COMPLETED;
+            this->WaitingForPlayersToJoin = false;
+            this->TimeSpentWaitingForPlayersToJoin = 0;
+        }
+    }
+    else if(this->UpdateGameSessionState.Reason == EUpdateReason::MATCHMAKING_DATA_UPDATED)
+    {
+        this->LatestBackfillTicketId = {};
+        m_expectedPlayers = this->UpdateGameSessionState.PlayerIdToPlayer;
+
+        this->WaitingForPlayersToJoin = true;
+    }
+    else if(this->UpdateGameSessionState.Reason == EUpdateReason::BACKFILL_CANCELLED ||
+        this->UpdateGameSessionState.Reason == EUpdateReason::BACKFILL_COMPLETED ||
+        this->UpdateGameSessionState.Reason == EUpdateReason::BACKFILL_FAILED ||
+        this->UpdateGameSessionState.Reason == EUpdateReason::BACKFILL_TIMED_OUT)
+    {
+        this->LatestBackfillTicketId = {};
+
+        UWorld const* world { this->GetWorld() };
+        if (!ensure(world != nullptr)) return;
+
+        TArray<APlayerState*> playerStates = world->GetGameState()->PlayerArray;
+
+        TMap<FString, Aws::GameLift::Server::Model::Player> connectedPlayers;
+        for(APlayerState* playerState : playerStates)
+        {
+            ASpacelPlayerState* spacelPlayerState = Cast<ASpacelPlayerState>(playerState);
+            if(spacelPlayerState != nullptr)
+            {
+                if(auto playerObj = m_expectedPlayers.Find(spacelPlayerState->MatchmakingPlayerId))
+                {
+                    connectedPlayers.Add(spacelPlayerState->MatchmakingPlayerId, *playerObj);
+                }
+            }
+        }
+
+        if (connectedPlayers.Num() == 0)
+        {
+            this->EndGame();
+        }
+        else if (connectedPlayers.Num() < this->MaxPlayerPerGame)
+        {
+            auto gameSessionIdOutcome = Aws::GameLift::Server::GetGameSessionId();
+            if (gameSessionIdOutcome.IsSuccess())
+            {
+                FString gameSessionId = FString(gameSessionIdOutcome.GetResult());
+                FString matchmakingConfigurationArn = this->StartGameSessionState.MatchmakingConfigurationArn;
+                this->LatestBackfillTicketId = createBackfillRequest(gameSessionId, matchmakingConfigurationArn, connectedPlayers);
+                if (this->LatestBackfillTicketId.Len() > 0)
+                {
+                    this->UpdateGameSessionState.Reason = EUpdateReason::BACKFILL_INITIATED;
+                }
+            }
+        }
+    }
+#endif
 }
 
 void AFlyingGameMode::onRecordMatchResultResponseReceive(FHttpRequestPtr _request, FHttpResponsePtr _response, bool _bWasSuccessful)
 {
     this->GetWorldTimerManager().SetTimer(this->EndGameHandle, this, &AFlyingGameMode::EndGame, 1.0f, false, 5.0f);
+}
+
+void AFlyingGameMode::SuspendBackfill()
+{
+    GetWorldTimerManager().ClearTimer(this->HandleGameSessionUpdateHandle);
+
+#if WITH_GAMELIFT
+    if(this->LatestBackfillTicketId.Len() > 0)
+    {
+        auto gameSessionIdOutcome = Aws::GameLift::Server::GetGameSessionId();
+        if(gameSessionIdOutcome.IsSuccess())
+        {
+            FString gameSessionId { gameSessionIdOutcome.GetResult() };
+            FString matchmakingConfigurationArn { this->StartGameSessionState.MatchmakingConfigurationArn };
+            if(!stopBackfillRequest(gameSessionId, matchmakingConfigurationArn, this->LatestBackfillTicketId))
+            {
+                this->GetWorldTimerManager().SetTimer(this->SuspendBackfillHandle, this, &AFlyingGameMode::SuspendBackfill, 1.0f, false, 1.0f);
+            }
+        }
+        else
+        {
+            this->GetWorldTimerManager().SetTimer(this->SuspendBackfillHandle, this, &AFlyingGameMode::SuspendBackfill, 1.0f, false, 1.0f);
+        }
+    }
+#endif
+}
+
+FString AFlyingGameMode::createBackfillRequest(FString const& _gameSessionArn, FString const& _matchmakingConfigurationArn, TMap<FString, Aws::GameLift::Server::Model::Player> const& _players)
+{
+#if WITH_GAMELIFT
+    Aws::GameLift::Server::Model::StartMatchBackfillRequest startMatchBackfillRequest {};
+    startMatchBackfillRequest.SetGameSessionArn(TCHAR_TO_ANSI(*_gameSessionArn));
+    startMatchBackfillRequest.SetMatchmakingConfigurationArn(TCHAR_TO_ANSI(*_matchmakingConfigurationArn));
+
+    for (auto& elem : _players)
+    {
+        auto playerObj = elem.Value;
+        startMatchBackfillRequest.AddPlayer(playerObj);
+    }
+
+    auto startMatchBackfillOutcome = Aws::GameLift::Server::StartMatchBackfill(startMatchBackfillRequest);
+    if (startMatchBackfillOutcome.IsSuccess())
+    {
+        return startMatchBackfillOutcome.GetResult().GetTicketId();
+    }
+#endif //  WITH_GAMELIFT
+    return {};
+}
+
+bool AFlyingGameMode::stopBackfillRequest(FString const& _gameSessionArn, FString const& _matchmakingConfigurationArn, FString const& _ticketId)
+{
+#if  WITH_GAMELIFT
+    Aws::GameLift::Server::Model::StopMatchBackfillRequest stopMatchBackfillRequest{};
+    stopMatchBackfillRequest.SetGameSessionArn(TCHAR_TO_ANSI(*_gameSessionArn));
+    stopMatchBackfillRequest.SetMatchmakingConfigurationArn(TCHAR_TO_ANSI(*_matchmakingConfigurationArn));
+    stopMatchBackfillRequest.SetTicketId(TCHAR_TO_ANSI(*_ticketId));
+
+    auto stopMatchBackfillOutCome = Aws::GameLift::Server::StopMatchBackfill(stopMatchBackfillRequest);
+
+    return stopMatchBackfillOutCome.IsSuccess();
+#else
+    return false;    
+#endif //  WITH_GAMELIFT
 }

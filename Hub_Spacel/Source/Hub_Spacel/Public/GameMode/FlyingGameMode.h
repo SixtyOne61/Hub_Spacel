@@ -8,6 +8,18 @@
 #include "Http.h"
 #include "FlyingGameMode.generated.h"
 
+UENUM()
+enum class EUpdateReason : uint8
+{
+	NO_UPDATE_RECEIVED,
+	BACKFILL_INITIATED,
+	MATCHMAKING_DATA_UPDATED,
+	BACKFILL_FAILED,
+	BACKFILL_TIMED_OUT,
+	BACKFILL_CANCELLED,
+	BACKFILL_COMPLETED
+};
+
 USTRUCT()
 struct FStartGameSessionState
 {
@@ -27,10 +39,12 @@ struct FUpdateGameSessionState
 {
 	GENERATED_BODY();
 
-	FUpdateGameSessionState()
-	{
+	UPROPERTY()
+	EUpdateReason Reason { EUpdateReason::NO_UPDATE_RECEIVED };
 
-	}
+	TMap<FString, Aws::GameLift::Server::Model::Player> PlayerIdToPlayer {};
+
+	FUpdateGameSessionState() = default;
 };
 
 USTRUCT()
@@ -93,6 +107,13 @@ private:
 
 	void onRecordMatchResultResponseReceive(FHttpRequestPtr _request, FHttpResponsePtr _response, bool _bWasSuccessful);
 
+	UFUNCTION()
+	void SuspendBackfill();
+
+	FString createBackfillRequest(FString const& _gameSessionArn, FString const& _matchmakingConfigurationArn, TMap<FString, Aws::GameLift::Server::Model::Player> const& _players);
+
+	bool stopBackfillRequest(FString const& _gameSessionArn, FString const& _matchmakingConfigurationArn, FString const& _ticketId);
+
 public:
 	UPROPERTY()
 	FTimerHandle CountDownUntilGameOverHandle {};
@@ -110,22 +131,31 @@ public:
 	FTimerHandle HandleGameSessionUpdateHandle {};
 
 	UPROPERTY()
-	int RemainingGameTime { 600 };
+	FTimerHandle SuspendBackfillHandle {};
+
+	UPROPERTY()
+	int RemainingGameTime { 750 }; // 11'30 + 60 prepa
+
+	UPROPERTY()
+	int SuspendBackfillTime { 45 };
+
+	UPROPERTY()
+	int MaxPlayerPerGame { 18 };
 
 private:
 	class FHttpModule* HttpModule { nullptr };
 
 	UPROPERTY()
-	FStartGameSessionState StartGameSessionState;
+	FStartGameSessionState StartGameSessionState {};
 
 	UPROPERTY()
-	FUpdateGameSessionState UpdateGameSessionState;
+	FUpdateGameSessionState UpdateGameSessionState {};
 
 	UPROPERTY()
-	FProcessTerminateState ProcessTerminateState;
+	FProcessTerminateState ProcessTerminateState {};
 
 	UPROPERTY()
-	FHealthCheckState HealthCheckState;
+	FHealthCheckState HealthCheckState {};
 
 	UPROPERTY()
 	FString ApiUrl {};
@@ -134,5 +164,16 @@ private:
 	FString ServerPassword {};
 
 	UPROPERTY()
-	bool GameSessionActivated {};
+	bool GameSessionActivated { false };
+
+	UPROPERTY()
+	FString LatestBackfillTicketId {};
+
+	UPROPERTY()
+	bool WaitingForPlayersToJoin { false };
+
+	UPROPERTY()
+	int TimeSpentWaitingForPlayersToJoin { 0 };
+
+	TMap<FString, Aws::GameLift::Server::Model::Player> m_expectedPlayers {};
 };
