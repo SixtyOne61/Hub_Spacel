@@ -1,0 +1,49 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "Blueprint/UserWidget.h"
+#include "Enum/SpacelEnum.h"
+#include "PreparePhaseWidget.generated.h"
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartGame);
+
+/**
+ * 
+ */
+UCLASS()
+class HUB_SPACEL_API UPreparePhaseWidget : public UUserWidget
+{
+	GENERATED_BODY()
+
+public:
+	virtual void PostLoad() override;
+
+protected:
+	virtual void NativeConstruct() override;
+
+private:
+	UFUNCTION()
+	void UpdateRemainingSkillPoint();
+
+	UFUNCTION()
+	void SetTime();
+
+public:
+	UPROPERTY(BlueprintAssignable)
+	FStartGame OnStartGameDelegate {};
+
+private:
+	UPROPERTY()
+	class UTextBlock* RemainingSkillPointTextBlock { nullptr };
+
+	UPROPERTY()
+	class UTextBlock* TimeTextBlock { nullptr };
+
+	UPROPERTY()
+	FTimerHandle TimeHandle {};
+
+	UPROPERTY()
+	int RemainingTime { 60 };
+};

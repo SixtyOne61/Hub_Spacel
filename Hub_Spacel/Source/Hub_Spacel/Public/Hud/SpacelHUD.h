@@ -23,4 +23,7 @@ protected:
 private:
 	UPROPERTY()
 	TSubclassOf<class UUserWidget> GameWidgetClass { nullptr };
+
+	UPROPERTY()
+	TSubclassOf<UUserWidget> PreparePhaseWidgetClass { nullptr };
 };

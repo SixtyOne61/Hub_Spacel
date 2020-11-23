@@ -21,6 +21,15 @@ enum class ERegionType : uint8
     ASIA UMETA(DisplayName = "ASIA"),
 };
 
+UENUM(BlueprintType)
+enum class ESkillType : uint8
+{
+    None UMETA(DisplayName = "None"),
+    Attack UMETA(DisplayName = "Attack"),
+    Protection UMETA(DisplayName = "Protection"),
+    Support UMETA(DisplayName = "Support")
+};
+
 UENUM(BlueprintType, meta = (Bitflags, UseEnumValuesAsMaskValuesInEditor = "true"))
 enum class EShipModuleType : uint8
 {

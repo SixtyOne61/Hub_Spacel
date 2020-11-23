@@ -8,6 +8,7 @@
 ASpacelHUD::ASpacelHUD()
 {
     GameWidgetClass = SpacelFactory::FindClass<UUserWidget>(TEXT("/Game/Blueprint/UI/Widgets/WBP_Game"));
+    PreparePhaseWidgetClass = SpacelFactory::FindClass<UUserWidget>(TEXT("/Game/Blueprint/UI/Widgets/WBP_PreparePhase"));
 }
 
 void ASpacelHUD::BeginPlay()
@@ -23,5 +24,6 @@ void ASpacelHUD::BeginPlay()
     playerController->bShowMouseCursor = false;
 
     // add user widget to viewport
+    SpacelFactory::createWidget<UUserWidget>(world, this->PreparePhaseWidgetClass, false);
     SpacelFactory::createWidget<UUserWidget>(world, this->GameWidgetClass, false);
 }
