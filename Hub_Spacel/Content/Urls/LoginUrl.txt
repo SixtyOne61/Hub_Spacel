@@ -1,0 +1,1 @@
+https://spacel.auth.eu-central-1.amazoncognito.com/login?client_id=5qdimpn7c4sgckdauidjjbq2tl&response_type=code&scope=aws.cognito.signin.user.admin+email+openid+phone+profile+spacel.api/access&redirect_uri=https://hcnbo9ntef.execute-api.eu-central-1.amazonaws.com/test/getsigninresult

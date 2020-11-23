@@ -8,6 +8,7 @@ public class Hub_SpacelEditorTarget : TargetRules
 	public Hub_SpacelEditorTarget(TargetInfo Target) : base(Target)
 	{
 		Type = TargetType.Editor;
+		//DefaultBuildSettings = BuildSettingsVersion.V2;
 		ExtraModuleNames.Add("Hub_Spacel");
 	}
 }
