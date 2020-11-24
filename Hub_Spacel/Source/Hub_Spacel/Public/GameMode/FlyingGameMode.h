@@ -8,6 +8,8 @@
 #include "Http.h"
 #include "FlyingGameMode.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartGame);
+
 UENUM()
 enum class EUpdateReason : uint8
 {
@@ -94,6 +96,9 @@ private:
 	void CountDownUntilGameOver();
 
 	UFUNCTION()
+	void PreparePhaseUntilOver();
+
+	UFUNCTION()
 	void EndGame();
 
 	UFUNCTION()
@@ -134,13 +139,22 @@ public:
 	FTimerHandle SuspendBackfillHandle {};
 
 	UPROPERTY()
+	FTimerHandle PreparePhaseUntilOverHandle {};
+
+	UPROPERTY()
 	int RemainingGameTime { 750 }; // 11'30 + 60 prepa
+
+	UPROPERTY()
+	int RemainingPrepareTime { 60 };
 
 	UPROPERTY()
 	int SuspendBackfillTime { 45 };
 
 	UPROPERTY()
 	int MaxPlayerPerGame { 18 };
+
+	UPROPERTY(BlueprintAssignable)
+	FStartGame OnStartGameDelegate {};
 
 private:
 	class FHttpModule* HttpModule { nullptr };

@@ -33,6 +33,9 @@ protected:
 
 private:
 	UFUNCTION()
+	void StartGame();
+
+	UFUNCTION()
 	void SetTeammateCount();
 
 	UFUNCTION()

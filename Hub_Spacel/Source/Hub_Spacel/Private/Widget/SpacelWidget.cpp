@@ -5,6 +5,7 @@
 #include "Components/TextBlock.h"
 #include "Player/SpacelPlayerState.h"
 #include "GameState/SpacelGameState.h"
+#include "GameMode/FlyingGameMode.h"
 #include "Hub_SpacelGameInstance.h"
 #include "Kismet/GameplayStatics.h"
 #include "Util/SimplyUI.h"
@@ -27,6 +28,13 @@ void USpacelWidget::NativeConstruct()
     world->GetTimerManager().SetTimer(SetLatestEventHandle, this, &USpacelWidget::SetLatestEvent, 1.0f, true, 1.0f);
     world->GetTimerManager().SetTimer(SetAverragePlayerLatencyHandle, this, &USpacelWidget::SetAverragePlayerLatency, 1.0f, true, 1.0f);
     world->GetTimerManager().SetTimer(SetSpeedHandle, this, &USpacelWidget::SetSpeed, 0.2f, true, 1.0f);
+
+    this->SetVisibility(ESlateVisibility::Hidden);
+    AFlyingGameMode* flyingGameMode{ Cast<AFlyingGameMode>(UGameplayStatics::GetGameMode(this->GetWorld())) };
+    if (flyingGameMode != nullptr)
+    {
+        flyingGameMode->OnStartGameDelegate.AddDynamic(this, &USpacelWidget::StartGame);
+    }
 }
 
 void USpacelWidget::NativeDestruct()
@@ -40,6 +48,11 @@ void USpacelWidget::NativeDestruct()
         world->GetTimerManager().ClearTimer(SetSpeedHandle);
     }
     Super::NativeDestruct();
+}
+
+void USpacelWidget::StartGame()
+{
+    this->SetVisibility(ESlateVisibility::Visible);
 }
 
 void USpacelWidget::SetTeammateCount()

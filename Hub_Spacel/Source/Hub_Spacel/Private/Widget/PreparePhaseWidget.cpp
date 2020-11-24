@@ -4,6 +4,8 @@
 #include "Components/TextBlock.h"
 #include "Util/SimplyUI.h"
 #include "Player/SpacelPlayerState.h"
+#include "GameMode/FlyingGameMode.h"
+#include "Kismet/GameplayStatics.h"
 
 void UPreparePhaseWidget::PostLoad()
 {
@@ -14,6 +16,12 @@ void UPreparePhaseWidget::PostLoad()
     {
         owningPlayerState->OnUpdateRemainingSkillPointDelegate.AddDynamic(this, &UPreparePhaseWidget::UpdateRemainingSkillPoint);
         this->UpdateRemainingSkillPoint();
+    }
+
+    AFlyingGameMode* flyingGameMode{ Cast<AFlyingGameMode>(UGameplayStatics::GetGameMode(this->GetWorld())) };
+    if (flyingGameMode != nullptr)
+    {
+        flyingGameMode->OnStartGameDelegate.AddDynamic(this, &UPreparePhaseWidget::StartGame);
     }
 }
 
@@ -27,7 +35,7 @@ void UPreparePhaseWidget::NativeConstruct()
     UWorld* world { this->GetWorld() };
     if (!ensure(world != nullptr)) return;
 
-    world->GetTimerManager().SetTimer(TimeHandle, this, &UPreparePhaseWidget::SetTime, 1.0f, true, 1.0f);
+    world->GetTimerManager().SetTimer(TimeHandle, this, &UPreparePhaseWidget::SetTime, 1.0f, true, 0.0f);
 
     if (!ensure(this->TimeTextBlock != nullptr)) return;
     this->TimeTextBlock->SetText(FText::FromString(FString::FromInt(this->RemainingTime)));
@@ -51,7 +59,18 @@ void UPreparePhaseWidget::SetTime()
 
     if (this->RemainingTime == 0)
     {
-        this->OnStartGameDelegate.Broadcast();
-        this->RemoveFromViewport();
+        UWorld* world{ this->GetWorld() };
+        if (!ensure(world != nullptr)) return;
+
+        world->GetTimerManager().ClearTimer(this->TimeHandle);
     }
+}
+
+void UPreparePhaseWidget::StartGame()
+{
+    this->RemoveFromViewport();
+
+    UWorld* world{ this->GetWorld() };
+    if (!ensure(world != nullptr)) return;
+    world->GetTimerManager().ClearTimer(this->TimeHandle);
 }

@@ -362,6 +362,19 @@ void AFlyingGameMode::CountDownUntilGameOver()
     }
 }
 
+void AFlyingGameMode::PreparePhaseUntilOver()
+{
+    if (this->RemainingPrepareTime > 0)
+    {
+        this->RemainingPrepareTime--;
+    }
+    else
+    {
+        GetWorldTimerManager().ClearTimer(this->PreparePhaseUntilOverHandle);
+        OnStartGameDelegate.Broadcast();
+    }
+}
+
 void AFlyingGameMode::EndGame()
 {
     GetWorldTimerManager().ClearTimer(this->CountDownUntilGameOverHandle);
@@ -370,6 +383,7 @@ void AFlyingGameMode::EndGame()
     GetWorldTimerManager().ClearTimer(this->HandleProcessTerminationHandle);
     GetWorldTimerManager().ClearTimer(this->HandleGameSessionUpdateHandle);
     GetWorldTimerManager().ClearTimer(this->SuspendBackfillHandle);
+    GetWorldTimerManager().ClearTimer(this->PreparePhaseUntilOverHandle);
 
 #if WITH_GAMELIFT
     Aws::GameLift::Server::TerminateGameSession();
@@ -423,6 +437,7 @@ void AFlyingGameMode::HandleProcessTermination()
     if (this->ProcessTerminateState.Status)
     {
         GetWorldTimerManager().ClearTimer(this->CountDownUntilGameOverHandle);
+        GetWorldTimerManager().ClearTimer(this->PreparePhaseUntilOverHandle);
         GetWorldTimerManager().ClearTimer(this->HandleProcessTerminationHandle);
         GetWorldTimerManager().ClearTimer(this->HandleGameSessionUpdateHandle);
         GetWorldTimerManager().ClearTimer(this->SuspendBackfillHandle);
@@ -475,6 +490,7 @@ void AFlyingGameMode::HandleGameSessionUpdate()
         GetWorldTimerManager().SetTimer(this->PickAWinningTeamHandle, this, &AFlyingGameMode::PickAWinningTeam, 1.0f, false, (float)this->RemainingGameTime);
         GetWorldTimerManager().SetTimer(this->SuspendBackfillHandle, this, &AFlyingGameMode::SuspendBackfill, 1.0f, false, (float)(this->SuspendBackfillTime));
         GetWorldTimerManager().SetTimer(this->CountDownUntilGameOverHandle, this, &AFlyingGameMode::CountDownUntilGameOver, 1.0f, true, 0.0f);
+        GetWorldTimerManager().SetTimer(this->PreparePhaseUntilOverHandle, this, &AFlyingGameMode::PreparePhaseUntilOver, 1.0f, true, 0.0f);
     }
     else if(this->WaitingForPlayersToJoin)
     {

@@ -7,8 +7,6 @@
 #include "Enum/SpacelEnum.h"
 #include "PreparePhaseWidget.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartGame);
-
 /**
  * 
  */
@@ -30,9 +28,8 @@ private:
 	UFUNCTION()
 	void SetTime();
 
-public:
-	UPROPERTY(BlueprintAssignable)
-	FStartGame OnStartGameDelegate {};
+	UFUNCTION()
+	void StartGame();
 
 private:
 	UPROPERTY()
