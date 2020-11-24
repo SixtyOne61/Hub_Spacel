@@ -4,7 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameStateBase.h"
+#include "Enum/SpacelEnum.h"
 #include "SpacelGameState.generated.h"
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartPrepare);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartGame);
 
 /**
  * 
@@ -13,10 +17,32 @@ UCLASS()
 class HUB_SPACEL_API ASpacelGameState : public AGameStateBase
 {
 	GENERATED_BODY()
+
+public:
+	UFUNCTION()
+	void GoToPrepare() { this->RU_GameState = (uint8)EGameState::Prepare; }
+
+	UFUNCTION()
+	void GoToInGame() { this->RU_GameState = (uint8)EGameState::InGame; }
+
+private:
+	UFUNCTION()
+	void OnRep_StateGame();
+
 public:
 	UPROPERTY(Replicated)
-	FString LatestEvent {};
+	FString R_LatestEvent {};
 
 	UPROPERTY(Replicated)
-	FString WinningTeam {};
+	FString R_WinningTeam {};
+
+	UPROPERTY()
+	FStartPrepare OnStartPrepareDelegate {};
+
+	UPROPERTY()
+	FStartGame OnStartGameDelegate {};
+
+private:
+	UPROPERTY(ReplicatedUsing = OnRep_StateGame)
+	uint8 RU_GameState { (uint8)EGameState::Undefined } ;
 };

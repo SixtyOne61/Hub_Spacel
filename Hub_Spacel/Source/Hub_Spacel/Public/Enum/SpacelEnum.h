@@ -5,6 +5,14 @@
 #include "CoreMinimal.h"
 
 UENUM(BlueprintType)
+enum class EGameState : uint8
+{
+    Undefined = 0,
+    Prepare,
+    InGame
+};
+
+UENUM(BlueprintType)
 enum class EUIType : uint8
 {
     None UMETA(DisplayName = "None"),

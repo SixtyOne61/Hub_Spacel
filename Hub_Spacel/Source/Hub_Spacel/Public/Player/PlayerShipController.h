@@ -4,8 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
-#include "Util/Optional.h"
-#include "Containers/Queue.h"
 #include <functional>
 #include "PlayerShipController.generated.h"
 
@@ -16,7 +14,6 @@ UCLASS()
 class HUB_SPACEL_API APlayerShipController : public APlayerController
 {
     GENERATED_BODY()
-
 
     class FUnlinearReachGoal
     {
@@ -90,6 +87,9 @@ protected:
 
     void returnToMainMenu();
 
+    UFUNCTION()
+    void StartGame();
+
 private:
     void readInput(int const& _val, float& _in, std::function<void(float)> _fnc);
 
@@ -105,4 +105,6 @@ public:
 
 private:
     TOptional<FUnlinearReachGoal> m_speed {};
+
+    bool m_enableFlyingInput { false };
 };

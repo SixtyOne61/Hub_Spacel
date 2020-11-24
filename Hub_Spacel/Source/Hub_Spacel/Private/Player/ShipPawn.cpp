@@ -200,7 +200,7 @@ void AShipPawn::RPCServerMove_Implementation(float const& _deltaTime)
     this->DriverMeshComponent->AddTorqueInDegrees(angularVelocity, NAME_None, true);
 
     FVector const& linearVelocity = this->DriverMeshComponent->GetPhysicsLinearVelocity(NAME_None);
-    FVector newVelocity = this->DriverMeshComponent->GetForwardVector() * this->PlayerDataAsset->MaxForwardSpeed * this->PercentSpeed;
+    FVector newVelocity = this->DriverMeshComponent->GetForwardVector() * this->PlayerDataAsset->MaxForwardSpeed * this->R_PercentSpeed;
     newVelocity = FMath::Lerp(linearVelocity, newVelocity, 0.9f);
 
     this->DriverMeshComponent->SetPhysicsLinearVelocity(newVelocity);
@@ -274,7 +274,7 @@ void AShipPawn::OnRep_PlayerState()
 void AShipPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetimeProps) const
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-    DOREPLIFETIME(AShipPawn, PercentSpeed);
+    DOREPLIFETIME(AShipPawn, R_PercentSpeed);
     DOREPLIFETIME(AShipPawn, PercentFlightAttitude);
     DOREPLIFETIME(AShipPawn, PercentTurn);
     DOREPLIFETIME(AShipPawn, PercentUp);

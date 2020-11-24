@@ -87,7 +87,7 @@ public:
 protected:
     /* current percent speed value 0.0f - 1.0f */
     UPROPERTY(Replicated)
-    float PercentSpeed = 0.0f;
+    float R_PercentSpeed = 0.0f;
 
     /* when flight attitude change -1.0f or 0.0f or 1.0f */
     UPROPERTY(ReplicatedUsing = "OnRep_PercentFlightAttitude")

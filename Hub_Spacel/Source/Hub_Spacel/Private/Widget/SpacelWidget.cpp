@@ -5,7 +5,6 @@
 #include "Components/TextBlock.h"
 #include "Player/SpacelPlayerState.h"
 #include "GameState/SpacelGameState.h"
-#include "GameMode/FlyingGameMode.h"
 #include "Hub_SpacelGameInstance.h"
 #include "Kismet/GameplayStatics.h"
 #include "Util/SimplyUI.h"
@@ -30,10 +29,10 @@ void USpacelWidget::NativeConstruct()
     world->GetTimerManager().SetTimer(SetSpeedHandle, this, &USpacelWidget::SetSpeed, 0.2f, true, 1.0f);
 
     this->SetVisibility(ESlateVisibility::Hidden);
-    AFlyingGameMode* flyingGameMode{ Cast<AFlyingGameMode>(UGameplayStatics::GetGameMode(this->GetWorld())) };
-    if (flyingGameMode != nullptr)
+    ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld()));
+    if (spacelGameState != nullptr)
     {
-        flyingGameMode->OnStartGameDelegate.AddDynamic(this, &USpacelWidget::StartGame);
+        spacelGameState->OnStartGameDelegate.AddDynamic(this, &USpacelWidget::StartGame);
     }
 }
 
@@ -103,13 +102,13 @@ void USpacelWidget::SetLatestEvent()
     ASpacelGameState* spacelGameState { Cast<ASpacelGameState>(world->GetGameState()) };
     if (!ensure(spacelGameState != nullptr)) return;
 
-    FString latestEvent { spacelGameState->LatestEvent };
+    FString latestEvent { spacelGameState->R_LatestEvent };
 
     if (latestEvent.Len() > 0)
     {
         if (latestEvent.Equals("GameEnded"))
         {
-            FString winningTeam { spacelGameState->WinningTeam };
+            FString winningTeam { spacelGameState->R_WinningTeam };
 
             if (this->EventTextBlock)
             {
@@ -155,6 +154,6 @@ void USpacelWidget::SetSpeed()
     AShipPawn* shipPawn = Cast<AShipPawn>(UGameplayStatics::GetPlayerPawn(world, 0));
     if (shipPawn != nullptr && this->SpeedTextBlock != nullptr)
     {
-        this->SpeedTextBlock->SetText(FText::FromString(FString::FromInt(FMath::RoundToInt(shipPawn->PercentSpeed * 100)) + " %"));
+        this->SpeedTextBlock->SetText(FText::FromString(FString::FromInt(FMath::RoundToInt(shipPawn->R_PercentSpeed * 100)) + " %"));
     }
 }

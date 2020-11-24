@@ -15,9 +15,6 @@ class HUB_SPACEL_API UPreparePhaseWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
-public:
-	virtual void PostLoad() override;
-
 protected:
 	virtual void NativeConstruct() override;
 
@@ -27,6 +24,9 @@ private:
 
 	UFUNCTION()
 	void SetTime();
+
+	UFUNCTION()
+	void StartPrepare();
 
 	UFUNCTION()
 	void StartGame();

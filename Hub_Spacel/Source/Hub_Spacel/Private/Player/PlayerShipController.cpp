@@ -8,6 +8,7 @@
 #include "Engine/World.h"
 #include "Util/SimplyMath.h"
 #include "DataAsset/PlayerDataAsset.h"
+#include "GameState/SpacelGameState.h"
 
 float APlayerShipController::FUnlinearReachGoal::addValue(float _value, float _currentPercent)
 {
@@ -115,13 +116,30 @@ void APlayerShipController::SetupInputComponent()
 void APlayerShipController::BeginPlay()
 {
     Super::BeginPlay();
+
+    if (this->IsLocalController())
+    {
+        ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld()));
+        if (spacelGameState != nullptr)
+        {
+            spacelGameState->OnStartGameDelegate.AddDynamic(this, &APlayerShipController::StartGame);
+        }
+    }
+}
+
+void APlayerShipController::StartGame()
+{
+    this->m_enableFlyingInput = true;
 }
 
 void APlayerShipController::speed(float _val)
 {
-    // TO DO : make this better, we can keep _val here, and send only relevant value
-    // in server, on tick continue to increase or decrease percent
-    this->RPCServerSetSpeed(_val);
+    if (this->m_enableFlyingInput)
+    {
+        // TO DO : make this better, we can keep _val here, and send only relevant value
+        // in server, on tick continue to increase or decrease percent
+        this->RPCServerSetSpeed(_val);
+    }
 }
 
 void APlayerShipController::RPCServerSetSpeed_Implementation(float _val)
@@ -138,12 +156,15 @@ void APlayerShipController::RPCServerSetSpeed_Implementation(float _val)
         m_speed = TOptional<FUnlinearReachGoal>(FUnlinearReachGoal { this, shipPawn->PlayerDataAsset->ReachTimeUpSpeed, shipPawn->PlayerDataAsset->ReachTimeDownSpeed });
     }
 
-    shipPawn->PercentSpeed = m_speed.GetValue().addValue(_val, shipPawn->PercentSpeed);
+    shipPawn->R_PercentSpeed = m_speed.GetValue().addValue(_val, shipPawn->R_PercentSpeed);
 }
 
 void APlayerShipController::flightAttitude(float _val)
 {
-    readInput(_val, this->PercentFlightAttitude, std::bind(&APlayerShipController::RPCServerSetFlightAttitude, this, std::placeholders::_1));
+    if (this->m_enableFlyingInput)
+    {
+        readInput(_val, this->PercentFlightAttitude, std::bind(&APlayerShipController::RPCServerSetFlightAttitude, this, std::placeholders::_1));
+    }
 }
 
 void APlayerShipController::RPCServerSetFlightAttitude_Implementation(float _val)
@@ -161,7 +182,10 @@ void APlayerShipController::RPCServerSetFlightAttitude_Implementation(float _val
 
 void APlayerShipController::turn(float _val)
 {
-    readInput(_val, this->PercentTurn, std::bind(&APlayerShipController::RPCServerSetTurn, this, std::placeholders::_1));
+    if (this->m_enableFlyingInput)
+    {
+        readInput(_val, this->PercentTurn, std::bind(&APlayerShipController::RPCServerSetTurn, this, std::placeholders::_1));
+    }
 }
 
 void APlayerShipController::RPCServerSetTurn_Implementation(float _val)
@@ -179,7 +203,10 @@ void APlayerShipController::RPCServerSetTurn_Implementation(float _val)
 
 void APlayerShipController::up(float _val)
 {
-    readInput(_val, this->PercentUp, std::bind(&APlayerShipController::RPCServerSetUp, this, std::placeholders::_1));
+    if (this->m_enableFlyingInput)
+    {
+        readInput(_val, this->PercentUp, std::bind(&APlayerShipController::RPCServerSetUp, this, std::placeholders::_1));
+    }
 }
 
 void APlayerShipController::RPCServerSetUp_Implementation(float _val)
@@ -197,12 +224,18 @@ void APlayerShipController::RPCServerSetUp_Implementation(float _val)
 
 void APlayerShipController::fireOn()
 {
-    this->RPCServerFire(true);
+    if (this->m_enableFlyingInput)
+    {
+        this->RPCServerFire(true);
+    }
 }
 
 void APlayerShipController::fireOff()
 {
-    this->RPCServerFire(false);
+    if (this->m_enableFlyingInput)
+    {
+        this->RPCServerFire(false);
+    }
 }
 
 void APlayerShipController::RPCServerFire_Implementation(bool _on)

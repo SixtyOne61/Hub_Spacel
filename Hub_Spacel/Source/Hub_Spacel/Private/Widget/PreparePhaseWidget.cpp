@@ -4,12 +4,19 @@
 #include "Components/TextBlock.h"
 #include "Util/SimplyUI.h"
 #include "Player/SpacelPlayerState.h"
-#include "GameMode/FlyingGameMode.h"
+#include "GameState/SpacelGameState.h"
 #include "Kismet/GameplayStatics.h"
 
-void UPreparePhaseWidget::PostLoad()
+void UPreparePhaseWidget::NativeConstruct()
 {
-    Super::PostLoad();
+    Super::NativeConstruct();
+    bIsFocusable = true;
+
+    RemainingSkillPointTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_RemainingSkillPoint"));
+    TimeTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Time"));
+
+    if (!ensure(this->TimeTextBlock != nullptr)) return;
+    this->TimeTextBlock->SetText(FText::FromString(FString::FromInt(this->RemainingTime)));
 
     ASpacelPlayerState* owningPlayerState{ Cast<ASpacelPlayerState>(this->GetOwningPlayerState()) };
     if (owningPlayerState != nullptr)
@@ -18,27 +25,12 @@ void UPreparePhaseWidget::PostLoad()
         this->UpdateRemainingSkillPoint();
     }
 
-    AFlyingGameMode* flyingGameMode{ Cast<AFlyingGameMode>(UGameplayStatics::GetGameMode(this->GetWorld())) };
-    if (flyingGameMode != nullptr)
+    ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld()));
+    if (spacelGameState != nullptr)
     {
-        flyingGameMode->OnStartGameDelegate.AddDynamic(this, &UPreparePhaseWidget::StartGame);
+        spacelGameState->OnStartPrepareDelegate.AddDynamic(this, &UPreparePhaseWidget::StartPrepare);
+        spacelGameState->OnStartGameDelegate.AddDynamic(this, &UPreparePhaseWidget::StartGame);
     }
-}
-
-void UPreparePhaseWidget::NativeConstruct()
-{
-    Super::NativeConstruct();
-
-    RemainingSkillPointTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_RemainingSkillPoint"));
-    TimeTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Time"));
-
-    UWorld* world { this->GetWorld() };
-    if (!ensure(world != nullptr)) return;
-
-    world->GetTimerManager().SetTimer(TimeHandle, this, &UPreparePhaseWidget::SetTime, 1.0f, true, 0.0f);
-
-    if (!ensure(this->TimeTextBlock != nullptr)) return;
-    this->TimeTextBlock->SetText(FText::FromString(FString::FromInt(this->RemainingTime)));
 }
 
 void UPreparePhaseWidget::UpdateRemainingSkillPoint()
@@ -64,6 +56,14 @@ void UPreparePhaseWidget::SetTime()
 
         world->GetTimerManager().ClearTimer(this->TimeHandle);
     }
+}
+
+void UPreparePhaseWidget::StartPrepare()
+{
+    UWorld* world{ this->GetWorld() };
+    if (!ensure(world != nullptr)) return;
+
+    world->GetTimerManager().SetTimer(TimeHandle, this, &UPreparePhaseWidget::SetTime, 1.0f, true, 0.0f);
 }
 
 void UPreparePhaseWidget::StartGame()

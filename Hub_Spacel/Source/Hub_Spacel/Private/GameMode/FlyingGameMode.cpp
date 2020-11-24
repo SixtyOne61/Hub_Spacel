@@ -214,6 +214,15 @@ void AFlyingGameMode::BeginPlay()
 #endif
     this->GetWorldTimerManager().SetTimer(this->HandleGameSessionUpdateHandle, this, &AFlyingGameMode::HandleGameSessionUpdate, 1.0f, true, 5.0f);
     this->GetWorldTimerManager().SetTimer(this->HandleProcessTerminationHandle, this, &AFlyingGameMode::HandleProcessTermination, 1.0f, true, 5.0f);
+
+#if WITH_EDITOR
+    GetWorldTimerManager().SetTimer(this->CountDownUntilGameOverHandle, this, &AFlyingGameMode::CountDownUntilGameOver, 1.0f, true, 0.0f);
+
+    ASpacelGameState* spacelGameState{ Cast<ASpacelGameState>(this->GameState) };
+    if (!ensure(spacelGameState != nullptr)) return;
+    spacelGameState->GoToPrepare();
+    GetWorldTimerManager().SetTimer(this->PreparePhaseUntilOverHandle, this, &AFlyingGameMode::PreparePhaseUntilOver, 1.0f, true, 0.0f);
+#endif
 }
 
 void AFlyingGameMode::PreLogin(FString const& _options, FString const& _address, FUniqueNetIdRepl const& _uniqueId, FString& _errorMessage)
@@ -350,7 +359,7 @@ void AFlyingGameMode::CountDownUntilGameOver()
 {
     ASpacelGameState* spacelGameState { Cast<ASpacelGameState>(this->GameState) };
     if (!ensure(spacelGameState != nullptr)) return;
-    spacelGameState->LatestEvent = FString::FromInt(this->RemainingGameTime) + " seconds until game is over";
+    spacelGameState->R_LatestEvent = FString::FromInt(this->RemainingGameTime) + " seconds until game is over";
 
     if (this->RemainingGameTime > 0)
     {
@@ -371,7 +380,10 @@ void AFlyingGameMode::PreparePhaseUntilOver()
     else
     {
         GetWorldTimerManager().ClearTimer(this->PreparePhaseUntilOverHandle);
-        OnStartGameDelegate.Broadcast();
+
+        ASpacelGameState* spacelGameState{ Cast<ASpacelGameState>(this->GameState) };
+        if (!ensure(spacelGameState != nullptr)) return;
+        spacelGameState->GoToInGame();
     }
 }
 
@@ -400,13 +412,13 @@ void AFlyingGameMode::PickAWinningTeam()
     ASpacelGameState* spacelGameState { Cast<ASpacelGameState>(this->GameState) };
     if (spacelGameState != nullptr)
     {
-        spacelGameState->LatestEvent = "GameEnded";
+        spacelGameState->R_LatestEvent = "GameEnded";
 
         // TO DO Make rules winning team
-        FMath::RandRange(0, 1) == 0 ? spacelGameState->WinningTeam = "Team 1" : spacelGameState->WinningTeam = "Team 2";
+        FMath::RandRange(0, 1) == 0 ? spacelGameState->R_WinningTeam = "Team 1" : spacelGameState->R_WinningTeam = "Team 2";
 
         TSharedPtr<FJsonObject> requestObj { MakeShareable(new FJsonObject) };
-        requestObj->SetStringField("winningTeam", spacelGameState->WinningTeam);
+        requestObj->SetStringField("winningTeam", spacelGameState->R_WinningTeam);
 
         auto getGameSessionIdOutcome { Aws::GameLift::Server::GetGameSessionId() };
         if (getGameSessionIdOutcome.IsSuccess())
@@ -470,7 +482,7 @@ void AFlyingGameMode::HandleProcessTermination()
         ASpacelGameState* spacelGameState { Cast<ASpacelGameState>(this->GameState) };
         if (spacelGameState != nullptr)
         {
-            spacelGameState->LatestEvent = processInterruptionMessage;
+            spacelGameState->R_LatestEvent = processInterruptionMessage;
         }
 
         GetWorldTimerManager().SetTimer(this->EndGameHandle, this, &AFlyingGameMode::EndGame, 1.0f, false, 10.0f);
@@ -490,6 +502,10 @@ void AFlyingGameMode::HandleGameSessionUpdate()
         GetWorldTimerManager().SetTimer(this->PickAWinningTeamHandle, this, &AFlyingGameMode::PickAWinningTeam, 1.0f, false, (float)this->RemainingGameTime);
         GetWorldTimerManager().SetTimer(this->SuspendBackfillHandle, this, &AFlyingGameMode::SuspendBackfill, 1.0f, false, (float)(this->SuspendBackfillTime));
         GetWorldTimerManager().SetTimer(this->CountDownUntilGameOverHandle, this, &AFlyingGameMode::CountDownUntilGameOver, 1.0f, true, 0.0f);
+
+        ASpacelGameState* spacelGameState{ Cast<ASpacelGameState>(this->GameState) };
+        if (!ensure(spacelGameState != nullptr)) return;
+        spacelGameState->GoToPrepare();
         GetWorldTimerManager().SetTimer(this->PreparePhaseUntilOverHandle, this, &AFlyingGameMode::PreparePhaseUntilOver, 1.0f, true, 0.0f);
     }
     else if(this->WaitingForPlayersToJoin)

@@ -8,8 +8,6 @@
 #include "Http.h"
 #include "FlyingGameMode.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartGame);
-
 UENUM()
 enum class EUpdateReason : uint8
 {
@@ -152,9 +150,6 @@ public:
 
 	UPROPERTY()
 	int MaxPlayerPerGame { 18 };
-
-	UPROPERTY(BlueprintAssignable)
-	FStartGame OnStartGameDelegate {};
 
 private:
 	class FHttpModule* HttpModule { nullptr };

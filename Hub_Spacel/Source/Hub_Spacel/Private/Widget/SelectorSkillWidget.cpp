@@ -56,7 +56,8 @@ void USelectorSkillWidget::OnMaxButtonClicked()
     ASpacelPlayerState* owningPlayerState{ Cast<ASpacelPlayerState>(this->GetOwningPlayerState()) };
     if (owningPlayerState != nullptr)
     {
-        if (owningPlayerState->m_skillPoints.Contains(this->SkillType)
+        if (owningPlayerState->RemainingSkillPoint > 0
+            && owningPlayerState->m_skillPoints.Contains(this->SkillType)
             && owningPlayerState->m_skillPoints[this->SkillType] < 3)
         {
             uint8 num = owningPlayerState->m_skillPoints[this->SkillType];
