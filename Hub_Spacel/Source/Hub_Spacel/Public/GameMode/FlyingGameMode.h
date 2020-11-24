@@ -125,9 +125,6 @@ public:
 	FTimerHandle EndGameHandle {};
 
 	UPROPERTY()
-	FTimerHandle PickAWinningTeamHandle {};
-
-	UPROPERTY()
 	FTimerHandle HandleProcessTerminationHandle {};
 
 	UPROPERTY()
@@ -140,7 +137,7 @@ public:
 	FTimerHandle PreparePhaseUntilOverHandle {};
 
 	UPROPERTY()
-	int RemainingGameTime { 750 }; // 11'30 + 60 prepa
+	int RemainingGameTime { 690 }; // 11'30
 
 	UPROPERTY()
 	int RemainingPrepareTime { 60 };

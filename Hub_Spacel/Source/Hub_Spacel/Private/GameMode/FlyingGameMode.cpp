@@ -368,6 +368,7 @@ void AFlyingGameMode::CountDownUntilGameOver()
     else
     {
         GetWorldTimerManager().ClearTimer(this->CountDownUntilGameOverHandle);
+        this->PickAWinningTeam();
     }
 }
 
@@ -381,6 +382,8 @@ void AFlyingGameMode::PreparePhaseUntilOver()
     {
         GetWorldTimerManager().ClearTimer(this->PreparePhaseUntilOverHandle);
 
+        GetWorldTimerManager().SetTimer(this->CountDownUntilGameOverHandle, this, &AFlyingGameMode::CountDownUntilGameOver, 1.0f, true, 0.0f);
+
         ASpacelGameState* spacelGameState{ Cast<ASpacelGameState>(this->GameState) };
         if (!ensure(spacelGameState != nullptr)) return;
         spacelGameState->GoToInGame();
@@ -391,7 +394,6 @@ void AFlyingGameMode::EndGame()
 {
     GetWorldTimerManager().ClearTimer(this->CountDownUntilGameOverHandle);
     GetWorldTimerManager().ClearTimer(this->EndGameHandle);
-    GetWorldTimerManager().ClearTimer(this->PickAWinningTeamHandle);
     GetWorldTimerManager().ClearTimer(this->HandleProcessTerminationHandle);
     GetWorldTimerManager().ClearTimer(this->HandleGameSessionUpdateHandle);
     GetWorldTimerManager().ClearTimer(this->SuspendBackfillHandle);
@@ -406,8 +408,6 @@ void AFlyingGameMode::EndGame()
 
 void AFlyingGameMode::PickAWinningTeam()
 {
-    GetWorldTimerManager().ClearTimer(this->CountDownUntilGameOverHandle);
-
 #if WITH_GAMELIFT
     ASpacelGameState* spacelGameState { Cast<ASpacelGameState>(this->GameState) };
     if (spacelGameState != nullptr)
@@ -499,9 +499,7 @@ void AFlyingGameMode::HandleGameSessionUpdate()
         m_expectedPlayers = this->StartGameSessionState.PlayerIdToPlayer;
         this->WaitingForPlayersToJoin = true;
 
-        GetWorldTimerManager().SetTimer(this->PickAWinningTeamHandle, this, &AFlyingGameMode::PickAWinningTeam, 1.0f, false, (float)this->RemainingGameTime);
         GetWorldTimerManager().SetTimer(this->SuspendBackfillHandle, this, &AFlyingGameMode::SuspendBackfill, 1.0f, false, (float)(this->SuspendBackfillTime));
-        GetWorldTimerManager().SetTimer(this->CountDownUntilGameOverHandle, this, &AFlyingGameMode::CountDownUntilGameOver, 1.0f, true, 0.0f);
 
         ASpacelGameState* spacelGameState{ Cast<ASpacelGameState>(this->GameState) };
         if (!ensure(spacelGameState != nullptr)) return;
