@@ -17,6 +17,7 @@ class HUB_SPACEL_API UPreparePhaseWidget : public UUserWidget
 
 protected:
 	virtual void NativeConstruct() override;
+	virtual void NativeDestruct() override;
 
 private:
 	UFUNCTION()

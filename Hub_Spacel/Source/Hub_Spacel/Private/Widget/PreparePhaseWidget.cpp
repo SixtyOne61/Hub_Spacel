@@ -85,6 +85,16 @@ void UPreparePhaseWidget::StartGame()
     world->GetTimerManager().ClearTimer(this->SetPlayerCardHandle);
 }
 
+void UPreparePhaseWidget::NativeDestruct()
+{
+    UWorld* world{ this->GetWorld() };
+    if (!ensure(world != nullptr)) return;
+    world->GetTimerManager().ClearTimer(this->TimeHandle);
+    world->GetTimerManager().ClearTimer(this->SetPlayerCardHandle);
+
+    Super::NativeDestruct();
+}
+
 void UPreparePhaseWidget::SetPlayerCard()
 {
     ASpacelPlayerState* owningPlayerState{ Cast<ASpacelPlayerState>(this->GetOwningPlayerState()) };
@@ -105,13 +115,23 @@ void UPreparePhaseWidget::SetPlayerCard()
         if (!ensure(world != nullptr)) return;
         if (!ensure(world->GetGameState() != nullptr)) return;
 
+        bool isFirst = true;
         TArray<APlayerState*> const& playerStates{ world->GetGameState()->PlayerArray };
         for (APlayerState* playerState : playerStates)
         {
             ASpacelPlayerState* spacelPlayerState{ Cast<ASpacelPlayerState>(playerState) };
             if (spacelPlayerState != nullptr && spacelPlayerState->Team.Equals(owningPlayerTeam))
             {
-                // TO DO : find best card emplacement
+                // TO DO Better
+                if (isFirst)
+                {
+                    this->Player1->SetPlayerName(spacelPlayerState->PlayerName);
+                    isFirst = false;
+                }
+                else
+                {
+                    this->Player2->SetPlayerName(spacelPlayerState->PlayerName);
+                }
             }
         }
     }
