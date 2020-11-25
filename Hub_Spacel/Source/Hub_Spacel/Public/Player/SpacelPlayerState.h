@@ -23,19 +23,12 @@ class HUB_SPACEL_API ASpacelPlayerState : public APlayerState
 public:
     inline uint8 getRemainingSkillPoint() const { return RemainingSkillPoint; }
 
+    inline uint8 getSkillPoint(ESkillType _type) const { return m_skillPoints[_type]; }
+
 private:
     void setRemainingSkillPoint(uint8 && _val);
 	
 public:
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Bitmask, BitmaskEnum = "EShipModuleType"))
-    uint8 ShipBaseModuleType = 0x01;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Bitmask, BitmaskEnum = "EShipModuleType"))
-    uint8 ShipEngineModuleType = 0x02;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Bitmask, BitmaskEnum = "EShipModuleType"))
-    uint8 ShipShellModuleType = 0x08;
-
     /* event */
 
     UPROPERTY(BlueprintAssignable)

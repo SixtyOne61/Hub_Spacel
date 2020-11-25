@@ -39,16 +39,6 @@ enum class ESkillType : uint8
 };
 
 UENUM(BlueprintType, meta = (Bitflags, UseEnumValuesAsMaskValuesInEditor = "true"))
-enum class EShipModuleType : uint8
-{
-    Empty = 0x00,
-    BaseDefault = 0x01,
-    EngineDefault = 0x02,
-    EngineSmall = 0x04,
-    ShellDefault = 0x08,
-};
-
-UENUM(BlueprintType, meta = (Bitflags, UseEnumValuesAsMaskValuesInEditor = "true"))
 enum class EFace : uint8
 {
     None = 0,
@@ -60,3 +50,13 @@ enum class EFace : uint8
     Left = 1 << 5,
 };
 ENUM_CLASS_FLAGS(EFace);
+
+UENUM(BlueprintType, meta = (Bitflags, UseEnumValuesAsMaskValuesInEditor = "true"))
+enum class EShipModuleType : uint8
+{
+    Empty = 0x00,
+    BaseDefault = 0x01,
+    EngineDefault = 0x02,
+    EngineSmall = 0x04,
+    ShellDefault = 0x08,
+};

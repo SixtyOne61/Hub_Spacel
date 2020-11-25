@@ -36,13 +36,6 @@ public:
     void OnRep_PercentUp();
 
 private:
-    /* build ship with all module */
-    UFUNCTION(BlueprintCallable)
-    void BuildShip();
-
-    /* build a module */
-    void buildProceduralModule(class USpacelProceduralMeshComponent * _component, class UProceduralModuleDataAsset const* _module, FVector const& _location);
-
     /* move ship server */
     UFUNCTION(Reliable, Server)
     void RPCServerMove(float const& _deltaTime);
@@ -56,33 +49,58 @@ private:
 
     virtual void OnRep_PlayerState() override;
 
+    UFUNCTION()
+    void StartGame();
+
+    void buildRedZone();
+    void buildAttack(uint8 _level);
+    void buildProtection(uint8 _level);
+    void buildSupport(uint8 _level);
+
+    void addVoxelFromXml(class UInstancedStaticMeshComponent* _mesh, FString const& _filePath);
+
+    UFUNCTION()
+    void OnComponentHitProtection(class UPrimitiveComponent* _hitComp, AActor* _otherActor, class UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit);
+
+    UFUNCTION()
+    void OnComponentHitRedZone(class UPrimitiveComponent* _hitComp, AActor* _otherActor, class UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit);
+
+    UFUNCTION(BlueprintCallable)
+    void BuildDefaultShip();
+
 public:
     UPROPERTY(Category = "Ship", VisibleDefaultsOnly, BlueprintReadOnly)
-    class UStaticMeshComponent* DriverMeshComponent = nullptr;
+    class UStaticMeshComponent* DriverMeshComponent { nullptr };
 
     UPROPERTY(Category = "Ship", VisibleDefaultsOnly, BlueprintReadOnly)
-    class UPoseableMeshComponent* BaseShipMeshComponent = nullptr;
-
-    UPROPERTY(Category = "Ship", VisibleDefaultsOnly, BlueprintReadOnly)
-    class USpacelProceduralMeshComponent* ShipEngineComponent = nullptr;
-
-    UPROPERTY(Category = "Ship", VisibleDefaultsOnly, BlueprintReadOnly)
-    class USpacelProceduralMeshComponent* ShipShellComponent = nullptr;
-
-    UPROPERTY(Category = "Ship", VisibleDefaultsOnly, BlueprintReadOnly)
-    class UStaticMeshComponent* SubMachineComponent = nullptr;
+    class UPoseableMeshComponent* BaseShipMeshComponent { nullptr };
 
     UPROPERTY(Category = "Component", VisibleDefaultsOnly, BlueprintReadOnly)
-    class USpringArmComponent* SpringArmComponent = nullptr;
+    class USpringArmComponent* SpringArmComponent { nullptr };
 
     UPROPERTY(Category = "Component", VisibleDefaultsOnly, BlueprintReadOnly)
-    class UCameraComponent* CameraComponent = nullptr;
+    class UCameraComponent* CameraComponent { nullptr };
 
     UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
-    class UPlayerDataAsset* PlayerDataAsset = nullptr;
+    class UPlayerDataAsset* PlayerDataAsset { nullptr };
 
-    UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
-    class UShipModuleDataAsset* ModuleDataAsset = nullptr;
+    UPROPERTY(Category = "RedZone", EditAnywhere, BlueprintReadWrite)
+    class URedZoneDataAsset* RedZoneDataAsset { nullptr };
+
+    UPROPERTY(Category = "RedZone", EditAnywhere, BlueprintReadWrite)
+    class UInstancedStaticMeshComponent* RedZoneMeshComponent { nullptr };
+
+    UPROPERTY(Category = "Protection", EditAnywhere, BlueprintReadWrite)
+    class UProtectionDataAsset* ProtectionDataAsset { nullptr };
+
+    UPROPERTY(EditAnywhere, Category = "Protection")
+    class UInstancedStaticMeshComponent* ProtectionMeshComponent{ nullptr };
+
+    UPROPERTY(Category = "Weapon", EditAnywhere, BlueprintReadWrite)
+    class UWeaponDataAsset* WeaponDataAsset { nullptr };
+
+    UPROPERTY(EditAnywhere, Category = "Weapon")
+    class UInstancedStaticMeshComponent* WeaponMeshComponent { nullptr };
 
 protected:
     /* current percent speed value 0.0f - 1.0f */
@@ -91,15 +109,15 @@ protected:
 
     /* when flight attitude change -1.0f or 0.0f or 1.0f */
     UPROPERTY(ReplicatedUsing = "OnRep_PercentFlightAttitude")
-    float PercentFlightAttitude = 0.0f;
+    float RU_PercentFlightAttitude = 0.0f;
 
     /* when turn change -1.0f or 0.0f or 1.0f */
     UPROPERTY(ReplicatedUsing = "OnRep_PercentTurn")
-    float PercentTurn = 0.0f;
+    float RU_PercentTurn = 0.0f;
 
     /* when up change -1.0f or 0.0f or 1.0f */
     UPROPERTY(ReplicatedUsing = "OnRep_PercentUp")
-    float PercentUp = 0.0f;
+    float RU_PercentUp = 0.0f;
 
     /* use only on server, say if we are in fire */
     Util::Optional<bool> m_isFire { };

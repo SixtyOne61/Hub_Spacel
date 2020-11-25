@@ -175,7 +175,7 @@ void APlayerShipController::RPCServerSetFlightAttitude_Implementation(float _val
         return;
     }
 
-    shipPawn->PercentFlightAttitude = _val / 100.0f;
+    shipPawn->RU_PercentFlightAttitude = _val / 100.0f;
     // OnRep isn't call on server, but we need this call
     shipPawn->OnRep_PercentFlightAttitude();
 }
@@ -196,7 +196,7 @@ void APlayerShipController::RPCServerSetTurn_Implementation(float _val)
         return;
     }
 
-    shipPawn->PercentTurn = _val / 100.0f;
+    shipPawn->RU_PercentTurn = _val / 100.0f;
     // OnRep isn't call on server, but we need this call
     shipPawn->OnRep_PercentTurn();
 }
@@ -217,7 +217,7 @@ void APlayerShipController::RPCServerSetUp_Implementation(float _val)
         return;
     }
 
-    shipPawn->PercentUp = _val / 100.0f;
+    shipPawn->RU_PercentUp = _val / 100.0f;
     // OnRep isn't call on server, but we need this call
     shipPawn->OnRep_PercentUp();
 }
