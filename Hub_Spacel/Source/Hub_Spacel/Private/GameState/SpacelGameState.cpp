@@ -21,6 +21,27 @@ void ASpacelGameState::OnRep_StateGame()
     }
 }
 
+FString ASpacelGameState::GetBestTeam() const
+{
+    TOptional<int32> val {};
+    FString teamName {};
+    for (auto const& score : m_scores)
+    {
+        if (!val.IsSet() || score.Value > val.GetValue())
+        {
+            val = score.Value;
+            teamName = score.Key;
+        }
+    }
+
+    return teamName;
+}
+
+void ASpacelGameState::AddScore(FString const& _team, int32 _val)
+{
+    m_scores[_team] += _val;
+}
+
 void ASpacelGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);

@@ -15,7 +15,7 @@ class HUB_SPACEL_API UPlayerCardWidget : public UUserWidget
 	GENERATED_BODY()
 
 public:
-	void SetPlayerName(FString const& _playerName);
+	void SetPlayerCardName(FString const& _playerName);
 
 protected:
 	virtual void NativeConstruct() override;

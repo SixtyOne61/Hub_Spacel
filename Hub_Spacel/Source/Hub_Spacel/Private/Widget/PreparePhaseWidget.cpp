@@ -125,12 +125,12 @@ void UPreparePhaseWidget::SetPlayerCard()
                 // TO DO Better
                 if (isFirst)
                 {
-                    this->Player1->SetPlayerName(spacelPlayerState->PlayerName);
+                    this->Player1->SetPlayerCardName(spacelPlayerState->GetPlayerName());
                     isFirst = false;
                 }
                 else
                 {
-                    this->Player2->SetPlayerName(spacelPlayerState->PlayerName);
+                    this->Player2->SetPlayerCardName(spacelPlayerState->GetPlayerName());
                 }
             }
         }

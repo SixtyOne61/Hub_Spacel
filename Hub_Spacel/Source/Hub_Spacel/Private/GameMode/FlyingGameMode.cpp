@@ -414,8 +414,7 @@ void AFlyingGameMode::PickAWinningTeam()
     {
         spacelGameState->R_LatestEvent = "GameEnded";
 
-        // TO DO Make rules winning team
-        FMath::RandRange(0, 1) == 0 ? spacelGameState->R_WinningTeam = "Team 1" : spacelGameState->R_WinningTeam = "Team 2";
+        spacelGameState->R_WinningTeam = spacelGameState->GetBestTeam();
 
         TSharedPtr<FJsonObject> requestObj { MakeShareable(new FJsonObject) };
         requestObj->SetStringField("winningTeam", spacelGameState->R_WinningTeam);

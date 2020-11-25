@@ -25,6 +25,10 @@ public:
 	UFUNCTION()
 	void GoToInGame() { this->RU_GameState = (uint8)EGameState::InGame; }
 
+	FString GetBestTeam() const;
+
+	void AddScore(FString const& _team, int32 _val);
+
 private:
 	UFUNCTION()
 	void OnRep_StateGame();
@@ -45,4 +49,6 @@ public:
 private:
 	UPROPERTY(ReplicatedUsing = OnRep_StateGame)
 	uint8 RU_GameState { (uint8)EGameState::Undefined } ;
+
+	TMap<FString, int32> m_scores{ { "Team 1", 0 } };
 };

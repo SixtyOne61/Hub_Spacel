@@ -5,7 +5,7 @@
 #include "Util/SimplyUI.h"
 #include "Components/TextBlock.h"
 
-void UPlayerCardWidget::SetPlayerName(FString const& _playerName)
+void UPlayerCardWidget::SetPlayerCardName(FString const& _playerName)
 {
     if (this->PlayerNameTextBlock != nullptr)
     {
