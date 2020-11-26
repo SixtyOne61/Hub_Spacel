@@ -4,22 +4,20 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
-#include "WeaponDataAsset.generated.h"
+#include "LaserDataAsset.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class HUB_SPACEL_API UWeaponDataAsset : public UDataAsset
+class HUB_SPACEL_API ULaserDataAsset : public UDataAsset
 {
 	GENERATED_BODY()
+	
 public:
 	UPROPERTY(EditAnywhere)
-	class UStaticMesh* WeaponMesh { nullptr };
-	
-	UPROPERTY(EditAnywhere)
-	FString DefaultWeaponPath {};
+	FName CollisionProfileName { "PlayerProjectile" };
 
 	UPROPERTY(EditAnywhere)
-	FString HeavyWeaponPath {};
+	class UStaticMesh* LaserMesh { nullptr };
 };

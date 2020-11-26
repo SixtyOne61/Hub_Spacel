@@ -124,4 +124,7 @@ protected:
 
     /* current time between next bullet */
     float m_fireCountDown { };
+
+    /* fire point location */
+    TQueue<FVector> m_fireLocations { };
 };

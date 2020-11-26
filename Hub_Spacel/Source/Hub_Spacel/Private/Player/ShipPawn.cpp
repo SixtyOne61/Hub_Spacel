@@ -184,41 +184,46 @@ void AShipPawn::fire(float const& _deltaTime)
 {
     if (!ensure(this->PlayerDataAsset != nullptr)) return;
     if (!ensure(this->PlayerDataAsset->BulletClass != nullptr)) return;
-    //if (!ensure(this->SubMachineComponent != nullptr)) return;
-    //UWorld * world = this->GetWorld();
-    //if (!ensure(world != nullptr)) return;
-    //
-    //// check if we have boolean for fire (only set on server)
-    //if (m_isFire.hasValue() && m_isFire.value() && m_fireCountDown <= 0.0f)
-    //{
-    //    FVector location = this->SubMachineComponent->GetRelativeLocation() + this->GetActorLocation();
-    //    FTransform transform {};
-    //    transform.SetLocation(location);
-    //    transform.SetRotation(this->GetActorRotation().Quaternion());
-    //
-    //    AActor* laser = Cast<AActor>(UGameplayStatics::BeginDeferredActorSpawnFromClass(world, this->PlayerDataAsset->BulletClass, transform));
-    //    if (laser)
-    //    {
-    //        // init bullet
-    //        laser->SetReplicates(true);
-    //        laser->SetReplicateMovement(true);
-    //        UGameplayStatics::FinishSpawningActor(laser, transform);
-    //        if (UProjectileMovementComponent * comp = Cast<UProjectileMovementComponent>(laser->GetComponentByClass(UProjectileMovementComponent::StaticClass())))
-    //        {
-    //            comp->SetVelocityInLocalSpace(FVector(1, 0, 0) * comp->InitialSpeed);
-    //        }
-    //    }
-    //
-    //    // reset count down
-    //    m_fireCountDown = this->PlayerDataAsset->TimeBetweenFire;
-    //}
-    //else if (m_fireCountDown != 0.0f)
-    //{
-    //    // we can't use timer manager here, because we want to keep timer when we release trigger
-    //    // if player spam trigger and use timer manager, we will just spam the first tick of the handle timer
-    //    // and throw many bullet
-    //    m_fireCountDown -= _deltaTime;
-    //}
+    if (!ensure(this->WeaponMeshComponent != nullptr)) return;
+
+    UWorld * world { this->GetWorld() };
+    if (!ensure(world != nullptr)) return;
+    
+    // check if we have boolean for fire (only set on server)
+    if (m_isFire.hasValue() && m_isFire.value() && m_fireCountDown <= 0.0f)
+    {
+        FVector location {};
+        m_fireLocations.Dequeue(location);
+        FTransform transform {};
+        transform.SetLocation(this->WeaponMeshComponent->GetRelativeLocation() + location + this->GetActorLocation());
+        transform.SetRotation(this->GetActorRotation().Quaternion());
+    
+        // re-add to the end this fire locations
+        m_fireLocations.Enqueue(location);
+
+        AActor* laser = Cast<AActor>(UGameplayStatics::BeginDeferredActorSpawnFromClass(world, this->PlayerDataAsset->BulletClass, transform));
+        if (laser)
+        {
+            // init bullet
+            laser->SetReplicates(true);
+            laser->SetReplicateMovement(true);
+            UGameplayStatics::FinishSpawningActor(laser, transform);
+            if (UProjectileMovementComponent * comp = Cast<UProjectileMovementComponent>(laser->GetComponentByClass(UProjectileMovementComponent::StaticClass())))
+            {
+                comp->SetVelocityInLocalSpace(FVector(1, 0, 0) * comp->InitialSpeed);
+            }
+        }
+    
+        // reset count down
+        m_fireCountDown = this->PlayerDataAsset->TimeBetweenFire;
+    }
+    else if (m_fireCountDown != 0.0f)
+    {
+        // we can't use timer manager here, because we want to keep timer when we release trigger
+        // if player spam trigger and use timer manager, we will just spam the first tick of the handle timer
+        // and throw many bullet
+        m_fireCountDown -= _deltaTime;
+    }
 }
 
 void AShipPawn::OnRep_PlayerState()
@@ -277,6 +282,22 @@ void AShipPawn::buildAttack(uint8 _level)
     addVoxelFromXml(this->WeaponMeshComponent, FPaths::ProjectDir() + path);
 
     // TO DO : read shoot point from xml
+    FXmlFile file;
+    if (!file.LoadFile(FPaths::ProjectDir() + path)) return;
+
+    FXmlNode* rootNode{ file.GetRootNode() };
+    if (rootNode == nullptr) return;
+
+    TArray<FXmlNode*> const& childrenNodes{ rootNode->GetChildrenNodes() };
+    for (auto const* node : childrenNodes)
+    {
+        if (node != nullptr && node->GetTag() == "Fire")
+        {
+            FVector location{};
+            location.InitFromString(node->GetAttribute("val"));
+            m_fireLocations.Enqueue(location);
+        }
+    }
 }
 
 void AShipPawn::buildProtection(uint8 _level)

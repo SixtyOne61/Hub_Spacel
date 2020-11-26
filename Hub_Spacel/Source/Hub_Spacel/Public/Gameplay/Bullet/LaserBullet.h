@@ -32,17 +32,17 @@ private:
 
 public:
     UPROPERTY(EditAnywhere, Category = "Default")
-    class UProjectileMovementComponent* ProjectileMovementComponent = nullptr;
+    class UProjectileMovementComponent* ProjectileMovementComponent { nullptr };
 
     UPROPERTY(EditAnywhere, Category = "Collision")
-    class USphereComponent* ProjectileCollisionComponent = nullptr;
-
-    UPROPERTY(EditAnywhere, Category = "Collision")
-    FName CollisionProfileName = "PlayerProjectile";
+    class USphereComponent* ProjectileCollisionComponent { nullptr };
 
     UPROPERTY(EditAnywhere, Category = "Default")
-    class UStaticMeshComponent* LaserMeshComponent = nullptr;
+    class ULaserDataAsset* LaserDataAsset { nullptr };
+
+    UPROPERTY(EditAnywhere, Category = "Default")
+    class UStaticMeshComponent* LaserMeshComponent { nullptr };
 
     UPROPERTY(Category = "Material", EditAnywhere, BlueprintReadWrite)
-    class UMaterialInstance* MatBullet = nullptr;
+    class UMaterialInstance* MatBullet { nullptr };
 };

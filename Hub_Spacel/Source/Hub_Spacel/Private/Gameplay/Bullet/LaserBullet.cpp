@@ -7,6 +7,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "Materials/MaterialInstance.h"
 #include "Materials/MaterialInstanceDynamic.h"
+#include "DataAsset/LaserDataAsset.h"
 
 // Sets default values
 ALaserBullet::ALaserBullet()
@@ -18,7 +19,6 @@ ALaserBullet::ALaserBullet()
 
     ProjectileCollisionComponent = CreateDefaultSubobject<USphereComponent>(TEXT("ProjectileCollision"));
     if (!ensure(ProjectileCollisionComponent != nullptr)) return;
-    ProjectileCollisionComponent->SetCollisionProfileName(CollisionProfileName);
     ProjectileCollisionComponent->OnComponentHit.AddDynamic(this, &ALaserBullet::OnComponentHit);
     RootComponent = ProjectileCollisionComponent;
 
@@ -32,6 +32,10 @@ void ALaserBullet::BeginPlay()
 {
 	Super::BeginPlay();
 	
+    if (!ensure(this->ProjectileCollisionComponent != nullptr)) return;
+    if (!ensure(this->LaserDataAsset != nullptr)) return;
+    ProjectileCollisionComponent->SetCollisionProfileName(this->LaserDataAsset->CollisionProfileName);
+
     setupMaterial();
 
     if (this->HasAuthority())
