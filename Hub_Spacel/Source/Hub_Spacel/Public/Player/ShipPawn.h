@@ -65,6 +65,9 @@ private:
     UFUNCTION()
     void OnComponentHitRedZone(class UPrimitiveComponent* _hitComp, AActor* _otherActor, class UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit);
 
+    UFUNCTION()
+    void OnComponentHitSupport(class UPrimitiveComponent* _hitComp, AActor* _otherActor, class UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit);
+
     UFUNCTION(BlueprintCallable)
     void BuildDefaultShip();
 
@@ -93,7 +96,7 @@ public:
     UPROPERTY(Category = "Protection", EditAnywhere, BlueprintReadWrite)
     class UProtectionDataAsset* ProtectionDataAsset { nullptr };
 
-    UPROPERTY(EditAnywhere, Category = "Protection")
+    UPROPERTY(Category = "Protection", EditAnywhere, BlueprintReadWrite)
     class UInstancedStaticMeshComponent* ProtectionMeshComponent{ nullptr };
 
     UPROPERTY(Category = "Weapon", EditAnywhere, BlueprintReadWrite)
@@ -101,6 +104,12 @@ public:
 
     UPROPERTY(EditAnywhere, Category = "Weapon")
     class UInstancedStaticMeshComponent* WeaponMeshComponent { nullptr };
+
+    UPROPERTY(Category = "Support", EditAnywhere, BlueprintReadWrite)
+    class USupportDataAsset* SupportDataAsset { nullptr };
+
+    UPROPERTY(EditAnywhere, Category = "Support")
+    class UInstancedStaticMeshComponent* SupportMeshComponent { nullptr };
 
 protected:
     /* current percent speed value 0.0f - 1.0f */

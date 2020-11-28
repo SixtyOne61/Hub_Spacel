@@ -17,6 +17,7 @@
 #include "DataAsset/ProtectionDataAsset.h"
 #include "DataAsset/PlayerDataAsset.h"
 #include "DataAsset/WeaponDataAsset.h"
+#include "DataAsset/SupportDataAsset.h"
 #include "Player/SpacelPlayerState.h"
 #include "GameState/SpacelGameState.h"
 #include "Components/InstancedStaticMeshComponent.h"
@@ -50,6 +51,11 @@ AShipPawn::AShipPawn()
     if (!ensure(WeaponMeshComponent != nullptr)) return;
     WeaponMeshComponent->SetupAttachment(BaseShipMeshComponent);
 
+    SupportMeshComponent = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Support_00"));
+    if (!ensure(SupportMeshComponent != nullptr)) return;
+    SupportMeshComponent->OnComponentHit.AddDynamic(this, &AShipPawn::OnComponentHitSupport);
+    SupportMeshComponent->SetupAttachment(BaseShipMeshComponent);
+
     // Create a spring arm component
     SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm_00"));
     if (!ensure(SpringArmComponent != nullptr)) return;
@@ -76,6 +82,7 @@ void AShipPawn::BeginPlay()
     if (this->RedZoneMeshComponent) this->RedZoneMeshComponent->ClearInstances();
     if (this->ProtectionMeshComponent) this->ProtectionMeshComponent->ClearInstances();
     if (this->WeaponMeshComponent) this->WeaponMeshComponent->ClearInstances();
+    if (this->SupportMeshComponent) this->SupportMeshComponent->ClearInstances();
 }
 
 // Called every frame
@@ -315,17 +322,30 @@ void AShipPawn::buildProtection(uint8 _level)
 
 void AShipPawn::buildSupport(uint8 _level)
 {
+    if (!ensure(this->SupportMeshComponent != nullptr)) return;
+    if (!ensure(this->SupportDataAsset != nullptr)) return;
 
+    UStaticMesh* mesh = this->SupportDataAsset->SupportMesh;
+    FString const& path = _level > 0 ? this->SupportDataAsset->HeavySupportPath : this->SupportDataAsset->DefaultSupportPath;
+
+    this->SupportMeshComponent->SetStaticMesh(mesh);
+    this->SupportMeshComponent->SetEnableGravity(false);
+    addVoxelFromXml(this->SupportMeshComponent, FPaths::ProjectDir() + path);
 }
 
 void AShipPawn::OnComponentHitProtection(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit)
 {
-
+    return;
 }
 
 void AShipPawn::OnComponentHitRedZone(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit)
 {
+    return;
+}
 
+void AShipPawn::OnComponentHitSupport(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit)
+{
+    return;
 }
 
 void AShipPawn::BuildDefaultShip()
@@ -335,6 +355,7 @@ void AShipPawn::BuildDefaultShip()
     if (this->RedZoneMeshComponent) this->RedZoneMeshComponent->ClearInstances();
     if (this->ProtectionMeshComponent) this->ProtectionMeshComponent->ClearInstances();
     if (this->WeaponMeshComponent) this->WeaponMeshComponent->ClearInstances();
+    if (this->SupportMeshComponent) this->SupportMeshComponent->ClearInstances();
     buildRedZone();
     buildAttack(0);
     buildProtection(0);
