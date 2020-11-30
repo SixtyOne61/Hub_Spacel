@@ -43,7 +43,7 @@ public:
     FString MatchmakingPlayerId {};
 
     UPROPERTY(Replicated)
-    FString Team {};
+    FString Team { "Team 1" };
 
 private:
     UPROPERTY()

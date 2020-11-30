@@ -386,6 +386,11 @@ void AFlyingGameMode::PreparePhaseUntilOver()
 
         ASpacelGameState* spacelGameState{ Cast<ASpacelGameState>(this->GameState) };
         if (!ensure(spacelGameState != nullptr)) return;
+
+        // attribute player pos
+        spacelGameState->AttributePlayersLocation();
+
+        // change game state
         spacelGameState->GoToInGame();
     }
 }

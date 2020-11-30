@@ -10,6 +10,18 @@
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartPrepare);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartGame);
 
+USTRUCT()
+struct HUB_SPACEL_API FTeamLocation
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere)
+	FString Name {};
+
+	UPROPERTY(EditAnywhere)
+	TArray<FTransform> Transforms {};
+};
+
 /**
  * 
  */
@@ -29,6 +41,12 @@ public:
 
 	void AddScore(FString const& _team, int32 _val);
 
+	UFUNCTION()
+	void AttributePlayersLocation();
+
+protected:
+	virtual void BeginPlay() override;
+
 private:
 	UFUNCTION()
 	void OnRep_StateGame();
@@ -46,9 +64,12 @@ public:
 	UPROPERTY()
 	FStartGame OnStartGameDelegate {};
 
+	UPROPERTY(EditAnywhere)
+	TArray<FTeamLocation> TeamsLocation {};
+
 private:
 	UPROPERTY(ReplicatedUsing = OnRep_StateGame)
 	uint8 RU_GameState { (uint8)EGameState::Undefined } ;
 
-	TMap<FString, int32> m_scores{ { "Team 1", 0 } };
+	TMap<FString, int32> m_scores{ };
 };
