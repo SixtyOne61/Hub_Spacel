@@ -3,8 +3,6 @@
 
 #include "ShipPawn.h"
 #include "Net/UnrealNetwork.h"
-#include "XmlFile.h"
-#include "XmlNode.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
@@ -21,6 +19,7 @@
 #include "Player/SpacelPlayerState.h"
 #include "GameState/SpacelGameState.h"
 #include "Components/InstancedStaticMeshComponent.h"
+#include "Util/SimplyXml.h"
 
 // Sets default values
 AShipPawn::AShipPawn()
@@ -131,33 +130,18 @@ void AShipPawn::OnRep_PercentUp()
     this->DriverMeshComponent->AddTorqueInDegrees(dir, NAME_None, true);
 }
 
-void AShipPawn::addVoxelFromXml(UInstancedStaticMeshComponent* _mesh, FString const& _filePath)
+void AShipPawn::addVoxel(class UInstancedStaticMeshComponent* _mesh, FVector&& _location) const
 {
-    if (!ensure(_mesh != nullptr)) return;
+    FTransform voxelTransform{};
+    voxelTransform.SetLocation(std::move(_location));
+    _mesh->AddInstance(voxelTransform);
+}
 
-    FXmlFile file;
-    if (!file.LoadFile(_filePath))
+void AShipPawn::addVoxel(class UInstancedStaticMeshComponent* _mesh, TArray<FVector>&& _locations) const
+{
+    for (auto&& location : _locations)
     {
-        return;
-    }
-
-    FXmlNode* rootNode { file.GetRootNode() };
-    if (rootNode == nullptr)
-    {
-        return;
-    }
-
-    TArray<FXmlNode*> const& childrenNodes { rootNode->GetChildrenNodes() };
-    for (auto const* node : childrenNodes)
-    {
-        if (node != nullptr && node->GetTag() == "Location")
-        {
-            FVector location {};
-            location.InitFromString(node->GetAttribute("val"));
-            FTransform voxelTransform{};
-            voxelTransform.SetLocation(location);
-            _mesh->AddInstance(voxelTransform);
-        }
+        addVoxel(_mesh, std::forward<FVector>(location));
     }
 }
 
@@ -286,24 +270,18 @@ void AShipPawn::buildAttack(uint8 _level)
 
     this->WeaponMeshComponent->SetStaticMesh(mesh);
     this->WeaponMeshComponent->SetEnableGravity(false);
-    addVoxelFromXml(this->WeaponMeshComponent, FPaths::ProjectDir() + path);
 
-    // TO DO : read shoot point from xml
-    FXmlFile file;
-    if (!file.LoadFile(FPaths::ProjectDir() + path)) return;
+    SimplyXml::FContainer<FVector> locationInformation { "Location" };
+    SimplyXml::FContainer<FVector> fireInformation { "Fire" };
+    SimplyXml::FReader reader { FPaths::ProjectDir() + path };
+    reader.read(locationInformation, fireInformation);
 
-    FXmlNode* rootNode{ file.GetRootNode() };
-    if (rootNode == nullptr) return;
+    // treatment of this information
+    addVoxel(this->WeaponMeshComponent, std::move(locationInformation.Values));
 
-    TArray<FXmlNode*> const& childrenNodes{ rootNode->GetChildrenNodes() };
-    for (auto const* node : childrenNodes)
+    for (auto&& location : fireInformation.Values)
     {
-        if (node != nullptr && node->GetTag() == "Fire")
-        {
-            FVector location{};
-            location.InitFromString(node->GetAttribute("val"));
-            m_fireLocations.Enqueue(location);
-        }
+        m_fireLocations.Enqueue(std::move(location));
     }
 }
 
@@ -317,7 +295,13 @@ void AShipPawn::buildProtection(uint8 _level)
 
     this->ProtectionMeshComponent->SetStaticMesh(mesh);
     this->ProtectionMeshComponent->SetEnableGravity(false);
-    addVoxelFromXml(this->ProtectionMeshComponent, FPaths::ProjectDir() + path);
+
+    SimplyXml::FContainer<FVector> locationInformation{ "Location" };
+    SimplyXml::FReader reader{ FPaths::ProjectDir() + path };
+    reader.read(locationInformation);
+
+    // treatment of this information
+    addVoxel(this->ProtectionMeshComponent, std::move(locationInformation.Values));
 }
 
 void AShipPawn::buildSupport(uint8 _level)
@@ -330,7 +314,13 @@ void AShipPawn::buildSupport(uint8 _level)
 
     this->SupportMeshComponent->SetStaticMesh(mesh);
     this->SupportMeshComponent->SetEnableGravity(false);
-    addVoxelFromXml(this->SupportMeshComponent, FPaths::ProjectDir() + path);
+
+    SimplyXml::FContainer<FVector> locationInformation{ "Location" };
+    SimplyXml::FReader reader{ FPaths::ProjectDir() + path };
+    reader.read(locationInformation);
+
+    // treatment of this information
+    addVoxel(this->SupportMeshComponent, std::move(locationInformation.Values));
 }
 
 void AShipPawn::OnComponentHitProtection(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit)

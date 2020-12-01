@@ -57,7 +57,8 @@ private:
     void buildProtection(uint8 _level);
     void buildSupport(uint8 _level);
 
-    void addVoxelFromXml(class UInstancedStaticMeshComponent* _mesh, FString const& _filePath);
+    void addVoxel(class UInstancedStaticMeshComponent* _mesh, FVector && _location) const;
+    void addVoxel(class UInstancedStaticMeshComponent* _mesh, TArray<FVector>&& _locations) const;
 
     UFUNCTION()
     void OnComponentHitProtection(class UPrimitiveComponent* _hitComp, AActor* _otherActor, class UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit);
