@@ -23,7 +23,10 @@ class HUB_SPACEL_API ASpacelPlayerState : public APlayerState
 public:
     inline uint8 getRemainingSkillPoint() const { return RemainingSkillPoint; }
 
-    inline uint8 getSkillPoint(ESkillType _type) const { return m_skillPoints[_type]; }
+    uint8 getSkillPoint(ESkillType const& _type) const;
+
+    UFUNCTION(Reliable, Server)
+    void RPCSetSkillPoint(ESkillType const& _type, uint8 _value);
 
 private:
     void setRemainingSkillPoint(uint8 && _val);
@@ -45,12 +48,16 @@ public:
     UPROPERTY(Replicated)
     FString Team { "Team 1" };
 
+    UPROPERTY(Replicated)
+    uint8 Attack {};
+
+    UPROPERTY(Replicated)
+    uint8 Protection {};
+
+    UPROPERTY(Replicated)
+    uint8 Support {};
+
 private:
     UPROPERTY()
     uint8 RemainingSkillPoint { 4 };
-
-    TMap<ESkillType, uint8> m_skillPoints { 
-        { ESkillType::Attack, 0 },
-        { ESkillType::Protection, 0 }, 
-        { ESkillType::Support, 0 } };
 };

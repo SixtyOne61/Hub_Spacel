@@ -4,17 +4,17 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
-#include "RedZoneDataAsset.generated.h"
+#include "StaticMeshDataAsset.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class HUB_SPACEL_API URedZoneDataAsset : public UDataAsset
+class HUB_SPACEL_API UStaticMeshDataAsset : public UDataAsset
 {
 	GENERATED_BODY()
-	
+
 public:
 	UPROPERTY(EditAnywhere)
-	class UStaticMesh* RedZoneStaticMesh{ nullptr };
+	class UStaticMesh* StaticMesh{ nullptr };
 };

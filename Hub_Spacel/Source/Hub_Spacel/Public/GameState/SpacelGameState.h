@@ -32,10 +32,10 @@ class HUB_SPACEL_API ASpacelGameState : public AGameStateBase
 
 public:
 	UFUNCTION()
-	void GoToPrepare() { this->RU_GameState = (uint8)EGameState::Prepare; }
+	void GoToPrepare() { this->RU_GameState = (uint8)EGameState::Prepare; OnRep_StateGame(); }
 
 	UFUNCTION()
-	void GoToInGame() { this->RU_GameState = (uint8)EGameState::InGame; }
+	void GoToInGame() { this->RU_GameState = (uint8)EGameState::InGame; OnRep_StateGame(); }
 
 	FString GetBestTeam() const;
 

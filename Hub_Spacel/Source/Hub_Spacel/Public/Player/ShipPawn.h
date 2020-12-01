@@ -10,6 +10,14 @@
 UCLASS()
 class HUB_SPACEL_API AShipPawn : public APawn
 {
+    struct FTempArray
+    {
+        TArray<FVector> RedZone {};
+        TArray<FVector> Attack{};
+        TArray<FVector> Protection{};
+        TArray<FVector> Support{};
+    };
+
 	GENERATED_BODY()
 
     friend class APlayerShipController;
@@ -52,13 +60,17 @@ private:
     UFUNCTION()
     void StartGame();
 
-    void buildRedZone();
-    void buildAttack(uint8 _level);
-    void buildProtection(uint8 _level);
-    void buildSupport(uint8 _level);
+    void buildRedZone(TOptional<FTempArray> & _tmpArray);
+    void buildAttack(TOptional<FTempArray>& _tmpArray, uint8 _level);
+    void buildProtection(TOptional<FTempArray>& _tmpArray, uint8 _level);
+    void buildSupport(TOptional<FTempArray>& _tmpArray, uint8 _level);
 
-    void addVoxel(class UInstancedStaticMeshComponent* _mesh, FVector && _location) const;
-    void addVoxel(class UInstancedStaticMeshComponent* _mesh, TArray<FVector>&& _locations) const;
+    void addVoxel(class UInstancedStaticMeshComponent* & _mesh, FVector && _location) const;
+    void addVoxel(class UInstancedStaticMeshComponent* & _mesh, TArray<FVector>&& _locations) const;
+
+    /* replication not supported on UInstancedStaticMeshComponent, call instance location on each client */
+    UFUNCTION(Unreliable, NetMulticast)
+    void RPCClientAddVoxel(TArray<FVector> const& _redZoneLocations, TArray<FVector> const& _attackLocations, TArray<FVector> const& _protectionLocations, TArray<FVector> const& _supportLocations);
 
     UFUNCTION()
     void OnComponentHitProtection(class UPrimitiveComponent* _hitComp, AActor* _otherActor, class UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit);
@@ -89,25 +101,25 @@ public:
     class UPlayerDataAsset* PlayerDataAsset { nullptr };
 
     UPROPERTY(Category = "RedZone", EditAnywhere, BlueprintReadWrite)
-    class URedZoneDataAsset* RedZoneDataAsset { nullptr };
+    class UStaticMeshDataAsset* RedZoneDataAsset { nullptr };
 
     UPROPERTY(Category = "RedZone", EditAnywhere, BlueprintReadWrite)
     class UInstancedStaticMeshComponent* RedZoneMeshComponent { nullptr };
 
     UPROPERTY(Category = "Protection", EditAnywhere, BlueprintReadWrite)
-    class UProtectionDataAsset* ProtectionDataAsset { nullptr };
+    class USetupAttributeDataAsset* ProtectionDataAsset { nullptr };
 
     UPROPERTY(Category = "Protection", EditAnywhere, BlueprintReadWrite)
     class UInstancedStaticMeshComponent* ProtectionMeshComponent{ nullptr };
 
     UPROPERTY(Category = "Weapon", EditAnywhere, BlueprintReadWrite)
-    class UWeaponDataAsset* WeaponDataAsset { nullptr };
+    class USetupAttributeDataAsset* WeaponDataAsset { nullptr };
 
     UPROPERTY(EditAnywhere, Category = "Weapon")
     class UInstancedStaticMeshComponent* WeaponMeshComponent { nullptr };
 
     UPROPERTY(Category = "Support", EditAnywhere, BlueprintReadWrite)
-    class USupportDataAsset* SupportDataAsset { nullptr };
+    class USetupAttributeDataAsset* SupportDataAsset { nullptr };
 
     UPROPERTY(EditAnywhere, Category = "Support")
     class UInstancedStaticMeshComponent* SupportMeshComponent { nullptr };
@@ -136,5 +148,5 @@ protected:
     float m_fireCountDown { };
 
     /* fire point location */
-    TQueue<FVector> m_fireLocations { };
+    int32 m_fireIndex { };
 };

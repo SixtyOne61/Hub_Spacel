@@ -37,15 +37,15 @@ void USelectorSkillWidget::OnMinButtonClicked()
     ASpacelPlayerState* owningPlayerState{ Cast<ASpacelPlayerState>(this->GetOwningPlayerState()) };
     if (owningPlayerState != nullptr)
     {
-        if (owningPlayerState->m_skillPoints.Contains(this->SkillType) 
-            && owningPlayerState->m_skillPoints[this->SkillType] > 0)
+        uint8 level = owningPlayerState->getSkillPoint(this->SkillType);
+        if (level > 0)
         {
-            uint8 num = owningPlayerState->m_skillPoints[this->SkillType] - 1;
-            if (num < Images.Num())
+            level--;
+            if (level < Images.Num())
             {
-                this->Images[num]->SetBrushTintColor(this->OffColor);
+                this->Images[level]->SetBrushTintColor(this->OffColor);
             }
-            owningPlayerState->m_skillPoints[this->SkillType]--;
+            owningPlayerState->RPCSetSkillPoint(this->SkillType, level);
             owningPlayerState->setRemainingSkillPoint(owningPlayerState->RemainingSkillPoint + 1);
         }
     }
@@ -56,16 +56,16 @@ void USelectorSkillWidget::OnMaxButtonClicked()
     ASpacelPlayerState* owningPlayerState{ Cast<ASpacelPlayerState>(this->GetOwningPlayerState()) };
     if (owningPlayerState != nullptr)
     {
+        uint8 level = owningPlayerState->getSkillPoint(this->SkillType);
         if (owningPlayerState->RemainingSkillPoint > 0
-            && owningPlayerState->m_skillPoints.Contains(this->SkillType)
-            && owningPlayerState->m_skillPoints[this->SkillType] < 3)
+            && level < 3)
         {
-            uint8 num = owningPlayerState->m_skillPoints[this->SkillType];
-            if (num < Images.Num())
+            if (level < Images.Num())
             {
-                this->Images[num]->SetBrushTintColor(this->OnColor);
+                this->Images[level]->SetBrushTintColor(this->OnColor);
             }
-            owningPlayerState->m_skillPoints[this->SkillType]++;
+            ++level;
+            owningPlayerState->RPCSetSkillPoint(this->SkillType, level);
             owningPlayerState->setRemainingSkillPoint(owningPlayerState->RemainingSkillPoint - 1);
         }
     }
