@@ -366,16 +366,19 @@ void AShipPawn::buildSupport(TOptional<FTempArray>& _tmpArray, uint8 _level)
 
 void AShipPawn::OnComponentHitProtection(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit)
 {
+    UE_LOG(LogTemp, Warning, TEXT("Protection"));
     return;
 }
 
 void AShipPawn::OnComponentHitRedZone(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit)
 {
+    UE_LOG(LogTemp, Warning, TEXT("Protection"));
     return;
 }
 
 void AShipPawn::OnComponentHitSupport(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit)
 {
+    UE_LOG(LogTemp, Warning, TEXT("Protection"));
     return;
 }
 
