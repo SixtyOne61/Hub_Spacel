@@ -36,25 +36,18 @@ AShipPawn::AShipPawn()
 
     RedZoneMeshComponent = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("RedZone_00"));
     if (!ensure(RedZoneMeshComponent != nullptr)) return;
-    RedZoneMeshComponent->OnComponentHit.AddDynamic(this, &AShipPawn::OnComponentHitRedZone);
-    RedZoneMeshComponent->ComponentTags.Add("RedZoneComponent");
     RedZoneMeshComponent->SetupAttachment(BaseShipMeshComponent);
 
     ProtectionMeshComponent = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Protection_00"));
     if (!ensure(ProtectionMeshComponent != nullptr)) return;
-    ProtectionMeshComponent->OnComponentHit.AddDynamic(this, &AShipPawn::OnComponentHitProtection);
-    ProtectionMeshComponent->ComponentTags.Add("ProtectionComponent");
     ProtectionMeshComponent->SetupAttachment(BaseShipMeshComponent);
 
     WeaponMeshComponent = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Weapon_00"));
     if (!ensure(WeaponMeshComponent != nullptr)) return;
-    WeaponMeshComponent->ComponentTags.Add("AttackComponent");
     WeaponMeshComponent->SetupAttachment(BaseShipMeshComponent);
 
     SupportMeshComponent = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Support_00"));
     if (!ensure(SupportMeshComponent != nullptr)) return;
-    SupportMeshComponent->OnComponentHit.AddDynamic(this, &AShipPawn::OnComponentHitSupport);
-    SupportMeshComponent->ComponentTags.Add("SupportComponent");
     SupportMeshComponent->SetupAttachment(BaseShipMeshComponent);
 
     // Create a spring arm component
@@ -80,13 +73,9 @@ void AShipPawn::BeginPlay()
         {
             spacelGameState->OnStartGameDelegate.AddDynamic(this, &AShipPawn::StartGame);
         }
-    }
 
-    // reset mesh
-    if (this->RedZoneMeshComponent) this->RedZoneMeshComponent->ClearInstances();
-    if (this->ProtectionMeshComponent) this->ProtectionMeshComponent->ClearInstances();
-    if (this->WeaponMeshComponent) this->WeaponMeshComponent->ClearInstances();
-    if (this->SupportMeshComponent) this->SupportMeshComponent->ClearInstances();
+        this->ProtectionMeshComponent->OnComponentBeginOverlap.AddDynamic(this, &AShipPawn::OnComponentBeginOverlap);
+    }
 }
 
 // Called every frame
@@ -135,38 +124,9 @@ void AShipPawn::OnRep_PercentUp()
     this->DriverMeshComponent->AddTorqueInDegrees(dir, NAME_None, true);
 }
 
-void AShipPawn::addVoxel(class UInstancedStaticMeshComponent* & _mesh, FVector&& _location) const
-{
-    FTransform voxelTransform{};
-    voxelTransform.SetLocation(std::move(_location));
-    _mesh->AddInstance(voxelTransform);
-}
-
-void AShipPawn::addVoxel(class UInstancedStaticMeshComponent* & _mesh, TArray<FVector>&& _locations) const
-{
-    for (auto&& location : _locations)
-    {
-        addVoxel(_mesh, std::forward<FVector>(location));
-    }
-}
-
 void AShipPawn::RPCClientAddVoxel_Implementation(TArray<FVector> const& _redZoneLocations, TArray<FVector> const& _attackLocations, TArray<FVector> const& _protectionLocations, TArray<FVector> const& _supportLocations)
 {
-    auto lb_call = [&](UInstancedStaticMeshComponent*& _mesh, UStaticMeshDataAsset* _staticMesh, TArray<FVector> const& _locations)
-    {
-        TArray<FVector> locations = _locations;
-        if (_mesh && _staticMesh)
-        {
-            _mesh->SetStaticMesh(_staticMesh->StaticMesh);
-            _mesh->SetEnableGravity(false);
-            addVoxel(_mesh, std::move(locations));
-        }
-    };
-
-    lb_call(this->RedZoneMeshComponent, this->RedZoneDataAsset, _redZoneLocations);
-    lb_call(this->WeaponMeshComponent, this->WeaponDataAsset, _attackLocations);
-    lb_call(this->ProtectionMeshComponent, this->ProtectionDataAsset, _protectionLocations);
-    lb_call(this->SupportMeshComponent, this->SupportDataAsset, _supportLocations);
+    buildShip(_redZoneLocations, _attackLocations, _protectionLocations, _supportLocations);
 }
 
 void AShipPawn::RPCServerMove_Implementation(float const& _deltaTime)
@@ -201,17 +161,17 @@ void AShipPawn::fire(float const& _deltaTime)
     if (!ensure(this->PlayerDataAsset->BulletClass != nullptr)) return;
     if (!ensure(this->WeaponMeshComponent != nullptr)) return;
 
-    UWorld * world { this->GetWorld() };
+    UWorld* world{ this->GetWorld() };
     if (!ensure(world != nullptr)) return;
-    
+
     // check if we have boolean for fire (only set on server)
     if (m_isFire.hasValue() && m_isFire.value() && m_fireCountDown <= 0.0f)
     {
         FTransform transform{};
         this->WeaponMeshComponent->GetInstanceTransform(m_fireIndex, transform, true);
         // reset scale
-        transform.SetScale3D({1.0f, 1.0f, 1.0f});
-        
+        transform.SetScale3D({ 1.0f, 1.0f, 1.0f });
+
         ++m_fireIndex;
         if (m_fireIndex >= this->WeaponMeshComponent->GetInstanceCount())
         {
@@ -225,12 +185,12 @@ void AShipPawn::fire(float const& _deltaTime)
             laser->SetReplicates(true);
             laser->SetReplicateMovement(true);
             UGameplayStatics::FinishSpawningActor(laser, transform);
-            if (UProjectileMovementComponent * comp = Cast<UProjectileMovementComponent>(laser->GetComponentByClass(UProjectileMovementComponent::StaticClass())))
+            if (UProjectileMovementComponent* comp = Cast<UProjectileMovementComponent>(laser->GetComponentByClass(UProjectileMovementComponent::StaticClass())))
             {
                 comp->SetVelocityInLocalSpace(FVector(1, 0, 0) * comp->InitialSpeed);
             }
         }
-    
+
         // reset count down
         m_fireCountDown = this->PlayerDataAsset->TimeBetweenFire;
     }
@@ -250,7 +210,7 @@ void AShipPawn::OnRep_PlayerState()
     ASpacelPlayerState* spacelPlayerState = Cast<ASpacelPlayerState>(this->GetPlayerState());
     if (spacelPlayerState != nullptr)
     {
-        FString teamName { spacelPlayerState->Team };
+        FString teamName{ spacelPlayerState->Team };
         if (teamName.Len() > 0)
         {
             // TO DO : Change color for teammate and ennemy team and our pawn
@@ -260,141 +220,85 @@ void AShipPawn::OnRep_PlayerState()
 
 void AShipPawn::StartGame()
 {
+    FTempArray tmpArray {};
+    tmpArray.RedZone.Add({ 0, 0, 0 });
+
+    auto lb_readXml = [](uint8 _level, USetupAttributeDataAsset* _dataAsset, TArray<FVector> & _out)
+    {
+        if (!ensure(_dataAsset != nullptr)) return;
+        FString const& path { _level > 0 ? _dataAsset->HeavyPath : _dataAsset->DefaultPath };
+
+        SimplyXml::FContainer<FVector> locationInformation{ "Location" };
+        SimplyXml::FReader reader{ FPaths::ProjectDir() + path };
+        reader.read(locationInformation);
+
+        _out = std::move(locationInformation.Values);
+    };
+
     ASpacelPlayerState* spacelPlayerState = this->GetPlayerState<ASpacelPlayerState>();
     if (spacelPlayerState == nullptr)
     {
-        return;
+#if WITH_EDITOR
+        lb_readXml(0, this->WeaponDataAsset, tmpArray.Attack);
+        lb_readXml(0, this->ProtectionDataAsset, tmpArray.Protection);
+        lb_readXml(0, this->SupportDataAsset, tmpArray.Support);
+
+        buildShip(tmpArray.RedZone, tmpArray.Attack, tmpArray.Protection, tmpArray.Support);
+#endif // WITH_EDITOR
     }
-
-    TOptional<FTempArray> tmpArray { {} };
-    buildRedZone(tmpArray);
-    buildAttack(tmpArray, spacelPlayerState->Attack);
-    buildProtection(tmpArray, spacelPlayerState->Protection);
-    buildSupport(tmpArray, spacelPlayerState->Support);
-
-    RPCClientAddVoxel(tmpArray.GetValue().RedZone, tmpArray.GetValue().Attack, tmpArray.GetValue().Protection, tmpArray.GetValue().Support);
-}
-
-void AShipPawn::buildRedZone(TOptional<FTempArray>& _tmpArray)
-{
-    if (!ensure(this->RedZoneMeshComponent != nullptr)) return;
-    if (!ensure(this->RedZoneDataAsset != nullptr)) return;
-
-    this->RedZoneMeshComponent->SetStaticMesh(this->RedZoneDataAsset->StaticMesh);
-    this->RedZoneMeshComponent->SetEnableGravity(false);
-
-    FVector location { 0, 0, 0 };
-    FTransform voxelTransform{};
-    voxelTransform.SetLocation(location);
-    this->RedZoneMeshComponent->AddInstance(voxelTransform);
-
-    if (_tmpArray.IsSet())
+    else
     {
-        _tmpArray.GetValue().RedZone.Add(location);
+        lb_readXml(spacelPlayerState->Attack, this->WeaponDataAsset, tmpArray.Attack);
+        lb_readXml(spacelPlayerState->Protection, this->ProtectionDataAsset, tmpArray.Protection);
+        lb_readXml(spacelPlayerState->Support, this->SupportDataAsset, tmpArray.Support);
+
+        buildShip(tmpArray.RedZone, tmpArray.Attack, tmpArray.Protection, tmpArray.Support);
+        RPCClientAddVoxel(tmpArray.RedZone, tmpArray.Attack, tmpArray.Protection, tmpArray.Support);
     }
 }
 
-void AShipPawn::buildAttack(TOptional<FTempArray>& _tmpArray, uint8 _level)
+void AShipPawn::buildShip(TArray<FVector> const& _redZoneLocations, TArray<FVector> const& _attackLocations, TArray<FVector> const& _protectionLocations, TArray<FVector> const& _supportLocations)
 {
-    if (!ensure(this->WeaponMeshComponent != nullptr)) return;
-    if (!ensure(this->WeaponDataAsset != nullptr)) return;
-
-    FString const& path = _level > 0 ? this->WeaponDataAsset->HeavyPath : this->WeaponDataAsset->DefaultPath;
-
-    this->WeaponMeshComponent->SetStaticMesh(this->WeaponDataAsset->StaticMesh);
-    this->WeaponMeshComponent->SetEnableGravity(false);
-
-    SimplyXml::FContainer<FVector> locationInformation { "Location" };
-    SimplyXml::FContainer<FVector> fireInformation { "Fire" };
-    SimplyXml::FReader reader { FPaths::ProjectDir() + path };
-    reader.read(locationInformation, fireInformation);
-
-    if (_tmpArray.IsSet())
+    auto lb_call = [&](UInstancedStaticMeshComponent*& _mesh, UStaticMeshDataAsset* _staticMesh, TArray<FVector> const& _locations)
     {
-        _tmpArray.GetValue().Attack = locationInformation.Values;
-    }
+        if (_mesh && _staticMesh)
+        {
+            _mesh->ClearInstances();
+            _mesh->SetStaticMesh(_staticMesh->StaticMesh);
+            _mesh->SetEnableGravity(false);
 
-    // treatment of this information
-    addVoxel(this->WeaponMeshComponent, std::move(locationInformation.Values));
+            for (auto const& _location : _locations)
+            {
+                FTransform voxelTransform{};
+                voxelTransform.SetLocation(_location);
+                _mesh->AddInstance(voxelTransform);
+            }
+        }
+    };
+
+    lb_call(this->RedZoneMeshComponent, this->RedZoneDataAsset, _redZoneLocations);
+    lb_call(this->WeaponMeshComponent, this->WeaponDataAsset, _attackLocations);
+    lb_call(this->ProtectionMeshComponent, this->ProtectionDataAsset, _protectionLocations);
+    lb_call(this->SupportMeshComponent, this->SupportDataAsset, _supportLocations);
 }
 
-void AShipPawn::buildProtection(TOptional<FTempArray>& _tmpArray, uint8 _level)
+void AShipPawn::OnComponentBeginOverlap(UPrimitiveComponent* _overlappedComp, AActor* OtherActor, UPrimitiveComponent* _otherComp, int32 _otherBodyIndex, bool _bFromSweep, const FHitResult& _sweepResult)
 {
-    if (!ensure(this->ProtectionMeshComponent != nullptr)) return;
-    if (!ensure(this->ProtectionDataAsset != nullptr)) return;
-
-    FString const& path = _level > 0 ? this->ProtectionDataAsset->HeavyPath : this->ProtectionDataAsset->DefaultPath;
-
-    this->ProtectionMeshComponent->SetStaticMesh(this->ProtectionDataAsset->StaticMesh);
-    this->ProtectionMeshComponent->SetEnableGravity(false);
-
-    SimplyXml::FContainer<FVector> locationInformation{ "Location" };
-    SimplyXml::FReader reader{ FPaths::ProjectDir() + path };
-    reader.read(locationInformation);
-
-    if (_tmpArray.IsSet())
-    {
-        _tmpArray.GetValue().Protection = locationInformation.Values;
-    }
-
-    // treatment of this information
-    addVoxel(this->ProtectionMeshComponent, std::move(locationInformation.Values));
-}
-
-void AShipPawn::buildSupport(TOptional<FTempArray>& _tmpArray, uint8 _level)
-{
-    if (!ensure(this->SupportMeshComponent != nullptr)) return;
-    if (!ensure(this->SupportDataAsset != nullptr)) return;
-
-    FString const& path = _level > 0 ? this->SupportDataAsset->HeavyPath : this->SupportDataAsset->DefaultPath;
-
-    this->SupportMeshComponent->SetStaticMesh(this->SupportDataAsset->StaticMesh);
-    this->SupportMeshComponent->SetEnableGravity(false);
-
-    SimplyXml::FContainer<FVector> locationInformation{ "Location" };
-    SimplyXml::FReader reader{ FPaths::ProjectDir() + path };
-    reader.read(locationInformation);
-
-    if (_tmpArray.IsSet())
-    {
-        _tmpArray.GetValue().Support = locationInformation.Values;
-    }
-
-    // treatment of this information
-    addVoxel(this->SupportMeshComponent, std::move(locationInformation.Values));
-}
-
-void AShipPawn::OnComponentHitProtection(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit)
-{
-    UE_LOG(LogTemp, Warning, TEXT("Protection"));
+    UE_LOG(LogTemp, Warning, TEXT("Overlap"));
     return;
 }
 
-void AShipPawn::OnComponentHitRedZone(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit)
-{
-    UE_LOG(LogTemp, Warning, TEXT("Protection"));
-    return;
-}
-
+/*RedZoneMeshComponent->OnComponentHit.AddDynamic(this, &AShipPawn::OnComponentHitRedZone);
 void AShipPawn::OnComponentHitSupport(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit)
 {
     UE_LOG(LogTemp, Warning, TEXT("Protection"));
     return;
-}
+}*/
 
 void AShipPawn::BuildDefaultShip()
 {
 #if WITH_EDITOR
-    // reset mesh
-    if (this->RedZoneMeshComponent) this->RedZoneMeshComponent->ClearInstances();
-    if (this->ProtectionMeshComponent) this->ProtectionMeshComponent->ClearInstances();
-    if (this->WeaponMeshComponent) this->WeaponMeshComponent->ClearInstances();
-    if (this->SupportMeshComponent) this->SupportMeshComponent->ClearInstances();
-    TOptional<FTempArray> tmp {};
-    buildRedZone(tmp);
-    buildAttack(tmp, 0);
-    buildProtection(tmp, 0);
-    buildSupport(tmp, 0);
+    StartGame();
 #endif
 }
 

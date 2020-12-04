@@ -60,68 +60,57 @@ private:
     UFUNCTION()
     void StartGame();
 
-    void buildRedZone(TOptional<FTempArray> & _tmpArray);
-    void buildAttack(TOptional<FTempArray>& _tmpArray, uint8 _level);
-    void buildProtection(TOptional<FTempArray>& _tmpArray, uint8 _level);
-    void buildSupport(TOptional<FTempArray>& _tmpArray, uint8 _level);
+    void buildShip(TArray<FVector> const& _redZoneLocations, TArray<FVector> const& _attackLocations, TArray<FVector> const& _protectionLocations, TArray<FVector> const& _supportLocations);
 
-    void addVoxel(class UInstancedStaticMeshComponent* & _mesh, FVector && _location) const;
-    void addVoxel(class UInstancedStaticMeshComponent* & _mesh, TArray<FVector>&& _locations) const;
+    UFUNCTION()
+    void OnComponentBeginOverlap(UPrimitiveComponent* _overlappedComp, AActor* OtherActor, UPrimitiveComponent* _otherComp, int32 _otherBodyIndex, bool _bFromSweep, const FHitResult& _sweepResult);
 
     /* replication not supported on UInstancedStaticMeshComponent, call instance location on each client */
     UFUNCTION(Unreliable, NetMulticast)
     void RPCClientAddVoxel(TArray<FVector> const& _redZoneLocations, TArray<FVector> const& _attackLocations, TArray<FVector> const& _protectionLocations, TArray<FVector> const& _supportLocations);
 
-    UFUNCTION()
-    void OnComponentHitProtection(class UPrimitiveComponent* _hitComp, AActor* _otherActor, class UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit);
-
-    UFUNCTION()
-    void OnComponentHitRedZone(class UPrimitiveComponent* _hitComp, AActor* _otherActor, class UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit);
-
-    UFUNCTION()
-    void OnComponentHitSupport(class UPrimitiveComponent* _hitComp, AActor* _otherActor, class UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit);
-
+    /* only use for debug in editor */
     UFUNCTION(BlueprintCallable)
     void BuildDefaultShip();
 
 public:
-    UPROPERTY(Category = "Ship", VisibleDefaultsOnly, BlueprintReadOnly)
+    UPROPERTY(Category = "Ship", VisibleAnywhere, BlueprintReadOnly)
     class UStaticMeshComponent* DriverMeshComponent { nullptr };
 
-    UPROPERTY(Category = "Ship", VisibleDefaultsOnly, BlueprintReadOnly)
+    UPROPERTY(Category = "Ship", VisibleAnywhere, BlueprintReadOnly)
     class UPoseableMeshComponent* BaseShipMeshComponent { nullptr };
 
-    UPROPERTY(Category = "Component", VisibleDefaultsOnly, BlueprintReadOnly)
+    UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadOnly)
     class USpringArmComponent* SpringArmComponent { nullptr };
 
-    UPROPERTY(Category = "Component", VisibleDefaultsOnly, BlueprintReadOnly)
+    UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadOnly)
     class UCameraComponent* CameraComponent { nullptr };
 
-    UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
+    UPROPERTY(Category = "DataAsset", VisibleAnywhere, BlueprintReadWrite)
     class UPlayerDataAsset* PlayerDataAsset { nullptr };
 
-    UPROPERTY(Category = "RedZone", EditAnywhere, BlueprintReadWrite)
+    UPROPERTY(Category = "DataAsset", VisibleAnywhere, BlueprintReadWrite)
     class UStaticMeshDataAsset* RedZoneDataAsset { nullptr };
 
-    UPROPERTY(Category = "RedZone", EditAnywhere, BlueprintReadWrite)
+    UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)
     class UInstancedStaticMeshComponent* RedZoneMeshComponent { nullptr };
 
-    UPROPERTY(Category = "Protection", EditAnywhere, BlueprintReadWrite)
+    UPROPERTY(Category = "DataAsset", VisibleAnywhere, BlueprintReadWrite)
     class USetupAttributeDataAsset* ProtectionDataAsset { nullptr };
 
-    UPROPERTY(Category = "Protection", EditAnywhere, BlueprintReadWrite)
+    UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)
     class UInstancedStaticMeshComponent* ProtectionMeshComponent{ nullptr };
 
-    UPROPERTY(Category = "Weapon", EditAnywhere, BlueprintReadWrite)
+    UPROPERTY(Category = "DataAsset", VisibleAnywhere, BlueprintReadWrite)
     class USetupAttributeDataAsset* WeaponDataAsset { nullptr };
 
-    UPROPERTY(EditAnywhere, Category = "Weapon")
+    UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)
     class UInstancedStaticMeshComponent* WeaponMeshComponent { nullptr };
 
-    UPROPERTY(Category = "Support", EditAnywhere, BlueprintReadWrite)
+    UPROPERTY(Category = "DataAsset", VisibleAnywhere, BlueprintReadWrite)
     class USetupAttributeDataAsset* SupportDataAsset { nullptr };
 
-    UPROPERTY(EditAnywhere, Category = "Support")
+    UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)
     class UInstancedStaticMeshComponent* SupportMeshComponent { nullptr };
 
 protected:
