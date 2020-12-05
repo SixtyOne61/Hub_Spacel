@@ -15,6 +15,8 @@ AChunck::AChunck()
 	Voxels->SetCollisionProfileName("BlockAll");
 	Voxels->OnComponentHit.AddDynamic(this, &AChunck::OnComponentHit);
 	RootComponent = Voxels;
+
+	Tags.Add("BlockingActor");
 }
 
 bool AChunck::init(FVector2D const& _bornX, FVector2D const& _bornY, FVector2D const& _bornZ, int32 _cubeSize)

@@ -28,6 +28,7 @@ AShipPawn::AShipPawn()
 
     DriverMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Driver_00"));
     if (!ensure(DriverMeshComponent != nullptr)) return;
+    DriverMeshComponent->SetCollisionProfileName("Player");
     RootComponent = DriverMeshComponent;
 
     BaseShipMeshComponent = CreateDefaultSubobject<UPoseableMeshComponent>(TEXT("ShipBase_00"));
@@ -36,18 +37,22 @@ AShipPawn::AShipPawn()
 
     RedZoneMeshComponent = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("RedZone_00"));
     if (!ensure(RedZoneMeshComponent != nullptr)) return;
+    RedZoneMeshComponent->SetCollisionProfileName("Player");
     RedZoneMeshComponent->SetupAttachment(BaseShipMeshComponent);
 
     ProtectionMeshComponent = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Protection_00"));
     if (!ensure(ProtectionMeshComponent != nullptr)) return;
+    ProtectionMeshComponent->SetCollisionProfileName("Player");
     ProtectionMeshComponent->SetupAttachment(BaseShipMeshComponent);
 
     WeaponMeshComponent = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Weapon_00"));
     if (!ensure(WeaponMeshComponent != nullptr)) return;
+    WeaponMeshComponent->SetCollisionProfileName("Player");
     WeaponMeshComponent->SetupAttachment(BaseShipMeshComponent);
 
     SupportMeshComponent = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Support_00"));
     if (!ensure(SupportMeshComponent != nullptr)) return;
+    SupportMeshComponent->SetCollisionProfileName("Player");
     SupportMeshComponent->SetupAttachment(BaseShipMeshComponent);
 
     // Create a spring arm component
@@ -73,8 +78,6 @@ void AShipPawn::BeginPlay()
         {
             spacelGameState->OnStartGameDelegate.AddDynamic(this, &AShipPawn::StartGame);
         }
-
-        this->ProtectionMeshComponent->OnComponentBeginOverlap.AddDynamic(this, &AShipPawn::OnComponentBeginOverlap);
     }
 }
 
@@ -88,6 +91,57 @@ void AShipPawn::Tick(float _deltaTime)
         RPCServerMove(_deltaTime);
 
         fire(_deltaTime);
+
+        TArray<int32> removedIndex {};
+
+        // TO DO: remove red zone, put an instance mesh for driver and put it red zone with collision delegate
+        // other, make a big box around player, if we collide something check big box around each part,
+        // and then check value by value and replicate if we must destroy part.
+        // remove ship collision mesh and ship data mesh
+        int32 index { 0 };
+        while (index < this->ProtectionMeshComponent->GetInstanceCount())
+        {
+            FTransform transform {};
+            if (this->ProtectionMeshComponent->GetInstanceTransform(index, transform, true))
+            {
+                TArray<FHitResult> hits;
+                FVector location { transform.GetLocation() };
+                FCollisionShape mySphereShape { FCollisionShape::MakeSphere(14) };
+
+                FCollisionObjectQueryParams coqp;
+                coqp.AddObjectTypesToQuery(ECC_WorldStatic);
+
+                UWorld* world{ this->GetWorld() };
+                if (!ensure(world != nullptr)) return;
+
+                if (world->SweepMultiByObjectType(hits, location, location, FQuat::Identity, coqp, mySphereShape))
+                {
+                    bool bContinue { false };
+                    for (FHitResult const& hit : hits)
+                    {
+                        if (hit.GetActor()->ActorHasTag("BlockingActor"))
+                        {
+                            removedIndex.Add(index);
+                            this->ProtectionMeshComponent->RemoveInstance(index);
+                            bContinue = true;
+                            break;
+                        }
+                    }
+
+                    if (bContinue)
+                    {
+                        continue;
+                    }
+                }
+
+                ++index;
+            }
+        }
+
+        if (removedIndex.Num() != 0)
+        {
+            RPCClientRemoveInstance(removedIndex);
+        }
     }
 }
 
@@ -127,6 +181,14 @@ void AShipPawn::OnRep_PercentUp()
 void AShipPawn::RPCClientAddVoxel_Implementation(TArray<FVector> const& _redZoneLocations, TArray<FVector> const& _attackLocations, TArray<FVector> const& _protectionLocations, TArray<FVector> const& _supportLocations)
 {
     buildShip(_redZoneLocations, _attackLocations, _protectionLocations, _supportLocations);
+}
+
+void AShipPawn::RPCClientRemoveInstance_Implementation(TArray<int32> const& _index)
+{
+    for (int32 const& index : _index)
+    {
+        this->ProtectionMeshComponent->RemoveInstance(index);
+    }
 }
 
 void AShipPawn::RPCServerMove_Implementation(float const& _deltaTime)
@@ -282,18 +344,11 @@ void AShipPawn::buildShip(TArray<FVector> const& _redZoneLocations, TArray<FVect
     lb_call(this->SupportMeshComponent, this->SupportDataAsset, _supportLocations);
 }
 
-void AShipPawn::OnComponentBeginOverlap(UPrimitiveComponent* _overlappedComp, AActor* OtherActor, UPrimitiveComponent* _otherComp, int32 _otherBodyIndex, bool _bFromSweep, const FHitResult& _sweepResult)
+void AShipPawn::OnComponentHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit)
 {
-    UE_LOG(LogTemp, Warning, TEXT("Overlap"));
+    UE_LOG(LogTemp, Warning, TEXT("Hit"));
     return;
 }
-
-/*RedZoneMeshComponent->OnComponentHit.AddDynamic(this, &AShipPawn::OnComponentHitRedZone);
-void AShipPawn::OnComponentHitSupport(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit)
-{
-    UE_LOG(LogTemp, Warning, TEXT("Protection"));
-    return;
-}*/
 
 void AShipPawn::BuildDefaultShip()
 {

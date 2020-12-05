@@ -52,6 +52,9 @@ private:
     UFUNCTION(Unreliable, NetMulticast)
     void RPCClientMove(FVector const& _angularVelocity, FVector const& _linearVelocity);
 
+    UFUNCTION(Unreliable, NetMulticast)
+    void RPCClientRemoveInstance(TArray<int32> const& _index);
+
     /* only efficient on server */
     void fire(float const& _deltaTime);
 
@@ -63,7 +66,7 @@ private:
     void buildShip(TArray<FVector> const& _redZoneLocations, TArray<FVector> const& _attackLocations, TArray<FVector> const& _protectionLocations, TArray<FVector> const& _supportLocations);
 
     UFUNCTION()
-    void OnComponentBeginOverlap(UPrimitiveComponent* _overlappedComp, AActor* OtherActor, UPrimitiveComponent* _otherComp, int32 _otherBodyIndex, bool _bFromSweep, const FHitResult& _sweepResult);
+    void OnComponentHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit);
 
     /* replication not supported on UInstancedStaticMeshComponent, call instance location on each client */
     UFUNCTION(Unreliable, NetMulticast)
