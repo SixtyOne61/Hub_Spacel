@@ -57,6 +57,8 @@ public:
     UPROPERTY(Replicated)
     uint8 Support {};
 
+    FTransform PlayerStartTransform {};
+
 private:
     UPROPERTY()
     uint8 RemainingSkillPoint { 4 };

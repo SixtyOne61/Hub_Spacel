@@ -67,6 +67,7 @@ void ASpacelGameState::AttributePlayersLocation()
                 FTransform const& transform = teamLocation->Transforms[0];
                 if (APawn* pawn = spacelPlayerState->GetPawn())
                 {
+                    spacelPlayerState->PlayerStartTransform = transform;
                     pawn->SetActorLocationAndRotation(transform.GetLocation(), transform.GetRotation());
                     teamLocation->Transforms.RemoveAt(0);
                 }

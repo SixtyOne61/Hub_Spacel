@@ -668,3 +668,8 @@ bool AFlyingGameMode::stopBackfillRequest(FString const& _gameSessionArn, FStrin
     return false;    
 #endif //  WITH_GAMELIFT
 }
+
+void AFlyingGameMode::Restart(AController* _controller, FTransform const& _transform)
+{
+    this->OnRestartPlayer(_controller, _transform);
+}

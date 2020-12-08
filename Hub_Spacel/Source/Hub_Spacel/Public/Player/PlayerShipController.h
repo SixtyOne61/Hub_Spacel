@@ -52,6 +52,8 @@ public:
     virtual void SetupInputComponent() override;
 
     virtual void BeginPlay() override;
+
+    void Restart();
 	
 protected:
     /* call when input speed change */

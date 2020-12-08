@@ -4,8 +4,11 @@
 #include "CollisionShape.h"
 #include "CollisionQueryParams.h"
 #include "Gameplay/DestroyActor.h"
+#include "GameMode/FlyingGameMode.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
+#include "Player/SpacelPlayerState.h"
+#include "Player/PlayerShipController.h"
 #include "DrawDebugHelpers.h"
 
 void AShipPawn::handSweep()
@@ -88,5 +91,12 @@ bool AShipPawn::itemHits(TArray<FHitResult> const& _hits)
 
 void AShipPawn::OnComponentHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit)
 {
-    UE_LOG(LogTemp, Warning, TEXT("Hit"));
+    //UE_LOG(LogTemp, Warning, TEXT("Hit"));
+
+    APlayerShipController* playerController = this->GetController<APlayerShipController>();
+    if (!ensure(playerController != nullptr)) return;
+
+    playerController->Restart();
+    this->UnPossessed();
+    this->Destroy();
 }

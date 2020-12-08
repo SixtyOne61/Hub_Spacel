@@ -8,7 +8,9 @@
 #include "Engine/World.h"
 #include "Util/SimplyMath.h"
 #include "DataAsset/PlayerDataAsset.h"
+#include "GameMode/FlyingGameMode.h"
 #include "GameState/SpacelGameState.h"
+#include "Player/SpacelPlayerState.h"
 
 float APlayerShipController::FUnlinearReachGoal::addValue(float _value, float _currentPercent)
 {
@@ -287,4 +289,20 @@ void APlayerShipController::returnToMainMenu()
 {
     FString levelName { "MainMenu" };
     UGameplayStatics::OpenLevel(this->GetWorld(), FName(*levelName), false, "");
+}
+
+void APlayerShipController::Restart()
+{
+    AFlyingGameMode* flyingGameMode = Cast<AFlyingGameMode>(UGameplayStatics::GetGameMode(this->GetWorld()));
+    if (flyingGameMode == nullptr)
+    {
+        return;
+    }
+
+    ASpacelPlayerState* spacelPlayerState = this->GetPlayerState<ASpacelPlayerState>();
+    if (spacelPlayerState)
+    {
+        flyingGameMode->Restart(this, spacelPlayerState->PlayerStartTransform);
+    }
+
 }

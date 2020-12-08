@@ -85,6 +85,11 @@ public:
 	virtual void PreLogin(FString const& _options, FString const& _address, FUniqueNetIdRepl const& _uniqueId, FString & _errorMessage) override;
 	virtual void Logout(class AController* _exiting) override;
 
+	void Restart(AController* _controller, FTransform const& _transform);
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "Flow")
+	void OnRestartPlayer(AController* _controller, FTransform const& _transform);
+
 protected:
 	virtual void BeginPlay() override;
 	virtual FString InitNewPlayer(class APlayerController* _newPlayerController, FUniqueNetIdRepl const& _uniqueId, FString const& _options, FString const& _portal) override;
