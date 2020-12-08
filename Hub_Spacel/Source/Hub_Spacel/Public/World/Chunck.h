@@ -17,7 +17,9 @@ public:
 	// Sets default values for this actor's properties
 	AChunck();
 
-	virtual void hit(FHitResult const& _info) override;
+	/* override */
+	virtual void Tick(float _deltaTime) override;
+	virtual void dmg(FHitResult const& _info) override;
 
 private:
 	/* init actor, call by World Manager, most of time on editor, we keep  */
@@ -51,4 +53,6 @@ private:
 
 	UPROPERTY(VisibleAnywhere, Category = "Component")
 	class UInstancedStaticMeshComponent* Voxels { nullptr };
+
+	TMap<int32, int16> m_dmg {};
 };

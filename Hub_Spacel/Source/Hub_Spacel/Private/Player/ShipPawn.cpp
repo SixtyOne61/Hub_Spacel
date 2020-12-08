@@ -66,7 +66,7 @@ void AShipPawn::BeginPlay()
 {
 	Super::BeginPlay();
 
-    if (this->HasAuthority())
+    if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
     {
         ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld()));
         if (spacelGameState != nullptr)
@@ -84,12 +84,13 @@ void AShipPawn::Tick(float _deltaTime)
 {
 	Super::Tick(_deltaTime);
 
-    if (this->HasAuthority())
+    // collision ship
+    handSweep();
+
+    if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
     {
         // move ship
         RPCServerMove(_deltaTime);
-        // collision ship
-        RPCServerHandSweep();
 
         fire(_deltaTime);
     }
@@ -283,12 +284,6 @@ void AShipPawn::buildShip(TArray<FVector> const& _redZoneLocations, TArray<FVect
     lb_call(this->WeaponMeshComponent, this->WeaponDataAsset, _attackLocations);
     lb_call(this->ProtectionMeshComponent, this->ProtectionDataAsset, _protectionLocations);
     lb_call(this->SupportMeshComponent, this->SupportDataAsset, _supportLocations);
-}
-
-void AShipPawn::OnComponentHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit)
-{
-    UE_LOG(LogTemp, Warning, TEXT("Hit"));
-    return;
 }
 
 void AShipPawn::BuildDefaultShip()

@@ -8,10 +8,8 @@
 #include "Engine/StaticMesh.h"
 #include "DrawDebugHelpers.h"
 
-void AShipPawn::RPCServerHandSweep_Implementation()
+void AShipPawn::handSweep()
 {
-    // releviant on server side
-
     UWorld* world{ this->GetWorld() };
     if (!ensure(world != nullptr)) return;
 
@@ -25,7 +23,7 @@ void AShipPawn::RPCServerHandSweep_Implementation()
     auto lb_checkCollision = [&](FCollisionShape const& _collision) -> bool
     {
         hits.Empty();
-        DrawDebugSolidBox(world, location, collisionShape.GetExtent(), FColor::Red);
+        //DrawDebugSolidBox(world, location, collisionShape.GetExtent(), FColor::Red);
 
         // for box we need to have a stard != end
         FVector epsilon {0.001f, 0.001f, 0.001f};
@@ -35,7 +33,7 @@ void AShipPawn::RPCServerHandSweep_Implementation()
     // check if we have something nearest this pawn
     if (lb_checkCollision(collisionShape))
     {
-        auto lb_checkComponent = [&](UInstancedStaticMeshComponent*& _mesh, TArray<FVector>& _removedLocation)
+        auto lb_checkComponent = [&](UInstancedStaticMeshComponent*& _mesh)
         {
             if (_mesh == nullptr || _mesh->GetInstanceCount() == 0)
             {
@@ -50,16 +48,14 @@ void AShipPawn::RPCServerHandSweep_Implementation()
             int32 index{ 0 };
             while (index < _mesh->GetInstanceCount())
             {
-                FTransform localTransform{}, worldTransform{};
-                if (_mesh->GetInstanceTransform(index, worldTransform, true) 
-                    && _mesh->GetInstanceTransform(index, localTransform, false))
+                FTransform worldTransform{};
+                if (_mesh->GetInstanceTransform(index, worldTransform, true))
                 {
                     location = worldTransform.GetLocation();
                     if (lb_checkCollision(collisionShape) && itemHits(hits))
                     {
                         // manage item hits
                         _mesh->RemoveInstance(index);
-                        _removedLocation.Add(localTransform.GetLocation());
                     }
                     else
                     {
@@ -69,15 +65,9 @@ void AShipPawn::RPCServerHandSweep_Implementation()
             }
         };
 
-        TArray<FVector> protRemovedLocation{}, suppRemovedLocation{};
-        lb_checkComponent(this->ProtectionMeshComponent, protRemovedLocation);
-        lb_checkComponent(this->SupportMeshComponent, suppRemovedLocation);
+        lb_checkComponent(this->ProtectionMeshComponent);
+        lb_checkComponent(this->SupportMeshComponent);
 
-        if (protRemovedLocation.Num() != 0 || suppRemovedLocation.Num() != 0)
-        {
-            // replicated this information on each client
-            RPCClientRemoveInstance(protRemovedLocation, suppRemovedLocation);
-        }
     }
 }
 
@@ -86,38 +76,17 @@ bool AShipPawn::itemHits(TArray<FHitResult> const& _hits)
     bool bret = false;
     for (FHitResult const& hit : _hits)
     {
-        if (ADestroyActor* act = Cast<ADestroyActor>(hit.GetActor()))
+        ADestroyActor* act = Cast<ADestroyActor>(hit.GetActor());
+        if (act && !act->IsPendingKill())
         {
-            act->hit(hit);
+            act->dmg(hit);
             bret = true;
         }
     }
     return bret;
 }
 
-void AShipPawn::RPCClientRemoveInstance_Implementation(TArray<FVector> const& _protRemovedLocation, TArray<FVector> const& _suppRemovedLocation)
+void AShipPawn::OnComponentHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit)
 {
-    auto lb_remove = [](UInstancedStaticMeshComponent*& _mesh, TArray<FVector> const& _removedLocation)
-    {
-        if (_mesh == nullptr)
-        {
-            return;
-        }
-
-        for (FVector location : _removedLocation)
-        {
-            for (int32 i = 0; i < _mesh->GetInstanceCount(); ++i)
-            {
-                FTransform transform{};
-                if (_mesh->GetInstanceTransform(i, transform, false) && transform.GetLocation() == location)
-                {
-                    _mesh->RemoveInstance(i);
-                    break;
-                }
-            }
-        }
-    };
-
-    lb_remove(this->ProtectionMeshComponent, _protRemovedLocation);
-    lb_remove(this->SupportMeshComponent, _suppRemovedLocation);
+    UE_LOG(LogTemp, Warning, TEXT("Hit"));
 }

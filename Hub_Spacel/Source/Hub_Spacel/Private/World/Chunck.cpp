@@ -9,25 +9,27 @@
 AChunck::AChunck()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 
 	Voxels = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Voxels"));
 	Voxels->SetCollisionProfileName("BlockAll");
-	Voxels->OnComponentHit.AddDynamic(this, &AChunck::OnComponentHit);
 	RootComponent = Voxels;
 
 	Tags.Add("BlockingActor");
 }
 
-void AChunck::hit(FHitResult const& _info)
+void AChunck::dmg(FHitResult const& _info)
 {
-	Super::hit(_info);
+	Super::dmg(_info);
 
-	if (!ensure(this->Voxels != nullptr)) return;
-	this->Voxels->RemoveInstance(_info.Item);
-	if (this->Voxels->GetInstanceCount() == 0)
+	if (_info.Item >= 0)
 	{
-		this->Destroy();
+		if (!m_dmg.Contains(_info.Item))
+		{
+			m_dmg.Add(_info.Item);
+		}
+
+		m_dmg[_info.Item]++;
 	}
 }
 
@@ -55,6 +57,31 @@ void AChunck::BeginPlay()
 	{
 		this->Voxels->SetStaticMesh(this->VoxelStaticMesh);
 		this->Voxels->SetEnableGravity(false);
+	}
+	
+	if (!this->IsPendingKill())
+	{
+		this->Voxels->OnComponentHit.AddDynamic(this, &AChunck::OnComponentHit);
+	}
+}
+
+void AChunck::Tick(float _deltaTime)
+{
+	Super::Tick(_deltaTime);
+
+	if (m_dmg.Num() != 0)
+	{
+		m_dmg.KeySort([](int32 const& _k1, int32 const& _k2)
+			{
+				return _k1 < _k2;
+			});
+
+		for (auto const& pair : m_dmg)
+		{
+			this->Voxels->RemoveInstance(pair.Key);
+		}
+		m_dmg.Empty();
+
 	}
 }
 
@@ -97,12 +124,5 @@ bool AChunck::generateChunck()
 
 void AChunck::OnComponentHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit)
 {
-	if (this->HasAuthority())
-	{
-		hit(_hit);
-	}
-	else
-	{
-		hit(_hit);
-	}
+	dmg(_hit);
 }

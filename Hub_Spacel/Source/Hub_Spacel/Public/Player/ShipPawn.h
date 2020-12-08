@@ -48,15 +48,11 @@ private:
     void RPCServerMove(float const& _deltaTime);
 
     /* move ship client */
-    UFUNCTION(Unreliable, NetMulticast)
+    UFUNCTION(Unreliable, Client)
     void RPCClientMove(FVector const& _angularVelocity, FVector const& _linearVelocity);
 
     /* Collision part */
-    UFUNCTION(Reliable, Server)
-    void RPCServerHandSweep();
-
-    UFUNCTION(Unreliable, NetMulticast)
-    void RPCClientRemoveInstance(TArray<FVector> const& _protRemovedLocation, TArray<FVector> const& _suppRemovedLocation);
+    void handSweep();
 
     bool itemHits(TArray<FHitResult> const& _hits);
 
@@ -74,7 +70,7 @@ private:
     void OnComponentHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit);
 
     /* replication not supported on UInstancedStaticMeshComponent, call instance location on each client */
-    UFUNCTION(Unreliable, NetMulticast)
+    UFUNCTION(Unreliable, Client)
     void RPCClientAddVoxel(TArray<FVector> const& _redZoneLocations, TArray<FVector> const& _attackLocations, TArray<FVector> const& _protectionLocations, TArray<FVector> const& _supportLocations);
 
     /* only use for debug in editor */
