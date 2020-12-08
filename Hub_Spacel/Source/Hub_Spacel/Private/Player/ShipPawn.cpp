@@ -35,11 +35,6 @@ AShipPawn::AShipPawn()
     if (!ensure(BaseShipMeshComponent != nullptr)) return;
     BaseShipMeshComponent->SetupAttachment(RootComponent);
 
-    RedZoneMeshComponent = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("RedZone_00"));
-    if (!ensure(RedZoneMeshComponent != nullptr)) return;
-    RedZoneMeshComponent->SetCollisionProfileName("Player");
-    RedZoneMeshComponent->SetupAttachment(BaseShipMeshComponent);
-
     ProtectionMeshComponent = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Protection_00"));
     if (!ensure(ProtectionMeshComponent != nullptr)) return;
     ProtectionMeshComponent->SetCollisionProfileName("Player");
@@ -78,6 +73,9 @@ void AShipPawn::BeginPlay()
         {
             spacelGameState->OnStartGameDelegate.AddDynamic(this, &AShipPawn::StartGame);
         }
+
+        if (!ensure(this->DriverMeshComponent != nullptr)) return;
+        this->DriverMeshComponent->OnComponentHit.AddDynamic(this, &AShipPawn::OnComponentHit);
     }
 }
 
@@ -88,60 +86,12 @@ void AShipPawn::Tick(float _deltaTime)
 
     if (this->HasAuthority())
     {
+        // move ship
         RPCServerMove(_deltaTime);
+        // collision ship
+        RPCServerHandSweep();
 
         fire(_deltaTime);
-
-        TArray<int32> removedIndex {};
-
-        // TO DO: remove red zone, put an instance mesh for driver and put it red zone with collision delegate
-        // other, make a big box around player, if we collide something check big box around each part,
-        // and then check value by value and replicate if we must destroy part.
-        // remove ship collision mesh and ship data mesh
-        int32 index { 0 };
-        while (index < this->ProtectionMeshComponent->GetInstanceCount())
-        {
-            FTransform transform {};
-            if (this->ProtectionMeshComponent->GetInstanceTransform(index, transform, true))
-            {
-                TArray<FHitResult> hits;
-                FVector location { transform.GetLocation() };
-                FCollisionShape mySphereShape { FCollisionShape::MakeSphere(14) };
-
-                FCollisionObjectQueryParams coqp;
-                coqp.AddObjectTypesToQuery(ECC_WorldStatic);
-
-                UWorld* world{ this->GetWorld() };
-                if (!ensure(world != nullptr)) return;
-
-                if (world->SweepMultiByObjectType(hits, location, location, FQuat::Identity, coqp, mySphereShape))
-                {
-                    bool bContinue { false };
-                    for (FHitResult const& hit : hits)
-                    {
-                        if (hit.GetActor()->ActorHasTag("BlockingActor"))
-                        {
-                            removedIndex.Add(index);
-                            this->ProtectionMeshComponent->RemoveInstance(index);
-                            bContinue = true;
-                            break;
-                        }
-                    }
-
-                    if (bContinue)
-                    {
-                        continue;
-                    }
-                }
-
-                ++index;
-            }
-        }
-
-        if (removedIndex.Num() != 0)
-        {
-            RPCClientRemoveInstance(removedIndex);
-        }
     }
 }
 
@@ -181,14 +131,6 @@ void AShipPawn::OnRep_PercentUp()
 void AShipPawn::RPCClientAddVoxel_Implementation(TArray<FVector> const& _redZoneLocations, TArray<FVector> const& _attackLocations, TArray<FVector> const& _protectionLocations, TArray<FVector> const& _supportLocations)
 {
     buildShip(_redZoneLocations, _attackLocations, _protectionLocations, _supportLocations);
-}
-
-void AShipPawn::RPCClientRemoveInstance_Implementation(TArray<int32> const& _index)
-{
-    for (int32 const& index : _index)
-    {
-        this->ProtectionMeshComponent->RemoveInstance(index);
-    }
 }
 
 void AShipPawn::RPCServerMove_Implementation(float const& _deltaTime)
@@ -338,7 +280,6 @@ void AShipPawn::buildShip(TArray<FVector> const& _redZoneLocations, TArray<FVect
         }
     };
 
-    lb_call(this->RedZoneMeshComponent, this->RedZoneDataAsset, _redZoneLocations);
     lb_call(this->WeaponMeshComponent, this->WeaponDataAsset, _attackLocations);
     lb_call(this->ProtectionMeshComponent, this->ProtectionDataAsset, _protectionLocations);
     lb_call(this->SupportMeshComponent, this->SupportDataAsset, _supportLocations);

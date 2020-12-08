@@ -27,7 +27,6 @@ public:
 	// Sets default values for this pawn's properties
 	AShipPawn();
 
-public:
     // Called when the game starts or when spawned
     virtual void BeginPlay() override;
 
@@ -52,8 +51,14 @@ private:
     UFUNCTION(Unreliable, NetMulticast)
     void RPCClientMove(FVector const& _angularVelocity, FVector const& _linearVelocity);
 
+    /* Collision part */
+    UFUNCTION(Reliable, Server)
+    void RPCServerHandSweep();
+
     UFUNCTION(Unreliable, NetMulticast)
-    void RPCClientRemoveInstance(TArray<int32> const& _index);
+    void RPCClientRemoveInstance(TArray<FVector> const& _protRemovedLocation, TArray<FVector> const& _suppRemovedLocation);
+
+    bool itemHits(TArray<FHitResult> const& _hits);
 
     /* only efficient on server */
     void fire(float const& _deltaTime);
@@ -89,28 +94,22 @@ public:
     UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadOnly)
     class UCameraComponent* CameraComponent { nullptr };
 
-    UPROPERTY(Category = "DataAsset", VisibleAnywhere, BlueprintReadWrite)
+    UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
     class UPlayerDataAsset* PlayerDataAsset { nullptr };
 
-    UPROPERTY(Category = "DataAsset", VisibleAnywhere, BlueprintReadWrite)
-    class UStaticMeshDataAsset* RedZoneDataAsset { nullptr };
-
-    UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)
-    class UInstancedStaticMeshComponent* RedZoneMeshComponent { nullptr };
-
-    UPROPERTY(Category = "DataAsset", VisibleAnywhere, BlueprintReadWrite)
+    UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
     class USetupAttributeDataAsset* ProtectionDataAsset { nullptr };
 
     UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)
     class UInstancedStaticMeshComponent* ProtectionMeshComponent{ nullptr };
 
-    UPROPERTY(Category = "DataAsset", VisibleAnywhere, BlueprintReadWrite)
+    UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
     class USetupAttributeDataAsset* WeaponDataAsset { nullptr };
 
     UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)
     class UInstancedStaticMeshComponent* WeaponMeshComponent { nullptr };
 
-    UPROPERTY(Category = "DataAsset", VisibleAnywhere, BlueprintReadWrite)
+    UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
     class USetupAttributeDataAsset* SupportDataAsset { nullptr };
 
     UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)

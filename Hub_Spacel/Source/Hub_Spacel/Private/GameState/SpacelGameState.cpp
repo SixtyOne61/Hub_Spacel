@@ -52,6 +52,7 @@ void ASpacelGameState::AttributePlayersLocation()
         if (ASpacelPlayerState* spacelPlayerState = Cast<ASpacelPlayerState>(playerState))
         {
             FString const& teamName = spacelPlayerState->Team;
+            // register team for scoring
             if (!m_scores.Contains(teamName))
             {
                 m_scores.Add(teamName);
@@ -66,7 +67,7 @@ void ASpacelGameState::AttributePlayersLocation()
                 FTransform const& transform = teamLocation->Transforms[0];
                 if (APawn* pawn = spacelPlayerState->GetPawn())
                 {
-                    pawn->SetActorTransform(transform);
+                    pawn->SetActorLocationAndRotation(transform.GetLocation(), transform.GetRotation());
                     teamLocation->Transforms.RemoveAt(0);
                 }
             }

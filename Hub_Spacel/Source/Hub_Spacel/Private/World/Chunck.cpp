@@ -19,6 +19,18 @@ AChunck::AChunck()
 	Tags.Add("BlockingActor");
 }
 
+void AChunck::hit(FHitResult const& _info)
+{
+	Super::hit(_info);
+
+	if (!ensure(this->Voxels != nullptr)) return;
+	this->Voxels->RemoveInstance(_info.Item);
+	if (this->Voxels->GetInstanceCount() == 0)
+	{
+		this->Destroy();
+	}
+}
+
 bool AChunck::init(FVector2D const& _bornX, FVector2D const& _bornY, FVector2D const& _bornZ, int32 _cubeSize)
 {
 	this->BornX = _bornX;
@@ -85,10 +97,12 @@ bool AChunck::generateChunck()
 
 void AChunck::OnComponentHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit)
 {
-	if (!ensure(this->Voxels != nullptr)) return;
-	this->Voxels->RemoveInstance(_hit.Item);
-	if (this->Voxels->GetInstanceCount() == 0)
+	if (this->HasAuthority())
 	{
-		this->Destroy();
+		hit(_hit);
+	}
+	else
+	{
+		hit(_hit);
 	}
 }

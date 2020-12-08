@@ -3,11 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
+#include "Gameplay/DestroyActor.h"
 #include "Chunck.generated.h"
 
 UCLASS()
-class HUB_SPACEL_API AChunck : public AActor
+class HUB_SPACEL_API AChunck : public ADestroyActor
 {
 	GENERATED_BODY()
 
@@ -16,6 +16,8 @@ class HUB_SPACEL_API AChunck : public AActor
 public:
 	// Sets default values for this actor's properties
 	AChunck();
+
+	virtual void hit(FHitResult const& _info) override;
 
 private:
 	/* init actor, call by World Manager, most of time on editor, we keep  */
