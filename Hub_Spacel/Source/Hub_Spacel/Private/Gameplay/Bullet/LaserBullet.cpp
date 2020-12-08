@@ -13,7 +13,7 @@
 ALaserBullet::ALaserBullet()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
     ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovement"));
 
@@ -45,11 +45,13 @@ void ALaserBullet::BeginPlay()
     }
 }
 
-// Called every frame
-void ALaserBullet::Tick(float DeltaTime)
+void ALaserBullet::dmg(FHitResult const& _info)
 {
-	Super::Tick(DeltaTime);
-
+    Super::dmg(_info);
+    if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
+    {
+        this->Destroy();
+    }
 }
 
 void ALaserBullet::setupMaterial()

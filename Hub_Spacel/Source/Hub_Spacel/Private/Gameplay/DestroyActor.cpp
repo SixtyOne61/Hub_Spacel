@@ -3,3 +3,8 @@
 
 #include "DestroyActor.h"
 
+void ADestroyActor::BeginPlay()
+{
+    Super::BeginPlay();
+    this->Tags.Add("DestroyActor");
+}

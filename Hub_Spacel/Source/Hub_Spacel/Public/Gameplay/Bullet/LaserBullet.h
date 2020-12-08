@@ -3,11 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
+#include "Gameplay/DestroyActor.h"
 #include "LaserBullet.generated.h"
 
 UCLASS()
-class HUB_SPACEL_API ALaserBullet : public AActor
+class HUB_SPACEL_API ALaserBullet : public ADestroyActor
 {
 	GENERATED_BODY()
 	
@@ -18,10 +18,7 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+    virtual void dmg(FHitResult const& _info) override;
 
 private:
     /* setup material of bullet */

@@ -79,11 +79,19 @@ bool AShipPawn::itemHits(TArray<FHitResult> const& _hits)
     bool bret = false;
     for (FHitResult const& hit : _hits)
     {
-        ADestroyActor* act = Cast<ADestroyActor>(hit.GetActor());
-        if (act && !act->IsPendingKill())
+        AActor* act = hit.GetActor();
+        if (act == nullptr || act->IsPendingKill())
         {
-            act->dmg(hit);
-            bret = true;
+            continue;
+        }
+
+        if (act->ActorHasTag("DestroyActor"))
+        {
+            if (ADestroyActor* destroyAct = Cast<ADestroyActor>(hit.GetActor()))
+            {
+                destroyAct->dmg(hit);
+                bret = true;
+            }
         }
     }
     return bret;
