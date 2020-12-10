@@ -21,6 +21,13 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
+	UFUNCTION()
+	void StartGame();
+
+private:
 	UPROPERTY()
 	TSubclassOf<class UUserWidget> GameWidgetClass { nullptr };
+
+	UPROPERTY()
+	TSubclassOf<UUserWidget> PreparePhaseWidgetClass { nullptr };
 };

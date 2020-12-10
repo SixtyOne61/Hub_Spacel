@@ -4,6 +4,8 @@ Membre privée/protected : int m_myPrivateMember = 0;
 Delegate : FDelegate OnEventDelegate; toujours en public et en UProperty
 Component : public, XXXComponent;
 SubClass : public, XXXClass;
+Variable replicated : R_MyVar
+Variable replicated using : RU_MyVar;
 
 Methode event : public OnXXXEvent()
 Methode public : void MyPublicFunc();

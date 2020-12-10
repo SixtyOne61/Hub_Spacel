@@ -3,11 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
+#include "Gameplay/DestroyActor.h"
 #include "Chunck.generated.h"
 
 UCLASS()
-class HUB_SPACEL_API AChunck : public AActor
+class HUB_SPACEL_API AChunck : public ADestroyActor
 {
 	GENERATED_BODY()
 
@@ -16,6 +16,10 @@ class HUB_SPACEL_API AChunck : public AActor
 public:
 	// Sets default values for this actor's properties
 	AChunck();
+
+	/* override */
+	virtual void Tick(float _deltaTime) override;
+	virtual void dmg(FHitResult const& _info) override;
 
 private:
 	/* init actor, call by World Manager, most of time on editor, we keep  */
@@ -47,6 +51,11 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Settings")
 	class UStaticMesh* VoxelStaticMesh { nullptr };
 
-	UPROPERTY(EditAnywhere, Category = "Component")
+	UPROPERTY(EditAnywhere, Category = "Settings")
+	TSubclassOf<class AFogActor> FogClass { nullptr };
+
+	UPROPERTY(VisibleAnywhere, Category = "Component")
 	class UInstancedStaticMeshComponent* Voxels { nullptr };
+
+	TMap<int32, int16> m_dmg {};
 };

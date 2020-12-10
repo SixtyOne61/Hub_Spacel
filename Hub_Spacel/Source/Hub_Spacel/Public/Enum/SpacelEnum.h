@@ -5,6 +5,14 @@
 #include "CoreMinimal.h"
 
 UENUM(BlueprintType)
+enum class EGameState : uint8
+{
+    Undefined = 0,
+    Prepare,
+    InGame
+};
+
+UENUM(BlueprintType)
 enum class EUIType : uint8
 {
     None UMETA(DisplayName = "None"),
@@ -21,14 +29,13 @@ enum class ERegionType : uint8
     ASIA UMETA(DisplayName = "ASIA"),
 };
 
-UENUM(BlueprintType, meta = (Bitflags, UseEnumValuesAsMaskValuesInEditor = "true"))
-enum class EShipModuleType : uint8
+UENUM(BlueprintType)
+enum class ESkillType : uint8
 {
-    Empty = 0x00,
-    BaseDefault = 0x01,
-    EngineDefault = 0x02,
-    EngineSmall = 0x04,
-    ShellDefault = 0x08,
+    None UMETA(DisplayName = "None"),
+    Attack UMETA(DisplayName = "Attack"),
+    Protection UMETA(DisplayName = "Protection"),
+    Support UMETA(DisplayName = "Support")
 };
 
 UENUM(BlueprintType, meta = (Bitflags, UseEnumValuesAsMaskValuesInEditor = "true"))
@@ -43,3 +50,13 @@ enum class EFace : uint8
     Left = 1 << 5,
 };
 ENUM_CLASS_FLAGS(EFace);
+
+UENUM(BlueprintType, meta = (Bitflags, UseEnumValuesAsMaskValuesInEditor = "true"))
+enum class EShipModuleType : uint8
+{
+    Empty = 0x00,
+    BaseDefault = 0x01,
+    EngineDefault = 0x02,
+    EngineSmall = 0x04,
+    ShellDefault = 0x08,
+};

@@ -27,6 +27,13 @@ void USpacelWidget::NativeConstruct()
     world->GetTimerManager().SetTimer(SetLatestEventHandle, this, &USpacelWidget::SetLatestEvent, 1.0f, true, 1.0f);
     world->GetTimerManager().SetTimer(SetAverragePlayerLatencyHandle, this, &USpacelWidget::SetAverragePlayerLatency, 1.0f, true, 1.0f);
     world->GetTimerManager().SetTimer(SetSpeedHandle, this, &USpacelWidget::SetSpeed, 0.2f, true, 1.0f);
+
+    this->SetVisibility(ESlateVisibility::Hidden);
+    ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld()));
+    if (spacelGameState != nullptr)
+    {
+        spacelGameState->OnStartGameDelegate.AddDynamic(this, &USpacelWidget::StartGame);
+    }
 }
 
 void USpacelWidget::NativeDestruct()
@@ -40,6 +47,11 @@ void USpacelWidget::NativeDestruct()
         world->GetTimerManager().ClearTimer(SetSpeedHandle);
     }
     Super::NativeDestruct();
+}
+
+void USpacelWidget::StartGame()
+{
+    this->SetVisibility(ESlateVisibility::Visible);
 }
 
 void USpacelWidget::SetTeammateCount()
@@ -90,13 +102,13 @@ void USpacelWidget::SetLatestEvent()
     ASpacelGameState* spacelGameState { Cast<ASpacelGameState>(world->GetGameState()) };
     if (!ensure(spacelGameState != nullptr)) return;
 
-    FString latestEvent { spacelGameState->LatestEvent };
+    FString latestEvent { spacelGameState->R_LatestEvent };
 
     if (latestEvent.Len() > 0)
     {
         if (latestEvent.Equals("GameEnded"))
         {
-            FString winningTeam { spacelGameState->WinningTeam };
+            FString winningTeam { spacelGameState->R_WinningTeam };
 
             if (this->EventTextBlock)
             {
@@ -142,6 +154,6 @@ void USpacelWidget::SetSpeed()
     AShipPawn* shipPawn = Cast<AShipPawn>(UGameplayStatics::GetPlayerPawn(world, 0));
     if (shipPawn != nullptr && this->SpeedTextBlock != nullptr)
     {
-        this->SpeedTextBlock->SetText(FText::FromString(FString::FromInt(FMath::RoundToInt(shipPawn->PercentSpeed * 100)) + " %"));
+        this->SpeedTextBlock->SetText(FText::FromString(FString::FromInt(FMath::RoundToInt(shipPawn->R_PercentSpeed * 100)) + " %"));
     }
 }

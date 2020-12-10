@@ -20,5 +20,5 @@ protected:
 
 private:
 	UPROPERTY()
-	TSubclassOf<UUserWidget> MainMenuWidgetClass;
+	TSubclassOf<UUserWidget> MainMenuWidgetClass { nullptr };
 };

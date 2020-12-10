@@ -10,6 +10,14 @@
 UCLASS()
 class HUB_SPACEL_API AShipPawn : public APawn
 {
+    struct FTempArray
+    {
+        TArray<FVector> RedZone {};
+        TArray<FVector> Attack{};
+        TArray<FVector> Protection{};
+        TArray<FVector> Support{};
+    };
+
 	GENERATED_BODY()
 
     friend class APlayerShipController;
@@ -19,7 +27,6 @@ public:
 	// Sets default values for this pawn's properties
 	AShipPawn();
 
-public:
     // Called when the game starts or when spawned
     virtual void BeginPlay() override;
 
@@ -36,74 +43,97 @@ public:
     void OnRep_PercentUp();
 
 private:
-    /* build ship with all module */
-    UFUNCTION(BlueprintCallable)
-    void BuildShip();
-
-    /* build a module */
-    void buildProceduralModule(class USpacelProceduralMeshComponent * _component, class UProceduralModuleDataAsset const* _module, FVector const& _location);
-
     /* move ship server */
     UFUNCTION(Reliable, Server)
     void RPCServerMove(float const& _deltaTime);
 
     /* move ship client */
-    UFUNCTION(Unreliable, NetMulticast)
+    UFUNCTION(Unreliable, Client)
     void RPCClientMove(FVector const& _angularVelocity, FVector const& _linearVelocity);
+
+    /* Collision part */
+    void handSweep();
+
+    bool itemHits(TArray<FHitResult> const& _hits);
 
     /* only efficient on server */
     void fire(float const& _deltaTime);
 
     virtual void OnRep_PlayerState() override;
 
+    UFUNCTION()
+    void StartGame();
+
+    void buildShip(TArray<FVector> const& _redZoneLocations, TArray<FVector> const& _attackLocations, TArray<FVector> const& _protectionLocations, TArray<FVector> const& _supportLocations);
+
+    UFUNCTION()
+    void OnComponentHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit);
+
+    /* replication not supported on UInstancedStaticMeshComponent, call instance location on each client */
+    UFUNCTION(Unreliable, Client)
+    void RPCClientAddVoxel(TArray<FVector> const& _redZoneLocations, TArray<FVector> const& _attackLocations, TArray<FVector> const& _protectionLocations, TArray<FVector> const& _supportLocations);
+
+    /* only use for debug in editor */
+    UFUNCTION(BlueprintCallable)
+    void BuildDefaultShip();
+
 public:
-    UPROPERTY(Category = "Ship", VisibleDefaultsOnly, BlueprintReadOnly)
-    class UStaticMeshComponent* DriverMeshComponent = nullptr;
+    UPROPERTY(Category = "Ship", VisibleAnywhere, BlueprintReadOnly)
+    class UStaticMeshComponent* DriverMeshComponent { nullptr };
 
-    UPROPERTY(Category = "Ship", VisibleDefaultsOnly, BlueprintReadOnly)
-    class UPoseableMeshComponent* BaseShipMeshComponent = nullptr;
+    UPROPERTY(Category = "Ship", VisibleAnywhere, BlueprintReadOnly)
+    class UPoseableMeshComponent* BaseShipMeshComponent { nullptr };
 
-    UPROPERTY(Category = "Ship", VisibleDefaultsOnly, BlueprintReadOnly)
-    class USpacelProceduralMeshComponent* ShipEngineComponent = nullptr;
+    UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadOnly)
+    class USpringArmComponent* SpringArmComponent { nullptr };
 
-    UPROPERTY(Category = "Ship", VisibleDefaultsOnly, BlueprintReadOnly)
-    class USpacelProceduralMeshComponent* ShipShellComponent = nullptr;
-
-    UPROPERTY(Category = "Ship", VisibleDefaultsOnly, BlueprintReadOnly)
-    class UStaticMeshComponent* SubMachineComponent = nullptr;
-
-    UPROPERTY(Category = "Component", VisibleDefaultsOnly, BlueprintReadOnly)
-    class USpringArmComponent* SpringArmComponent = nullptr;
-
-    UPROPERTY(Category = "Component", VisibleDefaultsOnly, BlueprintReadOnly)
-    class UCameraComponent* CameraComponent = nullptr;
+    UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadOnly)
+    class UCameraComponent* CameraComponent { nullptr };
 
     UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
-    class UPlayerDataAsset* PlayerDataAsset = nullptr;
+    class UPlayerDataAsset* PlayerDataAsset { nullptr };
 
     UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
-    class UShipModuleDataAsset* ModuleDataAsset = nullptr;
+    class USetupAttributeDataAsset* ProtectionDataAsset { nullptr };
+
+    UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)
+    class UInstancedStaticMeshComponent* ProtectionMeshComponent{ nullptr };
+
+    UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
+    class USetupAttributeDataAsset* WeaponDataAsset { nullptr };
+
+    UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)
+    class UInstancedStaticMeshComponent* WeaponMeshComponent { nullptr };
+
+    UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
+    class USetupAttributeDataAsset* SupportDataAsset { nullptr };
+
+    UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)
+    class UInstancedStaticMeshComponent* SupportMeshComponent { nullptr };
 
 protected:
     /* current percent speed value 0.0f - 1.0f */
     UPROPERTY(Replicated)
-    float PercentSpeed = 0.0f;
+    float R_PercentSpeed = 0.0f;
 
     /* when flight attitude change -1.0f or 0.0f or 1.0f */
     UPROPERTY(ReplicatedUsing = "OnRep_PercentFlightAttitude")
-    float PercentFlightAttitude = 0.0f;
+    float RU_PercentFlightAttitude = 0.0f;
 
     /* when turn change -1.0f or 0.0f or 1.0f */
     UPROPERTY(ReplicatedUsing = "OnRep_PercentTurn")
-    float PercentTurn = 0.0f;
+    float RU_PercentTurn = 0.0f;
 
     /* when up change -1.0f or 0.0f or 1.0f */
     UPROPERTY(ReplicatedUsing = "OnRep_PercentUp")
-    float PercentUp = 0.0f;
+    float RU_PercentUp = 0.0f;
 
     /* use only on server, say if we are in fire */
     Util::Optional<bool> m_isFire { };
 
     /* current time between next bullet */
     float m_fireCountDown { };
+
+    /* fire point location */
+    int32 m_fireIndex { };
 };

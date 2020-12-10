@@ -8,6 +8,9 @@
 #include "Engine/World.h"
 #include "Util/SimplyMath.h"
 #include "DataAsset/PlayerDataAsset.h"
+#include "GameMode/FlyingGameMode.h"
+#include "GameState/SpacelGameState.h"
+#include "Player/SpacelPlayerState.h"
 
 float APlayerShipController::FUnlinearReachGoal::addValue(float _value, float _currentPercent)
 {
@@ -115,13 +118,30 @@ void APlayerShipController::SetupInputComponent()
 void APlayerShipController::BeginPlay()
 {
     Super::BeginPlay();
+
+    if (this->IsLocalController())
+    {
+        ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld()));
+        if (spacelGameState != nullptr)
+        {
+            spacelGameState->OnStartGameDelegate.AddDynamic(this, &APlayerShipController::StartGame);
+        }
+    }
+}
+
+void APlayerShipController::StartGame()
+{
+    this->m_enableFlyingInput = true;
 }
 
 void APlayerShipController::speed(float _val)
 {
-    // TO DO : make this better, we can keep _val here, and send only relevant value
-    // in server, on tick continue to increase or decrease percent
-    this->RPCServerSetSpeed(_val);
+    if (this->m_enableFlyingInput)
+    {
+        // TO DO : make this better, we can keep _val here, and send only relevant value
+        // in server, on tick continue to increase or decrease percent
+        this->RPCServerSetSpeed(_val);
+    }
 }
 
 void APlayerShipController::RPCServerSetSpeed_Implementation(float _val)
@@ -138,12 +158,15 @@ void APlayerShipController::RPCServerSetSpeed_Implementation(float _val)
         m_speed = TOptional<FUnlinearReachGoal>(FUnlinearReachGoal { this, shipPawn->PlayerDataAsset->ReachTimeUpSpeed, shipPawn->PlayerDataAsset->ReachTimeDownSpeed });
     }
 
-    shipPawn->PercentSpeed = m_speed.GetValue().addValue(_val, shipPawn->PercentSpeed);
+    shipPawn->R_PercentSpeed = m_speed.GetValue().addValue(_val, shipPawn->R_PercentSpeed);
 }
 
 void APlayerShipController::flightAttitude(float _val)
 {
-    readInput(_val, this->PercentFlightAttitude, std::bind(&APlayerShipController::RPCServerSetFlightAttitude, this, std::placeholders::_1));
+    if (this->m_enableFlyingInput)
+    {
+        readInput(_val, this->PercentFlightAttitude, std::bind(&APlayerShipController::RPCServerSetFlightAttitude, this, std::placeholders::_1));
+    }
 }
 
 void APlayerShipController::RPCServerSetFlightAttitude_Implementation(float _val)
@@ -154,14 +177,17 @@ void APlayerShipController::RPCServerSetFlightAttitude_Implementation(float _val
         return;
     }
 
-    shipPawn->PercentFlightAttitude = _val / 100.0f;
+    shipPawn->RU_PercentFlightAttitude = _val / 100.0f;
     // OnRep isn't call on server, but we need this call
     shipPawn->OnRep_PercentFlightAttitude();
 }
 
 void APlayerShipController::turn(float _val)
 {
-    readInput(_val, this->PercentTurn, std::bind(&APlayerShipController::RPCServerSetTurn, this, std::placeholders::_1));
+    if (this->m_enableFlyingInput)
+    {
+        readInput(_val, this->PercentTurn, std::bind(&APlayerShipController::RPCServerSetTurn, this, std::placeholders::_1));
+    }
 }
 
 void APlayerShipController::RPCServerSetTurn_Implementation(float _val)
@@ -172,14 +198,17 @@ void APlayerShipController::RPCServerSetTurn_Implementation(float _val)
         return;
     }
 
-    shipPawn->PercentTurn = _val / 100.0f;
+    shipPawn->RU_PercentTurn = _val / 100.0f;
     // OnRep isn't call on server, but we need this call
     shipPawn->OnRep_PercentTurn();
 }
 
 void APlayerShipController::up(float _val)
 {
-    readInput(_val, this->PercentUp, std::bind(&APlayerShipController::RPCServerSetUp, this, std::placeholders::_1));
+    if (this->m_enableFlyingInput)
+    {
+        readInput(_val, this->PercentUp, std::bind(&APlayerShipController::RPCServerSetUp, this, std::placeholders::_1));
+    }
 }
 
 void APlayerShipController::RPCServerSetUp_Implementation(float _val)
@@ -190,19 +219,25 @@ void APlayerShipController::RPCServerSetUp_Implementation(float _val)
         return;
     }
 
-    shipPawn->PercentUp = _val / 100.0f;
+    shipPawn->RU_PercentUp = _val / 100.0f;
     // OnRep isn't call on server, but we need this call
     shipPawn->OnRep_PercentUp();
 }
 
 void APlayerShipController::fireOn()
 {
-    this->RPCServerFire(true);
+    if (this->m_enableFlyingInput)
+    {
+        this->RPCServerFire(true);
+    }
 }
 
 void APlayerShipController::fireOff()
 {
-    this->RPCServerFire(false);
+    if (this->m_enableFlyingInput)
+    {
+        this->RPCServerFire(false);
+    }
 }
 
 void APlayerShipController::RPCServerFire_Implementation(bool _on)
@@ -254,4 +289,20 @@ void APlayerShipController::returnToMainMenu()
 {
     FString levelName { "MainMenu" };
     UGameplayStatics::OpenLevel(this->GetWorld(), FName(*levelName), false, "");
+}
+
+void APlayerShipController::Restart()
+{
+    AFlyingGameMode* flyingGameMode = Cast<AFlyingGameMode>(UGameplayStatics::GetGameMode(this->GetWorld()));
+    if (flyingGameMode == nullptr)
+    {
+        return;
+    }
+
+    ASpacelPlayerState* spacelPlayerState = this->GetPlayerState<ASpacelPlayerState>();
+    if (spacelPlayerState)
+    {
+        flyingGameMode->Restart(this, spacelPlayerState->PlayerStartTransform);
+    }
+
 }

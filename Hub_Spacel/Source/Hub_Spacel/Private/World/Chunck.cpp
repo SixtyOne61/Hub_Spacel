@@ -4,17 +4,34 @@
 #include "Chunck.h"
 #include "Noise/SpacelNoise.h"
 #include "Components/InstancedStaticMeshComponent.h"
+#include "World/FogActor.h"
 
 // Sets default values
 AChunck::AChunck()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 
 	Voxels = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Voxels"));
 	Voxels->SetCollisionProfileName("BlockAll");
-	Voxels->OnComponentHit.AddDynamic(this, &AChunck::OnComponentHit);
 	RootComponent = Voxels;
+
+	Tags.Add("BlockingActor");
+}
+
+void AChunck::dmg(FHitResult const& _info)
+{
+	Super::dmg(_info);
+
+	if (_info.Item >= 0)
+	{
+		if (!m_dmg.Contains(_info.Item))
+		{
+			m_dmg.Add(_info.Item);
+		}
+
+		m_dmg[_info.Item]++;
+	}
 }
 
 bool AChunck::init(FVector2D const& _bornX, FVector2D const& _bornY, FVector2D const& _bornZ, int32 _cubeSize)
@@ -42,6 +59,31 @@ void AChunck::BeginPlay()
 		this->Voxels->SetStaticMesh(this->VoxelStaticMesh);
 		this->Voxels->SetEnableGravity(false);
 	}
+	
+	if (!this->IsPendingKill())
+	{
+		this->Voxels->OnComponentHit.AddDynamic(this, &AChunck::OnComponentHit);
+	}
+}
+
+void AChunck::Tick(float _deltaTime)
+{
+	Super::Tick(_deltaTime);
+
+	if (m_dmg.Num() != 0)
+	{
+		m_dmg.KeySort([](int32 const& _k1, int32 const& _k2)
+			{
+				return _k1 < _k2;
+			});
+
+		for (auto const& pair : m_dmg)
+		{
+			this->Voxels->RemoveInstance(pair.Key);
+		}
+		m_dmg.Empty();
+
+	}
 }
 
 float AChunck::getNoise(FVector const& _location) const
@@ -59,6 +101,9 @@ bool AChunck::generateChunck()
 
 	bool ret = false;
 
+	UWorld* const world{ this->GetWorld() };
+	if (!ensure(world != nullptr)) return false;
+
 	for (int x = 0; x < maxX; ++x)
 	{
 		for (int y = 0; y < maxY; ++y)
@@ -75,6 +120,12 @@ bool AChunck::generateChunck()
 					this->Voxels->AddInstance(voxelTransform);
 					ret = true;
 				}
+				else if (noise > 0.60 && noise < 0.600001)
+				{
+					FTransform fogTransform{};
+					fogTransform.SetLocation(this->GetActorLocation() + location);
+					world->SpawnActor<AFogActor>(this->FogClass, fogTransform);
+				}
 			}
 		}
 	}
@@ -83,10 +134,5 @@ bool AChunck::generateChunck()
 
 void AChunck::OnComponentHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit)
 {
-	if (!ensure(this->Voxels != nullptr)) return;
-	this->Voxels->RemoveInstance(_hit.Item);
-	if (this->Voxels->GetInstanceCount() == 0)
-	{
-		this->Destroy();
-	}
+	dmg(_hit);
 }

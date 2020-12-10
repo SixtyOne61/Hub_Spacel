@@ -7,18 +7,18 @@
 #include "Components/StaticMeshComponent.h"
 #include "Materials/MaterialInstance.h"
 #include "Materials/MaterialInstanceDynamic.h"
+#include "DataAsset/LaserDataAsset.h"
 
 // Sets default values
 ALaserBullet::ALaserBullet()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
     ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovement"));
 
     ProjectileCollisionComponent = CreateDefaultSubobject<USphereComponent>(TEXT("ProjectileCollision"));
     if (!ensure(ProjectileCollisionComponent != nullptr)) return;
-    ProjectileCollisionComponent->SetCollisionProfileName(CollisionProfileName);
     ProjectileCollisionComponent->OnComponentHit.AddDynamic(this, &ALaserBullet::OnComponentHit);
     RootComponent = ProjectileCollisionComponent;
 
@@ -32,6 +32,10 @@ void ALaserBullet::BeginPlay()
 {
 	Super::BeginPlay();
 	
+    if (!ensure(this->ProjectileCollisionComponent != nullptr)) return;
+    if (!ensure(this->LaserDataAsset != nullptr)) return;
+    ProjectileCollisionComponent->SetCollisionProfileName(this->LaserDataAsset->CollisionProfileName);
+
     setupMaterial();
 
     if (this->HasAuthority())
@@ -41,11 +45,13 @@ void ALaserBullet::BeginPlay()
     }
 }
 
-// Called every frame
-void ALaserBullet::Tick(float DeltaTime)
+void ALaserBullet::dmg(FHitResult const& _info)
 {
-	Super::Tick(DeltaTime);
-
+    Super::dmg(_info);
+    if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
+    {
+        this->Destroy();
+    }
 }
 
 void ALaserBullet::setupMaterial()

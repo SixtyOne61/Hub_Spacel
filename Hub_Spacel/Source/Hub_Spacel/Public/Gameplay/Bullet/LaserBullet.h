@@ -3,11 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
+#include "Gameplay/DestroyActor.h"
 #include "LaserBullet.generated.h"
 
 UCLASS()
-class HUB_SPACEL_API ALaserBullet : public AActor
+class HUB_SPACEL_API ALaserBullet : public ADestroyActor
 {
 	GENERATED_BODY()
 	
@@ -18,10 +18,7 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+    virtual void dmg(FHitResult const& _info) override;
 
 private:
     /* setup material of bullet */
@@ -32,17 +29,17 @@ private:
 
 public:
     UPROPERTY(EditAnywhere, Category = "Default")
-    class UProjectileMovementComponent* ProjectileMovementComponent = nullptr;
+    class UProjectileMovementComponent* ProjectileMovementComponent { nullptr };
 
     UPROPERTY(EditAnywhere, Category = "Collision")
-    class USphereComponent* ProjectileCollisionComponent = nullptr;
-
-    UPROPERTY(EditAnywhere, Category = "Collision")
-    FName CollisionProfileName = "PlayerProjectile";
+    class USphereComponent* ProjectileCollisionComponent { nullptr };
 
     UPROPERTY(EditAnywhere, Category = "Default")
-    class UStaticMeshComponent* LaserMeshComponent = nullptr;
+    class ULaserDataAsset* LaserDataAsset { nullptr };
+
+    UPROPERTY(EditAnywhere, Category = "Default")
+    class UStaticMeshComponent* LaserMeshComponent { nullptr };
 
     UPROPERTY(Category = "Material", EditAnywhere, BlueprintReadWrite)
-    class UMaterialInstance* MatBullet = nullptr;
+    class UMaterialInstance* MatBullet { nullptr };
 };

@@ -85,6 +85,11 @@ public:
 	virtual void PreLogin(FString const& _options, FString const& _address, FUniqueNetIdRepl const& _uniqueId, FString & _errorMessage) override;
 	virtual void Logout(class AController* _exiting) override;
 
+	void Restart(AController* _controller, FTransform const& _transform);
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "Flow")
+	void OnRestartPlayer(AController* _controller, FTransform const& _transform);
+
 protected:
 	virtual void BeginPlay() override;
 	virtual FString InitNewPlayer(class APlayerController* _newPlayerController, FUniqueNetIdRepl const& _uniqueId, FString const& _options, FString const& _portal) override;
@@ -92,6 +97,9 @@ protected:
 private:
 	UFUNCTION()
 	void CountDownUntilGameOver();
+
+	UFUNCTION()
+	void PreparePhaseUntilOver();
 
 	UFUNCTION()
 	void EndGame();
@@ -122,9 +130,6 @@ public:
 	FTimerHandle EndGameHandle {};
 
 	UPROPERTY()
-	FTimerHandle PickAWinningTeamHandle {};
-
-	UPROPERTY()
 	FTimerHandle HandleProcessTerminationHandle {};
 
 	UPROPERTY()
@@ -134,7 +139,13 @@ public:
 	FTimerHandle SuspendBackfillHandle {};
 
 	UPROPERTY()
-	int RemainingGameTime { 750 }; // 11'30 + 60 prepa
+	FTimerHandle PreparePhaseUntilOverHandle {};
+
+	UPROPERTY()
+	int RemainingGameTime { 690 }; // 11'30
+
+	UPROPERTY()
+	int RemainingPrepareTime { 10 }; // 60
 
 	UPROPERTY()
 	int SuspendBackfillTime { 45 };

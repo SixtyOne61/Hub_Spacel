@@ -3,8 +3,6 @@
 
 #include "ShipPawn.h"
 #include "Net/UnrealNetwork.h"
-#include "XmlFile.h"
-#include "XmlNode.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
@@ -13,13 +11,13 @@
 #include "Components/StaticMeshComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/GameplayStatics.h"
-#include "DataAsset/ShipModuleDataAsset.h"
-#include "DataAsset/ProceduralModuleDataAsset.h"
+#include "DataAsset/StaticMeshDataAsset.h"
+#include "DataAsset/SetupAttributeDataAsset.h"
 #include "DataAsset/PlayerDataAsset.h"
-#include "Mesh/SpacelProceduralMeshComponent.h"
 #include "Player/SpacelPlayerState.h"
-#include "Enum/SpacelEnum.h"
-#include "Mesh/LocationInformation.h"
+#include "GameState/SpacelGameState.h"
+#include "Components/InstancedStaticMeshComponent.h"
+#include "Util/SimplyXml.h"
 
 // Sets default values
 AShipPawn::AShipPawn()
@@ -30,25 +28,27 @@ AShipPawn::AShipPawn()
 
     DriverMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Driver_00"));
     if (!ensure(DriverMeshComponent != nullptr)) return;
+    DriverMeshComponent->SetCollisionProfileName("Player");
     RootComponent = DriverMeshComponent;
 
     BaseShipMeshComponent = CreateDefaultSubobject<UPoseableMeshComponent>(TEXT("ShipBase_00"));
     if (!ensure(BaseShipMeshComponent != nullptr)) return;
     BaseShipMeshComponent->SetupAttachment(RootComponent);
 
-    ShipEngineComponent = CreateDefaultSubobject<USpacelProceduralMeshComponent>(TEXT("ShipEngine_00"));
-    if (!ensure(ShipEngineComponent != nullptr)) return;
-    ShipEngineComponent->bUseAsyncCooking = true;
-    ShipEngineComponent->SetupAttachment(BaseShipMeshComponent);
+    ProtectionMeshComponent = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Protection_00"));
+    if (!ensure(ProtectionMeshComponent != nullptr)) return;
+    ProtectionMeshComponent->SetCollisionProfileName("Player");
+    ProtectionMeshComponent->SetupAttachment(BaseShipMeshComponent);
 
-    ShipShellComponent = CreateDefaultSubobject<USpacelProceduralMeshComponent>(TEXT("ShipShell_00"));
-    if (!ensure(ShipShellComponent != nullptr)) return;
-    ShipShellComponent->bUseAsyncCooking = true;
-    ShipShellComponent->SetupAttachment(BaseShipMeshComponent);
+    WeaponMeshComponent = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Weapon_00"));
+    if (!ensure(WeaponMeshComponent != nullptr)) return;
+    WeaponMeshComponent->SetCollisionProfileName("Player");
+    WeaponMeshComponent->SetupAttachment(BaseShipMeshComponent);
 
-    SubMachineComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SubMachine_00"));
-    if (!ensure(SubMachineComponent != nullptr)) return;
-    SubMachineComponent->SetupAttachment(BaseShipMeshComponent);
+    SupportMeshComponent = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Support_00"));
+    if (!ensure(SupportMeshComponent != nullptr)) return;
+    SupportMeshComponent->SetCollisionProfileName("Player");
+    SupportMeshComponent->SetupAttachment(BaseShipMeshComponent);
 
     // Create a spring arm component
     SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm_00"));
@@ -65,6 +65,18 @@ AShipPawn::AShipPawn()
 void AShipPawn::BeginPlay()
 {
 	Super::BeginPlay();
+
+    if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
+    {
+        ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld()));
+        if (spacelGameState != nullptr)
+        {
+            spacelGameState->OnStartGameDelegate.AddDynamic(this, &AShipPawn::StartGame);
+        }
+
+        if (!ensure(this->DriverMeshComponent != nullptr)) return;
+        this->DriverMeshComponent->OnComponentHit.AddDynamic(this, &AShipPawn::OnComponentHit);
+    }
 }
 
 // Called every frame
@@ -72,8 +84,12 @@ void AShipPawn::Tick(float _deltaTime)
 {
 	Super::Tick(_deltaTime);
 
-    if (this->HasAuthority())
+    // collision ship
+    handSweep();
+
+    if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
     {
+        // move ship
         RPCServerMove(_deltaTime);
 
         fire(_deltaTime);
@@ -85,7 +101,7 @@ void AShipPawn::OnRep_PercentFlightAttitude()
     if (!ensure(this->DriverMeshComponent != nullptr)) return;
     if (!ensure(this->PlayerDataAsset != nullptr)) return;
 
-    FVector dir = this->DriverMeshComponent->GetForwardVector() * this->PercentFlightAttitude * this->PlayerDataAsset->FlightAttitudeSpeed;
+    FVector dir = this->DriverMeshComponent->GetForwardVector() * this->RU_PercentFlightAttitude * this->PlayerDataAsset->FlightAttitudeSpeed;
     dir = FMath::Lerp(FVector::ZeroVector, dir, 0.1f);
 
     this->DriverMeshComponent->AddTorqueInDegrees(dir, NAME_None, true);
@@ -96,7 +112,7 @@ void AShipPawn::OnRep_PercentTurn()
     if (!ensure(this->DriverMeshComponent != nullptr)) return;
     if (!ensure(this->PlayerDataAsset != nullptr)) return;
 
-    FVector dir = this->DriverMeshComponent->GetUpVector() * this->PercentTurn * this->PlayerDataAsset->TurnSpeed;
+    FVector dir = this->DriverMeshComponent->GetUpVector() * this->RU_PercentTurn * this->PlayerDataAsset->TurnSpeed;
     dir = FMath::Lerp(FVector::ZeroVector, dir, 0.1f);
 
     this->DriverMeshComponent->AddTorqueInDegrees(dir, NAME_None, true);
@@ -107,86 +123,15 @@ void AShipPawn::OnRep_PercentUp()
     if (!ensure(this->DriverMeshComponent != nullptr)) return;
     if (!ensure(this->PlayerDataAsset != nullptr)) return;
 
-    FVector dir = this->DriverMeshComponent->GetRightVector() * this->PercentUp * this->PlayerDataAsset->UpSpeed;
+    FVector dir = this->DriverMeshComponent->GetRightVector() * this->RU_PercentUp * this->PlayerDataAsset->UpSpeed;
     dir = FMath::Lerp(FVector::ZeroVector, dir, 0.1f);
 
     this->DriverMeshComponent->AddTorqueInDegrees(dir, NAME_None, true);
 }
 
-void AShipPawn::BuildShip()
+void AShipPawn::RPCClientAddVoxel_Implementation(TArray<FVector> const& _redZoneLocations, TArray<FVector> const& _attackLocations, TArray<FVector> const& _protectionLocations, TArray<FVector> const& _supportLocations)
 {
-    if (!ensure(this->ModuleDataAsset != nullptr)) return;
-
-    FVector const& location = this->GetActorLocation();
-    ASpacelPlayerState * spacelPlayerState = this->GetPlayerState<ASpacelPlayerState>();
-    if (spacelPlayerState)
-    {
-        buildProceduralModule(this->ShipEngineComponent, this->ModuleDataAsset->GetModule(spacelPlayerState->ShipEngineModuleType), location);
-        buildProceduralModule(this->ShipShellComponent, this->ModuleDataAsset->GetModule(spacelPlayerState->ShipShellModuleType), location);
-    }
-    else
-    {
-#ifdef  WITH_EDITOR
-        // only for editor mode
-        buildProceduralModule(this->ShipEngineComponent, this->ModuleDataAsset->GetModule((uint8)EShipModuleType::EngineDefault), location);
-        buildProceduralModule(this->ShipShellComponent, this->ModuleDataAsset->GetModule((uint8)EShipModuleType::ShellDefault), location);
-#endif //  WITH_EDITOR
-    }
-}
-
-void AShipPawn::buildProceduralModule(USpacelProceduralMeshComponent * _component, class UProceduralModuleDataAsset const* _module, FVector const& _location)
-{
-    if (!ensure(_component != nullptr)) return;
-    if (!ensure(_module != nullptr)) return;
-
-    FString path = FPaths::ProjectDir() + _module->Path;
-    FXmlFile file;
-    if (!file.LoadFile(path))
-    {
-        return;
-    }
-
-    FXmlNode * rootNode = file.GetRootNode();
-    if (rootNode == nullptr)
-    {
-        return;
-    }
-
-    FXmlNode const* modNode = rootNode->GetFirstChildNode();
-    if (modNode == nullptr)
-    {
-        return;
-    }
-
-    TArray<FXmlNode*> const& childrenNodes = modNode->GetChildrenNodes();
-    if (childrenNodes.Num() && childrenNodes[0] && childrenNodes[0]->GetTag() == "Size")
-    {
-        FVector cubeSize;
-        cubeSize.InitFromString(childrenNodes[0]->GetAttribute("val"));
-
-        _component->SetWorldLocation(_location);
-        _component->CubeSize = cubeSize;
-
-        TArray<FLocationInformation> locations;
-        int size = childrenNodes.Num();
-        locations.Reserve(size);
-        locations.SetNum(size);
-
-        FVector loc;
-        unsigned int nbNode = (unsigned int)childrenNodes.Num();
-        for (unsigned int i = 1; i < nbNode; ++i)
-        {
-            if (FXmlNode const* node = childrenNodes[i])
-            {
-                loc.InitFromString(node->GetAttribute("val"));
-                locations[i].Location = loc;
-                locations[i].Used = true;
-            }
-        }
-
-        _component->generateMesh("NoCollision", locations.Num(), locations);
-        _component->SetMaterial(0, _module->Material);
-    }
+    buildShip(_redZoneLocations, _attackLocations, _protectionLocations, _supportLocations);
 }
 
 void AShipPawn::RPCServerMove_Implementation(float const& _deltaTime)
@@ -200,7 +145,7 @@ void AShipPawn::RPCServerMove_Implementation(float const& _deltaTime)
     this->DriverMeshComponent->AddTorqueInDegrees(angularVelocity, NAME_None, true);
 
     FVector const& linearVelocity = this->DriverMeshComponent->GetPhysicsLinearVelocity(NAME_None);
-    FVector newVelocity = this->DriverMeshComponent->GetForwardVector() * this->PlayerDataAsset->MaxForwardSpeed * this->PercentSpeed;
+    FVector newVelocity = this->DriverMeshComponent->GetForwardVector() * this->PlayerDataAsset->MaxForwardSpeed * this->R_PercentSpeed;
     newVelocity = FMath::Lerp(linearVelocity, newVelocity, 0.9f);
 
     this->DriverMeshComponent->SetPhysicsLinearVelocity(newVelocity);
@@ -219,17 +164,24 @@ void AShipPawn::fire(float const& _deltaTime)
 {
     if (!ensure(this->PlayerDataAsset != nullptr)) return;
     if (!ensure(this->PlayerDataAsset->BulletClass != nullptr)) return;
-    if (!ensure(this->SubMachineComponent != nullptr)) return;
-    UWorld * world = this->GetWorld();
+    if (!ensure(this->WeaponMeshComponent != nullptr)) return;
+
+    UWorld* world{ this->GetWorld() };
     if (!ensure(world != nullptr)) return;
 
     // check if we have boolean for fire (only set on server)
     if (m_isFire.hasValue() && m_isFire.value() && m_fireCountDown <= 0.0f)
     {
-        FVector location = this->SubMachineComponent->GetRelativeLocation() + this->GetActorLocation();
-        FTransform transform {};
-        transform.SetLocation(location);
-        transform.SetRotation(this->GetActorRotation().Quaternion());
+        FTransform transform{};
+        this->WeaponMeshComponent->GetInstanceTransform(m_fireIndex, transform, true);
+        // reset scale
+        transform.SetScale3D({ 1.0f, 1.0f, 1.0f });
+
+        ++m_fireIndex;
+        if (m_fireIndex >= this->WeaponMeshComponent->GetInstanceCount())
+        {
+            m_fireIndex = 0;
+        }
 
         AActor* laser = Cast<AActor>(UGameplayStatics::BeginDeferredActorSpawnFromClass(world, this->PlayerDataAsset->BulletClass, transform));
         if (laser)
@@ -238,7 +190,7 @@ void AShipPawn::fire(float const& _deltaTime)
             laser->SetReplicates(true);
             laser->SetReplicateMovement(true);
             UGameplayStatics::FinishSpawningActor(laser, transform);
-            if (UProjectileMovementComponent * comp = Cast<UProjectileMovementComponent>(laser->GetComponentByClass(UProjectileMovementComponent::StaticClass())))
+            if (UProjectileMovementComponent* comp = Cast<UProjectileMovementComponent>(laser->GetComponentByClass(UProjectileMovementComponent::StaticClass())))
             {
                 comp->SetVelocityInLocalSpace(FVector(1, 0, 0) * comp->InitialSpeed);
             }
@@ -263,7 +215,7 @@ void AShipPawn::OnRep_PlayerState()
     ASpacelPlayerState* spacelPlayerState = Cast<ASpacelPlayerState>(this->GetPlayerState());
     if (spacelPlayerState != nullptr)
     {
-        FString teamName { spacelPlayerState->Team };
+        FString teamName{ spacelPlayerState->Team };
         if (teamName.Len() > 0)
         {
             // TO DO : Change color for teammate and ennemy team and our pawn
@@ -271,12 +223,82 @@ void AShipPawn::OnRep_PlayerState()
     }
 }
 
+void AShipPawn::StartGame()
+{
+    FTempArray tmpArray {};
+    tmpArray.RedZone.Add({ 0, 0, 0 });
+
+    auto lb_readXml = [](uint8 _level, USetupAttributeDataAsset* _dataAsset, TArray<FVector> & _out)
+    {
+        if (!ensure(_dataAsset != nullptr)) return;
+        FString const& path { _level > 0 ? _dataAsset->HeavyPath : _dataAsset->DefaultPath };
+
+        SimplyXml::FContainer<FVector> locationInformation{ "Location" };
+        SimplyXml::FReader reader{ FPaths::ProjectDir() + path };
+        reader.read(locationInformation);
+
+        _out = std::move(locationInformation.Values);
+    };
+
+    ASpacelPlayerState* spacelPlayerState = this->GetPlayerState<ASpacelPlayerState>();
+    if (spacelPlayerState == nullptr)
+    {
+#if WITH_EDITOR
+        lb_readXml(0, this->WeaponDataAsset, tmpArray.Attack);
+        lb_readXml(0, this->ProtectionDataAsset, tmpArray.Protection);
+        lb_readXml(0, this->SupportDataAsset, tmpArray.Support);
+
+        buildShip(tmpArray.RedZone, tmpArray.Attack, tmpArray.Protection, tmpArray.Support);
+#endif // WITH_EDITOR
+    }
+    else
+    {
+        lb_readXml(spacelPlayerState->Attack, this->WeaponDataAsset, tmpArray.Attack);
+        lb_readXml(spacelPlayerState->Protection, this->ProtectionDataAsset, tmpArray.Protection);
+        lb_readXml(spacelPlayerState->Support, this->SupportDataAsset, tmpArray.Support);
+
+        buildShip(tmpArray.RedZone, tmpArray.Attack, tmpArray.Protection, tmpArray.Support);
+        RPCClientAddVoxel(tmpArray.RedZone, tmpArray.Attack, tmpArray.Protection, tmpArray.Support);
+    }
+}
+
+void AShipPawn::buildShip(TArray<FVector> const& _redZoneLocations, TArray<FVector> const& _attackLocations, TArray<FVector> const& _protectionLocations, TArray<FVector> const& _supportLocations)
+{
+    auto lb_call = [&](UInstancedStaticMeshComponent*& _mesh, UStaticMeshDataAsset* _staticMesh, TArray<FVector> const& _locations)
+    {
+        if (_mesh && _staticMesh)
+        {
+            _mesh->ClearInstances();
+            _mesh->SetStaticMesh(_staticMesh->StaticMesh);
+            _mesh->SetEnableGravity(false);
+
+            for (auto const& _location : _locations)
+            {
+                FTransform voxelTransform{};
+                voxelTransform.SetLocation(_location);
+                _mesh->AddInstance(voxelTransform);
+            }
+        }
+    };
+
+    lb_call(this->WeaponMeshComponent, this->WeaponDataAsset, _attackLocations);
+    lb_call(this->ProtectionMeshComponent, this->ProtectionDataAsset, _protectionLocations);
+    lb_call(this->SupportMeshComponent, this->SupportDataAsset, _supportLocations);
+}
+
+void AShipPawn::BuildDefaultShip()
+{
+#if WITH_EDITOR
+    StartGame();
+#endif
+}
+
 void AShipPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetimeProps) const
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-    DOREPLIFETIME(AShipPawn, PercentSpeed);
-    DOREPLIFETIME(AShipPawn, PercentFlightAttitude);
-    DOREPLIFETIME(AShipPawn, PercentTurn);
-    DOREPLIFETIME(AShipPawn, PercentUp);
+    DOREPLIFETIME(AShipPawn, R_PercentSpeed);
+    DOREPLIFETIME(AShipPawn, RU_PercentFlightAttitude);
+    DOREPLIFETIME(AShipPawn, RU_PercentTurn);
+    DOREPLIFETIME(AShipPawn, RU_PercentUp);
 }
 
