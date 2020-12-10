@@ -4,6 +4,7 @@
 #include "Chunck.h"
 #include "Noise/SpacelNoise.h"
 #include "Components/InstancedStaticMeshComponent.h"
+#include "World/FogActor.h"
 
 // Sets default values
 AChunck::AChunck()
@@ -100,6 +101,9 @@ bool AChunck::generateChunck()
 
 	bool ret = false;
 
+	UWorld* const world{ this->GetWorld() };
+	if (!ensure(world != nullptr)) return false;
+
 	for (int x = 0; x < maxX; ++x)
 	{
 		for (int y = 0; y < maxY; ++y)
@@ -115,6 +119,12 @@ bool AChunck::generateChunck()
 					voxelTransform.SetLocation(location);
 					this->Voxels->AddInstance(voxelTransform);
 					ret = true;
+				}
+				else if (noise > 0.60 && noise < 0.600001)
+				{
+					FTransform fogTransform{};
+					fogTransform.SetLocation(this->GetActorLocation() + location);
+					world->SpawnActor<AFogActor>(this->FogClass, fogTransform);
 				}
 			}
 		}

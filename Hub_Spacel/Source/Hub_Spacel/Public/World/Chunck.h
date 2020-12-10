@@ -51,6 +51,9 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Settings")
 	class UStaticMesh* VoxelStaticMesh { nullptr };
 
+	UPROPERTY(EditAnywhere, Category = "Settings")
+	TSubclassOf<class AFogActor> FogClass { nullptr };
+
 	UPROPERTY(VisibleAnywhere, Category = "Component")
 	class UInstancedStaticMeshComponent* Voxels { nullptr };
 
