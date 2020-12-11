@@ -68,7 +68,7 @@ void AShipPawn::BeginPlay()
 
     if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
     {
-        ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld()));
+        ASpacelGameState* spacelGameState { Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld())) };
         if (spacelGameState != nullptr)
         {
             spacelGameState->OnStartGameDelegate.AddDynamic(this, &AShipPawn::StartGame);
@@ -101,7 +101,7 @@ void AShipPawn::OnRep_PercentFlightAttitude()
     if (!ensure(this->DriverMeshComponent != nullptr)) return;
     if (!ensure(this->PlayerDataAsset != nullptr)) return;
 
-    FVector dir = this->DriverMeshComponent->GetForwardVector() * this->RU_PercentFlightAttitude * this->PlayerDataAsset->FlightAttitudeSpeed;
+    FVector dir { this->DriverMeshComponent->GetForwardVector() * this->RU_PercentFlightAttitude * this->PlayerDataAsset->FlightAttitudeSpeed };
     dir = FMath::Lerp(FVector::ZeroVector, dir, 0.1f);
 
     this->DriverMeshComponent->AddTorqueInDegrees(dir, NAME_None, true);
@@ -112,7 +112,7 @@ void AShipPawn::OnRep_PercentTurn()
     if (!ensure(this->DriverMeshComponent != nullptr)) return;
     if (!ensure(this->PlayerDataAsset != nullptr)) return;
 
-    FVector dir = this->DriverMeshComponent->GetUpVector() * this->RU_PercentTurn * this->PlayerDataAsset->TurnSpeed;
+    FVector dir { this->DriverMeshComponent->GetUpVector() * this->RU_PercentTurn * this->PlayerDataAsset->TurnSpeed };
     dir = FMath::Lerp(FVector::ZeroVector, dir, 0.1f);
 
     this->DriverMeshComponent->AddTorqueInDegrees(dir, NAME_None, true);
@@ -123,7 +123,7 @@ void AShipPawn::OnRep_PercentUp()
     if (!ensure(this->DriverMeshComponent != nullptr)) return;
     if (!ensure(this->PlayerDataAsset != nullptr)) return;
 
-    FVector dir = this->DriverMeshComponent->GetRightVector() * this->RU_PercentUp * this->PlayerDataAsset->UpSpeed;
+    FVector dir { this->DriverMeshComponent->GetRightVector() * this->RU_PercentUp * this->PlayerDataAsset->UpSpeed };
     dir = FMath::Lerp(FVector::ZeroVector, dir, 0.1f);
 
     this->DriverMeshComponent->AddTorqueInDegrees(dir, NAME_None, true);
@@ -139,7 +139,7 @@ void AShipPawn::RPCServerMove_Implementation(float const& _deltaTime)
     if (!ensure(this->DriverMeshComponent != nullptr)) return;
     if (!ensure(this->PlayerDataAsset != nullptr)) return;
 
-    FVector angularVelocity = UKismetMathLibrary::NegateVector(this->DriverMeshComponent->GetPhysicsAngularVelocityInDegrees());
+    FVector angularVelocity { UKismetMathLibrary::NegateVector(this->DriverMeshComponent->GetPhysicsAngularVelocityInDegrees()) };
     angularVelocity *= 2.0f;
 
     this->DriverMeshComponent->AddTorqueInDegrees(angularVelocity, NAME_None, true);

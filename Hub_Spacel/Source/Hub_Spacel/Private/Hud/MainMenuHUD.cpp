@@ -12,10 +12,10 @@ void AMainMenuHUD::BeginPlay()
 {
     Super::BeginPlay();
 
-    UWorld* world = this->GetWorld();
+    UWorld* world { this->GetWorld() };
     if (!ensure(world != nullptr)) return;
 
-    APlayerController* playerController = world->GetFirstPlayerController();
+    APlayerController* playerController { world->GetFirstPlayerController() };
     if (!ensure(playerController != nullptr)) return;
 
     // player need to see cursor on main menu for navigation
