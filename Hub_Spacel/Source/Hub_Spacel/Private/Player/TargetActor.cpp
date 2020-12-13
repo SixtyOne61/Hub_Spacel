@@ -33,11 +33,12 @@ void ATargetActor::Tick(float DeltaTime)
 	if(pawn == nullptr) return;
 
 	FVector const& pawnLocation { pawn->GetActorLocation() };
+
+	if (!ensure(this->TargetWidget != nullptr)) return;
 	FVector const& widgetLocation { this->TargetWidget->GetComponentLocation() };
 
 	FRotator rot { UKismetMathLibrary::FindLookAtRotation(widgetLocation, pawnLocation) };
 	rot.Roll = 90.0f;
-	rot.Pitch = 0.0f;
 
 	if (!ensure(this->TargetWidget != nullptr)) return;
 	this->TargetWidget->SetWorldRotation(rot);

@@ -15,6 +15,7 @@
 #include "DataAsset/SetupAttributeDataAsset.h"
 #include "DataAsset/PlayerDataAsset.h"
 #include "Player/SpacelPlayerState.h"
+#include "Player/TargetActor.h"
 #include "GameState/SpacelGameState.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Util/SimplyXml.h"
@@ -59,6 +60,10 @@ AShipPawn::AShipPawn()
     CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera_00"));
     if (!ensure(CameraComponent != nullptr)) return;
     CameraComponent->SetupAttachment(SpringArmComponent, USpringArmComponent::SocketName); // Attach the camera
+
+    TargetComponent = CreateDefaultSubobject<UChildActorComponent>(TEXT("Target_00"));
+    if (!ensure(TargetComponent != nullptr)) return;
+    TargetComponent->SetupAttachment(RootComponent);
 }
 
 // Called when the game starts or when spawned
@@ -76,6 +81,12 @@ void AShipPawn::BeginPlay()
 
         if (!ensure(this->DriverMeshComponent != nullptr)) return;
         this->DriverMeshComponent->OnComponentHit.AddDynamic(this, &AShipPawn::OnComponentHit);
+    }
+    else if (!this->IsLocallyControlled())
+    {
+        if (!ensure(this->TargetComponent != nullptr)) return;
+        TargetComponent->SetChildActorClass(this->TargetClass);
+        TargetComponent->CreateChildActor();
     }
 }
 

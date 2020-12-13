@@ -111,6 +111,13 @@ public:
     UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)
     class UInstancedStaticMeshComponent* SupportMeshComponent { nullptr };
 
+    UPROPERTY(Category = "ChildActor", EditAnywhere, BlueprintReadWrite)
+    class UChildActorComponent* TargetComponent { nullptr };
+
+    UPROPERTY(Category = "ChildActor", EditAnywhere, BlueprintReadWrite)
+    TSubclassOf<class ATargetActor> TargetClass { nullptr };
+
+
 protected:
     /* current percent speed value 0.0f - 1.0f */
     UPROPERTY(Replicated)
