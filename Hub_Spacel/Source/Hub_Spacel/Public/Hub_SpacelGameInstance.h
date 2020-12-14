@@ -7,10 +7,13 @@
 #include "Runtime/Online/HTTP/Public/Http.h"
 #include "Hub_SpacelGameInstance.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTargetPlayer, AActor*, _target);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnUnTarget);
+
 /**
  * 
  */
-UCLASS()
+UCLASS(BlueprintType, Blueprintable)
 class HUB_SPACEL_API UHub_SpacelGameInstance : public UGameInstance
 {
 	GENERATED_BODY()
@@ -23,6 +26,12 @@ public:
 
     UFUNCTION()
     void SetCognitoTokens(FString _accessToken, FString _idToken, FString _refreshToken);
+
+    UFUNCTION(BlueprintCallable)
+    void OnTargetPlayer(class AActor* _target);
+
+    UFUNCTION(BlueprintCallable)
+    void OnUnTargetPlayer();
 
 private:
     UFUNCTION()
@@ -54,6 +63,12 @@ public:
     FTimerHandle GetResponseTimeHandle {};
 
     TDoubleLinkedList<float> PlayerLatencies {};
+
+    UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
+    FOnTargetPlayer OnTargetPlayerDelegate {};
+
+    UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
+    FOnUnTarget OnUnTargetDelegate {};
 
 private:
     class FHttpModule* HttpModule { nullptr };

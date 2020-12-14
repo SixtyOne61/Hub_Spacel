@@ -77,6 +77,13 @@ private:
     UFUNCTION(BlueprintCallable)
     void BuildDefaultShip();
 
+    /* target system */
+    UFUNCTION()
+    void OnTargetPlayer(class AActor* _target);
+
+    UFUNCTION()
+    void OnUnTargetPlayer();
+
 public:
     UPROPERTY(Category = "Ship", VisibleAnywhere, BlueprintReadOnly)
     class UStaticMeshComponent* DriverMeshComponent { nullptr };
@@ -117,7 +124,6 @@ public:
     UPROPERTY(Category = "ChildActor", EditAnywhere, BlueprintReadWrite)
     TSubclassOf<class ATargetActor> TargetClass { nullptr };
 
-
 protected:
     /* current percent speed value 0.0f - 1.0f */
     UPROPERTY(Replicated)
@@ -143,4 +149,7 @@ protected:
 
     /* fire point location */
     int32 m_fireIndex { };
+
+    /* current targeted actor */
+    class AActor* m_target { nullptr };
 };

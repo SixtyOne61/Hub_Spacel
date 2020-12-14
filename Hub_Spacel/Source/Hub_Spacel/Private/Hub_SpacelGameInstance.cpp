@@ -145,3 +145,13 @@ void UHub_SpacelGameInstance::onGetResponseTimeResponseReceived(FHttpRequestPtr 
 
     this->PlayerLatencies.AddTail(responseTime);
 }
+
+void UHub_SpacelGameInstance::OnTargetPlayer(AActor* _target)
+{
+    OnTargetPlayerDelegate.Broadcast(_target);
+}
+
+void UHub_SpacelGameInstance::OnUnTargetPlayer()
+{
+    OnUnTargetDelegate.Broadcast();
+}

@@ -18,6 +18,7 @@
 #include "Player/TargetActor.h"
 #include "GameState/SpacelGameState.h"
 #include "Components/InstancedStaticMeshComponent.h"
+#include "Hub_SpacelGameInstance.h"
 #include "Util/SimplyXml.h"
 
 // Sets default values
@@ -88,6 +89,27 @@ void AShipPawn::BeginPlay()
         TargetComponent->SetChildActorClass(this->TargetClass);
         TargetComponent->CreateChildActor();
     }
+    else
+    {
+        UHub_SpacelGameInstance* spacelGameInstance{ Cast<UHub_SpacelGameInstance>(this->GetGameInstance()) };
+        spacelGameInstance->OnTargetPlayerDelegate.AddDynamic(this, &AShipPawn::OnTargetPlayer);
+        spacelGameInstance->OnUnTargetDelegate.AddDynamic(this, &AShipPawn::OnUnTargetPlayer);
+    }
+}
+
+void AShipPawn::OnTargetPlayer(AActor* _target)
+{
+    if (_target)
+    {
+        m_target = _target;
+        //UE_LOG(LogTemp, Warning, TEXT("Target actor"));
+    }
+}
+
+void AShipPawn::OnUnTargetPlayer()
+{
+    m_target = nullptr;
+    //UE_LOG(LogTemp, Warning, TEXT("UnTarget actor"));
 }
 
 // Called every frame
