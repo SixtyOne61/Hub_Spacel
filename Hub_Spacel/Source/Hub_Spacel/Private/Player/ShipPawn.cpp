@@ -16,6 +16,7 @@
 #include "DataAsset/PlayerDataAsset.h"
 #include "Player/SpacelPlayerState.h"
 #include "Player/TargetActor.h"
+#include "Player/FireComponent.h"
 #include "GameState/SpacelGameState.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Hub_SpacelGameInstance.h"
@@ -62,6 +63,9 @@ AShipPawn::AShipPawn()
     if (!ensure(CameraComponent != nullptr)) return;
     CameraComponent->SetupAttachment(SpringArmComponent, USpringArmComponent::SocketName); // Attach the camera
 
+    FireComponent = CreateDefaultSubobject<UFireComponent>(TEXT("Fire_00"));
+    FireComponent->Deactivate();
+
     TargetComponent = CreateDefaultSubobject<UChildActorComponent>(TEXT("Target_00"));
     if (!ensure(TargetComponent != nullptr)) return;
     TargetComponent->SetupAttachment(RootComponent);
@@ -82,6 +86,9 @@ void AShipPawn::BeginPlay()
 
         if (!ensure(this->DriverMeshComponent != nullptr)) return;
         this->DriverMeshComponent->OnComponentHit.AddDynamic(this, &AShipPawn::OnComponentHit);
+
+        if (!ensure(this->FireComponent != nullptr)) return;
+        this->FireComponent->Activate();
     }
     else if (!this->IsLocallyControlled())
     {
@@ -101,14 +108,48 @@ void AShipPawn::OnTargetPlayer(AActor* _target)
 {
     if (_target)
     {
-        m_target = _target;
-        //UE_LOG(LogTemp, Warning, TEXT("Target actor"));
+        if (AShipPawn const* pawnOwner = Cast<AShipPawn>(_target->GetParentActor()))
+        {
+            if (ASpacelPlayerState* playerState = pawnOwner->GetPlayerState<ASpacelPlayerState>())
+            {
+                RPCServerTargetPlayer(playerState->PlayerId);
+            }
+        }
+    }
+}
+
+void AShipPawn::RPCServerTargetPlayer_Implementation(int32 _playerId)
+{
+    if (!ensure(this->FireComponent != nullptr)) return;
+
+    if (AGameStateBase* gameState = UGameplayStatics::GetGameState(this->GetWorld()))
+    {
+        for (APlayerState const* playerState : gameState->PlayerArray)
+        {
+            if (playerState)
+            {
+                if (playerState->PlayerId == _playerId)
+                {
+                    AActor* act = playerState->GetPawn();
+                    this->FireComponent->m_target = act;
+                    UE_LOG(LogTemp, Warning, TEXT("Target actor"));
+                    break;
+                }
+            }
+        }
     }
 }
 
 void AShipPawn::OnUnTargetPlayer()
 {
-    m_target = nullptr;
+    RPCServerUnTargetPlayer();
+}
+
+void AShipPawn::RPCServerUnTargetPlayer_Implementation()
+{
+    if (!ensure(this->FireComponent != nullptr)) return;
+    this->FireComponent->m_target = nullptr;
+
     //UE_LOG(LogTemp, Warning, TEXT("UnTarget actor"));
 }
 
@@ -124,8 +165,6 @@ void AShipPawn::Tick(float _deltaTime)
     {
         // move ship
         RPCServerMove(_deltaTime);
-
-        fire(_deltaTime);
     }
 }
 
@@ -191,54 +230,6 @@ void AShipPawn::RPCClientMove_Implementation(FVector const& _angularVelocity, FV
     if (!ensure(this->DriverMeshComponent != nullptr)) return;
     this->DriverMeshComponent->AddTorqueInDegrees(_angularVelocity, NAME_None, true);
     this->DriverMeshComponent->SetPhysicsLinearVelocity(_linearVelocity);
-}
-
-void AShipPawn::fire(float const& _deltaTime)
-{
-    if (!ensure(this->PlayerDataAsset != nullptr)) return;
-    if (!ensure(this->PlayerDataAsset->BulletClass != nullptr)) return;
-    if (!ensure(this->WeaponMeshComponent != nullptr)) return;
-
-    UWorld* world{ this->GetWorld() };
-    if (!ensure(world != nullptr)) return;
-
-    // check if we have boolean for fire (only set on server)
-    if (m_isFire.hasValue() && m_isFire.value() && m_fireCountDown <= 0.0f)
-    {
-        FTransform transform{};
-        this->WeaponMeshComponent->GetInstanceTransform(m_fireIndex, transform, true);
-        // reset scale
-        transform.SetScale3D({ 1.0f, 1.0f, 1.0f });
-
-        ++m_fireIndex;
-        if (m_fireIndex >= this->WeaponMeshComponent->GetInstanceCount())
-        {
-            m_fireIndex = 0;
-        }
-
-        AActor* laser = Cast<AActor>(UGameplayStatics::BeginDeferredActorSpawnFromClass(world, this->PlayerDataAsset->BulletClass, transform));
-        if (laser)
-        {
-            // init bullet
-            laser->SetReplicates(true);
-            laser->SetReplicateMovement(true);
-            UGameplayStatics::FinishSpawningActor(laser, transform);
-            if (UProjectileMovementComponent* comp = Cast<UProjectileMovementComponent>(laser->GetComponentByClass(UProjectileMovementComponent::StaticClass())))
-            {
-                comp->SetVelocityInLocalSpace(FVector(1, 0, 0) * comp->InitialSpeed);
-            }
-        }
-
-        // reset count down
-        m_fireCountDown = this->PlayerDataAsset->TimeBetweenFire;
-    }
-    else if (m_fireCountDown != 0.0f)
-    {
-        // we can't use timer manager here, because we want to keep timer when we release trigger
-        // if player spam trigger and use timer manager, we will just spam the first tick of the handle timer
-        // and throw many bullet
-        m_fireCountDown -= _deltaTime;
-    }
 }
 
 void AShipPawn::OnRep_PlayerState()
@@ -324,6 +315,12 @@ void AShipPawn::BuildDefaultShip()
 #if WITH_EDITOR
     StartGame();
 #endif
+}
+
+void AShipPawn::setFire(bool _on)
+{
+    if (!ensure(this->FireComponent != nullptr)) return;
+    this->FireComponent->m_isFire = _on;
 }
 
 void AShipPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetimeProps) const

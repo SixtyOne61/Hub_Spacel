@@ -7,6 +7,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Engine/World.h"
 #include "Util/SimplyMath.h"
+#include "Util/Optional.h"
 #include "DataAsset/PlayerDataAsset.h"
 #include "GameMode/FlyingGameMode.h"
 #include "GameState/SpacelGameState.h"
@@ -248,7 +249,7 @@ void APlayerShipController::RPCServerFire_Implementation(bool _on)
         return;
     }
 
-    shipPawn->m_isFire = _on;
+    shipPawn->setFire(_on);
 }
 
 void APlayerShipController::readInput(int const& _val, float& _in, std::function<void(float)> _fnc)

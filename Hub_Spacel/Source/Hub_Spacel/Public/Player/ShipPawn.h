@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
-#include "Util/Optional.h"
 #include "ShipPawn.generated.h"
 
 UCLASS()
@@ -22,6 +21,7 @@ class HUB_SPACEL_API AShipPawn : public APawn
 
     friend class APlayerShipController;
     friend class USpacelWidget;
+    friend class UFireComponent;
 
 public:
 	// Sets default values for this pawn's properties
@@ -56,9 +56,6 @@ private:
 
     bool itemHits(TArray<FHitResult> const& _hits);
 
-    /* only efficient on server */
-    void fire(float const& _deltaTime);
-
     virtual void OnRep_PlayerState() override;
 
     UFUNCTION()
@@ -81,8 +78,17 @@ private:
     UFUNCTION()
     void OnTargetPlayer(class AActor* _target);
 
+    UFUNCTION(Reliable, Server)
+    void RPCServerTargetPlayer(int32 _playerId);
+
     UFUNCTION()
     void OnUnTargetPlayer();
+
+    UFUNCTION(Reliable, Server)
+    void RPCServerUnTargetPlayer();
+
+    /* set fire boolean on component fire */
+    void setFire(bool _on);
 
 public:
     UPROPERTY(Category = "Ship", VisibleAnywhere, BlueprintReadOnly)
@@ -117,6 +123,10 @@ public:
 
     UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)
     class UInstancedStaticMeshComponent* SupportMeshComponent { nullptr };
+    
+    /* only on server side */
+    UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)
+    class UFireComponent* FireComponent { nullptr };
 
     UPROPERTY(Category = "ChildActor", EditAnywhere, BlueprintReadWrite)
     class UChildActorComponent* TargetComponent { nullptr };
@@ -140,16 +150,4 @@ protected:
     /* when up change -1.0f or 0.0f or 1.0f */
     UPROPERTY(ReplicatedUsing = "OnRep_PercentUp")
     float RU_PercentUp = 0.0f;
-
-    /* use only on server, say if we are in fire */
-    Util::Optional<bool> m_isFire { };
-
-    /* current time between next bullet */
-    float m_fireCountDown { };
-
-    /* fire point location */
-    int32 m_fireIndex { };
-
-    /* current targeted actor */
-    class AActor* m_target { nullptr };
 };
