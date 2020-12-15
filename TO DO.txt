@@ -1,5 +1,13 @@
 TO DO
 
+Stabilization :
+-Respawn du vaisseau
+-Destruction du vaisseau
+-Scale de la target
+
+
+
+
 BUG : tous les hits des bullets ne sont pas détecté
 REFAIRE XML des location informations pour les parties des vaisseaux !
 Refaire systeme de destruction, sauvegarder les edges en uproperty ne fonctionne pas (trop lourd en mémoire)
