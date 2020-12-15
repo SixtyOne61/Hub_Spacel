@@ -6,13 +6,15 @@ Stabilization :
 -Scale de la target
 -pawn location
 
+Gameplay :
+Faire le full gameplay de chaque level 1
+Attack augmentation du fire rate 33%
+Support augmentation de la vitesse 33%, impacter la destruction des moteurs sur la vitesse du vaisseau
+Protection juste faire la couche en plus 33%
+Systeme de réparation 
 
 
-BUG : tous les hits des bullets ne sont pas détecté
 REFAIRE XML des location informations pour les parties des vaisseaux !
-Refaire systeme de destruction, sauvegarder les edges en uproperty ne fonctionne pas (trop lourd en mémoire)
-
-Changer la size des cubes des mobules à 100 cm,
 
 Make tuto for use aws for dedicated server : https://www.youtube.com/watch?v=QHB1H6eM-vc
 Make tuto for create a server queue system : https://www.youtube.com/watch?v=u2Si2y2hviA
@@ -24,7 +26,7 @@ création du vaisseau par défaut.
 Remplissage des équipes automatique
 Arriver sur un server, interface avec visionnage de son équipe, changement de son vaisseau
 Après 30s, démarrage d'une partie
-Durée d'une partie de 10 min
+Durée d'une partie de 11 min 30
 Ecran de fin
 Retour au main menu
 
