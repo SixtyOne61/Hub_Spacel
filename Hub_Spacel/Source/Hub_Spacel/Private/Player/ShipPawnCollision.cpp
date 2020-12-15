@@ -101,6 +101,7 @@ void AShipPawn::OnComponentHit(UPrimitiveComponent* _hitComp, AActor* _otherActo
 {
     if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
     {
+        // if we hit something, it's red zone so we are dead
         //UE_LOG(LogTemp, Warning, TEXT("Hit"));
 
         if (APlayerShipController* playerController = this->GetController<APlayerShipController>())
