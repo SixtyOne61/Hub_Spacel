@@ -2,6 +2,7 @@ TO DO
 
 Stabilization :
 -Respawn du vaisseau
+-Untarget quand le vaisseau est detruit
 -Hit bullet
 -Destruction du vaisseau
 -Scale de la target

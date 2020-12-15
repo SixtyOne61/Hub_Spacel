@@ -21,7 +21,7 @@ void AShipPawn::handSweep()
     FVector location { this->GetActorLocation() };
 
     FCollisionShape collisionShape { FCollisionShape::MakeBox({350, 300, 150}) };
-    static const FCollisionObjectQueryParams coqp{ ECC_WorldStatic };
+    static const FCollisionObjectQueryParams coqp{ FCollisionObjectQueryParams::AllObjects };
 
     auto lb_checkCollision = [&](FCollisionShape const& _collision) -> bool
     {
