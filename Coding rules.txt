@@ -24,6 +24,8 @@ this devant les methodes public
 BP_ devant les blueprints
 M_ devant les material et M_MatInst pour les instances
 NS_ devant les niagara system
+NE_ devant les niagara emitter
 DTA_ devant les data asset
 WBP_ devant les widget blueprints
 SKEL_ devant les skeletal mesh
+P_ devant les particles system
