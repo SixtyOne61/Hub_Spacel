@@ -65,7 +65,7 @@ void UFireComponent::TickComponent(float _deltaTime, ELevelTick _tickType, FActo
         {
             FVector pawnDir = m_shipPawnOwner.Get()->GetActorForwardVector();
             pawnDir.Normalize();
-            FVector targetDir = UKismetMathLibrary::FindLookAtRotation(m_shipPawnOwner.Get()->GetActorLocation(), m_target->GetActorLocation()).Vector();
+            FVector targetDir = UKismetMathLibrary::FindLookAtRotation(transform.GetLocation(), m_target->GetActorLocation()).Vector();
             targetDir.Normalize();
 
             float angle = FMath::RadiansToDegrees(acosf(FVector::DotProduct(pawnDir, targetDir)));

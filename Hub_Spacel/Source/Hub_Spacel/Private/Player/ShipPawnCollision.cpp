@@ -99,12 +99,15 @@ bool AShipPawn::itemHits(TArray<FHitResult> const& _hits)
 
 void AShipPawn::OnComponentHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit)
 {
-    //UE_LOG(LogTemp, Warning, TEXT("Hit"));
+    if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
+    {
+        //UE_LOG(LogTemp, Warning, TEXT("Hit"));
 
-    APlayerShipController* playerController = this->GetController<APlayerShipController>();
-    if (!ensure(playerController != nullptr)) return;
+        APlayerShipController* playerController = this->GetController<APlayerShipController>();
+        if (!ensure(playerController != nullptr)) return;
 
-    playerController->Restart();
-    this->UnPossessed();
-    this->Destroy();
+        playerController->Restart();
+        this->UnPossessed();
+        this->Destroy();
+    }
 }
