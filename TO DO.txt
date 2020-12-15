@@ -1,10 +1,10 @@
 TO DO
 
 Stabilization :
--Respawn du vaisseau
 -Destruction du vaisseau
+-Respawn du vaisseau
 -Scale de la target
-
+-pawn location
 
 
 
