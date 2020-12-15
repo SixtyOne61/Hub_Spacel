@@ -24,8 +24,7 @@ void UFireComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// ...
-	m_shipPawnOwner = MakeShareable(Cast<AShipPawn>(this->GetOwner()));
+	m_shipPawnOwner = MakeWeakObjectPtr(Cast<AShipPawn>(this->GetOwner()));
 }
 
 
@@ -34,7 +33,6 @@ void UFireComponent::TickComponent(float _deltaTime, ELevelTick _tickType, FActo
 {
 	Super::TickComponent(_deltaTime, _tickType, _thisTickFunction);
 
-	// ...
 	if (!m_shipPawnOwner.IsValid())
 	{
 		return;

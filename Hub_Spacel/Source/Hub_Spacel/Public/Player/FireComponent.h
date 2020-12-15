@@ -28,7 +28,7 @@ public:
 	virtual void TickComponent(float _deltaTime, ELevelTick _tickType, FActorComponentTickFunction* _thisTickFunction) override;
 
 private:
-	TSharedPtr<class AShipPawn> m_shipPawnOwner {};
+	TWeakObjectPtr<class AShipPawn> m_shipPawnOwner {};
 
 	/* use only on server, say if we are in fire */
 	Util::Optional<bool> m_isFire{ };

@@ -64,7 +64,6 @@ AShipPawn::AShipPawn()
     CameraComponent->SetupAttachment(SpringArmComponent, USpringArmComponent::SocketName); // Attach the camera
 
     FireComponent = CreateDefaultSubobject<UFireComponent>(TEXT("Fire_00"));
-    FireComponent->Deactivate();
 
     TargetComponent = CreateDefaultSubobject<UChildActorComponent>(TEXT("Target_00"));
     if (!ensure(TargetComponent != nullptr)) return;
@@ -87,8 +86,8 @@ void AShipPawn::BeginPlay()
         if (!ensure(this->DriverMeshComponent != nullptr)) return;
         this->DriverMeshComponent->OnComponentHit.AddDynamic(this, &AShipPawn::OnComponentHit);
 
-        if (!ensure(this->FireComponent != nullptr)) return;
-        this->FireComponent->Activate();
+        //if (!ensure(this->FireComponent != nullptr)) return;
+        //this->FireComponent->Activate();
     }
     else if (!this->IsLocallyControlled())
     {
