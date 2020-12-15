@@ -57,6 +57,7 @@ void AShipPawn::handSweep()
                     location = worldTransform.GetLocation();
                     if (lb_checkCollision(collisionShape) && itemHits(hits))
                     {
+                        //UE_LOG(LogTemp, Warning, TEXT("Remove item"));
                         // manage item hits
                         _mesh->RemoveInstance(index);
                     }
@@ -70,7 +71,6 @@ void AShipPawn::handSweep()
 
         lb_checkComponent(this->ProtectionMeshComponent);
         lb_checkComponent(this->SupportMeshComponent);
-
     }
 }
 
