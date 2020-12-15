@@ -7,6 +7,7 @@ Stabilization :
 -Destruction du vaisseau
 -Scale de la target
 -pawn location
+-bullet material
 
 Gameplay :
 Faire le full gameplay de chaque level 1
