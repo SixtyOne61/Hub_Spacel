@@ -8,6 +8,7 @@ Stabilization :
 -Scale de la target
 -pawn location
 -bullet material
+-camera
 
 Gameplay :
 Faire le full gameplay de chaque level 1

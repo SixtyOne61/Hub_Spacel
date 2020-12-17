@@ -8,6 +8,7 @@
 #include "Materials/MaterialInstance.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "DataAsset/LaserDataAsset.h"
+#include "NiagaraFunctionLibrary.h"
 
 // Sets default values
 ALaserBullet::ALaserBullet()
@@ -21,10 +22,6 @@ ALaserBullet::ALaserBullet()
     if (!ensure(ProjectileCollisionComponent != nullptr)) return;
     ProjectileCollisionComponent->OnComponentHit.AddDynamic(this, &ALaserBullet::OnComponentHit);
     RootComponent = ProjectileCollisionComponent;
-
-    LaserMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("LaserMesh"));
-    if (!ensure(LaserMeshComponent != nullptr)) return;
-    LaserMeshComponent->SetupAttachment(ProjectileCollisionComponent);
 }
 
 // Called when the game starts or when spawned
@@ -36,13 +33,14 @@ void ALaserBullet::BeginPlay()
     if (!ensure(this->LaserDataAsset != nullptr)) return;
     ProjectileCollisionComponent->SetCollisionProfileName(this->LaserDataAsset->CollisionProfileName);
 
-    setupMaterial();
-
     if (this->HasAuthority())
     {
         this->SetReplicates(true);
         this->SetReplicateMovement(true);
     }
+
+    // spawn fx fire
+    UNiagaraFunctionLibrary::SpawnSystemAtLocation(this->GetWorld(), this->FireFx, this->GetActorLocation(), this->GetActorRotation());
 }
 
 void ALaserBullet::dmg(FHitResult const& _info)
@@ -51,20 +49,6 @@ void ALaserBullet::dmg(FHitResult const& _info)
     if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
     {
         this->Destroy();
-    }
-}
-
-void ALaserBullet::setupMaterial()
-{
-    // setup material
-    if (!ensure(this->MatBullet != nullptr)) return;
-    if (!ensure(this->LaserMeshComponent != nullptr)) return;
-
-    if (UMaterialInstanceDynamic * customMat = UMaterialInstanceDynamic::Create(this->MatBullet, this->LaserMeshComponent))
-    {
-        this->LaserMeshComponent->CustomDepthStencilValue = 3;
-        this->LaserMeshComponent->bRenderCustomDepth = true;
-        this->LaserMeshComponent->SetMaterial(0, customMat);
     }
 }
 

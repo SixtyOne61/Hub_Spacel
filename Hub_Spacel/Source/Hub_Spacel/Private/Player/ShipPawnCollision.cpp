@@ -109,6 +109,7 @@ void AShipPawn::OnComponentHit(UPrimitiveComponent* _hitComp, AActor* _otherActo
             playerController->Restart();
             this->UnPossessed();
             this->Destroy();
+            this->RPCClientDead();
         }
     }
 }

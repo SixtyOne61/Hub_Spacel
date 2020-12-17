@@ -29,3 +29,5 @@ DTA_ devant les data asset
 WBP_ devant les widget blueprints
 SKEL_ devant les skeletal mesh
 P_ devant les particles system
+T_ devant les textures
+

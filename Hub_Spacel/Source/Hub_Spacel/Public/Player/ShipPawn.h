@@ -90,6 +90,10 @@ private:
     /* set fire boolean on component fire */
     void setFire(bool _on);
 
+    /* call when red zone ship is dead */
+    UFUNCTION(Reliable, Client)
+    void RPCClientDead();
+
 public:
     UPROPERTY(Category = "Ship", VisibleAnywhere, BlueprintReadOnly)
     class UStaticMeshComponent* DriverMeshComponent { nullptr };

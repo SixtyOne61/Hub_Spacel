@@ -16,7 +16,6 @@ UFireComponent::UFireComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 }
 
-
 // Called when the game starts
 void UFireComponent::BeginPlay()
 {
@@ -24,7 +23,6 @@ void UFireComponent::BeginPlay()
 
 	m_shipPawnOwner = MakeWeakObjectPtr(Cast<AShipPawn>(this->GetOwner()));
 }
-
 
 // Called every frame
 void UFireComponent::TickComponent(float _deltaTime, ELevelTick _tickType, FActorComponentTickFunction* _thisTickFunction)
@@ -96,4 +94,3 @@ void UFireComponent::TickComponent(float _deltaTime, ELevelTick _tickType, FActo
         m_fireCountDown -= _deltaTime;
     }
 }
-

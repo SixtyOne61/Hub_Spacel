@@ -17,7 +17,4 @@ class HUB_SPACEL_API ULaserDataAsset : public UDataAsset
 public:
 	UPROPERTY(EditAnywhere)
 	FName CollisionProfileName { "PlayerProjectile" };
-
-	UPROPERTY(EditAnywhere)
-	class UStaticMesh* LaserMesh { nullptr };
 };

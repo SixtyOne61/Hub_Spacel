@@ -324,6 +324,11 @@ void AShipPawn::setFire(bool _on)
     this->FireComponent->m_isFire = _on;
 }
 
+void AShipPawn::RPCClientDead_Implementation()
+{
+    this->Destroy();
+}
+
 void AShipPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetimeProps) const
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);

@@ -21,9 +21,6 @@ protected:
     virtual void dmg(FHitResult const& _info) override;
 
 private:
-    /* setup material of bullet */
-    void setupMaterial();
-
     UFUNCTION()
     void OnComponentHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit);
 
@@ -37,9 +34,7 @@ public:
     UPROPERTY(EditAnywhere, Category = "Default")
     class ULaserDataAsset* LaserDataAsset { nullptr };
 
-    UPROPERTY(EditAnywhere, Category = "Default")
-    class UStaticMeshComponent* LaserMeshComponent { nullptr };
-
-    UPROPERTY(Category = "Material", EditAnywhere, BlueprintReadWrite)
-    class UMaterialInstance* MatBullet { nullptr };
+protected:
+    UPROPERTY(EditAnywhere)
+    class UNiagaraSystem* FireFx{ nullptr };
 };
