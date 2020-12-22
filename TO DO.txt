@@ -1,14 +1,14 @@
 TO DO
 
 Stabilization :
--Respawn du vaisseau
 -Untarget quand le vaisseau est detruit
 -Hit bullet
 -Destruction du vaisseau
 -Scale de la target
 -pawn location
--bullet material
+-bullet material ?? remove
 -camera
+-Bullet collision with player, voir pour collisioner direct avec un cube si on en trouve pas. Bref problem
 
 Gameplay :
 Faire le full gameplay de chaque level 1

@@ -107,9 +107,10 @@ void AShipPawn::OnComponentHit(UPrimitiveComponent* _hitComp, AActor* _otherActo
         if (APlayerShipController* playerController = this->GetController<APlayerShipController>())
         {
             playerController->Restart();
-            this->UnPossessed();
-            this->Destroy();
-            this->RPCClientDead();
         }
+
+        this->UnPossessed();
+        this->Destroy();
+        this->RPCClientDead();
     }
 }
