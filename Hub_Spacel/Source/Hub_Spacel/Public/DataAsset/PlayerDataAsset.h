@@ -38,4 +38,7 @@ public:
 
     UPROPERTY(Category = "Fire", EditAnywhere, BlueprintReadWrite)
     float TimeBetweenFire = 0.3f;
+
+    UPROPERTY(Category = "Fire", EditAnywhere, BlueprintReadWrite)
+    float ReduceTimeBetweenFireWithLevel = 0.7f;
 };

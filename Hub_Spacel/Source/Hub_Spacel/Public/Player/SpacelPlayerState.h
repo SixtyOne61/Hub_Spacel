@@ -28,6 +28,8 @@ public:
     UFUNCTION(Reliable, Server)
     void RPCSetSkillPoint(ESkillType const& _type, uint8 _value);
 
+    bool IsIncreaseFireRate() const { return Attack > 0; }
+
 private:
     void setRemainingSkillPoint(uint8 && _val);
 	

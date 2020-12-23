@@ -3,6 +3,7 @@
 
 #include "FireComponent.h"
 #include "Player/ShipPawn.h"
+#include "Player/SpacelPlayerState.h"
 #include "DataAsset/PlayerDataAsset.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -84,7 +85,15 @@ void UFireComponent::TickComponent(float _deltaTime, ELevelTick _tickType, FActo
         }
 
         // reset count down
-        m_fireCountDown = m_shipPawnOwner.Get()->PlayerDataAsset->TimeBetweenFire;
+        if (ASpacelPlayerState* spacelPlayerState = m_shipPawnOwner.Get()->GetPlayerState<ASpacelPlayerState>())
+        {
+            float coef = spacelPlayerState->IsIncreaseFireRate() ? m_shipPawnOwner.Get()->PlayerDataAsset->ReduceTimeBetweenFireWithLevel : 1.0f;
+            m_fireCountDown = m_shipPawnOwner.Get()->PlayerDataAsset->TimeBetweenFire * coef;
+        }
+        else
+        {
+            ensure(true);
+        }
     }
     else if (m_fireCountDown != 0.0f)
     {
