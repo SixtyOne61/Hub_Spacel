@@ -211,6 +211,7 @@ void AShipPawn::RPCServerMove_Implementation(float const& _deltaTime)
 {
     if (!ensure(this->DriverMeshComponent != nullptr)) return;
     if (!ensure(this->PlayerDataAsset != nullptr)) return;
+    if (!ensure(this->SupportMeshComponent != nullptr)) return;
 
     FVector angularVelocity { UKismetMathLibrary::NegateVector(this->DriverMeshComponent->GetPhysicsAngularVelocityInDegrees()) };
     angularVelocity *= 2.0f;
@@ -218,7 +219,9 @@ void AShipPawn::RPCServerMove_Implementation(float const& _deltaTime)
     this->DriverMeshComponent->AddTorqueInDegrees(angularVelocity, NAME_None, true);
 
     FVector const& linearVelocity = this->DriverMeshComponent->GetPhysicsLinearVelocity(NAME_None);
-    FVector newVelocity = this->DriverMeshComponent->GetForwardVector() * this->PlayerDataAsset->MaxForwardSpeed * this->R_PercentSpeed;
+    // 9, default support size
+    float coefSpeed = this->SupportMeshComponent->GetInstanceCount() / 9.0f;
+    FVector newVelocity = this->DriverMeshComponent->GetForwardVector() * this->PlayerDataAsset->MaxForwardSpeed * this->R_PercentSpeed * coefSpeed;
     newVelocity = FMath::Lerp(linearVelocity, newVelocity, 0.9f);
 
     this->DriverMeshComponent->SetPhysicsLinearVelocity(newVelocity);
