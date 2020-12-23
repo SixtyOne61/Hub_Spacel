@@ -55,7 +55,7 @@ void UFireComponent::TickComponent(float _deltaTime, ELevelTick _tickType, FActo
             m_fireIndex = 0;
         }
 
-        if (m_target != nullptr)
+        if (m_target != nullptr || !m_target->IsPendingKill())
         {
             FVector pawnDir = m_shipPawnOwner.Get()->GetActorForwardVector();
             pawnDir.Normalize();

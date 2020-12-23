@@ -1,21 +1,8 @@
 TO DO
 
-Stabilization :
--Untarget quand le vaisseau est detruit
--Hit bullet
--Destruction du vaisseau
--Scale de la target
--pawn location
--bullet material ?? remove
--camera
--Bullet collision with player, voir pour collisioner direct avec un cube si on en trouve pas. Bref problem
 
 Gameplay :
-Faire le full gameplay de chaque level 1
-Attack augmentation du fire rate 33%
-Support augmentation de la vitesse 33%, impacter la destruction des moteurs sur la vitesse du vaisseau
-Protection juste faire la couche en plus 33%
-Systeme de réparation 
+
 
 
 REFAIRE XML des location informations pour les parties des vaisseaux !
