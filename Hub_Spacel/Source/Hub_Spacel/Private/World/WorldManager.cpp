@@ -22,6 +22,11 @@ void AWorldManager::BeginPlay()
 {
 	Super::BeginPlay();
 
+    if (this->GetNetMode() != ENetMode::NM_DedicatedServer)
+    {
+        return;
+    }
+
     UWorld* const world { this->GetWorld() };
     if (!ensure(world != nullptr)) return;
 
@@ -58,7 +63,7 @@ void AWorldManager::BeginPlay()
                 if (chunck)
                 {
                     // init component
-                    chunck->init(FVector2D(location.X, location.X + chunckSize), FVector2D(location.Y, location.Y + chunckSize), FVector2D(location.Z, location.Z + chunckSize), cubeSize);
+                    chunck->init(chunckSize, cubeSize);
                     chunck->FinishSpawning(transform);
                 }
             }

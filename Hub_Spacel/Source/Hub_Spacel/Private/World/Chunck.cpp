@@ -5,6 +5,7 @@
 #include "Noise/SpacelNoise.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "World/FogActor.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 AChunck::AChunck()
@@ -34,14 +35,10 @@ void AChunck::dmg(FHitResult const& _info)
 	}
 }
 
-bool AChunck::init(FVector2D const& _bornX, FVector2D const& _bornY, FVector2D const& _bornZ, int32 _cubeSize)
+void AChunck::init(int _chunckSize, int32 _cubeSize)
 {
-	this->BornX = _bornX;
-	this->BornY = _bornY;
-	this->BornZ = _bornZ;
-	this->CubeSize = _cubeSize;
-
-	return generateChunck();
+	this->R_ChunckSize = _chunckSize;
+	this->R_CubeSize = _cubeSize;
 }
 
 // Called when the game starts or when spawned
@@ -50,59 +47,87 @@ void AChunck::BeginPlay()
 	Super::BeginPlay();
 
 	if (!ensure(this->Voxels != nullptr)) return;
-	if (this->Voxels->GetInstanceCount() == 0)
+
+	// server side
+	if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
 	{
-		this->Destroy();
+		generateChunck(true);
+
+		if (this->Voxels->GetInstanceCount() == 0)
+		{
+			this->Destroy();
+		}
+		else
+		{
+			this->Voxels->OnComponentHit.AddDynamic(this, &AChunck::OnComponentHit);
+			this->R_RandomSeed = this->Voxels->InstancingRandomSeed;
+		}
 	}
 	else
 	{
-		this->Voxels->SetStaticMesh(this->VoxelStaticMesh);
-		this->Voxels->SetEnableGravity(false);
+		this->Voxels->InstancingRandomSeed = this->R_RandomSeed;
+		generateChunck(false);
+		// if we reconnect a player, need to remove instance already destroyed
+		OnRep_RemoveInstance();
 	}
-	
-	if (!this->IsPendingKill())
-	{
-		this->Voxels->OnComponentHit.AddDynamic(this, &AChunck::OnComponentHit);
-	}
+
+	this->Voxels->SetStaticMesh(this->VoxelStaticMesh);
+	this->Voxels->SetEnableGravity(false);
 }
 
 void AChunck::Tick(float _deltaTime)
 {
 	Super::Tick(_deltaTime);
 
-	if (m_dmg.Num() != 0)
+	if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
 	{
-		m_dmg.KeySort([](int32 const& _k1, int32 const& _k2)
-			{
-				return _k1 < _k2;
-			});
-
-		for (auto const& pair : m_dmg)
+		if (m_dmg.Num() != 0)
 		{
-			this->Voxels->RemoveInstance(pair.Key);
-		}
-		m_dmg.Empty();
+			TArray<int32> tmpArray{};
+			m_dmg.KeySort([](int32 const& _k1, int32 const& _k2)
+				{
+					return _k1 < _k2;
+				});
 
+			for (auto const& pair : m_dmg)
+			{
+				this->Voxels->RemoveInstance(pair.Key);
+				tmpArray.Add(pair.Key);
+			}
+			m_dmg.Empty();
+
+			if (this->Voxels->GetInstanceCount() == 0)
+			{
+				this->Destroy();
+			}
+			else
+			{
+				RU_RemoveIndex.Append(tmpArray);
+			}
+		}
 	}
 }
 
-float AChunck::getNoise(FVector const& _location) const
+float AChunck::getNoise(FVector const& _location, FVector2D const& _bornX, FVector2D const& _bornY, FVector2D const& _bornZ) const
 {
 	// increase float broke bloc, increase int (octave) add more bloc
-	return SpacelNoise::getInstance()->getOctaveNoise((_location.X + this->BornX.X) * 0.00007f, (_location.Y + this->BornY.X) * 0.00007f, (_location.Z + this->BornZ.X) * 0.00007f, 2);
+	return SpacelNoise::getInstance()->getOctaveNoise((_location.X + _bornX.X) * 0.00007f, (_location.Y + _bornY.X) * 0.00007f, (_location.Z + _bornZ.X) * 0.00007f, 2);
 }
 
-bool AChunck::generateChunck()
+void AChunck::generateChunck(bool _isServer)
 {
-	int maxX = (this->BornX.Y - this->BornX.X) / this->CubeSize;
-	int maxY = (this->BornY.Y - this->BornY.X) / this->CubeSize;
-	int maxZ = (this->BornZ.Y - this->BornZ.X) / this->CubeSize;
-	int size = maxX * maxY * maxZ;
+	FVector actorLocation{ this->GetActorLocation() };
+	FVector2D bornX = FVector2D(actorLocation.X, actorLocation.X + this->R_ChunckSize);
+	FVector2D bornY = FVector2D(actorLocation.Y, actorLocation.Y + this->R_ChunckSize);
+	FVector2D bornZ = FVector2D(actorLocation.Z, actorLocation.Z + this->R_ChunckSize);
 
-	bool ret = false;
+	int maxX { (int)((bornX.Y - bornX.X) / this->R_CubeSize) };
+	int maxY { (int)((bornY.Y - bornY.X) / this->R_CubeSize) };
+	int maxZ { (int)((bornZ.Y - bornZ.X) / this->R_CubeSize) };
+	int size { maxX * maxY * maxZ };
 
 	UWorld* const world{ this->GetWorld() };
-	if (!ensure(world != nullptr)) return false;
+	if (!ensure(world != nullptr)) return;
 
 	for (int x = 0; x < maxX; ++x)
 	{
@@ -110,29 +135,45 @@ bool AChunck::generateChunck()
 		{
 			for (int z = 0; z < maxZ; ++z)
 			{
-				FVector location { (float)(x * this->CubeSize), (float)(y * this->CubeSize), (float)(z * this->CubeSize) };
-				float noise { getNoise(location) };
+				FVector location { (float)(x * this->R_CubeSize), (float)(y * this->R_CubeSize), (float)(z * this->R_CubeSize) };
+				float noise { getNoise(location, bornX, bornY, bornZ) };
 
 				if (noise > .75f)
 				{
-					FTransform voxelTransform {};
-					voxelTransform.SetLocation(location);
-					this->Voxels->AddInstance(voxelTransform);
-					ret = true;
+					this->Voxels->AddInstance(FTransform { location });
 				}
-				else if (noise > 0.60 && noise < 0.600001)
+				else if (_isServer && noise > 0.60 && noise < 0.600001)
 				{
-					FTransform fogTransform{};
-					fogTransform.SetLocation(this->GetActorLocation() + location);
-					world->SpawnActor<AFogActor>(this->FogClass, fogTransform);
+					world->SpawnActor<AFogActor>(this->FogClass, FTransform { actorLocation + location });
 				}
 			}
 		}
 	}
-	return ret;
 }
 
 void AChunck::OnComponentHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit)
 {
+	// only trigger on server (because only register on server)
 	dmg(_hit);
+}
+
+void AChunck::OnRep_RemoveInstance()
+{
+	if (!ensure(this->Voxels != nullptr)) return;
+
+	for (int32 i = m_countRemovedIndex; i < RU_RemoveIndex.Num(); ++i)
+	{
+		this->Voxels->RemoveInstance(RU_RemoveIndex[i]);
+	}
+
+	m_countRemovedIndex = RU_RemoveIndex.Num();
+}
+
+void AChunck::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(AChunck, R_RandomSeed);
+	DOREPLIFETIME(AChunck, R_ChunckSize);
+	DOREPLIFETIME(AChunck, R_CubeSize);
+	DOREPLIFETIME(AChunck, RU_RemoveIndex);
 }

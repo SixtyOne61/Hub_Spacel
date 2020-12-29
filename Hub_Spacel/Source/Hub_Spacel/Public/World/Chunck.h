@@ -23,13 +23,13 @@ public:
 
 private:
 	/* init actor, call by World Manager, most of time on editor, we keep  */
-	bool init(FVector2D const& _bornX, FVector2D const& _bornY, FVector2D const& _bornZ, int32 _cubeSize);
+	void init(int _chunckSize, int32 _cubeSize);
 
 	/* generate all static mesh component instance */
-	bool generateChunck();
+	void generateChunck(bool _isServer);
 
 	/* get noise value */
-	float getNoise(FVector const& _location) const;
+	float getNoise(FVector const& _location, FVector2D const& _bornX, FVector2D const& _bornY, FVector2D const& _bornZ) const;
 
 	UFUNCTION()
 	void OnComponentHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit);
@@ -39,15 +39,10 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
-	UPROPERTY(VisibleAnywhere, Category = "Settings")
-	FVector2D BornX {};
-	UPROPERTY(VisibleAnywhere, Category = "Settings")
-	FVector2D BornY {};
-	UPROPERTY(VisibleAnywhere, Category = "Settings")
-	FVector2D BornZ {};
-	UPROPERTY(VisibleAnywhere, Category = "Settings")
-	int32 CubeSize {};
+	UFUNCTION()
+	void OnRep_RemoveInstance();
 
+private:
 	UPROPERTY(EditAnywhere, Category = "Settings")
 	class UStaticMesh* VoxelStaticMesh { nullptr };
 
@@ -57,5 +52,21 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "Component")
 	class UInstancedStaticMeshComponent* Voxels { nullptr };
 
+	UPROPERTY(Replicated)
+	int32 R_RandomSeed { 0 };
+
+	UPROPERTY(Replicated)
+	int R_ChunckSize {};
+
+	UPROPERTY(Replicated)
+	int32 R_CubeSize {};
+
+	UPROPERTY(ReplicatedUsing = "OnRep_RemoveInstance")
+	TArray<int32> RU_RemoveIndex {};
+
+	// only use on client
+	int m_countRemovedIndex {};
+
+	// only use on server
 	TMap<int32, int16> m_dmg {};
 };
