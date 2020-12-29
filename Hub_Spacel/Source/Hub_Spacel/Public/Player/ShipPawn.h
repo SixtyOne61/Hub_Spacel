@@ -9,14 +9,6 @@
 UCLASS()
 class HUB_SPACEL_API AShipPawn : public APawn
 {
-    struct FTempArray
-    {
-        TArray<FVector> RedZone {};
-        TArray<FVector> Attack{};
-        TArray<FVector> Protection{};
-        TArray<FVector> Support{};
-    };
-
 	GENERATED_BODY()
 
     friend class APlayerShipController;
@@ -59,16 +51,7 @@ private:
     virtual void OnRep_PlayerState() override;
 
     UFUNCTION()
-    void StartGame();
-
-    void buildShip(TArray<FVector> const& _redZoneLocations, TArray<FVector> const& _attackLocations, TArray<FVector> const& _protectionLocations, TArray<FVector> const& _supportLocations);
-
-    UFUNCTION()
     void OnComponentHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit);
-
-    /* replication not supported on UInstancedStaticMeshComponent, call instance location on each client */
-    UFUNCTION(Unreliable, Client)
-    void RPCClientAddVoxel(TArray<FVector> const& _redZoneLocations, TArray<FVector> const& _attackLocations, TArray<FVector> const& _protectionLocations, TArray<FVector> const& _supportLocations);
 
     /* only use for debug in editor */
     UFUNCTION(BlueprintCallable)
@@ -110,24 +93,10 @@ public:
     UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
     class UPlayerDataAsset* PlayerDataAsset { nullptr };
 
-    UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
-    class USetupAttributeDataAsset* ProtectionDataAsset { nullptr };
-
+    /* module setup by server */
     UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)
-    class UInstancedStaticMeshComponent* ProtectionMeshComponent{ nullptr };
+    class UModuleComponent* ModuleComponent { nullptr };
 
-    UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
-    class USetupAttributeDataAsset* WeaponDataAsset { nullptr };
-
-    UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)
-    class UInstancedStaticMeshComponent* WeaponMeshComponent { nullptr };
-
-    UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
-    class USetupAttributeDataAsset* SupportDataAsset { nullptr };
-
-    UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)
-    class UInstancedStaticMeshComponent* SupportMeshComponent { nullptr };
-    
     /* only on server side */
     UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)
     class UFireComponent* FireComponent { nullptr };

@@ -9,6 +9,7 @@
 #include "Engine/StaticMesh.h"
 #include "Player/SpacelPlayerState.h"
 #include "Player/PlayerShipController.h"
+#include "Player/ModuleComponent.h"
 #include "DrawDebugHelpers.h"
 
 void AShipPawn::handSweep()
@@ -36,7 +37,7 @@ void AShipPawn::handSweep()
     // check if we have something nearest this pawn
     if (lb_checkCollision(collisionShape))
     {
-        auto lb_checkComponent = [&](UInstancedStaticMeshComponent*& _mesh)
+        auto lb_checkComponent = [&](UInstancedStaticMeshComponent*& _mesh, TArray<FVector> & _replicated)
         {
             if (_mesh == nullptr || _mesh->GetInstanceCount() == 0)
             {
@@ -58,8 +59,14 @@ void AShipPawn::handSweep()
                     if (lb_checkCollision(collisionShape) && itemHits(hits))
                     {
                         //UE_LOG(LogTemp, Warning, TEXT("Remove item"));
+
+                        // save for repair // TO DO and remove on replicated
+                        FTransform localTransform{};
+                        _mesh->GetInstanceTransform(index, localTransform, false);
+
                         // manage item hits
                         _mesh->RemoveInstance(index);
+                        _replicated.Remove(localTransform.GetLocation());
                     }
                     else
                     {
@@ -69,8 +76,11 @@ void AShipPawn::handSweep()
             }
         };
 
-        lb_checkComponent(this->ProtectionMeshComponent);
-        lb_checkComponent(this->SupportMeshComponent);
+        if (this->ModuleComponent != nullptr)
+        {
+            lb_checkComponent(this->ModuleComponent->ProtectionMeshComponent, this->ModuleComponent->RU_ProtectionLocations);
+            lb_checkComponent(this->ModuleComponent->SupportMeshComponent, this->ModuleComponent->RU_SupportLocations);
+        }
     }
 }
 

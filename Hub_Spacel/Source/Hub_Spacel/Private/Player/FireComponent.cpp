@@ -4,6 +4,7 @@
 #include "FireComponent.h"
 #include "Player/ShipPawn.h"
 #include "Player/SpacelPlayerState.h"
+#include "Player/ModuleComponent.h"
 #include "DataAsset/PlayerDataAsset.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -37,7 +38,8 @@ void UFireComponent::TickComponent(float _deltaTime, ELevelTick _tickType, FActo
 
 	if (!ensure(m_shipPawnOwner.Get()->PlayerDataAsset != nullptr)) return;
 	if (!ensure(m_shipPawnOwner.Get()->PlayerDataAsset->BulletClass != nullptr)) return;
-	if (!ensure(m_shipPawnOwner.Get()->WeaponMeshComponent != nullptr)) return;
+	if (!ensure(m_shipPawnOwner.Get()->ModuleComponent != nullptr)) return;
+    if (!ensure(m_shipPawnOwner.Get()->ModuleComponent->WeaponMeshComponent != nullptr)) return;
 
 	UWorld* world { this->GetWorld() };
 	if (!ensure(world != nullptr)) return;
@@ -46,12 +48,12 @@ void UFireComponent::TickComponent(float _deltaTime, ELevelTick _tickType, FActo
     if (m_isFire.hasValue() && m_isFire.value() && m_fireCountDown <= 0.0f)
     {
         FTransform transform{};
-        m_shipPawnOwner.Get()->WeaponMeshComponent->GetInstanceTransform(m_fireIndex, transform, true);
+        m_shipPawnOwner.Get()->ModuleComponent->WeaponMeshComponent->GetInstanceTransform(m_fireIndex, transform, true);
         // reset scale
         transform.SetScale3D({ 1.0f, 1.0f, 1.0f });
 
         ++m_fireIndex;
-        if (m_fireIndex >= m_shipPawnOwner.Get()->WeaponMeshComponent->GetInstanceCount())
+        if (m_fireIndex >= m_shipPawnOwner.Get()->ModuleComponent->WeaponMeshComponent->GetInstanceCount())
         {
             m_fireIndex = 0;
         }
