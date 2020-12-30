@@ -13,13 +13,11 @@ class HUB_SPACEL_API UModuleComponent : public USceneComponent
 	GENERATED_BODY()
 
     friend class AShipPawn;
+    friend class UCustomCollisionComponent;
 
 public:	
 	// Sets default values for this component's properties
 	UModuleComponent();
-
-    // Called every frame
-    virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 protected:
 	// Called when the game starts

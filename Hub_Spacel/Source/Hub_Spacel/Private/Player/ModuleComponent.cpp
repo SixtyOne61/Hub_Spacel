@@ -15,7 +15,7 @@ UModuleComponent::UModuleComponent()
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
-	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bCanEverTick = false;
 
     ProtectionMeshComponent = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Protection_00"));
     if (!ensure(ProtectionMeshComponent != nullptr)) return;
@@ -46,15 +46,11 @@ void UModuleComponent::BeginPlay()
             spacelGameState->OnStartGameDelegate.AddDynamic(this, &UModuleComponent::OnStartGame);
         }
     }
-	
-}
 
-// Called every frame
-void UModuleComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	// ...
+    // if we reconnect array will be replicate
+    OnRep_Attack();
+    OnRep_Protection();
+    OnRep_Support();
 }
 
 void UModuleComponent::OnRep_Attack()

@@ -3,13 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Components/ActorComponent.h"
+#include "Player/PlayerActorComponent.h"
 #include "Util/Optional.h"
 #include "FireComponent.generated.h"
 
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class HUB_SPACEL_API UFireComponent : public UActorComponent
+class HUB_SPACEL_API UFireComponent : public UPlayerActorComponent
 {
 	GENERATED_BODY()
 
@@ -19,17 +19,11 @@ public:
 	// Sets default values for this component's properties
 	UFireComponent();
 
-protected:
-	// Called when the game starts
-	virtual void BeginPlay() override;
-
 public:	
 	// Called every frame
-	virtual void TickComponent(float _deltaTime, ELevelTick _tickType, FActorComponentTickFunction* _thisTickFunction) override;
+	void TickComponent(float _deltaTime, ELevelTick _tickType, FActorComponentTickFunction* _thisTickFunction) override;
 
 private:
-	TWeakObjectPtr<class AShipPawn> m_shipPawnOwner {};
-
 	/* use only on server, say if we are in fire */
 	Util::Optional<bool> m_isFire{ };
 

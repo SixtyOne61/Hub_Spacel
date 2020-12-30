@@ -18,23 +18,12 @@ UFireComponent::UFireComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 }
 
-// Called when the game starts
-void UFireComponent::BeginPlay()
-{
-	Super::BeginPlay();
-
-	m_shipPawnOwner = MakeWeakObjectPtr(Cast<AShipPawn>(this->GetOwner()));
-}
-
 // Called every frame
 void UFireComponent::TickComponent(float _deltaTime, ELevelTick _tickType, FActorComponentTickFunction* _thisTickFunction)
 {
 	Super::TickComponent(_deltaTime, _tickType, _thisTickFunction);
 
-	if (!m_shipPawnOwner.IsValid())
-	{
-		return;
-	}
+	if (!m_shipPawnOwner.IsValid() && !initShipPawnOwner()) return;
 
 	if (!ensure(m_shipPawnOwner.Get()->PlayerDataAsset != nullptr)) return;
 	if (!ensure(m_shipPawnOwner.Get()->PlayerDataAsset->BulletClass != nullptr)) return;

@@ -18,6 +18,7 @@
 #include "Player/TargetActor.h"
 #include "Player/FireComponent.h"
 #include "Player/ModuleComponent.h"
+#include "Player/CustomCollisionComponent.h"
 #include "Player/PlayerShipController.h"
 #include "GameState/SpacelGameState.h"
 #include "Components/InstancedStaticMeshComponent.h"
@@ -57,6 +58,10 @@ AShipPawn::AShipPawn()
     if (!ensure(FireComponent != nullptr)) return;
     FireComponent->Deactivate();
 
+    CustomCollisionComponent = CreateDefaultSubobject<UCustomCollisionComponent>(TEXT("CustomCollision_00"));
+    if (!ensure(CustomCollisionComponent != nullptr)) return;
+    CustomCollisionComponent->Deactivate();
+
     TargetComponent = CreateDefaultSubobject<UChildActorComponent>(TEXT("Target_00"));
     if (!ensure(TargetComponent != nullptr)) return;
     TargetComponent->SetupAttachment(RootComponent);
@@ -74,6 +79,9 @@ void AShipPawn::BeginPlay()
 
         if (!ensure(this->FireComponent != nullptr)) return;
         this->FireComponent->Activate();
+
+        if (!ensure(this->CustomCollisionComponent != nullptr)) return;
+        this->CustomCollisionComponent->Activate();
     }
     else if (!this->IsLocallyControlled())
     {
@@ -145,8 +153,6 @@ void AShipPawn::Tick(float _deltaTime)
 
     if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
     {
-        // collision ship
-        handSweep();
         // move ship
         RPCServerMove(_deltaTime);
     }

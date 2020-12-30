@@ -43,11 +43,6 @@ private:
     UFUNCTION(Unreliable, Client)
     void RPCClientMove(FVector const& _angularVelocity, FVector const& _linearVelocity);
 
-    /* Collision part */
-    void handSweep();
-
-    bool itemHits(TArray<FHitResult> const& _hits);
-
     virtual void OnRep_PlayerState() override;
 
     UFUNCTION()
@@ -93,9 +88,13 @@ public:
     UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
     class UPlayerDataAsset* PlayerDataAsset { nullptr };
 
-    /* module setup by server */
+    /* module setup by server replicated to client, static mesh instance don't support replication */
     UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)
     class UModuleComponent* ModuleComponent { nullptr };
+
+    /* hand sweep collision, make by server */
+    UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)
+    class UCustomCollisionComponent* CustomCollisionComponent { nullptr };
 
     /* only on server side */
     UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)
