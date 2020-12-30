@@ -18,6 +18,7 @@
 #include "Player/TargetActor.h"
 #include "Player/FireComponent.h"
 #include "Player/ModuleComponent.h"
+#include "Player/PlayerShipController.h"
 #include "GameState/SpacelGameState.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Hub_SpacelGameInstance.h"
@@ -245,6 +246,24 @@ void AShipPawn::setFire(bool _on)
 void AShipPawn::RPCClientDead_Implementation()
 {
     this->Destroy();
+}
+
+void AShipPawn::OnComponentHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit)
+{
+    if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
+    {
+        // if we hit something, it's red zone so we are dead
+        //UE_LOG(LogTemp, Warning, TEXT("Hit"));
+
+        if (APlayerShipController* playerController = this->GetController<APlayerShipController>())
+        {
+            playerController->Restart();
+        }
+
+        this->UnPossessed();
+        this->Destroy();
+        this->RPCClientDead(); // check if necessary TO DO
+    }
 }
 
 void AShipPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetimeProps) const
