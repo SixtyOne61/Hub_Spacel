@@ -60,7 +60,7 @@ void AShipPawn::handSweep()
                     {
                         //UE_LOG(LogTemp, Warning, TEXT("Remove item"));
 
-                        // save for repair // TO DO and remove on replicated
+                        // save local location for repair // TO DO and remove on replicated
                         FTransform localTransform{};
                         _mesh->GetInstanceTransform(index, localTransform, false);
 
