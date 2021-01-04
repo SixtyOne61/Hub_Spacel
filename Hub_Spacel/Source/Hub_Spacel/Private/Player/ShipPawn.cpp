@@ -246,7 +246,7 @@ void AShipPawn::BuildDefaultShip()
 void AShipPawn::setFire(bool _on)
 {
     if (!ensure(this->FireComponent != nullptr)) return;
-    this->FireComponent->m_isFire = true;// _on;
+    this->FireComponent->m_isFire = _on;
 }
 
 void AShipPawn::RPCClientDead_Implementation()
