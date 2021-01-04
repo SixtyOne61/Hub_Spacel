@@ -42,7 +42,7 @@ public:
 	void AddScore(FString const& _team, int32 _val);
 
 	UFUNCTION()
-	void AttributePlayersLocation();
+	void RegisterTeam();
 
 protected:
 	virtual void BeginPlay() override;
@@ -63,9 +63,6 @@ public:
 
 	UPROPERTY()
 	FStartGame OnStartGameDelegate {};
-
-	UPROPERTY(EditAnywhere)
-	TArray<FTeamLocation> TeamsLocation {};
 
 private:
 	UPROPERTY(ReplicatedUsing = OnRep_StateGame)

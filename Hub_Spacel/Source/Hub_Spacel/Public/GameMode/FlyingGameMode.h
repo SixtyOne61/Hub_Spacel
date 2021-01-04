@@ -90,6 +90,9 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Flow")
 	void OnRestartPlayer(AController* _controller, FTransform const& _transform);
 
+	UFUNCTION(BlueprintCallable)
+	FTransform GetSpawnLocation(FName const& _team);
+
 protected:
 	virtual void BeginPlay() override;
 	virtual FString InitNewPlayer(class APlayerController* _newPlayerController, FUniqueNetIdRepl const& _uniqueId, FString const& _options, FString const& _portal) override;
@@ -187,4 +190,12 @@ private:
 	int TimeSpentWaitingForPlayersToJoin { 0 };
 
 	TMap<FString, Aws::GameLift::Server::Model::Player> m_expectedPlayers {};
+
+	struct FStartLocation
+	{
+		bool m_isUse { false };
+		FTransform m_transform {};
+	};
+
+	TMap<FName, TArray<FStartLocation>> m_startLocation {};
 };

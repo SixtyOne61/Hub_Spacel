@@ -4,6 +4,7 @@
 #include "FlyingGameMode.h"
 #include "Player/SpacelPlayerState.h"
 #include "GameState/SpacelGameState.h"
+#include "GameFramework/PlayerStart.h"
 #include "TextReaderComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Json.h"
@@ -223,6 +224,42 @@ void AFlyingGameMode::BeginPlay()
     spacelGameState->GoToPrepare();
     GetWorldTimerManager().SetTimer(this->PreparePhaseUntilOverHandle, this, &AFlyingGameMode::PreparePhaseUntilOver, 1.0f, true, 0.0f);
 #endif
+
+    TArray<AActor*> out {};
+    UGameplayStatics::GetAllActorsOfClass(this->GetWorld(), APlayerStart::StaticClass(), out);
+    for(AActor* act : out)
+    {
+        if(act == nullptr || act->IsPendingKill()) continue;
+
+        if(act->Tags.Num() == 0) continue;
+
+        FName teamName { act->Tags[0] };
+        if(!m_startLocation.Contains(teamName))
+        {
+            m_startLocation.Add(teamName);
+        }
+
+        m_startLocation[teamName].Add({false, act->GetTransform()});
+    }
+}
+
+FTransform AFlyingGameMode::GetSpawnLocation(FName const& _team)
+{
+    if(!m_startLocation.Contains(_team))
+    {
+        return {};
+    }
+
+    for(FStartLocation & startLocation : m_startLocation[_team])
+    {
+        if(!startLocation.m_isUse)
+        {
+            startLocation.m_isUse = true;
+            return startLocation.m_transform;
+        }
+    }
+
+    return {};
 }
 
 void AFlyingGameMode::PreLogin(FString const& _options, FString const& _address, FUniqueNetIdRepl const& _uniqueId, FString& _errorMessage)
@@ -387,8 +424,8 @@ void AFlyingGameMode::PreparePhaseUntilOver()
         ASpacelGameState* spacelGameState{ Cast<ASpacelGameState>(this->GameState) };
         if (!ensure(spacelGameState != nullptr)) return;
 
-        // attribute player pos
-        spacelGameState->AttributePlayersLocation();
+        // register all team for scoring
+        spacelGameState->RegisterTeam();
 
         // change game state
         spacelGameState->GoToInGame();

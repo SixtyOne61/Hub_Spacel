@@ -47,7 +47,7 @@ public:
     UPROPERTY()
     FString MatchmakingPlayerId {};
 
-    UPROPERTY(Replicated)
+    UPROPERTY(Replicated, BlueprintReadWrite)
     FString Team { "Team 1" };
 
     UPROPERTY(Replicated)
