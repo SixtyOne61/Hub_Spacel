@@ -23,6 +23,8 @@ void UFireComponent::TickComponent(float _deltaTime, ELevelTick _tickType, FActo
 {
 	Super::TickComponent(_deltaTime, _tickType, _thisTickFunction);
 
+    if (this->GetNetMode() != ENetMode::NM_DedicatedServer) return;
+
 	if (!m_shipPawnOwner.IsValid() && !initShipPawnOwner()) return;
 
 	if (!ensure(m_shipPawnOwner.Get()->PlayerDataAsset != nullptr)) return;

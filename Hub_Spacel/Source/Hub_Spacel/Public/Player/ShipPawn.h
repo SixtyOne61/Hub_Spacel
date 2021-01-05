@@ -14,6 +14,7 @@ class HUB_SPACEL_API AShipPawn : public APawn
     friend class APlayerShipController;
     friend class USpacelWidget;
     friend class UFireComponent;
+    friend class UCustomCollisionComponent;
 
 public:
 	// Sets default values for this pawn's properties
@@ -45,9 +46,6 @@ private:
 
     virtual void OnRep_PlayerState() override;
 
-    UFUNCTION()
-    void OnComponentHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit);
-
     /* only use for debug in editor */
     UFUNCTION(BlueprintCallable)
     void BuildDefaultShip();
@@ -68,9 +66,8 @@ private:
     /* set fire boolean on component fire */
     void setFire(bool _on);
 
-    /* call when red zone ship is dead */
-    UFUNCTION(Reliable, Client)
-    void RPCClientDead();
+    /* call for kill a player when red zone is hit */
+    void kill();
 
 public:
     UPROPERTY(Category = "Ship", VisibleAnywhere, BlueprintReadOnly)

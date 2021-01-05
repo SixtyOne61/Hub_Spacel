@@ -4,6 +4,7 @@
 #include "CustomCollisionComponent.h"
 #include "Player/ShipPawn.h"
 #include "Player/ModuleComponent.h"
+#include "Player/PlayerShipController.h"
 #include "CollisionShape.h"
 #include "CollisionQueryParams.h"
 #include "Gameplay/DestroyActor.h"
@@ -23,6 +24,8 @@ UCustomCollisionComponent::UCustomCollisionComponent()
 void UCustomCollisionComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	if (this->GetNetMode() != ENetMode::NM_DedicatedServer) return;
 
 	if (!m_shipPawnOwner.IsValid() && !initShipPawnOwner()) return;
 
@@ -50,13 +53,15 @@ void UCustomCollisionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 		return world->SweepMultiByObjectType(hits, _location, _location + epsilon, FQuat::Identity, coqp, _collision);
 	};
 
+	FVector const& scale = m_shipPawnOwner.Get()->GetTransform().GetScale3D();
+
 	auto lb_checkEachInstance = [&](UInstancedStaticMeshComponent*& _mesh, TArray<FVector>& _replicated)
 	{
 		if (_mesh == nullptr || _mesh->GetInstanceCount() == 0) return;
 
 		FVector min{}, max{};
 		_mesh->GetLocalBounds(min, max);
-		FVector box = (max - min) * m_shipPawnOwner.Get()->GetTransform().GetScale3D();
+		FVector box = (max - min) * scale;
 		collisionShape = FCollisionShape::MakeBox(box / 2.0f);
 
 		FTransform worldTransform{};
@@ -91,23 +96,41 @@ void UCustomCollisionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 		lb_checkEachInstance(m_shipPawnOwner.Get()->ModuleComponent->SupportMeshComponent, m_shipPawnOwner.Get()->ModuleComponent->RU_SupportLocations);
 
 		// apply hit on hited actor
-		for (FHitResult const& hit : saveHits)
-		{
-			AActor* act = hit.GetActor();
-			if (act == nullptr || act->IsPendingKill())
-			{
-				continue;
-			}
+		destroyActor(saveHits);
 
-			if (ADestroyActor* destroyAct = Cast<ADestroyActor>(act))
-			{
-				destroyAct->dmg(hit);
-			}
+		// check red zone
+		FVector min{}, max{};
+		m_shipPawnOwner.Get()->DriverMeshComponent->GetLocalBounds(min, max);
+		FVector box = (max - min) * m_shipPawnOwner.Get()->GetTransform().GetScale3D();
+		collisionShape = FCollisionShape::MakeBox(box / 2.0f);
+
+		if (lb_checkCollision(collisionShape, m_shipPawnOwner.Get()->DriverMeshComponent->GetComponentLocation())
+			&& saveDestroyActor(saveHits, hits))
+		{
+			m_shipPawnOwner.Get()->kill();
 		}
 	}
 }
 
-bool UCustomCollisionComponent::saveDestroyActor(TArray<FHitResult>& _items, TArray<FHitResult> const& _hits)
+void UCustomCollisionComponent::destroyActor(TArray<FHitResult>& _items) const
+{
+	for (FHitResult const& hit : _items)
+	{
+		AActor* act = hit.GetActor();
+		if (act == nullptr || act->IsPendingKill())
+		{
+			continue;
+		}
+
+		if (ADestroyActor* destroyAct = Cast<ADestroyActor>(act))
+		{
+			destroyAct->dmg(hit);
+		}
+	}
+	_items.Empty();
+}
+
+bool UCustomCollisionComponent::saveDestroyActor(TArray<FHitResult>& _items, TArray<FHitResult> const& _hits) const
 {
 	int32 count { _items.Num() };
 

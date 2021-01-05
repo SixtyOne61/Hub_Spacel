@@ -20,5 +20,7 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 private:
-	bool saveDestroyActor(TArray<FHitResult> & _items, TArray<FHitResult> const& _hits);
+	bool saveDestroyActor(TArray<FHitResult> & _items, TArray<FHitResult> const& _hits) const;
+
+	void destroyActor(TArray<FHitResult>& _items) const;
 };

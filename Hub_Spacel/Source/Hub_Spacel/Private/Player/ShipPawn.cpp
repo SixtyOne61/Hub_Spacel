@@ -74,9 +74,6 @@ void AShipPawn::BeginPlay()
 
     if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
     {
-        if (!ensure(this->DriverMeshComponent != nullptr)) return;
-        this->DriverMeshComponent->OnComponentHit.AddDynamic(this, &AShipPawn::OnComponentHit);
-
         if (!ensure(this->FireComponent != nullptr)) return;
         this->FireComponent->Activate();
 
@@ -249,12 +246,7 @@ void AShipPawn::setFire(bool _on)
     this->FireComponent->m_isFire = _on;
 }
 
-void AShipPawn::RPCClientDead_Implementation()
-{
-    this->Destroy();
-}
-
-void AShipPawn::OnComponentHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit)
+void AShipPawn::kill()
 {
     if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
     {
@@ -268,7 +260,6 @@ void AShipPawn::OnComponentHit(UPrimitiveComponent* _hitComp, AActor* _otherActo
 
         this->UnPossessed();
         this->Destroy();
-        this->RPCClientDead(); // check if necessary TO DO
     }
 }
 
