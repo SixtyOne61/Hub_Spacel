@@ -11,7 +11,7 @@
 AChunck::AChunck()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
 	Voxels = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Voxels"));
 	Voxels->SetCollisionProfileName("BlockAll");
@@ -75,39 +75,6 @@ void AChunck::BeginPlay()
 	this->Voxels->SetEnableGravity(false);
 }
 
-void AChunck::Tick(float _deltaTime)
-{
-	Super::Tick(_deltaTime);
-
-	if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
-	{
-		if (m_dmg.Num() != 0)
-		{
-			TArray<int32> tmpArray{};
-			m_dmg.KeySort([](int32 const& _k1, int32 const& _k2)
-				{
-					return _k1 < _k2;
-				});
-
-			for (auto const& pair : m_dmg)
-			{
-				this->Voxels->RemoveInstance(pair.Key);
-				tmpArray.Add(pair.Key);
-			}
-			m_dmg.Empty();
-
-			if (this->Voxels->GetInstanceCount() == 0)
-			{
-				this->Destroy();
-			}
-			else
-			{
-				RU_RemoveIndex.Append(tmpArray);
-			}
-		}
-	}
-}
-
 float AChunck::getNoise(FVector const& _location, FVector2D const& _bornX, FVector2D const& _bornY, FVector2D const& _bornZ) const
 {
 	// increase float broke bloc, increase int (octave) add more bloc
@@ -155,6 +122,38 @@ void AChunck::OnComponentHit(UPrimitiveComponent* _hitComp, AActor* _otherActor,
 {
 	// only trigger on server (because only register on server)
 	dmg(_hit);
+	applyDmg();
+}
+
+void AChunck::applyDmg()
+{
+	if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
+	{
+		if (m_dmg.Num() != 0)
+		{
+			TArray<int32> tmpArray{};
+			m_dmg.KeySort([](int32 const& _k1, int32 const& _k2)
+				{
+					return _k1 < _k2;
+				});
+
+			for (auto const& pair : m_dmg)
+			{
+				this->Voxels->RemoveInstance(pair.Key);
+				tmpArray.Add(pair.Key);
+			}
+			m_dmg.Empty();
+
+			if (this->Voxels->GetInstanceCount() == 0)
+			{
+				this->Destroy();
+			}
+			else
+			{
+				RU_RemoveIndex.Append(tmpArray);
+			}
+		}
+	}
 }
 
 void AChunck::OnRep_RemoveInstance()

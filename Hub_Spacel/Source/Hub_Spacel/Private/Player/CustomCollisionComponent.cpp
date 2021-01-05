@@ -107,6 +107,9 @@ void UCustomCollisionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 		if (lb_checkCollision(collisionShape, m_shipPawnOwner.Get()->DriverMeshComponent->GetComponentLocation())
 			&& saveDestroyActor(saveHits, hits))
 		{
+			// apply hit on hited actor
+			destroyActor(saveHits);
+
 			m_shipPawnOwner.Get()->kill();
 		}
 	}
@@ -127,6 +130,21 @@ void UCustomCollisionComponent::destroyActor(TArray<FHitResult>& _items) const
 			destroyAct->dmg(hit);
 		}
 	}
+
+	for (FHitResult const& hit : _items)
+	{
+		AActor* act = hit.GetActor();
+		if (act == nullptr || act->IsPendingKill())
+		{
+			continue;
+		}
+
+		if (ADestroyActor* destroyAct = Cast<ADestroyActor>(act))
+		{
+			destroyAct->applyDmg();
+		}
+	}
+
 	_items.Empty();
 }
 

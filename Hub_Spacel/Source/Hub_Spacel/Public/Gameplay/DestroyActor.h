@@ -14,4 +14,5 @@ class HUB_SPACEL_API ADestroyActor : public AActor
 public:
 	virtual void BeginPlay() override;
 	virtual void dmg(FHitResult const& _info) {};
+	virtual void applyDmg() {};
 };

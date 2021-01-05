@@ -18,8 +18,8 @@ public:
 	AChunck();
 
 	/* override */
-	virtual void Tick(float _deltaTime) override;
-	virtual void dmg(FHitResult const& _info) override;
+	void dmg(FHitResult const& _info) override;
+	void applyDmg() override;
 
 private:
 	/* init actor, call by World Manager, most of time on editor, we keep  */
