@@ -8,6 +8,6 @@ public class Hub_Spacel : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
-        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "ProceduralMeshComponent", "Hub_Spacel", "UMG", "XmlParser", "GameLiftServerSDK", "SlateCore", "Http", "Json", "JsonUtilities", "WebBrowserWidget", "Niagara" });
+        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "ProceduralMeshComponent", "Hub_Spacel", "XmlParser", "GameLiftServerSDK", "SlateCore", "Http", "Json", "JsonUtilities", "WebBrowserWidget", "Niagara" });
     }
 }

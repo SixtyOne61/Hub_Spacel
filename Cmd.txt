@@ -1,5 +1,5 @@
 for push a new server
-aws gamelift upload-build --name Spacel --build-version 1.0.5 --build-root "C:\Users\olivi\OneDrive\Desktop\Projects\PC\Build\SpaceLGameLiftServer\WindowsServer" --operating-system WINDOWS_2012 --region eu-central-1
+aws gamelift upload-build --name Spacel --build-version 1.0.6 --build-root "C:\Users\olivi\OneDrive\Desktop\Projects\PC\Build\SpaceLGameLiftServer\WindowsServer" --operating-system WINDOWS_2012 --region eu-central-1
 
 Go -> https://eu-central-1.console.aws.amazon.com/gamelift/home?region=eu-central-1
 
@@ -14,3 +14,12 @@ Plage de ports en udp
 Quand la flotte est active
 
 Clic sur Files d'attente -> SpacelQueue -> Action / Modifier la file d'attente -> changer le nom de la flotte 
+
+Hub_Spacel.uproject, remove UMGEditor for compile
+
+"AdditionalDependencies": [
+				"Engine",
+				"ProceduralMeshComponent",
+				"UMG",
+				"UMGEditor"
+			]
