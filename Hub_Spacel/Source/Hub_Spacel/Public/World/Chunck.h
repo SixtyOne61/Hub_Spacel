@@ -53,9 +53,6 @@ private:
 	class UInstancedStaticMeshComponent* Voxels { nullptr };
 
 	UPROPERTY(Replicated)
-	int32 R_RandomSeed { 0 };
-
-	UPROPERTY(Replicated)
 	int R_ChunckSize {};
 
 	UPROPERTY(Replicated)

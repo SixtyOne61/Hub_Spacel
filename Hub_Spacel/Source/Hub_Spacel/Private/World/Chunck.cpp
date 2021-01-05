@@ -60,12 +60,10 @@ void AChunck::BeginPlay()
 		else
 		{
 			this->Voxels->OnComponentHit.AddDynamic(this, &AChunck::OnComponentHit);
-			this->R_RandomSeed = this->Voxels->InstancingRandomSeed;
 		}
 	}
 	else
 	{
-		this->Voxels->InstancingRandomSeed = this->R_RandomSeed;
 		generateChunck(false);
 		// if we reconnect a player, need to remove instance already destroyed
 		OnRep_RemoveInstance();
@@ -171,7 +169,6 @@ void AChunck::OnRep_RemoveInstance()
 void AChunck::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	DOREPLIFETIME(AChunck, R_RandomSeed);
 	DOREPLIFETIME(AChunck, R_ChunckSize);
 	DOREPLIFETIME(AChunck, R_CubeSize);
 	DOREPLIFETIME(AChunck, RU_RemoveIndex);
