@@ -233,6 +233,8 @@ void AShipPawn::OnRep_PlayerState()
         {
             // TO DO : Change color for teammate and ennemy team and our pawn
         }
+
+        setCollisionProfile(teamName);
     }
 }
 
@@ -264,6 +266,14 @@ void AShipPawn::kill()
         this->UnPossessed();
         this->Destroy();
     }
+}
+
+void AShipPawn::setCollisionProfile(FString _team)
+{
+    if (!ensure(DriverMeshComponent != nullptr)) return;
+    
+    _team = _team.Replace(TEXT(" "), TEXT(""));
+    DriverMeshComponent->SetCollisionProfileName(*_team);
 }
 
 void AShipPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetimeProps) const

@@ -38,6 +38,9 @@ public:
     UFUNCTION()
     void OnRep_PercentUp();
 
+    /* set collision profile name */
+    void setCollisionProfile(FString _team);
+
 private:
     /* move ship server */
     UFUNCTION(Reliable, Server)

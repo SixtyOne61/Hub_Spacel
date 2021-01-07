@@ -9,6 +9,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "Components/SphereComponent.h"
+#include "Components/StaticMeshComponent.h"
 
 // Sets default values for this component's properties
 UFireComponent::UFireComponent()
@@ -63,19 +65,7 @@ void UFireComponent::TickComponent(float _deltaTime, ELevelTick _tickType, FActo
             }
         }
 
-        AActor* laser = Cast<AActor>(UGameplayStatics::BeginDeferredActorSpawnFromClass(world, m_shipPawnOwner.Get()->PlayerDataAsset->BulletClass, transform));
-        if (laser)
-        {
-            // init bullet
-            laser->SetReplicates(true);
-            laser->SetReplicateMovement(true);
-            UGameplayStatics::FinishSpawningActor(laser, transform);
-            if (UProjectileMovementComponent* comp = Cast<UProjectileMovementComponent>(laser->GetComponentByClass(UProjectileMovementComponent::StaticClass())))
-            {
-                FVector dir { FVector{1.0f, 0.0f, .0f }};
-                comp->SetVelocityInLocalSpace(dir * comp->InitialSpeed);
-            }
-        }
+        spawnBullet(transform);
 
         // reset count down
         if (ASpacelPlayerState* spacelPlayerState = m_shipPawnOwner.Get()->GetPlayerState<ASpacelPlayerState>())
@@ -94,5 +84,31 @@ void UFireComponent::TickComponent(float _deltaTime, ELevelTick _tickType, FActo
         // if player spam trigger and use timer manager, we will just spam the first tick of the handle timer
         // and throw many bullet
         m_fireCountDown -= _deltaTime;
+    }
+}
+
+void UFireComponent::spawnBullet(FTransform const& _transform) const
+{
+    AActor* laser = Cast<AActor>(UGameplayStatics::BeginDeferredActorSpawnFromClass(this->GetWorld(), m_shipPawnOwner.Get()->PlayerDataAsset->BulletClass, _transform));
+    if (laser)
+    {
+        // init bullet
+        laser->SetReplicates(true);
+        laser->SetReplicateMovement(true);
+        UGameplayStatics::FinishSpawningActor(laser, _transform);
+        if (UProjectileMovementComponent* comp = Cast<UProjectileMovementComponent>(laser->GetComponentByClass(UProjectileMovementComponent::StaticClass())))
+        {
+            FVector dir{ FVector{1.0f, 0.0f, .0f } };
+            comp->SetVelocityInLocalSpace(dir * comp->InitialSpeed);
+        }
+
+        if (USphereComponent* comp = Cast<USphereComponent>(laser->GetComponentByClass(USphereComponent::StaticClass())))
+        {
+            if (m_shipPawnOwner.IsValid() && m_shipPawnOwner.Get()->DriverMeshComponent)
+            {
+                FName const& collisionProfileName = m_shipPawnOwner.Get()->DriverMeshComponent->GetCollisionProfileName();
+                comp->SetCollisionProfileName(collisionProfileName);
+            }
+        }
     }
 }

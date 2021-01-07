@@ -3,6 +3,7 @@
 
 #include "SpacelPlayerState.h"
 #include "Net/UnrealNetwork.h"
+#include "Player/ShipPawn.h"
 
 void ASpacelPlayerState::setRemainingSkillPoint(uint8 && _val)
 {
@@ -29,6 +30,16 @@ void ASpacelPlayerState::RPCSetSkillPoint_Implementation(ESkillType const& _type
         case ESkillType::Protection: this->Protection = _value; return;
         case ESkillType::Support: this->Support = _value; return;
         default: ensure(true); return;
+    }
+}
+
+void ASpacelPlayerState::SetTeam(FString const& _team)
+{
+    Team = _team;
+
+    if (AShipPawn* shipPawn = this->GetPawn<AShipPawn>())
+    {
+        shipPawn->setCollisionProfile(_team);
     }
 }
 

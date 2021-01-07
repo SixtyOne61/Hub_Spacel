@@ -31,9 +31,6 @@ public:
     UPROPERTY(EditAnywhere, Category = "Collision")
     class USphereComponent* ProjectileCollisionComponent { nullptr };
 
-    UPROPERTY(EditAnywhere, Category = "Default")
-    class ULaserDataAsset* LaserDataAsset { nullptr };
-
 protected:
     UPROPERTY(EditAnywhere)
     class UNiagaraSystem* FireFx{ nullptr };

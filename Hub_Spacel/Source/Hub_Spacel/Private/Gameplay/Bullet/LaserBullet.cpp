@@ -7,7 +7,6 @@
 #include "Components/StaticMeshComponent.h"
 #include "Materials/MaterialInstance.h"
 #include "Materials/MaterialInstanceDynamic.h"
-#include "DataAsset/LaserDataAsset.h"
 #include "NiagaraFunctionLibrary.h"
 
 // Sets default values
@@ -28,10 +27,6 @@ ALaserBullet::ALaserBullet()
 void ALaserBullet::BeginPlay()
 {
 	Super::BeginPlay();
-	
-    if (!ensure(this->ProjectileCollisionComponent != nullptr)) return;
-    if (!ensure(this->LaserDataAsset != nullptr)) return;
-    ProjectileCollisionComponent->SetCollisionProfileName(this->LaserDataAsset->CollisionProfileName);
 
     if (this->HasAuthority())
     {

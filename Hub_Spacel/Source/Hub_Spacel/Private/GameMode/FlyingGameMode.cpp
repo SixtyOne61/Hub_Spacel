@@ -377,14 +377,14 @@ FString AFlyingGameMode::InitNewPlayer(class APlayerController* _newPlayerContro
             {
                 auto playerObj{ this->UpdateGameSessionState.PlayerIdToPlayer.Find(playerId) };
                 FString const& team{ playerObj->GetTeam() };
-                spacelPlayerState->Team = *team;
+                spacelPlayerState->SetTeam(*team);
             }
             else if (this->StartGameSessionState.PlayerIdToPlayer.Num() > 0
              && this->StartGameSessionState.PlayerIdToPlayer.Contains(playerId))
             {
                 auto playerObj { this->StartGameSessionState.PlayerIdToPlayer.Find(playerId) };
                 FString const& team { playerObj->GetTeam() };
-                spacelPlayerState->Team = *team;
+                spacelPlayerState->SetTeam(*team);
             }
         }
     }

@@ -23,6 +23,9 @@ public:
 	void TickComponent(float _deltaTime, ELevelTick _tickType, FActorComponentTickFunction* _thisTickFunction) override;
 
 private:
+	void spawnBullet(FTransform const& _transform) const;
+
+private:
 	/* use only on server, say if we are in fire */
 	Util::Optional<bool> m_isFire{ };
 
