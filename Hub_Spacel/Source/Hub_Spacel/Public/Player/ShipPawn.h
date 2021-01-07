@@ -6,6 +6,8 @@
 #include "GameFramework/Pawn.h"
 #include "ShipPawn.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUpdateMatiere, int, _value);
+
 UCLASS()
 class HUB_SPACEL_API AShipPawn : public APawn
 {
@@ -15,6 +17,7 @@ class HUB_SPACEL_API AShipPawn : public APawn
     friend class USpacelWidget;
     friend class UFireComponent;
     friend class UCustomCollisionComponent;
+    friend class URepairComponent;
 
 public:
 	// Sets default values for this pawn's properties
@@ -69,6 +72,13 @@ private:
     /* call for kill a player when red zone is hit */
     void kill();
 
+    template<class T>
+    inline void activateComponent(T* _comp)
+    {
+        if (!ensure(_comp != nullptr)) return;
+        _comp->Activate();
+    }
+
 public:
     UPROPERTY(Category = "Ship", VisibleAnywhere, BlueprintReadOnly)
     class UStaticMeshComponent* DriverMeshComponent { nullptr };
@@ -97,6 +107,10 @@ public:
     UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)
     class UFireComponent* FireComponent { nullptr };
 
+    /* only on server side */
+    UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)
+    class URepairComponent* RepairComponent { nullptr };
+
     UPROPERTY(Category = "ChildActor", EditAnywhere, BlueprintReadWrite)
     class UChildActorComponent* TargetComponent { nullptr };
 
@@ -119,4 +133,8 @@ protected:
     /* when up change -1.0f or 0.0f or 1.0f */
     UPROPERTY(ReplicatedUsing = "OnRep_PercentUp")
     float RU_PercentUp = 0.0f;
+
+private:
+    UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
+    FOnUpdateMatiere OnUpdateMatiereDelegate {};
 };

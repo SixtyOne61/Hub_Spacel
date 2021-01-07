@@ -19,7 +19,6 @@ public:
 	// Sets default values for this component's properties
 	UFireComponent();
 
-public:	
 	// Called every frame
 	void TickComponent(float _deltaTime, ELevelTick _tickType, FActorComponentTickFunction* _thisTickFunction) override;
 

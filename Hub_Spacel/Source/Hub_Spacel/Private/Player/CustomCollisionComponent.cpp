@@ -9,6 +9,8 @@
 #include "CollisionQueryParams.h"
 #include "Gameplay/DestroyActor.h"
 #include "Components/InstancedStaticMeshComponent.h"
+#include "World/MatiereManager.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values for this component's properties
 UCustomCollisionComponent::UCustomCollisionComponent()
@@ -18,6 +20,15 @@ UCustomCollisionComponent::UCustomCollisionComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 
 	// ...
+}
+
+void UCustomCollisionComponent::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (this->GetNetMode() != ENetMode::NM_DedicatedServer) return;
+
+	m_matiereManager = MakeWeakObjectPtr(Cast<AMatiereManager>(UGameplayStatics::GetActorOfClass(this->GetWorld(), AMatiereManager::StaticClass())));
 }
 
 // Called every frame
@@ -68,13 +79,18 @@ void UCustomCollisionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 		int32 index{ 0 };
 		while (index < _mesh->GetInstanceCount())
 		{
-			// order is important
+			// order of if is important
 			if (_mesh->GetInstanceTransform(index, worldTransform, true)
 				&& lb_checkCollision(collisionShape, worldTransform.GetLocation())
 				&& saveDestroyActor(saveHits, hits))
 			{
 				FTransform localTransform{};
 				_mesh->GetInstanceTransform(index, localTransform, false);
+
+				if (m_matiereManager.IsValid())
+				{
+					m_matiereManager.Get()->spawnMatiere(worldTransform.GetLocation());
+				}
 
 				// manage item hits
 				_mesh->RemoveInstance(index);
@@ -92,6 +108,11 @@ void UCustomCollisionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 	if (m_shipPawnOwner.Get()->ModuleComponent
 		&& lb_checkCollision(collisionShape, ownerLocation))
 	{
+		hitMatiere(hits);
+
+		// check if we consume all hit item
+		if(hits.Num() == 0) return;
+
 		lb_checkEachInstance(m_shipPawnOwner.Get()->ModuleComponent->ProtectionMeshComponent, m_shipPawnOwner.Get()->ModuleComponent->RU_ProtectionLocations);
 		lb_checkEachInstance(m_shipPawnOwner.Get()->ModuleComponent->SupportMeshComponent, m_shipPawnOwner.Get()->ModuleComponent->RU_SupportLocations);
 
@@ -112,6 +133,29 @@ void UCustomCollisionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 
 			m_shipPawnOwner.Get()->kill();
 		}
+	}
+}
+
+void UCustomCollisionComponent::hitMatiere(TArray<FHitResult>& _items) const
+{
+	int addMatiere {};
+	_items.RemoveAll([&addMatiere](FHitResult const& _item)
+		{
+			if (_item.Actor.IsValid() && _item.Actor.Get()->ActorHasTag("Matiere"))
+			{
+				if (AMatiereManager* matiere = Cast<AMatiereManager>(_item.Actor.Get()))
+				{
+					addMatiere += matiere->hit(_item);
+					return true;
+				}
+			}
+			return false;
+		});
+
+	// make event for add matiere like updateMatiere for decrease or increase matiere
+	if (m_shipPawnOwner.IsValid() && addMatiere != int{})
+	{
+		m_shipPawnOwner.Get()->OnUpdateMatiereDelegate.Broadcast(addMatiere);
 	}
 }
 

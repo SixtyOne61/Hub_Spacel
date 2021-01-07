@@ -20,6 +20,7 @@
 #include "Player/ModuleComponent.h"
 #include "Player/CustomCollisionComponent.h"
 #include "Player/PlayerShipController.h"
+#include "Player/RepairComponent.h"
 #include "GameState/SpacelGameState.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Hub_SpacelGameInstance.h"
@@ -58,6 +59,10 @@ AShipPawn::AShipPawn()
     if (!ensure(FireComponent != nullptr)) return;
     FireComponent->Deactivate();
 
+    RepairComponent = CreateDefaultSubobject<URepairComponent>(TEXT("Repair_00"));
+    if (!ensure(RepairComponent != nullptr)) return;
+    RepairComponent->Deactivate();
+
     CustomCollisionComponent = CreateDefaultSubobject<UCustomCollisionComponent>(TEXT("CustomCollision_00"));
     if (!ensure(CustomCollisionComponent != nullptr)) return;
     CustomCollisionComponent->Deactivate();
@@ -74,11 +79,9 @@ void AShipPawn::BeginPlay()
 
     if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
     {
-        if (!ensure(this->FireComponent != nullptr)) return;
-        this->FireComponent->Activate();
-
-        if (!ensure(this->CustomCollisionComponent != nullptr)) return;
-        this->CustomCollisionComponent->Activate();
+        activateComponent(this->FireComponent);
+        activateComponent(this->CustomCollisionComponent);
+        activateComponent(this->RepairComponent);
     }
     else if (!this->IsLocallyControlled())
     {
