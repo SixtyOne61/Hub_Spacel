@@ -18,9 +18,9 @@ public:
 	int hit(FHitResult const& _hit) { return 0 ; } // TO DO delay destruction
 
 	void spawnMatiere(FVector const& _location, FString const& _team) {}
+	// collision only for sweep no physic enable (profile collision)
 
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
+public:
+	UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)
+	class UInstancedStaticMeshComponent* MatiereMeshComponent{ nullptr };
 };
