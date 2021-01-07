@@ -5,6 +5,7 @@
 #include "Player/ShipPawn.h"
 #include "Player/ModuleComponent.h"
 #include "Player/PlayerShipController.h"
+#include "Player/SpacelPlayerState.h"
 #include "CollisionShape.h"
 #include "CollisionQueryParams.h"
 #include "Gameplay/DestroyActor.h"
@@ -89,7 +90,10 @@ void UCustomCollisionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 
 				if (m_matiereManager.IsValid())
 				{
-					m_matiereManager.Get()->spawnMatiere(worldTransform.GetLocation());
+					if (ASpacelPlayerState const* spacelPlayerState = m_shipPawnOwner.Get()->GetPlayerState<ASpacelPlayerState>())
+					{
+						m_matiereManager.Get()->spawnMatiere(worldTransform.GetLocation(), spacelPlayerState->Team);
+					}
 				}
 
 				// manage item hits

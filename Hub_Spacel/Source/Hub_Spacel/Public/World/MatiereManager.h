@@ -17,7 +17,7 @@ public:
 
 	int hit(FHitResult const& _hit) { return 0 ; } // TO DO delay destruction
 
-	void spawnMatiere(FVector const& _location) {}
+	void spawnMatiere(FVector const& _location, FString const& _team) {}
 
 protected:
 	// Called when the game starts or when spawned

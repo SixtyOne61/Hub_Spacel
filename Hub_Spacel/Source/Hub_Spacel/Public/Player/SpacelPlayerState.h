@@ -33,9 +33,6 @@ public:
     UFUNCTION()
     void SetTeam(FString const& _team);
 
-    UFUNCTION()
-    inline FString const& GetTeam() const { return Team; }
-
 private:
     void setRemainingSkillPoint(uint8 && _val);
 	
