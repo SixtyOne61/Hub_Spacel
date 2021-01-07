@@ -132,7 +132,7 @@ void AChunck::applyDmg()
 			TArray<int32> tmpArray{};
 			m_dmg.KeySort([](int32 const& _k1, int32 const& _k2)
 				{
-					return _k1 < _k2;
+					return _k1 > _k2;
 				});
 
 			for (auto const& pair : m_dmg)
