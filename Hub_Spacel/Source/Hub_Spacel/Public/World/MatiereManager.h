@@ -20,9 +20,6 @@ public:
 	void spawnMatiere(FVector const& _location, FString const& _team);
 
 private:
-	UFUNCTION(Reliable, Client)
-	void RPCAddMatiere(FVector const& _location);
-
 	UFUNCTION()
 	void OnRep_AddInstance();
 

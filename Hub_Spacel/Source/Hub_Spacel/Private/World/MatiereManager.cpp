@@ -31,12 +31,6 @@ void AMatiereManager::spawnMatiere(FVector const& _location, FString const& _tea
 	}
 }
 
-void AMatiereManager::RPCAddMatiere_Implementation(FVector const& _location)
-{
-	if (!ensure(this->Matieres != nullptr)) return;
-	this->Matieres->AddInstance(FTransform{ _location });
-}
-
 void AMatiereManager::OnRep_AddInstance()
 {
 	if (!ensure(this->Matieres != nullptr)) return;
