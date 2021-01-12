@@ -143,13 +143,17 @@ void UCustomCollisionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 void UCustomCollisionComponent::hitMatiere(TArray<FHitResult>& _items) const
 {
 	int addMatiere {};
-	_items.RemoveAll([&addMatiere](FHitResult const& _item)
+	ASpacelPlayerState const* spacelPlayerState { m_shipPawnOwner.Get()->GetPlayerState<ASpacelPlayerState>() };
+	if (spacelPlayerState == nullptr) return;
+
+	FString const& team = spacelPlayerState->Team;
+	_items.RemoveAll([&addMatiere, &team](FHitResult const& _item)
 		{
 			if (_item.Actor.IsValid() && _item.Actor.Get()->ActorHasTag("Matiere"))
 			{
 				if (AMatiereManager* matiere = Cast<AMatiereManager>(_item.Actor.Get()))
 				{
-					addMatiere += matiere->hit(_item);
+					addMatiere += matiere->hit(_item, team);
 					return true;
 				}
 			}

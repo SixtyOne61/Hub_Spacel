@@ -15,13 +15,18 @@ public:
 	// Sets default values for this actor's properties
 	AMatiereManager();
 
-	int hit(FHitResult const& _hit) { return 0 ; } // TO DO delay destruction
+	// Called when the game starts or when spawned
+	void BeginPlay() override;
 
+	// Called every frame
+	void Tick(float _deltaTime) override;
+
+	int hit(FHitResult const& _hit, FString const& _team);
 	void spawnMatiere(FVector const& _location, FString const& _team);
 
 private:
 	UFUNCTION()
-	void OnRep_AddInstance();
+	void OnRep_Instance();
 
 public:
 	UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)
@@ -30,6 +35,8 @@ public:
 private:
 	TMap<FVector, FString> m_spawnByTeam {};
 
-	UPROPERTY(ReplicatedUsing = "OnRep_AddInstance")
-	FVector RU_AddInstance{};
+	TSet<int32> m_instanceToRemove {};
+
+	UPROPERTY(ReplicatedUsing = "OnRep_Instance")
+	TArray<FVector> RU_Instance{};
 };
