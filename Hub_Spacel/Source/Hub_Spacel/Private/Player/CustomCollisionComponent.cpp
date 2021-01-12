@@ -80,7 +80,7 @@ void UCustomCollisionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 		int32 index{ 0 };
 		while (index < _mesh->GetInstanceCount())
 		{
-			// order of if is important
+			// order of "if" is important
 			if (_mesh->GetInstanceTransform(index, worldTransform, true)
 				&& lb_checkCollision(collisionShape, worldTransform.GetLocation())
 				&& saveDestroyActor(saveHits, hits))
