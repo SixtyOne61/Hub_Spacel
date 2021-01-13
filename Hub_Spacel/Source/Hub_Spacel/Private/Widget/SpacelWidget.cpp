@@ -21,7 +21,7 @@ void USpacelWidget::NativeConstruct()
     EventTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Event"));
     PingTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Ping"));
     SpeedTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Speed"));
-    ToggleRepairGridPanel = SimplyUI::initSafetyFromName<UUserWidget, UUniformGridPanel>(this, TEXT("GridPanel_ToggleRepair"));
+    ToggleRepairGridPanel = SimplyUI::initSafetyFromName<UUserWidget, UUserWidget>(this, TEXT("WBP_ToggleRepair"));
 
     UWorld* world{ this->GetWorld() };
     if (!ensure(world != nullptr)) return;

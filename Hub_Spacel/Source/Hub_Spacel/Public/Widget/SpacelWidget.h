@@ -67,5 +67,5 @@ private:
 	class UTextBlock* SpeedTextBlock { nullptr };
 
 	UPROPERTY()
-	class UUniformGridPanel* ToggleRepairGridPanel { nullptr };
+	class UUserWidget* ToggleRepairGridPanel { nullptr };
 };
