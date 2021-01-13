@@ -18,12 +18,24 @@ void URepairComponent::BeginPlay()
     if (!m_shipPawnOwner.IsValid() && !initShipPawnOwner()) return;
 
     m_shipPawnOwner.Get()->OnUpdateMatiereDelegate.AddDynamic(this, &URepairComponent::OnUpdateMatiere);
+    m_shipPawnOwner.Get()->OnHitProtectionDelegate.AddDynamic(this, &URepairComponent::OnHitProtection);
+    m_shipPawnOwner.Get()->OnHitSupportDelegate.AddDynamic(this, &URepairComponent::OnHitSupport);
 }
 
 void URepairComponent::OnUpdateMatiere(int _value)
 {
     RU_Matiere += _value;
     OnRep_Matiere();
+}
+
+void URepairComponent::OnHitProtection()
+{
+
+}
+
+void URepairComponent::OnHitSupport()
+{
+
 }
 
 void URepairComponent::OnRep_Matiere()

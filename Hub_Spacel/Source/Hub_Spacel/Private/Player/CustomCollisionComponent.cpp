@@ -69,7 +69,9 @@ void UCustomCollisionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 
 	auto lb_checkEachInstance = [&](UInstancedStaticMeshComponent*& _mesh, TArray<FVector>& _replicated)
 	{
-		if (_mesh == nullptr || _mesh->GetInstanceCount() == 0) return;
+		if (_mesh == nullptr || _mesh->GetInstanceCount() == 0) return false;
+
+		int32 count = _replicated.Num();
 
 		FVector min{}, max{};
 		_mesh->GetLocalBounds(min, max);
@@ -107,6 +109,8 @@ void UCustomCollisionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 			}
 			++index;
 		}
+
+		return count != _replicated.Num();
 	};
 
 	if (m_shipPawnOwner.Get()->ModuleComponent
@@ -117,8 +121,15 @@ void UCustomCollisionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 		// check if we consume all hit item
 		if(hits.Num() == 0) return;
 
-		lb_checkEachInstance(m_shipPawnOwner.Get()->ModuleComponent->ProtectionMeshComponent, m_shipPawnOwner.Get()->ModuleComponent->RU_ProtectionLocations);
-		lb_checkEachInstance(m_shipPawnOwner.Get()->ModuleComponent->SupportMeshComponent, m_shipPawnOwner.Get()->ModuleComponent->RU_SupportLocations);
+		if (lb_checkEachInstance(m_shipPawnOwner.Get()->ModuleComponent->ProtectionMeshComponent, m_shipPawnOwner.Get()->ModuleComponent->RU_ProtectionLocations))
+		{
+			m_shipPawnOwner.Get()->OnHitProtectionDelegate.Broadcast();
+		}
+
+		if (lb_checkEachInstance(m_shipPawnOwner.Get()->ModuleComponent->SupportMeshComponent, m_shipPawnOwner.Get()->ModuleComponent->RU_SupportLocations))
+		{
+			m_shipPawnOwner.Get()->OnHitSupportDelegate.Broadcast();
+		}
 
 		// apply hit on hited actor
 		destroyActor(saveHits);

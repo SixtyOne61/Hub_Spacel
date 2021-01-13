@@ -7,6 +7,8 @@
 #include "ShipPawn.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUpdateMatiere, int, _value);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHitProtection);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHitSupport);
 
 UCLASS()
 class HUB_SPACEL_API AShipPawn : public APawn
@@ -140,4 +142,10 @@ protected:
 private:
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
     FOnUpdateMatiere OnUpdateMatiereDelegate {};
+
+    UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
+    FOnHitProtection OnHitProtectionDelegate {};
+
+    UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
+    FOnHitSupport OnHitSupportDelegate {};
 };

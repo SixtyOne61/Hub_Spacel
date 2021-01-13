@@ -24,6 +24,12 @@ private:
 	void OnUpdateMatiere(int _value);
 
 	UFUNCTION()
+	void OnHitProtection();
+
+	UFUNCTION()
+	void OnHitSupport();
+
+	UFUNCTION()
 	void OnRep_Matiere();
 
 private:

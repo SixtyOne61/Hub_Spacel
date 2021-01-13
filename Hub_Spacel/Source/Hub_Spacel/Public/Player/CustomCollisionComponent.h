@@ -6,7 +6,6 @@
 #include "Player/PlayerActorComponent.h"
 #include "CustomCollisionComponent.generated.h"
 
-
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class HUB_SPACEL_API UCustomCollisionComponent : public UPlayerActorComponent
 {
