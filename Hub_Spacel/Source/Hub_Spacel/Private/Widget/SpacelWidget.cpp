@@ -3,7 +3,9 @@
 
 #include "SpacelWidget.h"
 #include "Components/TextBlock.h"
+#include "Components/UniformGridPanel.h"
 #include "Player/SpacelPlayerState.h"
+#include "Player/PlayerShipController.h"
 #include "GameState/SpacelGameState.h"
 #include "Hub_SpacelGameInstance.h"
 #include "Kismet/GameplayStatics.h"
@@ -19,6 +21,7 @@ void USpacelWidget::NativeConstruct()
     EventTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Event"));
     PingTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Ping"));
     SpeedTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Speed"));
+    ToggleRepairGridPanel = SimplyUI::initSafetyFromName<UUserWidget, UUniformGridPanel>(this, TEXT("GridPanel_ToggleRepair"));
 
     UWorld* world{ this->GetWorld() };
     if (!ensure(world != nullptr)) return;
@@ -33,6 +36,12 @@ void USpacelWidget::NativeConstruct()
     if (spacelGameState != nullptr)
     {
         spacelGameState->OnStartGameDelegate.AddDynamic(this, &USpacelWidget::StartGame);
+    }
+
+    APlayerShipController* playerShipController { this->GetOwningPlayer<APlayerShipController>() };
+    if (playerShipController != nullptr)
+    {
+        playerShipController->OnToggleRepairDelegate.AddDynamic(this, &USpacelWidget::OnToggleRepair);
     }
 }
 
@@ -155,5 +164,21 @@ void USpacelWidget::SetSpeed()
     if (shipPawn != nullptr && this->SpeedTextBlock != nullptr)
     {
         this->SpeedTextBlock->SetText(FText::FromString(FString::FromInt(FMath::RoundToInt(shipPawn->R_PercentSpeed * 100)) + " %"));
+    }
+}
+
+void USpacelWidget::OnToggleRepair(bool _on)
+{
+    if (!ensure(this->ToggleRepairGridPanel != nullptr)) return;
+
+    if (_on)
+    {
+        SimplyUI::setVisibility({ ESlateVisibility::Visible },
+            std::make_tuple(this->ToggleRepairGridPanel));
+    }
+    else
+    {
+        SimplyUI::setVisibility({ ESlateVisibility::Hidden },
+            std::make_tuple(this->ToggleRepairGridPanel));
     }
 }

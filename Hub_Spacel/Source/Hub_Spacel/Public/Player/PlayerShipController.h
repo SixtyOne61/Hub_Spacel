@@ -7,6 +7,8 @@
 #include <functional>
 #include "PlayerShipController.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnToggleRepair, bool, _on);
+
 /**
  * 
  */
@@ -87,6 +89,9 @@ protected:
     UFUNCTION(Reliable, Server)
     void RPCServerFire(bool _on);
 
+    /* repair input */
+    void toggleRepair();
+
     void returnToMainMenu();
 
     UFUNCTION()
@@ -105,8 +110,12 @@ public:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
     float PercentUp = 0.0f;
 
+    UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
+    FOnToggleRepair OnToggleRepairDelegate {};
+
 private:
     TOptional<FUnlinearReachGoal> m_speed {};
 
     bool m_enableFlyingInput { false };
+    bool m_toggleRepair { false };
 };

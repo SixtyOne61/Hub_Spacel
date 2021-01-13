@@ -47,6 +47,9 @@ private:
 	UFUNCTION()
 	void SetSpeed();
 
+	UFUNCTION()
+	void OnToggleRepair(bool _on);
+
 private:
 	UPROPERTY()
 	class UTextBlock* TeamNameTextBlock { nullptr };
@@ -62,4 +65,7 @@ private:
 
 	UPROPERTY()
 	class UTextBlock* SpeedTextBlock { nullptr };
+
+	UPROPERTY()
+	class UUniformGridPanel* ToggleRepairGridPanel { nullptr };
 };

@@ -112,6 +112,9 @@ void APlayerShipController::SetupInputComponent()
     this->InputComponent->BindAction("Fire", IE_Pressed, this, &APlayerShipController::fireOn);
     this->InputComponent->BindAction("Fire", IE_Released, this, &APlayerShipController::fireOff);
 
+    // repair toggle
+    this->InputComponent->BindAction("Repair", IE_Pressed, this, &APlayerShipController::toggleRepair);
+
     // extra
     this->InputComponent->BindAction("ReturnToMainMenu", IE_Pressed, this, &APlayerShipController::returnToMainMenu);
 }
@@ -250,6 +253,15 @@ void APlayerShipController::RPCServerFire_Implementation(bool _on)
     }
 
     shipPawn->setFire(_on);
+}
+
+void APlayerShipController::toggleRepair()
+{
+    if (this->m_enableFlyingInput)
+    {
+        m_toggleRepair = !m_toggleRepair;
+        OnToggleRepairDelegate.Broadcast(m_toggleRepair);
+    }
 }
 
 void APlayerShipController::readInput(int const& _val, float& _in, std::function<void(float)> _fnc)
