@@ -321,12 +321,22 @@ void APlayerShipController::Restart()
 
 void APlayerShipController::ToggleRepairProtection(bool _on)
 {
+    RPCServerRepairProtection(_on);
+}
 
+void APlayerShipController::RPCServerRepairProtection_Implementation(bool _on)
+{
+    OnRepairProtectionDelegate.Broadcast(_on);
 }
 
 void APlayerShipController::ToggleRepairSupport(bool _on)
 {
+    RPCServerRepairSupport(_on);
+}
 
+void APlayerShipController::RPCServerRepairSupport_Implementation(bool _on)
+{
+    OnRepairSupportDelegate.Broadcast(_on);
 }
 
 void APlayerShipController::ToggleGiveAlly1(bool _on)

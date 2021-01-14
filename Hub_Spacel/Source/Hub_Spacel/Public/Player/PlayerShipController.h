@@ -8,6 +8,8 @@
 #include "PlayerShipController.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnToggleRepair, bool, _on);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRepairProtection, bool, _on);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRepairSupport, bool, _on);
 
 /**
  * 
@@ -100,9 +102,13 @@ protected:
     /* call from UI */
     UFUNCTION(BlueprintCallable, Category = "UI")
     void ToggleRepairProtection(bool _on);
+    UFUNCTION(Reliable, Server)
+    void RPCServerRepairProtection(bool _on);
 
     UFUNCTION(BlueprintCallable, Category = "UI")
     void ToggleRepairSupport(bool _on);
+    UFUNCTION(Reliable, Server)
+    void RPCServerRepairSupport(bool _on);
 
     UFUNCTION(BlueprintCallable, Category = "UI")
     void ToggleGiveAlly1(bool _on);
@@ -125,6 +131,12 @@ public:
 
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
     FOnToggleRepair OnToggleRepairDelegate {};
+
+    UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
+    FOnRepairProtection OnRepairProtectionDelegate {};
+
+    UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
+    FOnRepairSupport OnRepairSupportDelegate {};
 
 private:
     TOptional<FUnlinearReachGoal> m_speed {};
