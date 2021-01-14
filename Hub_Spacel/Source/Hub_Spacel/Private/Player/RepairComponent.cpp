@@ -25,6 +25,7 @@ void URepairComponent::BeginPlay()
     APlayerShipController* playerShipController { m_shipPawnOwner.Get()->GetController<APlayerShipController>() };
     if (playerShipController != nullptr)
     {
+        playerShipController->OnToggleRepairDelegate.AddDynamic(this, &URepairComponent::OnToggleRepair);
         playerShipController->OnRepairProtectionDelegate.AddDynamic(this, &URepairComponent::OnRepairProtection);
         playerShipController->OnRepairSupportDelegate.AddDynamic(this, &URepairComponent::OnRepairSupport);
     }
@@ -78,13 +79,29 @@ void URepairComponent::RepairProtection()
 
 void URepairComponent::OnRepairSupport(bool _on)
 {
-    onRepair(_on, this->RepairProtectionHandle, &URepairComponent::RepairSupport);
+    onRepair(_on, this->RepairSupportHandle, &URepairComponent::RepairSupport);
 }
 
 void URepairComponent::RepairSupport()
 {
 
 }
+
+void URepairComponent::OnToggleRepair(bool _on)
+{
+    RPCServerOnToggleRepair(_on);
+}
+
+void URepairComponent::RPCServerOnToggleRepair_Implementation(bool _on)
+{
+    if (!_on)
+    {
+        // clear timer
+        onRepair(_on, this->RepairProtectionHandle, nullptr);
+        onRepair(_on, this->RepairSupportHandle, nullptr);
+    }
+}
+
 
 void URepairComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {

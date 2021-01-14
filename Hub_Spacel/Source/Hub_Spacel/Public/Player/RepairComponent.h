@@ -34,6 +34,13 @@ private:
 	UFUNCTION()
 	void OnRep_Matiere();
 
+	/* call from client */
+	UFUNCTION()
+	void OnToggleRepair(bool _on);
+
+	UFUNCTION(Reliable, Server)
+	void RPCServerOnToggleRepair(bool _on);
+
 	/* call from server */
 	UFUNCTION()
 	void OnRepairProtection(bool _on);
