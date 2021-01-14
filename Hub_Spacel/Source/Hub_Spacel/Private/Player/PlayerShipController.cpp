@@ -317,5 +317,24 @@ void APlayerShipController::Restart()
     {
         flyingGameMode->Restart(this, spacelPlayerState->PlayerStartTransform);
     }
+}
+
+void APlayerShipController::ToggleRepairProtection(bool _on)
+{
+
+}
+
+void APlayerShipController::ToggleRepairSupport(bool _on)
+{
+
+}
+
+void APlayerShipController::ToggleGiveAlly1(bool _on)
+{
+
+}
+
+void APlayerShipController::ToggleGiveAlly2(bool _on)
+{
 
 }

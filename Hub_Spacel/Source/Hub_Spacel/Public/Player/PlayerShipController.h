@@ -97,6 +97,19 @@ protected:
     UFUNCTION()
     void StartGame();
 
+    /* call from UI */
+    UFUNCTION(BlueprintCallable, Category = "UI")
+    void ToggleRepairProtection(bool _on);
+
+    UFUNCTION(BlueprintCallable, Category = "UI")
+    void ToggleRepairSupport(bool _on);
+
+    UFUNCTION(BlueprintCallable, Category = "UI")
+    void ToggleGiveAlly1(bool _on);
+
+    UFUNCTION(BlueprintCallable, Category = "UI")
+    void ToggleGiveAlly2(bool _on);
+
 private:
     void readInput(int const& _val, float& _in, std::function<void(float)> _fnc);
 
