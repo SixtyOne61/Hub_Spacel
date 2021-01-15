@@ -8,8 +8,6 @@
 #include "PlayerShipController.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnToggleRepair, bool, _on);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRepairProtection, bool, _on);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRepairSupport, bool, _on);
 
 /**
  * 
@@ -119,6 +117,8 @@ protected:
 private:
     void readInput(int const& _val, float& _in, std::function<void(float)> _fnc);
 
+    void toggleRpcCall(bool const& _val, bool & _toggle, std::function<void(bool)> _rpc);
+
 public:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
     float PercentFlightAttitude = 0.0f;
@@ -132,15 +132,11 @@ public:
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
     FOnToggleRepair OnToggleRepairDelegate {};
 
-    UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
-    FOnRepairProtection OnRepairProtectionDelegate {};
-
-    UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
-    FOnRepairSupport OnRepairSupportDelegate {};
-
 private:
     TOptional<FUnlinearReachGoal> m_speed {};
 
     bool m_enableFlyingInput { false };
     bool m_toggleRepair { false };
+    bool m_toggleProtection { false };
+    bool m_toggleSupport { false };
 };

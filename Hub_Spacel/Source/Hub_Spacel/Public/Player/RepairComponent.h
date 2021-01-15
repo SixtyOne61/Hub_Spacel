@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Player/PlayerActorComponent.h"
+#include <functional>
 #include "RepairComponent.generated.h"
 
 /**
@@ -34,13 +35,6 @@ private:
 	UFUNCTION()
 	void OnRep_Matiere();
 
-	/* call from client */
-	UFUNCTION()
-	void OnToggleRepair(bool _on);
-
-	UFUNCTION(Reliable, Server)
-	void RPCServerOnToggleRepair(bool _on);
-
 	/* call from server */
 	UFUNCTION()
 	void OnRepairProtection(bool _on);
@@ -59,11 +53,11 @@ private:
 	UFUNCTION()
 	void RepairSupport();
 
-	void repair(TArray<FVector> & _removedLocations, TArray<FVector> & _locations);
+	void repair(TArray<FVector> & _removedLocations, TArray<FVector> & _locations, std::function<void(void)> _onRep);
 
 private:
 	UPROPERTY(ReplicatedUsing = "OnRep_Matiere")
-	float RU_Matiere = 0.0f;
+	int32 RU_Matiere { 10 };
 
 	UPROPERTY()
 	FTimerHandle RepairProtectionHandle {};

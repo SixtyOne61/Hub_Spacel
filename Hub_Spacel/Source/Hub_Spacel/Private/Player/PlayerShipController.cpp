@@ -261,6 +261,13 @@ void APlayerShipController::toggleRepair()
     {
         m_toggleRepair = !m_toggleRepair;
         OnToggleRepairDelegate.Broadcast(m_toggleRepair);
+
+        // reset toggle
+        if (!m_toggleRepair)
+        {
+            this->ToggleRepairProtection(false);
+            this->ToggleRepairSupport(false);
+        }
     }
 }
 
@@ -319,24 +326,45 @@ void APlayerShipController::Restart()
     }
 }
 
+void APlayerShipController::toggleRpcCall(bool const& _val, bool& _toggle, std::function<void(bool)> _rpc)
+{
+    if (_val != _toggle)
+    {
+        _toggle = _val;
+        _rpc(_toggle);
+    }
+}
+
 void APlayerShipController::ToggleRepairProtection(bool _on)
 {
-    RPCServerRepairProtection(_on);
+    toggleRpcCall(_on, m_toggleProtection, std::bind(&APlayerShipController::RPCServerRepairProtection, this, std::placeholders::_1));
 }
 
 void APlayerShipController::RPCServerRepairProtection_Implementation(bool _on)
 {
-    OnRepairProtectionDelegate.Broadcast(_on);
+    AShipPawn* shipPawn = Cast<AShipPawn>(this->GetPawn());
+    if (shipPawn == nullptr)
+    {
+        return;
+    }
+
+    shipPawn->OnRepairProtectionDelegate.Broadcast(_on);
 }
 
 void APlayerShipController::ToggleRepairSupport(bool _on)
 {
-    RPCServerRepairSupport(_on);
+    toggleRpcCall(_on, m_toggleProtection, std::bind(&APlayerShipController::RPCServerRepairSupport, this, std::placeholders::_1));
 }
 
 void APlayerShipController::RPCServerRepairSupport_Implementation(bool _on)
 {
-    OnRepairSupportDelegate.Broadcast(_on);
+    AShipPawn* shipPawn = Cast<AShipPawn>(this->GetPawn());
+    if (shipPawn == nullptr)
+    {
+        return;
+    }
+
+    shipPawn->OnRepairSupportDelegate.Broadcast(_on);
 }
 
 void APlayerShipController::ToggleGiveAlly1(bool _on)

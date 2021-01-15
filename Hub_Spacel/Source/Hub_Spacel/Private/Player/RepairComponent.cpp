@@ -22,14 +22,8 @@ void URepairComponent::BeginPlay()
     m_shipPawnOwner.Get()->OnUpdateMatiereDelegate.AddDynamic(this, &URepairComponent::OnUpdateMatiere);
     m_shipPawnOwner.Get()->OnHitProtectionDelegate.AddDynamic(this, &URepairComponent::OnHitProtection);
     m_shipPawnOwner.Get()->OnHitSupportDelegate.AddDynamic(this, &URepairComponent::OnHitSupport);
-
-    APlayerShipController* playerShipController { m_shipPawnOwner.Get()->GetController<APlayerShipController>() };
-    if (playerShipController != nullptr)
-    {
-        playerShipController->OnToggleRepairDelegate.AddDynamic(this, &URepairComponent::OnToggleRepair);
-        playerShipController->OnRepairProtectionDelegate.AddDynamic(this, &URepairComponent::OnRepairProtection);
-        playerShipController->OnRepairSupportDelegate.AddDynamic(this, &URepairComponent::OnRepairSupport);
-    }
+    m_shipPawnOwner.Get()->OnRepairProtectionDelegate.AddDynamic(this, &URepairComponent::OnRepairProtection);
+    m_shipPawnOwner.Get()->OnRepairSupportDelegate.AddDynamic(this, &URepairComponent::OnRepairSupport);
 }
 
 void URepairComponent::OnUpdateMatiere(int _value)
@@ -75,7 +69,8 @@ void URepairComponent::OnRepairProtection(bool _on)
 
 void URepairComponent::RepairProtection()
 {
-    repair(m_shipPawnOwner.Get()->ModuleComponent->R_RemovedProtectionLocations, m_shipPawnOwner.Get()->ModuleComponent->RU_ProtectionLocations);
+    repair(m_shipPawnOwner.Get()->ModuleComponent->R_RemovedProtectionLocations, m_shipPawnOwner.Get()->ModuleComponent->RU_ProtectionLocations,
+        std::bind(&UModuleComponent::OnRep_Protection, m_shipPawnOwner.Get()->ModuleComponent));
 }
 
 void URepairComponent::OnRepairSupport(bool _on)
@@ -85,18 +80,20 @@ void URepairComponent::OnRepairSupport(bool _on)
 
 void URepairComponent::RepairSupport()
 {
-    repair(m_shipPawnOwner.Get()->ModuleComponent->R_RemovedSupportLocations, m_shipPawnOwner.Get()->ModuleComponent->RU_SupportLocations);
+    repair(m_shipPawnOwner.Get()->ModuleComponent->R_RemovedSupportLocations, m_shipPawnOwner.Get()->ModuleComponent->RU_SupportLocations,
+        std::bind(&UModuleComponent::OnRep_Support, m_shipPawnOwner.Get()->ModuleComponent));
 }
 
-void URepairComponent::repair(TArray<FVector>& _removedLocations, TArray<FVector>& _locations)
+void URepairComponent::repair(TArray<FVector>& _removedLocations, TArray<FVector>& _locations, std::function<void(void)> _onRep)
 {
-    if (_removedLocations.Num() == 0)
+    if (_removedLocations.Num() != 0)
     {
         if (this->RU_Matiere > 0)
         {
             _locations.Add(_removedLocations[0]);
             _removedLocations.RemoveAt(0);
             this->OnUpdateMatiere(-1);
+            _onRep();
         }
         else
         {
@@ -108,22 +105,6 @@ void URepairComponent::repair(TArray<FVector>& _removedLocations, TArray<FVector
         // feedback full repair
     }
 }
-
-void URepairComponent::OnToggleRepair(bool _on)
-{
-    RPCServerOnToggleRepair(_on);
-}
-
-void URepairComponent::RPCServerOnToggleRepair_Implementation(bool _on)
-{
-    if (!_on)
-    {
-        // clear timer
-        onRepair(_on, this->RepairProtectionHandle, nullptr);
-        onRepair(_on, this->RepairSupportHandle, nullptr);
-    }
-}
-
 
 void URepairComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {

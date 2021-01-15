@@ -9,6 +9,8 @@
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUpdateMatiere, int, _value);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHitProtection);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHitSupport);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRepairProtection, bool, _on);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRepairSupport, bool, _on);
 
 UCLASS()
 class HUB_SPACEL_API AShipPawn : public APawn
@@ -148,4 +150,10 @@ private:
 
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
     FOnHitSupport OnHitSupportDelegate {};
+
+    UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
+    FOnRepairProtection OnRepairProtectionDelegate {};
+
+    UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
+    FOnRepairSupport OnRepairSupportDelegate {};
 };
