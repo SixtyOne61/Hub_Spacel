@@ -57,7 +57,7 @@ private:
 
 private:
 	UPROPERTY(ReplicatedUsing = "OnRep_Matiere")
-	int32 RU_Matiere { 10 };
+	int32 RU_Matiere { 0 };
 
 	UPROPERTY()
 	FTimerHandle RepairProtectionHandle {};
