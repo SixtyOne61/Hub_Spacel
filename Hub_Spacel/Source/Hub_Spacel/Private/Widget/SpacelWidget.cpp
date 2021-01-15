@@ -17,6 +17,7 @@ void USpacelWidget::NativeConstruct()
     Super::NativeConstruct();
 
     TeamNameTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_TeamName"));
+    MatiereTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Matiere"));
     TeammateCountTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_TeammateCount"));
     EventTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Event"));
     PingTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Ping"));
@@ -42,6 +43,12 @@ void USpacelWidget::NativeConstruct()
     if (playerShipController != nullptr)
     {
         playerShipController->OnToggleRepairDelegate.AddDynamic(this, &USpacelWidget::OnToggleRepair);
+    }
+
+    AShipPawn* shipPawn { this->GetOwningPlayerPawn<AShipPawn>() };
+    if (shipPawn != nullptr)
+    {
+        shipPawn->OnEndUpdateMatiereDelegate.AddDynamic(this, &USpacelWidget::OnUpdateMatiere);
     }
 }
 
@@ -180,5 +187,13 @@ void USpacelWidget::OnToggleRepair(bool _on)
     {
         SimplyUI::setVisibility({ ESlateVisibility::Hidden },
             std::make_tuple(this->ToggleRepairGridPanel));
+    }
+}
+
+void USpacelWidget::OnUpdateMatiere(int32 _value)
+{
+    if (this->MatiereTextBlock != nullptr)
+    {
+        this->MatiereTextBlock->SetText(FText::FromString("Matiere: " + FString::FromInt(_value)));
     }
 }

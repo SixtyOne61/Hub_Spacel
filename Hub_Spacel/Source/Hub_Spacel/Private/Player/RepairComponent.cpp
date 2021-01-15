@@ -45,6 +45,10 @@ void URepairComponent::OnHitSupport()
 void URepairComponent::OnRep_Matiere()
 {
     // Update UI
+    if (m_shipPawnOwner.IsValid())
+    {
+        m_shipPawnOwner.Get()->OnEndUpdateMatiereDelegate.Broadcast(RU_Matiere);
+    }
 }
 
 void URepairComponent::onRepair(bool _on, FTimerHandle & _handle, void(URepairComponent::* _callback)())

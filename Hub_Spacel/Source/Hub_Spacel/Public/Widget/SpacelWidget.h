@@ -50,9 +50,15 @@ private:
 	UFUNCTION()
 	void OnToggleRepair(bool _on);
 
+	UFUNCTION()
+	void OnUpdateMatiere(int32 _value);
+
 private:
 	UPROPERTY()
 	class UTextBlock* TeamNameTextBlock { nullptr };
+
+	UPROPERTY()
+	class UTextBlock* MatiereTextBlock { nullptr };
 
 	UPROPERTY()
 	class UTextBlock* TeammateCountTextBlock { nullptr };
