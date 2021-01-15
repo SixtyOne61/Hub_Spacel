@@ -4,6 +4,7 @@
 #include "RepairComponent.h"
 #include "Player/ShipPawn.h"
 #include "Player/PlayerShipController.h"
+#include "Player/ModuleComponent.h"
 #include "Net/UnrealNetwork.h"
 
 URepairComponent::URepairComponent()
@@ -59,7 +60,7 @@ void URepairComponent::onRepair(bool _on, FTimerHandle & _handle, void(URepairCo
 
     if (_on)
     {
-        world->GetTimerManager().SetTimer(_handle, this, _callback, 1.0f, true, 0.0f);
+        world->GetTimerManager().SetTimer(_handle, this, _callback, 0.2f, true, 0.0f);
     }
     else
     {
@@ -74,7 +75,7 @@ void URepairComponent::OnRepairProtection(bool _on)
 
 void URepairComponent::RepairProtection()
 {
-
+    repair(m_shipPawnOwner.Get()->ModuleComponent->R_RemovedProtectionLocations, m_shipPawnOwner.Get()->ModuleComponent->RU_ProtectionLocations);
 }
 
 void URepairComponent::OnRepairSupport(bool _on)
@@ -84,7 +85,28 @@ void URepairComponent::OnRepairSupport(bool _on)
 
 void URepairComponent::RepairSupport()
 {
+    repair(m_shipPawnOwner.Get()->ModuleComponent->R_RemovedSupportLocations, m_shipPawnOwner.Get()->ModuleComponent->RU_SupportLocations);
+}
 
+void URepairComponent::repair(TArray<FVector>& _removedLocations, TArray<FVector>& _locations)
+{
+    if (_removedLocations.Num() == 0)
+    {
+        if (this->RU_Matiere > 0)
+        {
+            _locations.Add(_removedLocations[0]);
+            _removedLocations.RemoveAt(0);
+            this->OnUpdateMatiere(-1);
+        }
+        else
+        {
+            // feedback matiere empty
+        }
+    }
+    else
+    {
+        // feedback full repair
+    }
 }
 
 void URepairComponent::OnToggleRepair(bool _on)

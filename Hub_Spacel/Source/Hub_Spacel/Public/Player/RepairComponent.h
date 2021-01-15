@@ -59,6 +59,8 @@ private:
 	UFUNCTION()
 	void RepairSupport();
 
+	void repair(TArray<FVector> & _removedLocations, TArray<FVector> & _locations);
+
 private:
 	UPROPERTY(ReplicatedUsing = "OnRep_Matiere")
 	float RU_Matiere = 0.0f;

@@ -67,7 +67,7 @@ void UCustomCollisionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 
 	FVector const& scale = m_shipPawnOwner.Get()->GetTransform().GetScale3D();
 
-	auto lb_checkEachInstance = [&](UInstancedStaticMeshComponent*& _mesh, TArray<FVector>& _replicated)
+	auto lb_checkEachInstance = [&](UInstancedStaticMeshComponent*& _mesh, TArray<FVector>& _replicated, TArray<FVector>& _removeReplicated)
 	{
 		if (_mesh == nullptr || _mesh->GetInstanceCount() == 0) return false;
 
@@ -102,7 +102,9 @@ void UCustomCollisionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 				_mesh->RemoveInstance(index);
 				// TO DO Check if it's better to make this in temp array
 				// for make only one batch for replication
-				_replicated.Remove(localTransform.GetLocation());
+				FVector const& location = localTransform.GetLocation();
+				_replicated.Remove(location);
+				_removeReplicated.Add(location);
 				
 				// go to next item with the same index
 				continue;
@@ -121,12 +123,12 @@ void UCustomCollisionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 		// check if we consume all hit item
 		if(hits.Num() == 0) return;
 
-		if (lb_checkEachInstance(m_shipPawnOwner.Get()->ModuleComponent->ProtectionMeshComponent, m_shipPawnOwner.Get()->ModuleComponent->RU_ProtectionLocations))
+		if (lb_checkEachInstance(m_shipPawnOwner.Get()->ModuleComponent->ProtectionMeshComponent, m_shipPawnOwner.Get()->ModuleComponent->RU_ProtectionLocations, m_shipPawnOwner.Get()->ModuleComponent->R_RemovedProtectionLocations))
 		{
 			m_shipPawnOwner.Get()->OnHitProtectionDelegate.Broadcast();
 		}
 
-		if (lb_checkEachInstance(m_shipPawnOwner.Get()->ModuleComponent->SupportMeshComponent, m_shipPawnOwner.Get()->ModuleComponent->RU_SupportLocations))
+		if (lb_checkEachInstance(m_shipPawnOwner.Get()->ModuleComponent->SupportMeshComponent, m_shipPawnOwner.Get()->ModuleComponent->RU_SupportLocations, m_shipPawnOwner.Get()->ModuleComponent->R_RemovedSupportLocations))
 		{
 			m_shipPawnOwner.Get()->OnHitSupportDelegate.Broadcast();
 		}

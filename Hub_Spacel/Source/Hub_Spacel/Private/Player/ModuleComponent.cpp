@@ -133,4 +133,6 @@ void UModuleComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
     DOREPLIFETIME(UModuleComponent, RU_AttackLocations);
     DOREPLIFETIME(UModuleComponent, RU_ProtectionLocations);
     DOREPLIFETIME(UModuleComponent, RU_SupportLocations);
+    DOREPLIFETIME(UModuleComponent, R_RemovedProtectionLocations);
+    DOREPLIFETIME(UModuleComponent, R_RemovedSupportLocations);
 }

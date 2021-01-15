@@ -14,6 +14,7 @@ class HUB_SPACEL_API UModuleComponent : public USceneComponent
 
     friend class AShipPawn;
     friend class UCustomCollisionComponent;
+    friend class URepairComponent;
 
 public:	
 	// Sets default values for this component's properties
@@ -65,6 +66,12 @@ private:
     UPROPERTY(ReplicatedUsing = "OnRep_Protection")
     TArray<FVector> RU_ProtectionLocations{};
 
+    UPROPERTY(Replicated)
+    TArray<FVector> R_RemovedProtectionLocations{};
+
     UPROPERTY(ReplicatedUsing = "OnRep_Support")
     TArray<FVector> RU_SupportLocations{};
+
+    UPROPERTY(Replicated)
+    TArray<FVector> R_RemovedSupportLocations{};
 };
