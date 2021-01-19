@@ -270,10 +270,12 @@ void AShipPawn::kill()
 
 void AShipPawn::setCollisionProfile(FString _team)
 {
-    if (!ensure(DriverMeshComponent != nullptr)) return;
+    if (!ensure(this->DriverMeshComponent != nullptr)) return;
     
     _team = _team.Replace(TEXT(" "), TEXT(""));
-    DriverMeshComponent->SetCollisionProfileName(*_team);
+    this->DriverMeshComponent->SetCollisionProfileName(*_team);
+
+    this->ModuleComponent->setCollisionProfile(_team);
 }
 
 void AShipPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetimeProps) const

@@ -42,6 +42,9 @@ protected:
     UFUNCTION(Reliable, Client)
     void SetMax(int32 _maxProtection, int32 _maxSupport);
 
+    /* set collision profile name */
+    void setCollisionProfile(FString _team);
+
 private:
     void buildShip(class UInstancedStaticMeshComponent*& _mesh, class UStaticMeshDataAsset* _staticMesh, TArray<FVector> const& _locations);
 

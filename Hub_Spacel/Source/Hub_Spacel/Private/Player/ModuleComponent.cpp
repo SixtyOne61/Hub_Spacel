@@ -141,6 +141,21 @@ void UModuleComponent::buildShip(UInstancedStaticMeshComponent*& _mesh, UStaticM
     }
 }
 
+void UModuleComponent::setCollisionProfile(FString _team)
+{
+    auto lb = [&_team](UInstancedStaticMeshComponent *& _component)
+    {
+        if (_component != nullptr)
+        {
+            _component->SetCollisionProfileName(*_team);
+        }
+    };
+
+    lb(this->ProtectionMeshComponent);
+    lb(this->WeaponMeshComponent);
+    lb(this->SupportMeshComponent);
+}
+
 void UModuleComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
