@@ -53,12 +53,26 @@ private:
 	UFUNCTION()
 	void OnUpdateMatiere(int32 _value);
 
+	UFUNCTION()
+	void OnUpdateCountProtection(int32 _value, int32 _max);
+
+	UFUNCTION()
+	void OnUpdateCountSupport(int32 _value, int32 _max);
+
+	void updateCount(class UTextBlock* _textBlock, FString && _str);
+
 private:
 	UPROPERTY()
 	class UTextBlock* TeamNameTextBlock { nullptr };
 
 	UPROPERTY()
 	class UTextBlock* MatiereTextBlock { nullptr };
+
+	UPROPERTY()
+	class UTextBlock* ProtectionTextBlock{ nullptr };
+
+	UPROPERTY()
+	class UTextBlock* SupportTextBlock{ nullptr };
 
 	UPROPERTY()
 	class UTextBlock* TeammateCountTextBlock { nullptr };

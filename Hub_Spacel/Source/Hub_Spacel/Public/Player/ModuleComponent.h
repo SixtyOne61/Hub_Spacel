@@ -6,6 +6,8 @@
 #include "Components/SceneComponent.h"
 #include "ModuleComponent.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnUpdateCountProtection, int32, _value, int32, _max);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnUpdateCountSupport, int32, _value, int32, _max);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class HUB_SPACEL_API UModuleComponent : public USceneComponent
@@ -37,6 +39,9 @@ protected:
     UFUNCTION()
     void OnRep_Support();
 
+    UFUNCTION(Reliable, Client)
+    void SetMax(int32 _maxProtection, int32 _maxSupport);
+
 private:
     void buildShip(class UInstancedStaticMeshComponent*& _mesh, class UStaticMeshDataAsset* _staticMesh, TArray<FVector> const& _locations);
 
@@ -59,6 +64,13 @@ public:
     UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)
     class UInstancedStaticMeshComponent* SupportMeshComponent{ nullptr };
 
+public:
+    UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
+    FOnUpdateCountProtection OnUpdateCountProtectionDelegate {};
+
+    UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
+    FOnUpdateCountSupport OnUpdateCountSupportDelegate {};
+
 private:
     UPROPERTY(ReplicatedUsing = "OnRep_Attack")
     TArray<FVector> RU_AttackLocations{};
@@ -74,4 +86,8 @@ private:
 
     UPROPERTY(Replicated)
     TArray<FVector> R_RemovedSupportLocations{};
+
+    /* max protection and support cube */
+    int32 m_maxProtection { -1 };
+    int32 m_maxSupport { -1 };
 };

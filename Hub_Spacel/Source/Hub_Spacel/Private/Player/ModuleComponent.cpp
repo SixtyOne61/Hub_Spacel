@@ -60,12 +60,24 @@ void UModuleComponent::OnRep_Attack()
 
 void UModuleComponent::OnRep_Protection()
 {
+    this->OnUpdateCountProtectionDelegate.Broadcast(this->RU_ProtectionLocations.Num(), m_maxProtection);
     buildShip(this->ProtectionMeshComponent, this->ProtectionDataAsset, RU_ProtectionLocations);
 }
 
 void UModuleComponent::OnRep_Support()
 {
+    this->OnUpdateCountSupportDelegate.Broadcast(this->RU_SupportLocations.Num(), m_maxSupport);
     buildShip(this->SupportMeshComponent, this->SupportDataAsset, RU_SupportLocations);
+}
+
+void UModuleComponent::SetMax_Implementation(int32 _maxProtection, int32 _maxSupport)
+{
+    m_maxProtection = _maxProtection;
+    m_maxSupport = _maxSupport;
+
+    // force refresh UI
+    this->OnUpdateCountProtectionDelegate.Broadcast(this->RU_ProtectionLocations.Num(), m_maxProtection);
+    this->OnUpdateCountSupportDelegate.Broadcast(this->RU_SupportLocations.Num(), m_maxSupport);
 }
 
 void UModuleComponent::OnStartGame()
@@ -98,14 +110,16 @@ void UModuleComponent::OnStartGame()
         }
         else
         {
-            lb_readXml(spacelPlayerState->Attack, this->WeaponDataAsset, RU_AttackLocations);
-            buildShip(this->WeaponMeshComponent, this->WeaponDataAsset, RU_AttackLocations);
+            lb_readXml(spacelPlayerState->Attack, this->WeaponDataAsset, this->RU_AttackLocations);
+            buildShip(this->WeaponMeshComponent, this->WeaponDataAsset, this->RU_AttackLocations);
 
-            lb_readXml(spacelPlayerState->Protection, this->ProtectionDataAsset, RU_ProtectionLocations);
-            buildShip(this->ProtectionMeshComponent, this->ProtectionDataAsset, RU_ProtectionLocations);
+            lb_readXml(spacelPlayerState->Protection, this->ProtectionDataAsset, this->RU_ProtectionLocations);
+            buildShip(this->ProtectionMeshComponent, this->ProtectionDataAsset, this->RU_ProtectionLocations);
 
-            lb_readXml(spacelPlayerState->Support, this->SupportDataAsset, RU_SupportLocations);
-            buildShip(this->SupportMeshComponent, this->SupportDataAsset, RU_SupportLocations);
+            lb_readXml(spacelPlayerState->Support, this->SupportDataAsset, this->RU_SupportLocations);
+            buildShip(this->SupportMeshComponent, this->SupportDataAsset, this->RU_SupportLocations);
+
+            this->SetMax(this->RU_ProtectionLocations.Num(), this->RU_SupportLocations.Num());
         }
     }
 }

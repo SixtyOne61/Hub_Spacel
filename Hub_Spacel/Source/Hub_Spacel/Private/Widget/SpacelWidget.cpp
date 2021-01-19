@@ -6,6 +6,7 @@
 #include "Components/UniformGridPanel.h"
 #include "Player/SpacelPlayerState.h"
 #include "Player/PlayerShipController.h"
+#include "Player/ModuleComponent.h"
 #include "GameState/SpacelGameState.h"
 #include "Hub_SpacelGameInstance.h"
 #include "Kismet/GameplayStatics.h"
@@ -18,6 +19,8 @@ void USpacelWidget::NativeConstruct()
 
     TeamNameTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_TeamName"));
     MatiereTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Matiere"));
+    ProtectionTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Protection"));
+    SupportTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Support"));
     TeammateCountTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_TeammateCount"));
     EventTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Event"));
     PingTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Ping"));
@@ -49,6 +52,9 @@ void USpacelWidget::NativeConstruct()
     if (shipPawn != nullptr)
     {
         shipPawn->OnEndUpdateMatiereDelegate.AddDynamic(this, &USpacelWidget::OnUpdateMatiere);
+
+        shipPawn->ModuleComponent->OnUpdateCountProtectionDelegate.AddDynamic(this, &USpacelWidget::OnUpdateCountProtection);
+        shipPawn->ModuleComponent->OnUpdateCountSupportDelegate.AddDynamic(this, &USpacelWidget::OnUpdateCountSupport);
     }
 }
 
@@ -195,5 +201,23 @@ void USpacelWidget::OnUpdateMatiere(int32 _value)
     if (this->MatiereTextBlock != nullptr)
     {
         this->MatiereTextBlock->SetText(FText::FromString("Matiere: " + FString::FromInt(_value)));
+    }
+}
+
+void USpacelWidget::OnUpdateCountProtection(int32 _value, int32 _max)
+{
+    updateCount(this->ProtectionTextBlock, "Protection: " + FString::FromInt(_value) + "/" + FString::FromInt(_max));
+}
+
+void USpacelWidget::OnUpdateCountSupport(int32 _value, int32 _max)
+{
+    updateCount(this->SupportTextBlock, "Support: " + FString::FromInt(_value) + "/" + FString::FromInt(_max));
+}
+
+void USpacelWidget::updateCount(class UTextBlock* _textBlock, FString&& _str)
+{
+    if (_textBlock != nullptr)
+    {
+        _textBlock->SetText(FText::FromString(_str));
     }
 }
