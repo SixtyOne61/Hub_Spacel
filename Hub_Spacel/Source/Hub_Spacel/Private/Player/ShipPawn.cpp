@@ -134,9 +134,23 @@ void AShipPawn::OnUnTargetPlayer(class AActor* _target)
 void AShipPawn::RPCServerUnTargetPlayer_Implementation(int32 _playerId)
 {
     if (!ensure(this->FireComponent != nullptr)) return;
-    this->FireComponent->m_target = nullptr;
 
-    //UE_LOG(LogTemp, Warning, TEXT("UnTarget actor"));
+    if (AGameStateBase* gameState = UGameplayStatics::GetGameState(this->GetWorld()))
+    {
+        for (APlayerState const* playerState : gameState->PlayerArray)
+        {
+            AActor* act { playerState->GetPawn() };
+            if (playerState != nullptr
+                && playerState->PlayerId == _playerId
+                && act != nullptr
+                && this->FireComponent->m_target != nullptr
+                && act->GetUniqueID() == this->FireComponent->m_target->GetUniqueID())
+            {
+                this->FireComponent->m_target = nullptr;
+                break;
+            }
+        }
+    }
 }
 
 void AShipPawn::rpcTargetCall(class AActor* _target, std::function<void(int32)> _rpc)
@@ -285,6 +299,11 @@ void AShipPawn::setCollisionProfile(FString _team)
     this->ModuleComponent->setCollisionProfile(_team);
 }
 
+void AShipPawn::setIsInFog(bool _isIn)
+{
+    this->RU_IsInFog = _isIn;
+}
+
 void AShipPawn::OnRep_IsInFog()
 {
     if (this->TargetComponent != nullptr)
@@ -296,7 +315,7 @@ void AShipPawn::OnRep_IsInFog()
             if (this->RU_IsInFog)
             {
                 UHub_SpacelGameInstance* spacelGameInstance{ Cast<UHub_SpacelGameInstance>(this->GetGameInstance()) };
-                spacelGameInstance->OnUnTargetDelegate.Broadcast(this);
+                spacelGameInstance->OnUnTargetDelegate.Broadcast(targetActor);
             }
         }
     }

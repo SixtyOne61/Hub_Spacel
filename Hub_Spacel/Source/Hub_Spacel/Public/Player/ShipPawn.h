@@ -47,6 +47,9 @@ public:
     /* set collision profile name */
     void setCollisionProfile(FString _team);
 
+    /* call from server */
+    void setIsInFog(bool _isIn);
+
 private:
     /* move ship server */
     UFUNCTION(Reliable, Server)
@@ -131,9 +134,6 @@ public:
     UPROPERTY(Category = "ChildActor", EditAnywhere, BlueprintReadWrite)
     TSubclassOf<class ATargetActor> TargetClass { nullptr };
 
-    UPROPERTY(ReplicatedUsing = "OnRep_IsInFog")
-    bool RU_IsInFog { false };
-
 protected:
     /* current percent speed value 0.0f - 1.0f */
     UPROPERTY(Replicated)
@@ -150,6 +150,9 @@ protected:
     /* when up change -1.0f or 0.0f or 1.0f */
     UPROPERTY(ReplicatedUsing = "OnRep_PercentUp")
     float RU_PercentUp = 0.0f;
+
+    UPROPERTY(ReplicatedUsing = "OnRep_IsInFog")
+    bool RU_IsInFog{ false };
 
 private:
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
