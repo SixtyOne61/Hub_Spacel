@@ -276,8 +276,8 @@ void AShipPawn::kill()
 {
     if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
     {
-        // if we hit something, it's red zone so we are dead
-        //UE_LOG(LogTemp, Warning, TEXT("Hit"));
+        UHub_SpacelGameInstance* spacelGameInstance{ Cast<UHub_SpacelGameInstance>(this->GetGameInstance()) };
+        spacelGameInstance->OnUnTargetDelegate.Broadcast(this->TargetComponent->GetChildActor());
 
         if (APlayerShipController* playerController = this->GetController<APlayerShipController>())
         {
