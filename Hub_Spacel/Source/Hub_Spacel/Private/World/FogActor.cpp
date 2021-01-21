@@ -5,6 +5,7 @@
 #include "NiagaraComponent.h"
 #include "Components/BoxComponent.h"
 #include "Player/ShipPawn.h"
+#include "Util/Tag.h"
 
 // Sets default values
 AFogActor::AFogActor()
@@ -20,7 +21,7 @@ AFogActor::AFogActor()
 	if (!ensure(FogNiagaraSystem != nullptr)) return;
 	FogNiagaraSystem->SetupAttachment(RootComponent);
 
-	Tags.Add("Fog");
+	Tags.Add(Tags::Fog);
 }
 
 // Called when the game starts or when spawned
@@ -40,7 +41,7 @@ void AFogActor::BeginPlay()
 
 void AFogActor::onOverlap(class AActor* _otherActor, bool _value) const
 {
-	if (_otherActor != nullptr && _otherActor->ActorHasTag("Player"))
+	if (_otherActor != nullptr && _otherActor->ActorHasTag(Tags::Player))
 	{
 		if (AShipPawn* shipPawn = Cast<AShipPawn>(_otherActor))
 		{

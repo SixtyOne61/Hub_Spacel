@@ -2,9 +2,10 @@
 
 
 #include "DestroyActor.h"
+#include "Util/Tag.h"
 
 void ADestroyActor::BeginPlay()
 {
     Super::BeginPlay();
-    this->Tags.Add("DestroyActor");
+    this->Tags.Add(Tags::DestroyActor);
 }

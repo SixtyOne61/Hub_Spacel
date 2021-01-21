@@ -6,6 +6,7 @@
 #include "Components/InstancedStaticMeshComponent.h"
 #include "World/FogActor.h"
 #include "Net/UnrealNetwork.h"
+#include "Util/Tag.h"
 
 // Sets default values
 AChunck::AChunck()
@@ -17,7 +18,7 @@ AChunck::AChunck()
 	Voxels->SetCollisionProfileName("BlockAll");
 	RootComponent = Voxels;
 
-	Tags.Add("BlockingActor");
+	Tags.Add(Tags::BlockingActor);
 }
 
 void AChunck::dmg(FHitResult const& _info)

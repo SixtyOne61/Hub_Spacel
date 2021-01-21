@@ -8,6 +8,7 @@
 #include "Materials/MaterialInstance.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "NiagaraFunctionLibrary.h"
+#include "Util/Tag.h"
 
 // Sets default values
 ALaserBullet::ALaserBullet()
@@ -49,5 +50,9 @@ void ALaserBullet::dmg(FHitResult const& _info)
 
 void ALaserBullet::OnComponentHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit)
 {
+    if (_otherActor->ActorHasTag(Tags::Matiere))
+    {
+        return;
+    }
     this->Destroy();
 }

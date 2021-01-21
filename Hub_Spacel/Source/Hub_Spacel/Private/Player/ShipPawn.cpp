@@ -24,6 +24,7 @@
 #include "GameState/SpacelGameState.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Hub_SpacelGameInstance.h"
+#include "Util/Tag.h"
 
 // Sets default values
 AShipPawn::AShipPawn()
@@ -71,7 +72,7 @@ AShipPawn::AShipPawn()
     if (!ensure(TargetComponent != nullptr)) return;
     TargetComponent->SetupAttachment(RootComponent);
 
-    Tags.Add("Player");
+    Tags.Add(Tags::Player);
 }
 
 // Called when the game starts or when spawned

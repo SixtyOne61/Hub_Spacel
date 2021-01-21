@@ -12,6 +12,7 @@
 #include "Components/InstancedStaticMeshComponent.h"
 #include "World/MatiereManager.h"
 #include "Kismet/GameplayStatics.h"
+#include "Util/Tag.h"
 
 // Sets default values for this component's properties
 UCustomCollisionComponent::UCustomCollisionComponent()
@@ -162,7 +163,7 @@ void UCustomCollisionComponent::hitMatiere(TArray<FHitResult>& _items) const
 	FString const& team = spacelPlayerState->Team;
 	_items.RemoveAll([&addMatiere, &team](FHitResult const& _item)
 		{
-			if (_item.Actor.IsValid() && _item.Actor.Get()->ActorHasTag("Matiere"))
+			if (_item.Actor.IsValid() && _item.Actor.Get()->ActorHasTag(Tags::Matiere))
 			{
 				if (AMatiereManager* matiere = Cast<AMatiereManager>(_item.Actor.Get()))
 				{
@@ -225,7 +226,7 @@ bool UCustomCollisionComponent::saveDestroyActor(TArray<FHitResult>& _items, TAr
 			continue;
 		}
 
-		if (act->ActorHasTag("DestroyActor"))
+		if (act->ActorHasTag(Tags::DestroyActor))
 		{
 			_items.Add(hit);
 		}

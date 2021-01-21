@@ -136,7 +136,7 @@ public:
 
 protected:
     /* current percent speed value 0.0f - 1.0f */
-    UPROPERTY(Replicated)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
     float R_PercentSpeed = 0.0f;
 
     /* when flight attitude change -1.0f or 0.0f or 1.0f */

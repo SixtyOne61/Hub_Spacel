@@ -6,6 +6,7 @@
 #include "GameFramework/GameModeBase.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Net/UnrealNetwork.h"
+#include "Util/Tag.h"
 
 // Sets default values
 AMatiereManager::AMatiereManager()
@@ -16,7 +17,7 @@ AMatiereManager::AMatiereManager()
 	Matieres = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Matieres"));
 	RootComponent = Matieres;
 
-	Tags.Add("Matiere");
+	Tags.Add(Tags::Matiere);
 }
 
 void AMatiereManager::BeginPlay()
