@@ -43,3 +43,7 @@ void ATargetActor::Tick(float DeltaTime)
 	this->TargetWidget->SetWorldRotation(rot);
 }
 
+void ATargetActor::showTarget(bool _show)
+{
+	this->TargetWidget->SetVisibility(_show, true);
+}

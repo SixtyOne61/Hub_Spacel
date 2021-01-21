@@ -70,6 +70,8 @@ AShipPawn::AShipPawn()
     TargetComponent = CreateDefaultSubobject<UChildActorComponent>(TEXT("Target_00"));
     if (!ensure(TargetComponent != nullptr)) return;
     TargetComponent->SetupAttachment(RootComponent);
+
+    Tags.Add("Player");
 }
 
 // Called when the game starts or when spawned
@@ -99,16 +101,7 @@ void AShipPawn::BeginPlay()
 
 void AShipPawn::OnTargetPlayer(AActor* _target)
 {
-    if (_target)
-    {
-        if (AShipPawn const* pawnOwner = Cast<AShipPawn>(_target->GetParentActor()))
-        {
-            if (ASpacelPlayerState* playerState = pawnOwner->GetPlayerState<ASpacelPlayerState>())
-            {
-                RPCServerTargetPlayer(playerState->PlayerId);
-            }
-        }
-    }
+    rpcTargetCall(_target, std::bind(&AShipPawn::RPCServerTargetPlayer, this, std::placeholders::_1));
 }
 
 void AShipPawn::RPCServerTargetPlayer_Implementation(int32 _playerId)
@@ -133,17 +126,31 @@ void AShipPawn::RPCServerTargetPlayer_Implementation(int32 _playerId)
     }
 }
 
-void AShipPawn::OnUnTargetPlayer()
+void AShipPawn::OnUnTargetPlayer(class AActor* _target)
 {
-    RPCServerUnTargetPlayer();
+    rpcTargetCall(_target, std::bind(&AShipPawn::RPCServerUnTargetPlayer, this, std::placeholders::_1));
 }
 
-void AShipPawn::RPCServerUnTargetPlayer_Implementation()
+void AShipPawn::RPCServerUnTargetPlayer_Implementation(int32 _playerId)
 {
     if (!ensure(this->FireComponent != nullptr)) return;
     this->FireComponent->m_target = nullptr;
 
     //UE_LOG(LogTemp, Warning, TEXT("UnTarget actor"));
+}
+
+void AShipPawn::rpcTargetCall(class AActor* _target, std::function<void(int32)> _rpc)
+{
+    if (_target != nullptr)
+    {
+        if (AShipPawn const* pawnOwner = Cast<AShipPawn>(_target->GetParentActor()))
+        {
+            if (ASpacelPlayerState* playerState = pawnOwner->GetPlayerState<ASpacelPlayerState>())
+            {
+                _rpc(playerState->PlayerId);
+            }
+        }
+    }
 }
 
 // Called every frame
@@ -278,9 +285,27 @@ void AShipPawn::setCollisionProfile(FString _team)
     this->ModuleComponent->setCollisionProfile(_team);
 }
 
+void AShipPawn::OnRep_IsInFog()
+{
+    if (this->TargetComponent != nullptr)
+    {
+        if (ATargetActor* targetActor = Cast<ATargetActor>(this->TargetComponent->GetChildActor()))
+        {
+            targetActor->showTarget(!this->RU_IsInFog);
+
+            if (this->RU_IsInFog)
+            {
+                UHub_SpacelGameInstance* spacelGameInstance{ Cast<UHub_SpacelGameInstance>(this->GetGameInstance()) };
+                spacelGameInstance->OnUnTargetDelegate.Broadcast(this);
+            }
+        }
+    }
+}
+
 void AShipPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetimeProps) const
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+    DOREPLIFETIME(AShipPawn, RU_IsInFog);
     DOREPLIFETIME(AShipPawn, R_PercentSpeed);
     DOREPLIFETIME(AShipPawn, RU_PercentFlightAttitude);
     DOREPLIFETIME(AShipPawn, RU_PercentTurn);

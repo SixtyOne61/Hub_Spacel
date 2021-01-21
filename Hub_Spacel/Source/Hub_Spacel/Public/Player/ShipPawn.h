@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
+#include <functional>
 #include "ShipPawn.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUpdateMatiere, int, _value);
@@ -69,10 +70,12 @@ private:
     void RPCServerTargetPlayer(int32 _playerId);
 
     UFUNCTION()
-    void OnUnTargetPlayer();
+    void OnUnTargetPlayer(class AActor* _target);
 
     UFUNCTION(Reliable, Server)
-    void RPCServerUnTargetPlayer();
+    void RPCServerUnTargetPlayer(int32 _playerId);
+
+    void rpcTargetCall(class AActor* _target, std::function<void(int32)> _rpc);
 
     /* set fire boolean on component fire */
     void setFire(bool _on);
@@ -86,6 +89,9 @@ private:
         if (!ensure(_comp != nullptr)) return;
         _comp->Activate();
     }
+
+    UFUNCTION()
+    void OnRep_IsInFog();
 
 public:
     UPROPERTY(Category = "Ship", VisibleAnywhere, BlueprintReadOnly)
@@ -124,6 +130,9 @@ public:
 
     UPROPERTY(Category = "ChildActor", EditAnywhere, BlueprintReadWrite)
     TSubclassOf<class ATargetActor> TargetClass { nullptr };
+
+    UPROPERTY(ReplicatedUsing = "OnRep_IsInFog")
+    bool RU_IsInFog { false };
 
 protected:
     /* current percent speed value 0.0f - 1.0f */

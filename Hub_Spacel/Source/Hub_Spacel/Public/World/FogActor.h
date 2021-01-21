@@ -19,7 +19,19 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	UFUNCTION()
+	void OnBeginOverlap(class UPrimitiveComponent* _comp, class AActor* _otherActor, class UPrimitiveComponent* _otherComp, int32 _otherBodyIndex, bool _bFromSweep, const FHitResult& _sweepResult);
+
+	UFUNCTION()
+	void OnEndOverlap(class UPrimitiveComponent* _comp, class AActor* _otherActor, class UPrimitiveComponent* _otherComp, int32 _otherBodyIndex);
+
+private:
+	void onOverlap(class AActor* _otherActor, bool _value) const;
+
 private:
 	UPROPERTY(Category = "Component", VisibleAnywhere)
 	class UNiagaraComponent* FogNiagaraSystem { nullptr };
+
+	UPROPERTY(Category = "Component", VisibleAnywhere)
+	class UBoxComponent* BoxComponent { nullptr };
 };

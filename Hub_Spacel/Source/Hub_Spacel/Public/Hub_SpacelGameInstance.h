@@ -8,7 +8,7 @@
 #include "Hub_SpacelGameInstance.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTargetPlayer, AActor*, _target);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnUnTarget);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUnTarget, AActor*, _target);
 
 /**
  * 
@@ -31,7 +31,7 @@ public:
     void OnTargetPlayer(class AActor* _target);
 
     UFUNCTION(BlueprintCallable)
-    void OnUnTargetPlayer();
+    void OnUnTargetPlayer(class AActor* _target);
 
 private:
     UFUNCTION()
