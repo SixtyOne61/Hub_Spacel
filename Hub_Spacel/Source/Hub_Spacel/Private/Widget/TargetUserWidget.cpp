@@ -9,6 +9,7 @@
 #include "Player/ShipPawn.h"
 #include "Player/SpacelPlayerState.h"
 #include "GameFramework/PlayerController.h"
+#include "Kismet/GameplayStatics.h"
 
 void UTargetUserWidget::NativeConstruct()
 {
@@ -17,7 +18,7 @@ void UTargetUserWidget::NativeConstruct()
     TargetButton = SimplyUI::initSafetyFromName<UUserWidget, UButton>(this, TEXT("Button_Target"));
     TargetImage = SimplyUI::initSafetyFromName<UUserWidget, UImage>(this, TEXT("Image_Target"));
 
-    //if(hideAlly()) return; TO DO ON START GAME AND CHECK LIKE TARGET ACTOR
+    if(hideAlly()) return;
 
     setTargetImage(BaseColor);
 
@@ -57,7 +58,9 @@ void UTargetUserWidget::NativeTick(const FGeometry& _myGeometry, float _deltaTim
 
 bool UTargetUserWidget::hideAlly()
 {
-    AShipPawn* ownerPawn { this->GetOwningPlayerPawn<AShipPawn>() };
+    if(this->Owner == nullptr) return false;
+
+    AShipPawn* ownerPawn { Cast<AShipPawn>(this->Owner->GetParentActor()) };
     if (ownerPawn == nullptr) return false;
 
     UWorld* const world { this->GetWorld() };
@@ -65,14 +68,11 @@ bool UTargetUserWidget::hideAlly()
 
     /* check team */
 
-    // team of local player controller
-    ULocalPlayer* localPlayer { world->GetFirstLocalPlayerFromController() };
-    if(localPlayer == nullptr) return false;
+    // team of local player
+    APawn* pawn { UGameplayStatics::GetPlayerPawn(world, 0) };
+    if (pawn == nullptr) return false;
 
-    APlayerController const* localPlayerController { localPlayer->GetPlayerController(world) };
-    if (localPlayerController == nullptr) return false;
-
-    ASpacelPlayerState const* spacelLocalPlayerState { localPlayerController->GetPlayerState<ASpacelPlayerState>() };
+    ASpacelPlayerState const* spacelLocalPlayerState { pawn->GetPlayerState<ASpacelPlayerState>() };
     if (spacelLocalPlayerState == nullptr) return false;
 
     // team of this owner pawn
