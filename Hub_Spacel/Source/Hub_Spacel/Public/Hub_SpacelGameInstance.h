@@ -68,7 +68,7 @@ public:
     FOnTargetPlayer OnTargetPlayerDelegate {};
 
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
-    FOnUnTarget OnUnTargetDelegate {};
+    FOnUnTarget OnUnTargetPlayerDelegate {};
 
 private:
     class FHttpModule* HttpModule { nullptr };

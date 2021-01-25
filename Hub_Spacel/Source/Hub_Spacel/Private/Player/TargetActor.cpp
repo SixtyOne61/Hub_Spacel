@@ -4,6 +4,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/WidgetComponent.h"
+#include "Widget/TargetUserWidget.h"
 
 // Sets default values
 ATargetActor::ATargetActor()
@@ -17,7 +18,14 @@ void ATargetActor::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	this->TargetWidget = Cast<UWidgetComponent>(this->GetComponentByClass(UWidgetComponent::StaticClass()));
+	this->TargetWidgetComponent = Cast<UWidgetComponent>(this->GetComponentByClass(UWidgetComponent::StaticClass()));
+	if (this->TargetWidgetComponent != nullptr)
+	{
+		if(UTargetUserWidget* targetWidget = Cast<UTargetUserWidget>(this->TargetWidgetComponent->GetUserWidgetObject()))
+		{
+			targetWidget->Owner = this;
+		}
+	}
 }
 
 // Called every frame
@@ -33,17 +41,17 @@ void ATargetActor::Tick(float DeltaTime)
 
 	FVector const& pawnLocation { pawn->GetActorLocation() };
 
-	if (!ensure(this->TargetWidget != nullptr)) return;
-	FVector const& widgetLocation { this->TargetWidget->GetComponentLocation() };
+	if (!ensure(this->TargetWidgetComponent != nullptr)) return;
+	FVector const& widgetLocation { this->TargetWidgetComponent->GetComponentLocation() };
 
 	FRotator rot { UKismetMathLibrary::FindLookAtRotation(widgetLocation, pawnLocation) };
 	rot.Roll = 90.0f;
 
-	if (!ensure(this->TargetWidget != nullptr)) return;
-	this->TargetWidget->SetWorldRotation(rot);
+	if (!ensure(this->TargetWidgetComponent != nullptr)) return;
+	this->TargetWidgetComponent->SetWorldRotation(rot);
 }
 
 void ATargetActor::showTarget(bool _show)
 {
-	this->TargetWidget->SetVisibility(_show, true);
+	this->TargetWidgetComponent->SetVisibility(_show, true);
 }

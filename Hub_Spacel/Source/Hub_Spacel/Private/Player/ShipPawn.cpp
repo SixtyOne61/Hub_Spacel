@@ -96,7 +96,7 @@ void AShipPawn::BeginPlay()
     {
         UHub_SpacelGameInstance* spacelGameInstance{ Cast<UHub_SpacelGameInstance>(this->GetGameInstance()) };
         spacelGameInstance->OnTargetPlayerDelegate.AddDynamic(this, &AShipPawn::OnTargetPlayer);
-        spacelGameInstance->OnUnTargetDelegate.AddDynamic(this, &AShipPawn::OnUnTargetPlayer);
+        spacelGameInstance->OnUnTargetPlayerDelegate.AddDynamic(this, &AShipPawn::OnUnTargetPlayer);
     }
 }
 
@@ -156,16 +156,24 @@ void AShipPawn::RPCServerUnTargetPlayer_Implementation(int32 _playerId)
 
 void AShipPawn::rpcTargetCall(class AActor* _target, std::function<void(int32)> _rpc)
 {
+    _rpc(AShipPawn::getPlayerIdFromTarget(_target));
+}
+
+int32 AShipPawn::getPlayerIdFromTarget(AActor* _target)
+{
     if (_target != nullptr)
     {
         if (AShipPawn const* pawnOwner = Cast<AShipPawn>(_target->GetParentActor()))
         {
             if (ASpacelPlayerState* playerState = pawnOwner->GetPlayerState<ASpacelPlayerState>())
             {
-                _rpc(playerState->PlayerId);
+                return playerState->PlayerId;
             }
         }
     }
+
+    ensure(false);
+    return {};
 }
 
 // Called every frame
@@ -278,7 +286,7 @@ void AShipPawn::kill()
     if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
     {
         UHub_SpacelGameInstance* spacelGameInstance{ Cast<UHub_SpacelGameInstance>(this->GetGameInstance()) };
-        spacelGameInstance->OnUnTargetDelegate.Broadcast(this->TargetComponent->GetChildActor());
+        spacelGameInstance->OnUnTargetPlayerDelegate.Broadcast(this->TargetComponent->GetChildActor());
 
         if (APlayerShipController* playerController = this->GetController<APlayerShipController>())
         {
@@ -316,7 +324,7 @@ void AShipPawn::OnRep_IsInFog()
             if (this->RU_IsInFog)
             {
                 UHub_SpacelGameInstance* spacelGameInstance{ Cast<UHub_SpacelGameInstance>(this->GetGameInstance()) };
-                spacelGameInstance->OnUnTargetDelegate.Broadcast(targetActor);
+                spacelGameInstance->OnUnTargetPlayerDelegate.Broadcast(targetActor);
             }
         }
     }

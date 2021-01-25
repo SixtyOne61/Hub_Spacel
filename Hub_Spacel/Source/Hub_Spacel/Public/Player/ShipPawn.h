@@ -50,6 +50,8 @@ public:
     /* call from server */
     void setIsInFog(bool _isIn);
 
+    static int32 getPlayerIdFromTarget(AActor* _target);
+
 private:
     /* move ship server */
     UFUNCTION(Reliable, Server)

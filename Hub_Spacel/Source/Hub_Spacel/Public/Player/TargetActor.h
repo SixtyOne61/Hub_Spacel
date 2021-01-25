@@ -26,6 +26,6 @@ public:
 	void showTarget(bool _show);
 
 protected:
-	class UWidgetComponent* TargetWidget { nullptr };
+	class UWidgetComponent* TargetWidgetComponent { nullptr };
 
 };

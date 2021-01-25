@@ -153,5 +153,5 @@ void UHub_SpacelGameInstance::OnTargetPlayer(AActor* _target)
 
 void UHub_SpacelGameInstance::OnUnTargetPlayer(class AActor* _target)
 {
-    OnUnTargetDelegate.Broadcast(_target);
+    OnUnTargetPlayerDelegate.Broadcast(_target);
 }
