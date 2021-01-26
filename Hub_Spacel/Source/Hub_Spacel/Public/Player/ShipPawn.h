@@ -136,6 +136,9 @@ public:
     UPROPERTY(Category = "ChildActor", EditAnywhere, BlueprintReadWrite)
     TSubclassOf<class ATargetActor> TargetClass { nullptr };
 
+    UPROPERTY(Category = "Component", EditAnywhere, BlueprintReadWrite)
+    class UWidgetInteractionComponent* WidgetTargetComponent { nullptr };
+
 protected:
     /* current percent speed value 0.0f - 1.0f */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)

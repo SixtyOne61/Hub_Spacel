@@ -31,7 +31,11 @@ protected:
 	void NativeTick(const FGeometry& _myGeometry, float _deltaTime) override;
 
 private:
+	/* hide target with pawn owner has the same team that local player*/
 	bool hideAlly();
+
+	/* check distance with local player for hide or scale target */
+	void adjust();
 
 	UFUNCTION()
 	void OnUnTargetPlayer(AActor* _target);
@@ -79,6 +83,9 @@ private:
 
 	/* because unhovered call all frame */
 	bool m_isHovered { false };
+
+	/* true if the same team */
+	bool m_isSameTeam { false };
 };
 
 namespace EnumUtil

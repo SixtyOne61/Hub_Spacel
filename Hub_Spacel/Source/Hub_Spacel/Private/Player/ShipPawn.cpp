@@ -25,6 +25,7 @@
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Hub_SpacelGameInstance.h"
 #include "Util/Tag.h"
+#include "Components/WidgetInteractionComponent.h"
 
 // Sets default values
 AShipPawn::AShipPawn()
@@ -97,6 +98,8 @@ void AShipPawn::BeginPlay()
         UHub_SpacelGameInstance* spacelGameInstance{ Cast<UHub_SpacelGameInstance>(this->GetGameInstance()) };
         spacelGameInstance->OnTargetPlayerDelegate.AddDynamic(this, &AShipPawn::OnTargetPlayer);
         spacelGameInstance->OnUnTargetPlayerDelegate.AddDynamic(this, &AShipPawn::OnUnTargetPlayer);
+
+        this->WidgetTargetComponent = Cast<UWidgetInteractionComponent>(this->GetComponentByClass(UWidgetInteractionComponent::StaticClass()));
     }
 }
 

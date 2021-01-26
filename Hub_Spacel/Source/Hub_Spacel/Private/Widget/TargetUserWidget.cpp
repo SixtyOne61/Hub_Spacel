@@ -10,6 +10,7 @@
 #include "Player/SpacelPlayerState.h"
 #include "GameFramework/PlayerController.h"
 #include "Kismet/GameplayStatics.h"
+#include "Components/WidgetInteractionComponent.h"
 
 void UTargetUserWidget::NativeConstruct()
 {
@@ -42,6 +43,8 @@ void UTargetUserWidget::NativeTick(const FGeometry& _myGeometry, float _deltaTim
 {
     Super::NativeTick(_myGeometry, _deltaTime);
 
+    adjust();
+
     if (m_isHovered)
     {
         if (m_state == EState::StateNormal)
@@ -53,6 +56,33 @@ void UTargetUserWidget::NativeTick(const FGeometry& _myGeometry, float _deltaTim
     else if (!m_isHovered && m_state == EState::StateHover)
     {
         m_state = EState::StateNormal;
+    }
+}
+
+void UTargetUserWidget::adjust()
+{
+    if(m_isSameTeam) return;
+
+    UWorld* const world { this->GetWorld() };
+    AShipPawn* pawn { Cast<AShipPawn>(UGameplayStatics::GetPlayerPawn(world, 0)) };
+
+    if(this->Owner == nullptr || pawn == nullptr || pawn->WidgetTargetComponent == nullptr
+        || this->TargetButton == nullptr || this->TargetImage == nullptr) return;
+
+    float dist { FVector::Dist(pawn->GetActorLocation(), this->Owner->GetActorLocation()) };
+    float interactionDist = pawn->WidgetTargetComponent->InteractionDistance;
+
+    if (dist > interactionDist
+        && this->TargetButton->GetVisibility() == ESlateVisibility::Visible)
+    {
+        SimplyUI::setVisibility({ ESlateVisibility::Hidden },
+            std::make_tuple(this->TargetButton, this->TargetImage));
+    }
+    else if (dist <= interactionDist
+        && this->TargetButton->GetVisibility() == ESlateVisibility::Hidden)
+    {
+        SimplyUI::setVisibility({ ESlateVisibility::Visible },
+            std::make_tuple(this->TargetButton, this->TargetImage));
     }
 }
 
@@ -83,6 +113,7 @@ bool UTargetUserWidget::hideAlly()
     {
         // hide widget
         this->SetVisibility(ESlateVisibility::Hidden);
+        m_isSameTeam = true;
         return true;
     }
 
