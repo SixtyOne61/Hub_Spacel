@@ -24,6 +24,7 @@ class HUB_SPACEL_API AShipPawn : public APawn
     friend class UFireComponent;
     friend class UCustomCollisionComponent;
     friend class URepairComponent;
+    friend class ULocalPlayerActionComponent;
 
 public:
 	// Sets default values for this pawn's properties
@@ -138,6 +139,9 @@ public:
 
     UPROPERTY(Category = "Component", EditAnywhere, BlueprintReadWrite)
     class UWidgetInteractionComponent* WidgetTargetComponent { nullptr };
+
+    UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)
+    class UPostProcessComponent* SpeedLinesComponent { nullptr };
 
 protected:
     /* current percent speed value 0.0f - 1.0f */

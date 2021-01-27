@@ -9,6 +9,9 @@
 #include "Components/PrimitiveComponent.h"
 #include "Components/PoseableMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/WidgetInteractionComponent.h"
+#include "Components/PostProcessComponent.h"
+#include "Components/InstancedStaticMeshComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "DataAsset/StaticMeshDataAsset.h"
@@ -21,11 +24,10 @@
 #include "Player/CustomCollisionComponent.h"
 #include "Player/PlayerShipController.h"
 #include "Player/RepairComponent.h"
+#include "Player/LocalPlayerActionComponent.h"
 #include "GameState/SpacelGameState.h"
-#include "Components/InstancedStaticMeshComponent.h"
 #include "Hub_SpacelGameInstance.h"
 #include "Util/Tag.h"
-#include "Components/WidgetInteractionComponent.h"
 
 // Sets default values
 AShipPawn::AShipPawn()
@@ -73,6 +75,9 @@ AShipPawn::AShipPawn()
     if (!ensure(TargetComponent != nullptr)) return;
     TargetComponent->SetupAttachment(RootComponent);
 
+    SpeedLinesComponent = CreateDefaultSubobject<UPostProcessComponent>(TEXT("SpeedLines_00"));
+    if (!ensure(TargetComponent != nullptr)) return;
+
     Tags.Add(Tags::Player);
 }
 
@@ -100,6 +105,12 @@ void AShipPawn::BeginPlay()
         spacelGameInstance->OnUnTargetPlayerDelegate.AddDynamic(this, &AShipPawn::OnUnTargetPlayer);
 
         this->WidgetTargetComponent = Cast<UWidgetInteractionComponent>(this->GetComponentByClass(UWidgetInteractionComponent::StaticClass()));
+
+        // add speed line component
+        if (ULocalPlayerActionComponent* localPlayerActionComponent = NewObject<ULocalPlayerActionComponent>(this, "LocalPlayerAction_00"))
+        {
+            localPlayerActionComponent->RegisterComponent();
+        }
     }
 }
 
