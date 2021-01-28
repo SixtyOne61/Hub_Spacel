@@ -11,9 +11,9 @@ void ASpacelPlayerState::BeginPlay()
 #if WITH_EDITOR
     if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
     {
-        static int idTeam{ 1 };
+        static int idTeam{ 0 };
+        idTeam = (idTeam) % 6 + 1;
         SetTeam("Team " + FString::FromInt(idTeam));
-        ++idTeam;
     }
 #endif
 }
