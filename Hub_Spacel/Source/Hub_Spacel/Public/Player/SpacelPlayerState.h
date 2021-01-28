@@ -21,6 +21,8 @@ class HUB_SPACEL_API ASpacelPlayerState : public APlayerState
     friend class UPreparePhaseWidget;
 
 public:
+    void BeginPlay() override;
+
     inline uint8 getRemainingSkillPoint() const { return RemainingSkillPoint; }
 
     uint8 getSkillPoint(ESkillType const& _type) const;

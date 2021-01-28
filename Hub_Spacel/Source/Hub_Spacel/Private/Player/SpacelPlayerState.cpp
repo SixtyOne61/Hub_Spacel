@@ -5,6 +5,19 @@
 #include "Net/UnrealNetwork.h"
 #include "Player/ShipPawn.h"
 
+void ASpacelPlayerState::BeginPlay()
+{
+    Super::BeginPlay();
+#if WITH_EDITOR
+    if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
+    {
+        static int idTeam{ 1 };
+        SetTeam("Team " + FString::FromInt(idTeam));
+        ++idTeam;
+    }
+#endif
+}
+
 void ASpacelPlayerState::setRemainingSkillPoint(uint8 && _val)
 {
     this->RemainingSkillPoint = _val;
