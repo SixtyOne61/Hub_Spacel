@@ -39,7 +39,6 @@ void UCustomCollisionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	if (this->GetNetMode() != ENetMode::NM_DedicatedServer) return;
-
 	if (!m_shipPawnOwner.IsValid() && !initShipPawnOwner()) return;
 
 	UWorld* world{ this->GetWorld() };

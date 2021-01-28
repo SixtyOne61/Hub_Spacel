@@ -37,6 +37,10 @@ public:
 
 private:
     void setRemainingSkillPoint(uint8 && _val);
+
+    /* for call set collision profile on pawn */
+    UFUNCTION()
+    void WaitPawnCreation();
 	
 public:
     /* event */

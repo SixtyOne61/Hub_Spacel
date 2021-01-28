@@ -19,17 +19,14 @@ UModuleComponent::UModuleComponent()
 
     ProtectionMeshComponent = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Protection_00"));
     if (!ensure(ProtectionMeshComponent != nullptr)) return;
-    ProtectionMeshComponent->SetCollisionProfileName("Player");
     ProtectionMeshComponent->AttachToComponent(this, FAttachmentTransformRules::KeepRelativeTransform);
 
     WeaponMeshComponent = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Weapon_00"));
     if (!ensure(WeaponMeshComponent != nullptr)) return;
-    WeaponMeshComponent->SetCollisionProfileName("Player");
     WeaponMeshComponent->AttachToComponent(this, FAttachmentTransformRules::KeepRelativeTransform);
 
     SupportMeshComponent = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Support_00"));
     if (!ensure(SupportMeshComponent != nullptr)) return;
-    SupportMeshComponent->SetCollisionProfileName("Player");
     SupportMeshComponent->AttachToComponent(this, FAttachmentTransformRules::KeepRelativeTransform);
 }
 

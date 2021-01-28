@@ -48,11 +48,22 @@ void ASpacelPlayerState::RPCSetSkillPoint_Implementation(ESkillType const& _type
 
 void ASpacelPlayerState::SetTeam(FString const& _team)
 {
-    Team = _team;
+    this->Team = _team;
 
+    FTimerHandle handle {};
+    this->GetWorldTimerManager().SetTimer(handle, this, &ASpacelPlayerState::WaitPawnCreation, 1.0f, false, 1.0f);
+}
+
+void ASpacelPlayerState::WaitPawnCreation()
+{
     if (AShipPawn* shipPawn = this->GetPawn<AShipPawn>())
     {
-        shipPawn->setCollisionProfile(_team);
+        shipPawn->setCollisionProfile(this->Team);
+    }
+    else
+    {
+        FTimerHandle handle{};
+        this->GetWorldTimerManager().SetTimer(handle, this, &ASpacelPlayerState::WaitPawnCreation, 1.0f, false, 1.0f);
     }
 }
 

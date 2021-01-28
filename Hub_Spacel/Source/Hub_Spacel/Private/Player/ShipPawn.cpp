@@ -38,7 +38,6 @@ AShipPawn::AShipPawn()
 
     DriverMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Driver_00"));
     if (!ensure(DriverMeshComponent != nullptr)) return;
-    DriverMeshComponent->SetCollisionProfileName("Player");
     RootComponent = DriverMeshComponent;
 
     BaseShipMeshComponent = CreateDefaultSubobject<UPoseableMeshComponent>(TEXT("ShipBase_00"));
