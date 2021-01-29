@@ -10,9 +10,9 @@ UCLASS()
 class HUB_SPACEL_API ADestroyActor : public AActor
 {
 	GENERATED_BODY()
-	
+
 public:
 	virtual void BeginPlay() override;
-	virtual void dmg(FHitResult const& _info) {};
-	virtual void applyDmg() {};
+
+	virtual void applyHit(TArray<int32> & _instance);
 };

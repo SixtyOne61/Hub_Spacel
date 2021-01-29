@@ -15,10 +15,12 @@ public:
 	// Sets default values for this actor's properties
 	ALaserBullet();
 
+    /* override */
+    void applyHit(TArray<int32>& _instance) override;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-    virtual void dmg(FHitResult const& _info) override;
 
 private:
     UFUNCTION()

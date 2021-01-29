@@ -101,14 +101,5 @@ void UFireComponent::spawnBullet(FTransform const& _transform) const
             FVector dir{ FVector{1.0f, 0.0f, .0f } };
             comp->SetVelocityInLocalSpace(dir * comp->InitialSpeed);
         }
-
-        if (USphereComponent* comp = Cast<USphereComponent>(laser->GetComponentByClass(USphereComponent::StaticClass())))
-        {
-            if (m_shipPawnOwner.IsValid() && m_shipPawnOwner.Get()->DriverMeshComponent)
-            {
-                FName const& collisionProfileName = m_shipPawnOwner.Get()->DriverMeshComponent->GetCollisionProfileName();
-                comp->SetCollisionProfileName(collisionProfileName);
-            }
-        }
     }
 }

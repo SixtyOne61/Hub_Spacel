@@ -53,6 +53,8 @@ public:
 
     static int32 getPlayerIdFromTarget(AActor* _target);
 
+    void hit(class UPrimitiveComponent* _comp, int32 _index);
+
 private:
     /* move ship server */
     UFUNCTION(Reliable, Server)
@@ -99,6 +101,9 @@ private:
     UFUNCTION()
     void OnRep_IsInFog();
 
+    UFUNCTION()
+    void OnStartGame();
+
 public:
     UPROPERTY(Category = "Ship", VisibleAnywhere, BlueprintReadOnly)
     class UStaticMeshComponent* DriverMeshComponent { nullptr };
@@ -118,10 +123,6 @@ public:
     /* module setup by server replicated to client, static mesh instance don't support replication */
     UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)
     class UModuleComponent* ModuleComponent { nullptr };
-
-    /* hand sweep collision, make by server */
-    UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)
-    class UCustomCollisionComponent* CustomCollisionComponent { nullptr };
 
     /* only on server side */
     UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)

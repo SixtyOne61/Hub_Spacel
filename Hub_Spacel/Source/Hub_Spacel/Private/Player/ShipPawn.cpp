@@ -66,10 +66,6 @@ AShipPawn::AShipPawn()
     if (!ensure(RepairComponent != nullptr)) return;
     RepairComponent->Deactivate();
 
-    CustomCollisionComponent = CreateDefaultSubobject<UCustomCollisionComponent>(TEXT("CustomCollision_00"));
-    if (!ensure(CustomCollisionComponent != nullptr)) return;
-    CustomCollisionComponent->Deactivate();
-
     TargetComponent = CreateDefaultSubobject<UChildActorComponent>(TEXT("Target_00"));
     if (!ensure(TargetComponent != nullptr)) return;
     TargetComponent->SetupAttachment(RootComponent);
@@ -80,6 +76,15 @@ AShipPawn::AShipPawn()
     Tags.Add(Tags::Player);
 }
 
+void AShipPawn::OnStartGame()
+{
+    // add custom collision component
+    if (UCustomCollisionComponent* customCollisionComponent = NewObject<UCustomCollisionComponent>(this, "CustomCollision_00"))
+    {
+        customCollisionComponent->RegisterComponent();
+    }
+}
+
 // Called when the game starts or when spawned
 void AShipPawn::BeginPlay()
 {
@@ -87,15 +92,19 @@ void AShipPawn::BeginPlay()
 
     if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
     {
+        ASpacelGameState* spacelGameState{ Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld())) };
+        if (spacelGameState != nullptr)
+        {
+            spacelGameState->OnStartGameDelegate.AddDynamic(this, &AShipPawn::OnStartGame);
+        }
         activateComponent(this->FireComponent);
-        activateComponent(this->CustomCollisionComponent);
         activateComponent(this->RepairComponent);
     }
     else if (!this->IsLocallyControlled())
     {
         if (!ensure(this->TargetComponent != nullptr)) return;
-        TargetComponent->SetChildActorClass(this->TargetClass);
-        TargetComponent->CreateChildActor();
+        this->TargetComponent->SetChildActorClass(this->TargetClass);
+        this->TargetComponent->CreateChildActor();
     }
     else
     {
@@ -340,6 +349,15 @@ void AShipPawn::OnRep_IsInFog()
                 spacelGameInstance->OnUnTargetPlayerDelegate.Broadcast(targetActor);
             }
         }
+    }
+}
+
+void AShipPawn::hit(class UPrimitiveComponent* _comp, int32 _index)
+{
+    UCustomCollisionComponent* customCollisionComponent { Cast<UCustomCollisionComponent>(this->GetComponentByClass(UCustomCollisionComponent::StaticClass())) };
+    if (customCollisionComponent != nullptr)
+    {
+        customCollisionComponent->hit(_comp, _index);
     }
 }
 

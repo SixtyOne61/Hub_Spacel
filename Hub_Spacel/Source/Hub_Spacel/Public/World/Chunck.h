@@ -18,8 +18,7 @@ public:
 	AChunck();
 
 	/* override */
-	void dmg(FHitResult const& _info) override;
-	void applyDmg() override;
+	void applyHit(TArray<int32>& _instance) override;
 
 private:
 	/* init actor, call by World Manager, most of time on editor, we keep  */
@@ -63,7 +62,4 @@ private:
 
 	// only use on client
 	int m_countRemovedIndex {};
-
-	// only use on server
-	TMap<int32, int16> m_dmg {};
 };

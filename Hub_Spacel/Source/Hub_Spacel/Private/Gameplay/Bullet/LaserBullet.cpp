@@ -9,6 +9,8 @@
 #include "Materials/MaterialInstanceDynamic.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Util/Tag.h"
+#include "Player/ShipPawn.h"
+#include "Player/ModuleComponent.h"
 
 // Sets default values
 ALaserBullet::ALaserBullet()
@@ -19,8 +21,6 @@ ALaserBullet::ALaserBullet()
     ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovement"));
 
     ProjectileCollisionComponent = CreateDefaultSubobject<USphereComponent>(TEXT("ProjectileCollision"));
-    if (!ensure(ProjectileCollisionComponent != nullptr)) return;
-    ProjectileCollisionComponent->OnComponentHit.AddDynamic(this, &ALaserBullet::OnComponentHit);
     RootComponent = ProjectileCollisionComponent;
 }
 
@@ -35,17 +35,20 @@ void ALaserBullet::BeginPlay()
         this->SetReplicateMovement(true);
     }
 
+    if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
+    {
+        if (!ensure(ProjectileCollisionComponent != nullptr)) return;
+        this->ProjectileCollisionComponent->OnComponentHit.AddDynamic(this, &ALaserBullet::OnComponentHit);
+    }
+
     // spawn fx fire
     UNiagaraFunctionLibrary::SpawnSystemAtLocation(this->GetWorld(), this->FireFx, this->GetActorLocation(), this->GetActorRotation());
 }
 
-void ALaserBullet::dmg(FHitResult const& _info)
+void ALaserBullet::applyHit(TArray<int32>& _instance)
 {
-    Super::dmg(_info);
-    if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
-    {
-        this->Destroy();
-    }
+    Super::applyHit(_instance);
+    this->Destroy();
 }
 
 void ALaserBullet::OnComponentHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit)
@@ -53,6 +56,15 @@ void ALaserBullet::OnComponentHit(UPrimitiveComponent* _hitComp, AActor* _otherA
     if (_otherActor->ActorHasTag(Tags::Matiere))
     {
         return;
+    }
+
+    if (_otherActor->ActorHasTag(Tags::Player))
+    {
+        AShipPawn* shipPawn{ Cast<AShipPawn>(_otherActor) };
+        if (shipPawn != nullptr)
+        {
+            shipPawn->hit(_otherComp, _hit.Item);
+        }
     }
     this->Destroy();
 }

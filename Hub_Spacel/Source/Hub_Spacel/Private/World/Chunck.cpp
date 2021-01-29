@@ -21,21 +21,6 @@ AChunck::AChunck()
 	Tags.Add(Tags::BlockingActor);
 }
 
-void AChunck::dmg(FHitResult const& _info)
-{
-	Super::dmg(_info);
-
-	if (_info.Item >= 0)
-	{
-		if (!m_dmg.Contains(_info.Item))
-		{
-			m_dmg.Add(_info.Item);
-		}
-
-		m_dmg[_info.Item]++;
-	}
-}
-
 void AChunck::init(int _chunckSize, int32 _cubeSize)
 {
 	this->R_ChunckSize = _chunckSize;
@@ -117,42 +102,36 @@ void AChunck::generateChunck(bool _isServer)
 	}
 }
 
+void AChunck::applyHit(TArray<int32>& _instance)
+{
+	Super::applyHit(_instance);
+
+	_instance.Sort([](int32 const& _a, int32 const& _b)
+		{
+			return _a > _b;
+		});
+
+	for (int32 id : _instance)
+	{
+		this->Voxels->RemoveInstance(id);
+	}
+
+	if (this->Voxels->GetInstanceCount() == 0)
+	{
+		this->Destroy();
+	}
+	else
+	{
+		RU_RemoveIndex.Append(_instance);
+	}
+}
+
 void AChunck::OnComponentHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit)
 {
 	// only trigger on server (because only register on server)
-	dmg(_hit);
-	applyDmg();
-}
-
-void AChunck::applyDmg()
-{
-	if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
-	{
-		if (m_dmg.Num() != 0)
-		{
-			TArray<int32> tmpArray{};
-			m_dmg.KeySort([](int32 const& _k1, int32 const& _k2)
-				{
-					return _k1 > _k2;
-				});
-
-			for (auto const& pair : m_dmg)
-			{
-				this->Voxels->RemoveInstance(pair.Key);
-				tmpArray.Add(pair.Key);
-			}
-			m_dmg.Empty();
-
-			if (this->Voxels->GetInstanceCount() == 0)
-			{
-				this->Destroy();
-			}
-			else
-			{
-				RU_RemoveIndex.Append(tmpArray);
-			}
-		}
-	}
+	TArray<int32> instance;
+	instance.Add(_hit.Item);
+	applyHit(instance);
 }
 
 void AChunck::OnRep_RemoveInstance()

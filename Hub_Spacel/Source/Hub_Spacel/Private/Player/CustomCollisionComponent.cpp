@@ -6,13 +6,13 @@
 #include "Player/ModuleComponent.h"
 #include "Player/PlayerShipController.h"
 #include "Player/SpacelPlayerState.h"
-#include "CollisionShape.h"
 #include "CollisionQueryParams.h"
 #include "Gameplay/DestroyActor.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "World/MatiereManager.h"
 #include "Kismet/GameplayStatics.h"
 #include "Util/Tag.h"
+#include "DrawDebugHelpers.h"
 
 // Sets default values for this component's properties
 UCustomCollisionComponent::UCustomCollisionComponent()
@@ -28,9 +28,130 @@ void UCustomCollisionComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (this->GetNetMode() != ENetMode::NM_DedicatedServer) return;
-
 	m_matiereManager = MakeWeakObjectPtr(Cast<AMatiereManager>(UGameplayStatics::GetActorOfClass(this->GetWorld(), AMatiereManager::StaticClass())));
+}
+
+bool UCustomCollisionComponent::sweepByProfile(TArray<FHitResult>& _outHit, FVector const& _worldLocation, FName const& _profile, FCollisionShape const& _shape, bool _drawDebug /*= false*/) const
+{
+	UWorld* world{ this->GetWorld() };
+	if (!ensure(world != nullptr)) return false;
+
+	_outHit.Empty();
+	if (_drawDebug)
+	{
+		DrawDebugSolidBox(world, _worldLocation, _shape.GetExtent(), FColor::Red);
+	}
+
+	// for box we need to have a stard != end
+	static const FVector epsilon{ 0.001f, 0.001f, 0.001f };
+	return world->SweepMultiByProfile(_outHit, _worldLocation, _worldLocation + epsilon, FQuat::Identity, _profile, _shape);
+}
+
+bool UCustomCollisionComponent::sweepByProfile(TArray<FHitResult> & _outHit, FVector const& _worldLocation, FName const& _profile, FCollisionShape const& _shape, TArray<FName> const& _ignoreTags, bool _drawDebug /*= false*/) const
+{
+	sweepByProfile(_outHit, _worldLocation, _profile, _shape, _drawDebug);
+	
+	if (_ignoreTags.Num() == 0)
+	{
+		return _outHit.Num() != 0;
+	}
+
+	_outHit.RemoveAll([&_ignoreTags](FHitResult & _hit)
+		{
+			if (_hit.Actor.Get() != nullptr && !_hit.Actor.Get()->IsPendingKill())
+			{
+				for (FName const& ignoreTag : _ignoreTags)
+				{
+					if (_hit.Actor.Get()->ActorHasTag(ignoreTag))
+					{
+						return true;
+					}
+				}
+
+				return false;
+			}
+
+			return true;
+		});
+
+	return _outHit.Num() != 0;
+}
+
+void UCustomCollisionComponent::dispatch(TArray<FHitResult> const& _items) const
+{
+	struct SInfo
+	{
+		TWeakObjectPtr<AActor> m_actor { };
+		TArray<int32> m_instance { };
+	};
+
+	TMap<uint32, SInfo> uniqueActors {};
+	for (FHitResult const& item : _items)
+	{
+		if(item.Actor.Get() == nullptr || item.Actor.Get()->IsPendingKill()) continue;
+
+		uint32 uniqueId = item.Actor.Get()->GetUniqueID();
+		if (!uniqueActors.Contains(uniqueId))
+		{
+			uniqueActors.Add(uniqueId);
+			uniqueActors[uniqueId].m_actor = item.Actor;
+		}
+
+		uniqueActors[uniqueId].m_instance.Add(item.Item);
+	}
+
+	for (TTuple<uint32, SInfo>& uniqueActor : uniqueActors)
+	{
+		if (ADestroyActor* destroyActor = Cast<ADestroyActor>(uniqueActor.Value.m_actor.Get()))
+		{
+			destroyActor->applyHit(uniqueActor.Value.m_instance);
+		}
+	}
+}
+
+bool UCustomCollisionComponent::sweepForInstancedStaticMesh(UInstancedStaticMeshComponent*& _mesh, TArray<FVector>& _replicated, TArray<FVector>& _removeReplicated, FVector const& _scale, FName const& _profile)
+{
+	if (_mesh == nullptr || _mesh->GetInstanceCount() == 0) return false;
+
+	// for return
+	int32 count = _mesh->GetInstanceCount();
+
+	FCollisionShape shape = createCollisionShapeWithLocalBounds<UInstancedStaticMeshComponent>(_mesh, _scale);
+
+	FTransform localTransform{}, worldTransform{};
+	int32 index {};
+	while (index < _mesh->GetInstanceCount())
+	{
+		TArray<FHitResult> hits;
+		if (_mesh->GetInstanceTransform(index, localTransform, false)
+			&& _mesh->GetInstanceTransform(index, worldTransform, true)
+			&& sweepByProfile(hits, worldTransform.GetLocation(), _profile, shape, {Tags::Matiere, Tags::Fog}))
+		{
+			// spawn matiere
+			if (m_matiereManager.IsValid())
+			{
+				if (ASpacelPlayerState const* spacelPlayerState = m_shipPawnOwner.Get()->GetPlayerState<ASpacelPlayerState>())
+				{
+					m_matiereManager.Get()->spawnMatiere(worldTransform.GetLocation(), spacelPlayerState->Team);
+				}
+			}
+
+			// remove instance
+			_mesh->RemoveInstance(index);
+			FVector const& location = localTransform.GetLocation();
+			_replicated.Remove(location);
+			_removeReplicated.Add(location);
+
+			// clean actor hit
+			dispatch(hits);
+
+			continue;
+		}
+
+		++index;
+	}
+
+	return count != _mesh->GetInstanceCount();
 }
 
 // Called every frame
@@ -38,117 +159,49 @@ void UCustomCollisionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if (this->GetNetMode() != ENetMode::NM_DedicatedServer) return;
 	if (!m_shipPawnOwner.IsValid() && !initShipPawnOwner()) return;
+	if (m_shipPawnOwner.Get()->DriverMeshComponent == nullptr) return;
+
+	FName const& profileCollision = m_shipPawnOwner.Get()->DriverMeshComponent->GetCollisionProfileName();
 
 	UWorld* world{ this->GetWorld() };
 	if (!ensure(world != nullptr)) return;
 
-	// check if ship overlap something
+	/* check if ship hit something */
+
 	FVector const& ownerLocation { m_shipPawnOwner.Get()->GetActorLocation() };
 
-	FCollisionShape collisionShape { FCollisionShape::MakeBox({350, 300, 150}) };
-	static const FCollisionObjectQueryParams coqp { FCollisionObjectQueryParams::AllObjects };
-
-	// contain all item hit each sweep
 	TArray<FHitResult> hits;
-	// contain all item hit by all instance
-	TArray<FHitResult> saveHits{};
-
-	auto lb_checkCollision = [&world, &hits](FCollisionShape const& _collision, FVector const& _location) -> bool
+	if (sweepByProfile(hits, ownerLocation, profileCollision, { FCollisionShape::MakeBox({400, 350, 200}) }))
 	{
-		hits.Empty();
-		//DrawDebugSolidBox(world, location, collisionShape.GetExtent(), FColor::Red);
-
-		// for box we need to have a stard != end
-		FVector epsilon{ 0.001f, 0.001f, 0.001f };
-		return world->SweepMultiByObjectType(hits, _location, _location + epsilon, FQuat::Identity, coqp, _collision);
-	};
-
-	FVector const& scale = m_shipPawnOwner.Get()->GetTransform().GetScale3D();
-
-	auto lb_checkEachInstance = [&](UInstancedStaticMeshComponent*& _mesh, TArray<FVector>& _replicated, TArray<FVector>& _removeReplicated)
-	{
-		if (_mesh == nullptr || _mesh->GetInstanceCount() == 0) return false;
-
-		int32 count = _replicated.Num();
-
-		FVector min{}, max{};
-		_mesh->GetLocalBounds(min, max);
-		FVector box = (max - min) * scale;
-		collisionShape = FCollisionShape::MakeBox(box / 2.0f);
-
-		FTransform worldTransform{};
-		int32 index{ 0 };
-		while (index < _mesh->GetInstanceCount())
-		{
-			// order of "if" is important
-			if (_mesh->GetInstanceTransform(index, worldTransform, true)
-				&& lb_checkCollision(collisionShape, worldTransform.GetLocation())
-				&& saveDestroyActor(saveHits, hits))
-			{
-				FTransform localTransform{};
-				_mesh->GetInstanceTransform(index, localTransform, false);
-
-				if (m_matiereManager.IsValid())
-				{
-					if (ASpacelPlayerState const* spacelPlayerState = m_shipPawnOwner.Get()->GetPlayerState<ASpacelPlayerState>())
-					{
-						m_matiereManager.Get()->spawnMatiere(worldTransform.GetLocation(), spacelPlayerState->Team);
-					}
-				}
-
-				// manage item hits
-				_mesh->RemoveInstance(index);
-				// TO DO Check if it's better to make this in temp array
-				// for make only one batch for replication
-				FVector const& location = localTransform.GetLocation();
-				_replicated.Remove(location);
-				_removeReplicated.Add(location);
-				
-				// go to next item with the same index
-				continue;
-			}
-			++index;
-		}
-
-		return count != _replicated.Num();
-	};
-
-	if (m_shipPawnOwner.Get()->ModuleComponent
-		&& lb_checkCollision(collisionShape, ownerLocation))
-	{
+		// add matiere if we hit it
 		hitMatiere(hits);
 
-		// check if we consume all hit item
-		if(hits.Num() == 0) return;
+		// if we hit only matiere return
+		if (hits.Num() == 0)
+		{
+			return;
+		}
 
-		if (lb_checkEachInstance(m_shipPawnOwner.Get()->ModuleComponent->ProtectionMeshComponent, m_shipPawnOwner.Get()->ModuleComponent->RU_ProtectionLocations, m_shipPawnOwner.Get()->ModuleComponent->R_RemovedProtectionLocations))
+		FVector const& scale = m_shipPawnOwner.Get()->GetTransform().GetScale3D();
+
+		// first check red zone
+		FCollisionShape redZoneShape = createCollisionShapeWithLocalBounds<UStaticMeshComponent>(m_shipPawnOwner.Get()->DriverMeshComponent, scale);
+		FVector const& redZoneLocation = m_shipPawnOwner.Get()->DriverMeshComponent->GetComponentLocation();
+		if (sweepByProfile(hits, redZoneLocation, profileCollision, redZoneShape, { Tags::Matiere, Tags::Fog }))
+		{
+			dispatch(hits);
+			m_shipPawnOwner.Get()->kill();
+			return; // break flow
+		}
+		// for each module, we need to check each instance
+		if (sweepForInstancedStaticMesh(m_shipPawnOwner.Get()->ModuleComponent->ProtectionMeshComponent, m_shipPawnOwner.Get()->ModuleComponent->RU_ProtectionLocations, m_shipPawnOwner.Get()->ModuleComponent->R_RemovedProtectionLocations, scale, profileCollision))
 		{
 			m_shipPawnOwner.Get()->OnHitProtectionDelegate.Broadcast();
 		}
-
-		if (lb_checkEachInstance(m_shipPawnOwner.Get()->ModuleComponent->SupportMeshComponent, m_shipPawnOwner.Get()->ModuleComponent->RU_SupportLocations, m_shipPawnOwner.Get()->ModuleComponent->R_RemovedSupportLocations))
+		if (sweepForInstancedStaticMesh(m_shipPawnOwner.Get()->ModuleComponent->SupportMeshComponent, m_shipPawnOwner.Get()->ModuleComponent->RU_SupportLocations, m_shipPawnOwner.Get()->ModuleComponent->R_RemovedSupportLocations, scale, profileCollision))
 		{
 			m_shipPawnOwner.Get()->OnHitSupportDelegate.Broadcast();
-		}
-
-		// apply hit on hited actor
-		destroyActor(saveHits);
-
-		// check red zone
-		FVector min{}, max{};
-		m_shipPawnOwner.Get()->DriverMeshComponent->GetLocalBounds(min, max);
-		FVector box = (max - min) * m_shipPawnOwner.Get()->GetTransform().GetScale3D();
-		collisionShape = FCollisionShape::MakeBox(box / 2.0f);
-
-		if (lb_checkCollision(collisionShape, m_shipPawnOwner.Get()->DriverMeshComponent->GetComponentLocation())
-			&& saveDestroyActor(saveHits, hits))
-		{
-			// apply hit on hited actor
-			destroyActor(saveHits);
-
-			m_shipPawnOwner.Get()->kill();
 		}
 	}
 }
@@ -180,56 +233,56 @@ void UCustomCollisionComponent::hitMatiere(TArray<FHitResult>& _items) const
 	}
 }
 
-void UCustomCollisionComponent::destroyActor(TArray<FHitResult>& _items) const
+void UCustomCollisionComponent::hit(class UPrimitiveComponent* _comp, int32 _index)
 {
-	for (FHitResult const& hit : _items)
+	if(m_shipPawnOwner.Get() == nullptr) return;
+	if(m_shipPawnOwner.Get()->ModuleComponent == nullptr) return;
+	if(m_shipPawnOwner.Get()->ModuleComponent->ProtectionMeshComponent == nullptr) return;
+	if(m_shipPawnOwner.Get()->ModuleComponent->SupportMeshComponent == nullptr) return;
+	if(m_shipPawnOwner.Get()->DriverMeshComponent == nullptr) return;
+
+	uint32 uniqueId { _comp->GetUniqueID() };
+
+	auto lb_removeInstance = [&](UInstancedStaticMeshComponent*& _mesh, TArray<FVector>& _replicated, TArray<FVector>& _removeReplicated)
 	{
-		AActor* act = hit.GetActor();
-		if (act == nullptr || act->IsPendingKill())
-		{
-			continue;
-		}
+		if (_mesh == nullptr || _mesh->GetInstanceCount() == 0) return;
 
-		if (ADestroyActor* destroyAct = Cast<ADestroyActor>(act))
-		{
-			destroyAct->dmg(hit);
-		}
-	}
+		FTransform localTransform{};
+		FTransform worldTransform{};
 
-	for (FHitResult const& hit : _items)
+		bool ret = _mesh->GetInstanceTransform(_index, localTransform);
+		ret &= _mesh->GetInstanceTransform(_index, worldTransform);
+
+		if (ret)
+		{
+			if (m_matiereManager.IsValid())
+			{
+				if (ASpacelPlayerState const* spacelPlayerState = m_shipPawnOwner.Get()->GetPlayerState<ASpacelPlayerState>())
+				{
+					m_matiereManager.Get()->spawnMatiere(worldTransform.GetLocation(), spacelPlayerState->Team);
+				}
+			}
+
+			// manage item hits
+			_mesh->RemoveInstance(_index);
+			// TO DO Check if it's better to make this in temp array
+			// for make only one batch for replication
+			FVector const& location = localTransform.GetLocation();
+			_replicated.Remove(location);
+			_removeReplicated.Add(location);
+		}
+	};
+
+	if (uniqueId == m_shipPawnOwner.Get()->ModuleComponent->ProtectionMeshComponent->GetUniqueID())
 	{
-		AActor* act = hit.GetActor();
-		if (act == nullptr || act->IsPendingKill())
-		{
-			continue;
-		}
-
-		if (ADestroyActor* destroyAct = Cast<ADestroyActor>(act))
-		{
-			destroyAct->applyDmg();
-		}
+		lb_removeInstance(m_shipPawnOwner.Get()->ModuleComponent->ProtectionMeshComponent, m_shipPawnOwner.Get()->ModuleComponent->RU_ProtectionLocations, m_shipPawnOwner.Get()->ModuleComponent->R_RemovedProtectionLocations);
 	}
-
-	_items.Empty();
-}
-
-bool UCustomCollisionComponent::saveDestroyActor(TArray<FHitResult>& _items, TArray<FHitResult> const& _hits) const
-{
-	int32 count { _items.Num() };
-
-	for (FHitResult const& hit : _hits)
+	else if (uniqueId == m_shipPawnOwner.Get()->ModuleComponent->SupportMeshComponent->GetUniqueID())
 	{
-		AActor* act { hit.GetActor() };
-		if (act == nullptr || act->IsPendingKill())
-		{
-			continue;
-		}
-
-		if (act->ActorHasTag(Tags::DestroyActor))
-		{
-			_items.Add(hit);
-		}
+		lb_removeInstance(m_shipPawnOwner.Get()->ModuleComponent->SupportMeshComponent, m_shipPawnOwner.Get()->ModuleComponent->RU_SupportLocations, m_shipPawnOwner.Get()->ModuleComponent->R_RemovedSupportLocations);
 	}
-
-	return count != _items.Num();
+	else if (uniqueId == m_shipPawnOwner.Get()->DriverMeshComponent->GetUniqueID())
+	{
+		m_shipPawnOwner.Get()->kill();
+	}
 }
