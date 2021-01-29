@@ -250,8 +250,8 @@ void UCustomCollisionComponent::hit(class UPrimitiveComponent* _comp, int32 _ind
 		FTransform localTransform{};
 		FTransform worldTransform{};
 
-		bool ret = _mesh->GetInstanceTransform(_index, localTransform);
-		ret &= _mesh->GetInstanceTransform(_index, worldTransform);
+		bool ret = _mesh->GetInstanceTransform(_index, localTransform, false);
+		ret &= _mesh->GetInstanceTransform(_index, worldTransform, true);
 
 		if (ret)
 		{
