@@ -100,26 +100,33 @@ void AShipPawn::BeginPlay()
         activateComponent(this->FireComponent);
         activateComponent(this->RepairComponent);
     }
-    else if (!this->IsLocallyControlled())
-    {
-        if (!ensure(this->TargetComponent != nullptr)) return;
-        this->TargetComponent->SetChildActorClass(this->TargetClass);
-        this->TargetComponent->CreateChildActor();
-    }
     else
     {
-        UHub_SpacelGameInstance* spacelGameInstance{ Cast<UHub_SpacelGameInstance>(this->GetGameInstance()) };
-        spacelGameInstance->OnTargetPlayerDelegate.AddDynamic(this, &AShipPawn::OnTargetPlayer);
-        spacelGameInstance->OnUnTargetPlayerDelegate.AddDynamic(this, &AShipPawn::OnUnTargetPlayer);
-
-        this->WidgetTargetComponent = Cast<UWidgetInteractionComponent>(this->GetComponentByClass(UWidgetInteractionComponent::StaticClass()));
-
-        // add speed line component
-        if (ULocalPlayerActionComponent* localPlayerActionComponent = NewObject<ULocalPlayerActionComponent>(this, "LocalPlayerAction_00"))
+        if (!this->IsLocallyControlled())
         {
-            localPlayerActionComponent->RegisterComponent();
+            if (!ensure(this->TargetComponent != nullptr)) return;
+            this->TargetComponent->SetChildActorClass(this->TargetClass);
+            this->TargetComponent->CreateChildActor();
         }
+        else
+        {
+            UHub_SpacelGameInstance* spacelGameInstance{ Cast<UHub_SpacelGameInstance>(this->GetGameInstance()) };
+            spacelGameInstance->OnTargetPlayerDelegate.AddDynamic(this, &AShipPawn::OnTargetPlayer);
+            spacelGameInstance->OnUnTargetPlayerDelegate.AddDynamic(this, &AShipPawn::OnUnTargetPlayer);
+
+            this->WidgetTargetComponent = Cast<UWidgetInteractionComponent>(this->GetComponentByClass(UWidgetInteractionComponent::StaticClass()));
+
+            // add speed line component
+            if (ULocalPlayerActionComponent* localPlayerActionComponent = NewObject<ULocalPlayerActionComponent>(this, "LocalPlayerAction_00"))
+            {
+                localPlayerActionComponent->RegisterComponent();
+            }
+        }
+
+        if (!ensure(this->DriverMeshComponent != nullptr)) return;
+        this->DriverMeshComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
     }
+    
 }
 
 void AShipPawn::OnTargetPlayer(AActor* _target)
