@@ -269,15 +269,6 @@ void AShipPawn::RPCServerMove_Implementation(float const& _deltaTime)
     newVelocity = FMath::Lerp(linearVelocity, newVelocity, 0.9f);
 
     this->DriverMeshComponent->SetPhysicsLinearVelocity(newVelocity);
-
-    RPCClientMove(angularVelocity, newVelocity);
-}
-
-void AShipPawn::RPCClientMove_Implementation(FVector const& _angularVelocity, FVector const& _linearVelocity)
-{
-    if (!ensure(this->DriverMeshComponent != nullptr)) return;
-    this->DriverMeshComponent->AddTorqueInDegrees(_angularVelocity, NAME_None, true);
-    this->DriverMeshComponent->SetPhysicsLinearVelocity(_linearVelocity);
 }
 
 void AShipPawn::OnRep_PlayerState()

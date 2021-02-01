@@ -60,10 +60,6 @@ private:
     UFUNCTION(Reliable, Server)
     void RPCServerMove(float const& _deltaTime);
 
-    /* move ship client */
-    UFUNCTION(Unreliable, Client)
-    void RPCClientMove(FVector const& _angularVelocity, FVector const& _linearVelocity);
-
     virtual void OnRep_PlayerState() override;
 
     /* only use for debug in editor */
