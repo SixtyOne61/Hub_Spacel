@@ -217,39 +217,6 @@ void AShipPawn::Tick(float _deltaTime)
     }
 }
 
-void AShipPawn::OnRep_PercentFlightAttitude()
-{
-    if (!ensure(this->DriverMeshComponent != nullptr)) return;
-    if (!ensure(this->PlayerDataAsset != nullptr)) return;
-
-    FVector dir { this->DriverMeshComponent->GetForwardVector() * this->RU_PercentFlightAttitude * this->PlayerDataAsset->FlightAttitudeSpeed };
-    dir = FMath::Lerp(FVector::ZeroVector, dir, 0.1f);
-
-    this->DriverMeshComponent->AddTorqueInDegrees(dir, NAME_None, true);
-}
-
-void AShipPawn::OnRep_PercentTurn()
-{
-    if (!ensure(this->DriverMeshComponent != nullptr)) return;
-    if (!ensure(this->PlayerDataAsset != nullptr)) return;
-
-    FVector dir { this->DriverMeshComponent->GetUpVector() * this->RU_PercentTurn * this->PlayerDataAsset->TurnSpeed };
-    dir = FMath::Lerp(FVector::ZeroVector, dir, 0.1f);
-
-    this->DriverMeshComponent->AddTorqueInDegrees(dir, NAME_None, true);
-}
-
-void AShipPawn::OnRep_PercentUp()
-{
-    if (!ensure(this->DriverMeshComponent != nullptr)) return;
-    if (!ensure(this->PlayerDataAsset != nullptr)) return;
-
-    FVector dir { this->DriverMeshComponent->GetRightVector() * this->RU_PercentUp * this->PlayerDataAsset->UpSpeed };
-    dir = FMath::Lerp(FVector::ZeroVector, dir, 0.1f);
-
-    this->DriverMeshComponent->AddTorqueInDegrees(dir, NAME_None, true);
-}
-
 void AShipPawn::RPCServerMove_Implementation(float const& _deltaTime)
 {
     if (!ensure(this->DriverMeshComponent != nullptr)) return;
@@ -257,10 +224,13 @@ void AShipPawn::RPCServerMove_Implementation(float const& _deltaTime)
     if (!ensure(this->ModuleComponent != nullptr)) return;
     if (!ensure(this->ModuleComponent->SupportMeshComponent != nullptr)) return;
 
-    FVector angularVelocity { UKismetMathLibrary::NegateVector(this->DriverMeshComponent->GetPhysicsAngularVelocityInDegrees()) };
-    angularVelocity *= 2.0f;
+    FVector const& angularVelocity { this->DriverMeshComponent->GetPhysicsAngularVelocityInDegrees() };
 
-    this->DriverMeshComponent->AddTorqueInDegrees(angularVelocity, NAME_None, true);
+    FVector newAngularVelocity { this->DriverMeshComponent->GetRightVector() * this->R_PercentUp * this->PlayerDataAsset->UpSpeed };
+    newAngularVelocity += this->DriverMeshComponent->GetUpVector() * this->R_PercentTurn * this->PlayerDataAsset->TurnSpeed;
+    newAngularVelocity += this->DriverMeshComponent->GetForwardVector() * this->R_PercentFlightAttitude * this->PlayerDataAsset->FlightAttitudeSpeed;
+
+    this->DriverMeshComponent->SetPhysicsAngularVelocityInDegrees(newAngularVelocity);
 
     FVector const& linearVelocity = this->DriverMeshComponent->GetPhysicsLinearVelocity(NAME_None);
     // 9, default support size
@@ -272,14 +242,14 @@ void AShipPawn::RPCServerMove_Implementation(float const& _deltaTime)
 
     if (m_triggerFastMove)
     {
-        FVector dirUp{ this->DriverMeshComponent->GetRightVector() * this->RU_PercentUp * FMath::Pow(this->PlayerDataAsset->UpSpeed, 2) };
-        FVector dirTurn{ this->DriverMeshComponent->GetUpVector() * this->RU_PercentTurn * FMath::Pow(this->PlayerDataAsset->TurnSpeed, 2) };
-
-        if (!SimplyMath::SIsType<float>::isNearlyZero(this->RU_PercentUp)
-            || !SimplyMath::SIsType<float>::isNearlyZero(this->RU_PercentTurn))
-        {
-            this->DriverMeshComponent->AddTorqueInDegrees(dirUp + dirTurn, NAME_None, false);
-        }
+        //FVector dirUp{ this->DriverMeshComponent->GetRightVector() * this->RU_PercentUp * FMath::Pow(this->PlayerDataAsset->UpSpeed, 2) };
+        //FVector dirTurn{ this->DriverMeshComponent->GetUpVector() * this->RU_PercentTurn * FMath::Pow(this->PlayerDataAsset->TurnSpeed, 2) };
+        //
+        //if (!SimplyMath::SIsType<float>::isNearlyZero(this->RU_PercentUp)
+        //    || !SimplyMath::SIsType<float>::isNearlyZero(this->RU_PercentTurn))
+        //{
+        //    this->DriverMeshComponent->AddTorqueInDegrees(dirUp + dirTurn, NAME_None, false);
+        //}
     }
 }
 
@@ -401,8 +371,8 @@ void AShipPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetim
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
     DOREPLIFETIME(AShipPawn, RU_IsInFog);
     DOREPLIFETIME(AShipPawn, R_PercentSpeed);
-    DOREPLIFETIME(AShipPawn, RU_PercentFlightAttitude);
-    DOREPLIFETIME(AShipPawn, RU_PercentTurn);
-    DOREPLIFETIME(AShipPawn, RU_PercentUp);
+    DOREPLIFETIME(AShipPawn, R_PercentFlightAttitude);
+    DOREPLIFETIME(AShipPawn, R_PercentTurn);
+    DOREPLIFETIME(AShipPawn, R_PercentUp);
 }
 

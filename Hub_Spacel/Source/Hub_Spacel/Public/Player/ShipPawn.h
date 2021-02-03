@@ -36,15 +36,6 @@ public:
 	// Called every frame
 	virtual void Tick(float _deltaTime) override;
 
-    UFUNCTION()
-    void OnRep_PercentFlightAttitude();
-
-    UFUNCTION()
-    void OnRep_PercentTurn();
-
-    UFUNCTION()
-    void OnRep_PercentUp();
-
     /* set collision profile name */
     void setCollisionProfile(FString _team);
 
@@ -154,16 +145,16 @@ protected:
     float R_PercentSpeed = 0.0f;
 
     /* when flight attitude change -1.0f or 0.0f or 1.0f */
-    UPROPERTY(ReplicatedUsing = "OnRep_PercentFlightAttitude")
-    float RU_PercentFlightAttitude = 0.0f;
+    UPROPERTY(Replicated)
+    float R_PercentFlightAttitude = 0.0f;
 
     /* when turn change -1.0f or 0.0f or 1.0f */
-    UPROPERTY(ReplicatedUsing = "OnRep_PercentTurn")
-    float RU_PercentTurn = 0.0f;
+    UPROPERTY(Replicated)
+    float R_PercentTurn = 0.0f;
 
     /* when up change -1.0f or 0.0f or 1.0f */
-    UPROPERTY(ReplicatedUsing = "OnRep_PercentUp")
-    float RU_PercentUp = 0.0f;
+    UPROPERTY(Replicated)
+    float R_PercentUp = 0.0f;
 
     UPROPERTY(ReplicatedUsing = "OnRep_IsInFog")
     bool RU_IsInFog{ false };
