@@ -194,6 +194,8 @@ void UCustomCollisionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 			m_shipPawnOwner.Get()->kill();
 			return; // break flow
 		}
+
+		FName prot = m_shipPawnOwner.Get()->ModuleComponent->ProtectionMeshComponent->GetCollisionProfileName();
 		// for each module, we need to check each instance
 		if (sweepForInstancedStaticMesh(m_shipPawnOwner.Get()->ModuleComponent->ProtectionMeshComponent, m_shipPawnOwner.Get()->ModuleComponent->RU_ProtectionLocations, m_shipPawnOwner.Get()->ModuleComponent->R_RemovedProtectionLocations, scale, profileCollision))
 		{

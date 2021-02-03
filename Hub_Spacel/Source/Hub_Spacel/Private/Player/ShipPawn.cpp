@@ -126,7 +126,6 @@ void AShipPawn::BeginPlay()
         if (!ensure(this->DriverMeshComponent != nullptr)) return;
         this->DriverMeshComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
     }
-    
 }
 
 void AShipPawn::OnTargetPlayer(AActor* _target)
@@ -357,6 +356,19 @@ void AShipPawn::hit(class UPrimitiveComponent* _comp, int32 _index)
     {
         customCollisionComponent->hit(_comp, _index);
     }
+}
+
+void AShipPawn::Restarted()
+{
+    if (!ensure(this->ModuleComponent != nullptr)) return;
+    this->ModuleComponent->OnStartGame();
+
+    if (ASpacelPlayerState* playerState = this->GetPlayerState<ASpacelPlayerState>())
+    {
+        setCollisionProfile(playerState->Team);
+    }
+
+    //OnStartGame();
 }
 
 void AShipPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetimeProps) const

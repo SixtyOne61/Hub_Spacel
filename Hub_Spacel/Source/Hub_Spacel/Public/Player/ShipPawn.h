@@ -55,6 +55,9 @@ public:
 
     void hit(class UPrimitiveComponent* _comp, int32 _index);
 
+    UFUNCTION(BlueprintCallable)
+    void Restarted();
+
 private:
     /* move ship server */
     UFUNCTION(Reliable, Server)
