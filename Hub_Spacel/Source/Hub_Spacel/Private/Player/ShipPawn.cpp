@@ -226,8 +226,9 @@ void AShipPawn::RPCServerMove_Implementation(float const& _deltaTime)
 
     FVector const& angularVelocity { this->DriverMeshComponent->GetPhysicsAngularVelocityInDegrees() };
 
-    FVector newAngularVelocity { this->DriverMeshComponent->GetRightVector() * this->R_PercentUp * this->PlayerDataAsset->UpSpeed };
-    newAngularVelocity += this->DriverMeshComponent->GetUpVector() * this->R_PercentTurn * this->PlayerDataAsset->TurnSpeed;
+    float coef { m_triggerFastMove ? 2.0f : 1.0f };
+    FVector newAngularVelocity { this->DriverMeshComponent->GetRightVector() * this->R_PercentUp * this->PlayerDataAsset->UpSpeed * coef };
+    newAngularVelocity += this->DriverMeshComponent->GetUpVector() * this->R_PercentTurn * this->PlayerDataAsset->TurnSpeed * coef;
     newAngularVelocity += this->DriverMeshComponent->GetForwardVector() * this->R_PercentFlightAttitude * this->PlayerDataAsset->FlightAttitudeSpeed;
 
     this->DriverMeshComponent->SetPhysicsAngularVelocityInDegrees(newAngularVelocity);
@@ -239,18 +240,6 @@ void AShipPawn::RPCServerMove_Implementation(float const& _deltaTime)
     newVelocity = FMath::Lerp(linearVelocity, newVelocity, 0.9f);
 
     this->DriverMeshComponent->SetPhysicsLinearVelocity(newVelocity);
-
-    if (m_triggerFastMove)
-    {
-        //FVector dirUp{ this->DriverMeshComponent->GetRightVector() * this->RU_PercentUp * FMath::Pow(this->PlayerDataAsset->UpSpeed, 2) };
-        //FVector dirTurn{ this->DriverMeshComponent->GetUpVector() * this->RU_PercentTurn * FMath::Pow(this->PlayerDataAsset->TurnSpeed, 2) };
-        //
-        //if (!SimplyMath::SIsType<float>::isNearlyZero(this->RU_PercentUp)
-        //    || !SimplyMath::SIsType<float>::isNearlyZero(this->RU_PercentTurn))
-        //{
-        //    this->DriverMeshComponent->AddTorqueInDegrees(dirUp + dirTurn, NAME_None, false);
-        //}
-    }
 }
 
 void AShipPawn::OnRep_PlayerState()
