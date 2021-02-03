@@ -115,6 +115,9 @@ void APlayerShipController::SetupInputComponent()
     // repair toggle
     this->InputComponent->BindAction("Repair", IE_Pressed, this, &APlayerShipController::toggleRepair);
 
+    // fast move
+    this->InputComponent->BindAction("FastMove", IE_Pressed, this, &APlayerShipController::triggerFastMove);
+
     // extra
     this->InputComponent->BindAction("ReturnToMainMenu", IE_Pressed, this, &APlayerShipController::returnToMainMenu);
 }
@@ -375,4 +378,23 @@ void APlayerShipController::ToggleGiveAlly1(bool _on)
 void APlayerShipController::ToggleGiveAlly2(bool _on)
 {
 
+}
+
+void APlayerShipController::triggerFastMove()
+{
+    if (this->m_enableFlyingInput)
+    {
+        this->RPCServerTriggerFastMove();
+    }
+}
+
+void APlayerShipController::RPCServerTriggerFastMove_Implementation()
+{
+    AShipPawn* shipPawn = Cast<AShipPawn>(this->GetPawn());
+    if (shipPawn == nullptr)
+    {
+        return;
+    }
+
+    shipPawn->setTriggerFastMove();
 }

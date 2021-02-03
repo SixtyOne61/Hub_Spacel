@@ -92,6 +92,11 @@ protected:
     /* repair input */
     void toggleRepair();
 
+    /* fast move input */
+    void triggerFastMove();
+    UFUNCTION(Reliable, Server)
+    void RPCServerTriggerFastMove();
+
     void returnToMainMenu();
 
     UFUNCTION()

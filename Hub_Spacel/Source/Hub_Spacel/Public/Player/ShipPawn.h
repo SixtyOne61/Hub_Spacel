@@ -103,6 +103,11 @@ private:
     UFUNCTION()
     void OnStartGame();
 
+    /* trigger for make a fast move, only call from server */
+    void setTriggerFastMove();
+    UFUNCTION()
+    void ResetTriggerFastMove();
+
 public:
     UPROPERTY(Category = "Ship", VisibleAnywhere, BlueprintReadOnly)
     class UStaticMeshComponent* DriverMeshComponent { nullptr };
@@ -162,6 +167,9 @@ protected:
 
     UPROPERTY(ReplicatedUsing = "OnRep_IsInFog")
     bool RU_IsInFog{ false };
+
+    /* true during one frame */
+    bool m_triggerFastMove {};
 
 private:
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")

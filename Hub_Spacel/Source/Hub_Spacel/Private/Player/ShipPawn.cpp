@@ -28,6 +28,7 @@
 #include "GameState/SpacelGameState.h"
 #include "Hub_SpacelGameInstance.h"
 #include "Util/Tag.h"
+#include "Util/SimplyMath.h"
 
 // Sets default values
 AShipPawn::AShipPawn()
@@ -268,6 +269,18 @@ void AShipPawn::RPCServerMove_Implementation(float const& _deltaTime)
     newVelocity = FMath::Lerp(linearVelocity, newVelocity, 0.9f);
 
     this->DriverMeshComponent->SetPhysicsLinearVelocity(newVelocity);
+
+    if (m_triggerFastMove)
+    {
+        FVector dirUp{ this->DriverMeshComponent->GetRightVector() * this->RU_PercentUp * FMath::Pow(this->PlayerDataAsset->UpSpeed, 2) };
+        FVector dirTurn{ this->DriverMeshComponent->GetUpVector() * this->RU_PercentTurn * FMath::Pow(this->PlayerDataAsset->TurnSpeed, 2) };
+
+        if (!SimplyMath::SIsType<float>::isNearlyZero(this->RU_PercentUp)
+            || !SimplyMath::SIsType<float>::isNearlyZero(this->RU_PercentTurn))
+        {
+            this->DriverMeshComponent->AddTorqueInDegrees(dirUp + dirTurn, NAME_None, false);
+        }
+    }
 }
 
 void AShipPawn::OnRep_PlayerState()
@@ -356,6 +369,18 @@ void AShipPawn::hit(class UPrimitiveComponent* _comp, int32 _index)
     {
         customCollisionComponent->hit(_comp, _index);
     }
+}
+
+void AShipPawn::setTriggerFastMove()
+{
+    m_triggerFastMove = true;
+    FTimerHandle handle;
+    this->GetWorldTimerManager().SetTimer(handle, this, &AShipPawn::ResetTriggerFastMove, 5.0f, false);
+}
+
+void AShipPawn::ResetTriggerFastMove()
+{
+    m_triggerFastMove = false;
 }
 
 void AShipPawn::Restarted()
