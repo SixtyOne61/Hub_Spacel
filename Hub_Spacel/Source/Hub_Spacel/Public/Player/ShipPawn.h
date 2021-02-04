@@ -95,9 +95,9 @@ private:
     void OnStartGame();
 
     /* trigger for make a fast move, only call from server */
-    void setTriggerFastMove();
+    void setTriggerEscapeMode();
     UFUNCTION()
-    void ResetTriggerFastMove();
+    void ResetTriggerEscapeMode();
 
 public:
     UPROPERTY(Category = "Ship", VisibleAnywhere, BlueprintReadOnly)
@@ -159,8 +159,11 @@ protected:
     UPROPERTY(ReplicatedUsing = "OnRep_IsInFog")
     bool RU_IsInFog{ false };
 
-    /* true during one frame */
-    bool m_triggerFastMove {};
+    /* true during escape mode phase */
+    bool m_triggerEscapeMode {};
+
+    /* handle for end escape mode */
+    FTimerHandle m_timerEscapeModeDurationHandle {};
 
 private:
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")

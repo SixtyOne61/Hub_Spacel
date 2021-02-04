@@ -116,7 +116,7 @@ void APlayerShipController::SetupInputComponent()
     this->InputComponent->BindAction("Repair", IE_Pressed, this, &APlayerShipController::toggleRepair);
 
     // fast move
-    this->InputComponent->BindAction("FastMove", IE_Pressed, this, &APlayerShipController::triggerFastMove);
+    this->InputComponent->BindAction("EscapeMode", IE_Pressed, this, &APlayerShipController::triggerEscapeMode);
 
     // extra
     this->InputComponent->BindAction("ReturnToMainMenu", IE_Pressed, this, &APlayerShipController::returnToMainMenu);
@@ -374,15 +374,15 @@ void APlayerShipController::ToggleGiveAlly2(bool _on)
 
 }
 
-void APlayerShipController::triggerFastMove()
+void APlayerShipController::triggerEscapeMode()
 {
     if (this->m_enableFlyingInput)
     {
-        this->RPCServerTriggerFastMove();
+        this->RPCServerTriggerEscapeMode();
     }
 }
 
-void APlayerShipController::RPCServerTriggerFastMove_Implementation()
+void APlayerShipController::RPCServerTriggerEscapeMode_Implementation()
 {
     AShipPawn* shipPawn = Cast<AShipPawn>(this->GetPawn());
     if (shipPawn == nullptr)
@@ -390,5 +390,5 @@ void APlayerShipController::RPCServerTriggerFastMove_Implementation()
         return;
     }
 
-    shipPawn->setTriggerFastMove();
+    shipPawn->setTriggerEscapeMode();
 }

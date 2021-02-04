@@ -93,9 +93,9 @@ protected:
     void toggleRepair();
 
     /* fast move input */
-    void triggerFastMove();
+    void triggerEscapeMode();
     UFUNCTION(Reliable, Server)
-    void RPCServerTriggerFastMove();
+    void RPCServerTriggerEscapeMode();
 
     void returnToMainMenu();
 

@@ -226,7 +226,7 @@ void AShipPawn::RPCServerMove_Implementation(float const& _deltaTime)
 
     FVector const& angularVelocity { this->DriverMeshComponent->GetPhysicsAngularVelocityInDegrees() };
 
-    float coef { m_triggerFastMove ? 2.0f : 1.0f };
+    float coef { m_triggerEscapeMode ? 2.0f : 1.0f };
     FVector newAngularVelocity { this->DriverMeshComponent->GetRightVector() * this->R_PercentUp * this->PlayerDataAsset->UpSpeed * coef };
     newAngularVelocity += this->DriverMeshComponent->GetUpVector() * this->R_PercentTurn * this->PlayerDataAsset->TurnSpeed * coef;
     newAngularVelocity += this->DriverMeshComponent->GetForwardVector() * this->R_PercentFlightAttitude * this->PlayerDataAsset->FlightAttitudeSpeed;
@@ -286,6 +286,8 @@ void AShipPawn::kill()
 
         this->UnPossessed();
         this->Destroy();
+
+        this->GetWorldTimerManager().ClearTimer(m_timerEscapeModeDurationHandle);
     }
 }
 
@@ -330,16 +332,17 @@ void AShipPawn::hit(class UPrimitiveComponent* _comp, int32 _index)
     }
 }
 
-void AShipPawn::setTriggerFastMove()
+void AShipPawn::setTriggerEscapeMode()
 {
-    m_triggerFastMove = true;
-    FTimerHandle handle;
-    this->GetWorldTimerManager().SetTimer(handle, this, &AShipPawn::ResetTriggerFastMove, 5.0f, false);
+    if(this->PlayerDataAsset == nullptr) return;
+
+    m_triggerEscapeMode = true;
+    this->GetWorldTimerManager().SetTimer(m_timerEscapeModeDurationHandle, this, &AShipPawn::ResetTriggerEscapeMode, this->PlayerDataAsset->EscapeModeDuration, false);
 }
 
-void AShipPawn::ResetTriggerFastMove()
+void AShipPawn::ResetTriggerEscapeMode()
 {
-    m_triggerFastMove = false;
+    m_triggerEscapeMode = false;
 }
 
 void AShipPawn::Restarted()

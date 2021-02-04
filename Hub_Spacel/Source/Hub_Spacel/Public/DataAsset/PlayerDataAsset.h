@@ -33,6 +33,12 @@ public:
     UPROPERTY(Category = "Movement", EditAnywhere, BlueprintReadWrite)
     float UpSpeed = 40.0f;
 
+    UPROPERTY(Category = "Movement", EditAnywhere, BlueprintReadWrite)
+    float EscapeModeDuration{ 5.0f };
+
+    UPROPERTY(Category = "Movement", EditAnywhere, BlueprintReadWrite)
+    float EscapeModeCountDown{ 15.0f };
+
     UPROPERTY(Category = "Fire", EditAnywhere, BlueprintReadOnly)
     TSubclassOf<class AActor> BulletClass;
 
