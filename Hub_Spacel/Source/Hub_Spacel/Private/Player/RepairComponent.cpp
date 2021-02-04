@@ -28,8 +28,8 @@ void URepairComponent::BeginPlay()
 
 void URepairComponent::OnUpdateMatiere(int _value)
 {
-    RU_Matiere += _value;
-    OnRep_Matiere();
+    m_shipPawnOwner.Get()->RU_Matiere += _value;
+    m_shipPawnOwner.Get()->OnRep_Matiere();
 }
 
 void URepairComponent::OnHitProtection()
@@ -40,15 +40,6 @@ void URepairComponent::OnHitProtection()
 void URepairComponent::OnHitSupport()
 {
 
-}
-
-void URepairComponent::OnRep_Matiere()
-{
-    // Update UI
-    if (m_shipPawnOwner.IsValid())
-    {
-        m_shipPawnOwner.Get()->OnEndUpdateMatiereDelegate.Broadcast(RU_Matiere);
-    }
 }
 
 void URepairComponent::onRepair(bool _on, FTimerHandle & _handle, void(URepairComponent::* _callback)())
@@ -92,7 +83,7 @@ void URepairComponent::repair(TArray<FVector>& _removedLocations, TArray<FVector
 {
     if (_removedLocations.Num() != 0)
     {
-        if (this->RU_Matiere > 0)
+        if (m_shipPawnOwner.Get()->RU_Matiere > 0)
         {
             _locations.Add(_removedLocations[0]);
             _removedLocations.RemoveAt(0);
@@ -108,10 +99,4 @@ void URepairComponent::repair(TArray<FVector>& _removedLocations, TArray<FVector
     {
         // feedback full repair
     }
-}
-
-void URepairComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-{
-    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-    DOREPLIFETIME(URepairComponent, RU_Matiere);
 }

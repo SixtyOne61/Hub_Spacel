@@ -101,6 +101,9 @@ private:
     void OnRep_IsInFog();
 
     UFUNCTION()
+    void OnRep_Matiere();
+
+    UFUNCTION()
     void OnStartGame();
 
     /* trigger for make a fast move, only call from server */
@@ -172,6 +175,9 @@ protected:
 
     UPROPERTY(ReplicatedUsing = "OnRep_IsInFog")
     bool RU_IsInFog { false };
+
+    UPROPERTY(ReplicatedUsing = "OnRep_Matiere")
+    int32 RU_Matiere { 0 };
 
     /* state of escape mode phase; only server side */
     EnumUtil::EnumCallback<EState> m_escapeModeState {};

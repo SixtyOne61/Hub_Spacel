@@ -31,10 +31,6 @@ private:
 	UFUNCTION()
 	void OnHitSupport();
 
-	/* network */
-	UFUNCTION()
-	void OnRep_Matiere();
-
 	/* call from server */
 	UFUNCTION()
 	void OnRepairProtection(bool _on);
@@ -56,9 +52,6 @@ private:
 	void repair(TArray<FVector> & _removedLocations, TArray<FVector> & _locations, std::function<void(void)> _onRep);
 
 private:
-	UPROPERTY(ReplicatedUsing = "OnRep_Matiere")
-	int32 RU_Matiere { 0 };
-
 	UPROPERTY()
 	FTimerHandle RepairProtectionHandle {};
 

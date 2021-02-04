@@ -329,6 +329,14 @@ void AShipPawn::OnRep_IsInFog()
     }
 }
 
+void AShipPawn::OnRep_Matiere()
+{
+    if (this->OnEndUpdateMatiereDelegate.IsBound())
+    {
+        this->OnEndUpdateMatiereDelegate.Broadcast(this->RU_Matiere);
+    }
+}
+
 void AShipPawn::hit(class UPrimitiveComponent* _comp, int32 _index)
 {
     UCustomCollisionComponent* customCollisionComponent { Cast<UCustomCollisionComponent>(this->GetComponentByClass(UCustomCollisionComponent::StaticClass())) };
@@ -388,6 +396,7 @@ void AShipPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetim
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
     DOREPLIFETIME(AShipPawn, RU_IsInFog);
+    DOREPLIFETIME(AShipPawn, RU_Matiere);
     DOREPLIFETIME(AShipPawn, R_PercentSpeed);
     DOREPLIFETIME(AShipPawn, R_PercentFlightAttitude);
     DOREPLIFETIME(AShipPawn, R_PercentTurn);
