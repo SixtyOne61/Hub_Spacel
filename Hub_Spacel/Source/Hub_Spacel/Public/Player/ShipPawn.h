@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
+#include "Util/EnumUtil.h"
 #include <functional>
 #include "ShipPawn.generated.h"
 
@@ -25,6 +26,14 @@ class HUB_SPACEL_API AShipPawn : public APawn
     friend class UCustomCollisionComponent;
     friend class URepairComponent;
     friend class ULocalPlayerActionComponent;
+
+public:
+    enum class EState
+    {
+        StateAvailable,
+        StateEscape,
+        StateCountDown
+    };
 
 public:
 	// Sets default values for this pawn's properties
@@ -95,9 +104,14 @@ private:
     void OnStartGame();
 
     /* trigger for make a fast move, only call from server */
-    void setTriggerEscapeMode();
+    void TriggerEscapeMode();
+
     UFUNCTION()
-    void ResetTriggerEscapeMode();
+    void SetTriggerEscapeMode(int32 _state);
+
+    /* callback method when state change */
+    void onChangeStateEscape();
+    void onChangeStateCountDown();
 
 public:
     UPROPERTY(Category = "Ship", VisibleAnywhere, BlueprintReadOnly)
@@ -157,13 +171,10 @@ protected:
     float R_PercentUp = 0.0f;
 
     UPROPERTY(ReplicatedUsing = "OnRep_IsInFog")
-    bool RU_IsInFog{ false };
+    bool RU_IsInFog { false };
 
-    /* true during escape mode phase */
-    bool m_triggerEscapeMode {};
-
-    /* handle for end escape mode */
-    FTimerHandle m_timerEscapeModeDurationHandle {};
+    /* state of escape mode phase; only server side */
+    EnumUtil::EnumCallback<EState> m_escapeModeState {};
 
 private:
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")

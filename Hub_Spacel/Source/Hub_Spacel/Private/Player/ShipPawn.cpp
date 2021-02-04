@@ -29,6 +29,7 @@
 #include "Hub_SpacelGameInstance.h"
 #include "Util/Tag.h"
 #include "Util/SimplyMath.h"
+#include "TimerManager.h"
 
 // Sets default values
 AShipPawn::AShipPawn()
@@ -100,6 +101,11 @@ void AShipPawn::BeginPlay()
         }
         activateComponent(this->FireComponent);
         activateComponent(this->RepairComponent);
+
+        m_escapeModeState = EState::StateAvailable;
+        m_escapeModeState.init({ nullptr,
+                        std::bind(&AShipPawn::onChangeStateEscape, this),
+                        std::bind(&AShipPawn::onChangeStateCountDown, this) });
     }
     else
     {
@@ -226,7 +232,7 @@ void AShipPawn::RPCServerMove_Implementation(float const& _deltaTime)
 
     FVector const& angularVelocity { this->DriverMeshComponent->GetPhysicsAngularVelocityInDegrees() };
 
-    float coef { m_triggerEscapeMode ? 2.0f : 1.0f };
+    float coef { m_escapeModeState == EState::StateEscape ? 2.0f : 1.0f };
     FVector newAngularVelocity { this->DriverMeshComponent->GetRightVector() * this->R_PercentUp * this->PlayerDataAsset->UpSpeed * coef };
     newAngularVelocity += this->DriverMeshComponent->GetUpVector() * this->R_PercentTurn * this->PlayerDataAsset->TurnSpeed * coef;
     newAngularVelocity += this->DriverMeshComponent->GetForwardVector() * this->R_PercentFlightAttitude * this->PlayerDataAsset->FlightAttitudeSpeed;
@@ -287,7 +293,7 @@ void AShipPawn::kill()
         this->UnPossessed();
         this->Destroy();
 
-        this->GetWorldTimerManager().ClearTimer(m_timerEscapeModeDurationHandle);
+        this->GetWorldTimerManager().ClearAllTimersForObject(this);
     }
 }
 
@@ -332,17 +338,37 @@ void AShipPawn::hit(class UPrimitiveComponent* _comp, int32 _index)
     }
 }
 
-void AShipPawn::setTriggerEscapeMode()
+void AShipPawn::onChangeStateEscape()
 {
-    if(this->PlayerDataAsset == nullptr) return;
+    FTimerDelegate TimerDel;
+    FTimerHandle TimerHandle;
 
-    m_triggerEscapeMode = true;
-    this->GetWorldTimerManager().SetTimer(m_timerEscapeModeDurationHandle, this, &AShipPawn::ResetTriggerEscapeMode, this->PlayerDataAsset->EscapeModeDuration, false);
+    //Binding the function with specific values
+    TimerDel.BindUFunction(this, FName("SetTriggerEscapeMode"), EState::StateCountDown);
+    GetWorld()->GetTimerManager().SetTimer(TimerHandle, TimerDel, this->PlayerDataAsset->EscapeModeDuration, false);
 }
 
-void AShipPawn::ResetTriggerEscapeMode()
+void AShipPawn::onChangeStateCountDown()
 {
-    m_triggerEscapeMode = false;
+    FTimerDelegate TimerDel;
+    FTimerHandle TimerHandle;
+
+    //Binding the function with specific values
+    TimerDel.BindUFunction(this, FName("SetTriggerEscapeMode"), EState::StateAvailable);
+    GetWorld()->GetTimerManager().SetTimer(TimerHandle, TimerDel, this->PlayerDataAsset->EscapeModeCountDown, false);
+}
+
+void AShipPawn::TriggerEscapeMode()
+{
+    if (m_escapeModeState == EState::StateAvailable)
+    {
+        m_escapeModeState = EState::StateEscape;
+    }
+}
+
+void AShipPawn::SetTriggerEscapeMode(int32 _state)
+{
+    m_escapeModeState = (EState)_state;
 }
 
 void AShipPawn::Restarted()

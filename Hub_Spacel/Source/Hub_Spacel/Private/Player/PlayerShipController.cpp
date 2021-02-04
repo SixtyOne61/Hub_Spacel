@@ -390,5 +390,5 @@ void APlayerShipController::RPCServerTriggerEscapeMode_Implementation()
         return;
     }
 
-    shipPawn->setTriggerEscapeMode();
+    shipPawn->TriggerEscapeMode();
 }
