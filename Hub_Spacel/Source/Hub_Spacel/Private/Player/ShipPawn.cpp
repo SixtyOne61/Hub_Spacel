@@ -102,8 +102,8 @@ void AShipPawn::BeginPlay()
         activateComponent(this->FireComponent);
         activateComponent(this->RepairComponent);
 
-        m_escapeModeState = EState::StateAvailable;
-        m_escapeModeState.init({ nullptr,
+        m_escapeModeState = EEscapeMode::StateAvailable;
+        m_escapeModeState.init({ std::bind(&AShipPawn::onChangeStateAvailable, this),
                         std::bind(&AShipPawn::onChangeStateEscape, this),
                         std::bind(&AShipPawn::onChangeStateCountDown, this) });
     }
@@ -232,7 +232,7 @@ void AShipPawn::RPCServerMove_Implementation(float const& _deltaTime)
 
     FVector const& angularVelocity { this->DriverMeshComponent->GetPhysicsAngularVelocityInDegrees() };
 
-    float coef { m_escapeModeState == EState::StateEscape ? 2.0f : 1.0f };
+    float coef { m_escapeModeState == EEscapeMode::StateEscape ? 2.0f : 1.0f };
     FVector newAngularVelocity { this->DriverMeshComponent->GetRightVector() * this->R_PercentUp * this->PlayerDataAsset->UpSpeed * coef };
     newAngularVelocity += this->DriverMeshComponent->GetUpVector() * this->R_PercentTurn * this->PlayerDataAsset->TurnSpeed * coef;
     newAngularVelocity += this->DriverMeshComponent->GetForwardVector() * this->R_PercentFlightAttitude * this->PlayerDataAsset->FlightAttitudeSpeed;
@@ -346,14 +346,30 @@ void AShipPawn::hit(class UPrimitiveComponent* _comp, int32 _index)
     }
 }
 
+void AShipPawn::RPCClientChangeStateEscapeMode_Implementation(EEscapeMode _newState)
+{
+    if (this->GetNetMode() != ENetMode::NM_DedicatedServer
+        && this->IsLocallyControlled())
+    {
+        this->OnStateEspaceModeChangeDelegate.Broadcast(_newState);
+    }
+}
+
+void AShipPawn::onChangeStateAvailable()
+{
+    this->RPCClientChangeStateEscapeMode(m_escapeModeState.get());
+}
+
 void AShipPawn::onChangeStateEscape()
 {
     FTimerDelegate TimerDel;
     FTimerHandle TimerHandle;
 
     //Binding the function with specific values
-    TimerDel.BindUFunction(this, FName("SetTriggerEscapeMode"), EState::StateCountDown);
+    TimerDel.BindUFunction(this, FName("SetTriggerEscapeMode"), EEscapeMode::StateCountDown);
     GetWorld()->GetTimerManager().SetTimer(TimerHandle, TimerDel, this->PlayerDataAsset->EscapeModeDuration, false);
+
+    this->RPCClientChangeStateEscapeMode(m_escapeModeState.get());
 }
 
 void AShipPawn::onChangeStateCountDown()
@@ -362,21 +378,23 @@ void AShipPawn::onChangeStateCountDown()
     FTimerHandle TimerHandle;
 
     //Binding the function with specific values
-    TimerDel.BindUFunction(this, FName("SetTriggerEscapeMode"), EState::StateAvailable);
+    TimerDel.BindUFunction(this, FName("SetTriggerEscapeMode"), EEscapeMode::StateAvailable);
     GetWorld()->GetTimerManager().SetTimer(TimerHandle, TimerDel, this->PlayerDataAsset->EscapeModeCountDown, false);
+
+    this->RPCClientChangeStateEscapeMode(m_escapeModeState.get());
 }
 
 void AShipPawn::TriggerEscapeMode()
 {
-    if (m_escapeModeState == EState::StateAvailable)
+    if (m_escapeModeState == EEscapeMode::StateAvailable)
     {
-        m_escapeModeState = EState::StateEscape;
+        m_escapeModeState = EEscapeMode::StateEscape;
     }
 }
 
 void AShipPawn::SetTriggerEscapeMode(int32 _state)
 {
-    m_escapeModeState = (EState)_state;
+    m_escapeModeState = (EEscapeMode)_state;
 }
 
 void AShipPawn::Restarted()

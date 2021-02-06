@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
 #include "Util/EnumUtil.h"
+#include "Enum/SpacelEnum.h"
 #include <functional>
 #include "ShipPawn.generated.h"
 
@@ -14,6 +15,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHitProtection);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHitSupport);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRepairProtection, bool, _on);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRepairSupport, bool, _on);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStateEscapeModeChange, EEscapeMode, _state);
 
 UCLASS()
 class HUB_SPACEL_API AShipPawn : public APawn
@@ -26,14 +28,6 @@ class HUB_SPACEL_API AShipPawn : public APawn
     friend class UCustomCollisionComponent;
     friend class URepairComponent;
     friend class ULocalPlayerActionComponent;
-
-public:
-    enum class EState
-    {
-        StateAvailable,
-        StateEscape,
-        StateCountDown
-    };
 
 public:
 	// Sets default values for this pawn's properties
@@ -113,8 +107,12 @@ private:
     void SetTriggerEscapeMode(int32 _state);
 
     /* callback method when state change */
+    void onChangeStateAvailable();
     void onChangeStateEscape();
     void onChangeStateCountDown();
+
+    UFUNCTION(Reliable, Client)
+    void RPCClientChangeStateEscapeMode(EEscapeMode _newState);
 
 public:
     UPROPERTY(Category = "Ship", VisibleAnywhere, BlueprintReadOnly)
@@ -180,7 +178,7 @@ protected:
     int32 RU_Matiere { 0 };
 
     /* state of escape mode phase; only server side */
-    EnumUtil::EnumCallback<EState> m_escapeModeState {};
+    EnumUtil::EnumCallback<EEscapeMode> m_escapeModeState {};
 
 private:
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
@@ -200,4 +198,7 @@ private:
 
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
     FOnEndUpdateMatiere OnEndUpdateMatiereDelegate {};
+
+    UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
+    FOnStateEscapeModeChange OnStateEspaceModeChangeDelegate {};
 };

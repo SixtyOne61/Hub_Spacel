@@ -60,3 +60,11 @@ enum class EShipModuleType : uint8
     EngineSmall = 0x04,
     ShellDefault = 0x08,
 };
+
+UENUM(BlueprintType)
+enum class EEscapeMode : uint8
+{
+    StateAvailable UMETA(DisplayName = "StateAvailable"),
+    StateEscape UMETA(DisplayName = "StateEscape"),
+    StateCountDown UMETA(DisplayName = "StateCountDown")
+};
