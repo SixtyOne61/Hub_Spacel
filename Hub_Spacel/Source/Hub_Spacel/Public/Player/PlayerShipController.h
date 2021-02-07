@@ -17,6 +17,8 @@ class HUB_SPACEL_API APlayerShipController : public APlayerController
 {
     GENERATED_BODY()
 
+    friend class URepairUserWidget;
+
     class FUnlinearReachGoal
     {
     public:

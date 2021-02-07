@@ -13,6 +13,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Util/SimplyUI.h"
 #include "Player/ShipPawn.h"
+#include "Widget/RepairUserWidget.h"
 
 void USpacelWidget::NativeConstruct()
 {
@@ -26,7 +27,7 @@ void USpacelWidget::NativeConstruct()
     EventTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Event"));
     PingTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Ping"));
     SpeedTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Speed"));
-    ToggleRepairGridPanel = SimplyUI::initSafetyFromName<UUserWidget, UUserWidget>(this, TEXT("WBP_ToggleRepair"));
+    ToggleRepairGridPanel = SimplyUI::initSafetyFromName<UUserWidget, URepairUserWidget>(this, TEXT("WBP_ToggleRepair"));
     EscapeModeImage = SimplyUI::initSafetyFromName<UUserWidget, UImage>(this, TEXT("Image_EscapeMode"));
 
     UWorld* world{ this->GetWorld() };

@@ -49,7 +49,7 @@ void URepairComponent::onRepair(bool _on, FTimerHandle & _handle, void(URepairCo
 
     if (_on)
     {
-        world->GetTimerManager().SetTimer(_handle, this, _callback, 0.2f, true, 0.0f);
+        world->GetTimerManager().SetTimer(_handle, this, _callback, 0.25f, true, 0.0f);
     }
     else
     {

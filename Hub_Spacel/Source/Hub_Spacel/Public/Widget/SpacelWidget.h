@@ -91,7 +91,7 @@ private:
 	class UTextBlock* SpeedTextBlock { nullptr };
 
 	UPROPERTY()
-	class UUserWidget* ToggleRepairGridPanel { nullptr };
+	class URepairUserWidget* ToggleRepairGridPanel { nullptr };
 
 	UPROPERTY()
 	class UImage* EscapeModeImage { nullptr };
