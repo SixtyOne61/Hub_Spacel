@@ -17,6 +17,8 @@ class HUB_SPACEL_API APlayerShipController : public APlayerController
 {
     GENERATED_BODY()
 
+    friend class URepairUserWidget;
+
     class FUnlinearReachGoal
     {
     public:
@@ -91,6 +93,11 @@ protected:
 
     /* repair input */
     void toggleRepair();
+
+    /* fast move input */
+    void triggerEscapeMode();
+    UFUNCTION(Reliable, Server)
+    void RPCServerTriggerEscapeMode();
 
     void returnToMainMenu();
 

@@ -45,4 +45,13 @@ namespace SimplyMath
             return FMath::Min(FMath::Max(_a, _value * (_b - _a) + _a), _b);
         }
     }
+
+    template<typename T>
+    struct SIsType;
+
+    template<>
+    struct SIsType<float>
+    {
+        static bool isNearlyZero(float _a) { return _a < 0.001f && _a > -0.001f; }
+    };
 }

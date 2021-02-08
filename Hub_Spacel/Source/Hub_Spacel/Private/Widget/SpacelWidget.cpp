@@ -4,6 +4,7 @@
 #include "SpacelWidget.h"
 #include "Components/TextBlock.h"
 #include "Components/UniformGridPanel.h"
+#include "Components/Image.h"
 #include "Player/SpacelPlayerState.h"
 #include "Player/PlayerShipController.h"
 #include "Player/ModuleComponent.h"
@@ -12,6 +13,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Util/SimplyUI.h"
 #include "Player/ShipPawn.h"
+#include "Widget/RepairUserWidget.h"
 
 void USpacelWidget::NativeConstruct()
 {
@@ -25,7 +27,8 @@ void USpacelWidget::NativeConstruct()
     EventTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Event"));
     PingTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Ping"));
     SpeedTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Speed"));
-    ToggleRepairGridPanel = SimplyUI::initSafetyFromName<UUserWidget, UUserWidget>(this, TEXT("WBP_ToggleRepair"));
+    ToggleRepairGridPanel = SimplyUI::initSafetyFromName<UUserWidget, URepairUserWidget>(this, TEXT("WBP_ToggleRepair"));
+    EscapeModeImage = SimplyUI::initSafetyFromName<UUserWidget, UImage>(this, TEXT("Image_EscapeMode"));
 
     UWorld* world{ this->GetWorld() };
     if (!ensure(world != nullptr)) return;
@@ -52,6 +55,7 @@ void USpacelWidget::NativeConstruct()
     if (shipPawn != nullptr)
     {
         shipPawn->OnEndUpdateMatiereDelegate.AddDynamic(this, &USpacelWidget::OnUpdateMatiere);
+        shipPawn->OnStateEspaceModeChangeDelegate.AddDynamic(this, &USpacelWidget::OnChangeStateEscapeMode);
 
         shipPawn->ModuleComponent->OnUpdateCountProtectionDelegate.AddDynamic(this, &USpacelWidget::OnUpdateCountProtection);
         shipPawn->ModuleComponent->OnUpdateCountSupportDelegate.AddDynamic(this, &USpacelWidget::OnUpdateCountSupport);
@@ -201,6 +205,32 @@ void USpacelWidget::OnUpdateMatiere(int32 _value)
     if (this->MatiereTextBlock != nullptr)
     {
         this->MatiereTextBlock->SetText(FText::FromString("Matiere: " + FString::FromInt(_value)));
+    }
+}
+
+void USpacelWidget::OnChangeStateEscapeMode(EEscapeMode _state)
+{
+    if(this->EscapeModeImage == nullptr) return;
+
+    switch (_state)
+    {
+        case EEscapeMode::StateAvailable:
+        {
+            this->EscapeModeImage->SetBrushTintColor(FSlateColor(FLinearColor::White));
+            break;
+        }
+
+        case EEscapeMode::StateEscape:
+        {
+            this->EscapeModeImage->SetBrushTintColor(FSlateColor(FLinearColor::Blue));
+            break;
+        }
+
+        case EEscapeMode::StateCountDown:
+        {
+            this->EscapeModeImage->SetBrushTintColor(FSlateColor(FLinearColor::Red));
+            break;
+        }
     }
 }
 

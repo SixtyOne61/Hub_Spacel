@@ -28,6 +28,8 @@
 #include "GameState/SpacelGameState.h"
 #include "Hub_SpacelGameInstance.h"
 #include "Util/Tag.h"
+#include "Util/SimplyMath.h"
+#include "TimerManager.h"
 
 // Sets default values
 AShipPawn::AShipPawn()
@@ -99,6 +101,11 @@ void AShipPawn::BeginPlay()
         }
         activateComponent(this->FireComponent);
         activateComponent(this->RepairComponent);
+
+        m_escapeModeState = EEscapeMode::StateAvailable;
+        m_escapeModeState.init({ std::bind(&AShipPawn::onChangeStateAvailable, this),
+                        std::bind(&AShipPawn::onChangeStateEscape, this),
+                        std::bind(&AShipPawn::onChangeStateCountDown, this) });
     }
     else
     {
@@ -216,39 +223,6 @@ void AShipPawn::Tick(float _deltaTime)
     }
 }
 
-void AShipPawn::OnRep_PercentFlightAttitude()
-{
-    if (!ensure(this->DriverMeshComponent != nullptr)) return;
-    if (!ensure(this->PlayerDataAsset != nullptr)) return;
-
-    FVector dir { this->DriverMeshComponent->GetForwardVector() * this->RU_PercentFlightAttitude * this->PlayerDataAsset->FlightAttitudeSpeed };
-    dir = FMath::Lerp(FVector::ZeroVector, dir, 0.1f);
-
-    this->DriverMeshComponent->AddTorqueInDegrees(dir, NAME_None, true);
-}
-
-void AShipPawn::OnRep_PercentTurn()
-{
-    if (!ensure(this->DriverMeshComponent != nullptr)) return;
-    if (!ensure(this->PlayerDataAsset != nullptr)) return;
-
-    FVector dir { this->DriverMeshComponent->GetUpVector() * this->RU_PercentTurn * this->PlayerDataAsset->TurnSpeed };
-    dir = FMath::Lerp(FVector::ZeroVector, dir, 0.1f);
-
-    this->DriverMeshComponent->AddTorqueInDegrees(dir, NAME_None, true);
-}
-
-void AShipPawn::OnRep_PercentUp()
-{
-    if (!ensure(this->DriverMeshComponent != nullptr)) return;
-    if (!ensure(this->PlayerDataAsset != nullptr)) return;
-
-    FVector dir { this->DriverMeshComponent->GetRightVector() * this->RU_PercentUp * this->PlayerDataAsset->UpSpeed };
-    dir = FMath::Lerp(FVector::ZeroVector, dir, 0.1f);
-
-    this->DriverMeshComponent->AddTorqueInDegrees(dir, NAME_None, true);
-}
-
 void AShipPawn::RPCServerMove_Implementation(float const& _deltaTime)
 {
     if (!ensure(this->DriverMeshComponent != nullptr)) return;
@@ -256,10 +230,14 @@ void AShipPawn::RPCServerMove_Implementation(float const& _deltaTime)
     if (!ensure(this->ModuleComponent != nullptr)) return;
     if (!ensure(this->ModuleComponent->SupportMeshComponent != nullptr)) return;
 
-    FVector angularVelocity { UKismetMathLibrary::NegateVector(this->DriverMeshComponent->GetPhysicsAngularVelocityInDegrees()) };
-    angularVelocity *= 2.0f;
+    FVector const& angularVelocity { this->DriverMeshComponent->GetPhysicsAngularVelocityInDegrees() };
 
-    this->DriverMeshComponent->AddTorqueInDegrees(angularVelocity, NAME_None, true);
+    float coef { m_escapeModeState == EEscapeMode::StateEscape ? 2.0f : 1.0f };
+    FVector newAngularVelocity { this->DriverMeshComponent->GetRightVector() * this->R_PercentUp * this->PlayerDataAsset->UpSpeed * coef };
+    newAngularVelocity += this->DriverMeshComponent->GetUpVector() * this->R_PercentTurn * this->PlayerDataAsset->TurnSpeed * coef;
+    newAngularVelocity += this->DriverMeshComponent->GetForwardVector() * this->R_PercentFlightAttitude * this->PlayerDataAsset->FlightAttitudeSpeed;
+
+    this->DriverMeshComponent->SetPhysicsAngularVelocityInDegrees(newAngularVelocity);
 
     FVector const& linearVelocity = this->DriverMeshComponent->GetPhysicsLinearVelocity(NAME_None);
     // 9, default support size
@@ -314,6 +292,8 @@ void AShipPawn::kill()
 
         this->UnPossessed();
         this->Destroy();
+
+        this->GetWorldTimerManager().ClearAllTimersForObject(this);
     }
 }
 
@@ -349,6 +329,14 @@ void AShipPawn::OnRep_IsInFog()
     }
 }
 
+void AShipPawn::OnRep_Matiere()
+{
+    if (this->OnEndUpdateMatiereDelegate.IsBound())
+    {
+        this->OnEndUpdateMatiereDelegate.Broadcast(this->RU_Matiere);
+    }
+}
+
 void AShipPawn::hit(class UPrimitiveComponent* _comp, int32 _index)
 {
     UCustomCollisionComponent* customCollisionComponent { Cast<UCustomCollisionComponent>(this->GetComponentByClass(UCustomCollisionComponent::StaticClass())) };
@@ -356,6 +344,57 @@ void AShipPawn::hit(class UPrimitiveComponent* _comp, int32 _index)
     {
         customCollisionComponent->hit(_comp, _index);
     }
+}
+
+void AShipPawn::RPCClientChangeStateEscapeMode_Implementation(EEscapeMode _newState)
+{
+    if (this->GetNetMode() != ENetMode::NM_DedicatedServer
+        && this->IsLocallyControlled())
+    {
+        this->OnStateEspaceModeChangeDelegate.Broadcast(_newState);
+    }
+}
+
+void AShipPawn::onChangeStateAvailable()
+{
+    this->RPCClientChangeStateEscapeMode(m_escapeModeState.get());
+}
+
+void AShipPawn::onChangeStateEscape()
+{
+    FTimerDelegate TimerDel;
+    FTimerHandle TimerHandle;
+
+    //Binding the function with specific values
+    TimerDel.BindUFunction(this, FName("SetTriggerEscapeMode"), EEscapeMode::StateCountDown);
+    GetWorld()->GetTimerManager().SetTimer(TimerHandle, TimerDel, this->PlayerDataAsset->EscapeModeDuration, false);
+
+    this->RPCClientChangeStateEscapeMode(m_escapeModeState.get());
+}
+
+void AShipPawn::onChangeStateCountDown()
+{
+    FTimerDelegate TimerDel;
+    FTimerHandle TimerHandle;
+
+    //Binding the function with specific values
+    TimerDel.BindUFunction(this, FName("SetTriggerEscapeMode"), EEscapeMode::StateAvailable);
+    GetWorld()->GetTimerManager().SetTimer(TimerHandle, TimerDel, this->PlayerDataAsset->EscapeModeCountDown, false);
+
+    this->RPCClientChangeStateEscapeMode(m_escapeModeState.get());
+}
+
+void AShipPawn::TriggerEscapeMode()
+{
+    if (m_escapeModeState == EEscapeMode::StateAvailable)
+    {
+        m_escapeModeState = EEscapeMode::StateEscape;
+    }
+}
+
+void AShipPawn::SetTriggerEscapeMode(int32 _state)
+{
+    m_escapeModeState = (EEscapeMode)_state;
 }
 
 void AShipPawn::Restarted()
@@ -375,9 +414,10 @@ void AShipPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetim
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
     DOREPLIFETIME(AShipPawn, RU_IsInFog);
+    DOREPLIFETIME(AShipPawn, RU_Matiere);
     DOREPLIFETIME(AShipPawn, R_PercentSpeed);
-    DOREPLIFETIME(AShipPawn, RU_PercentFlightAttitude);
-    DOREPLIFETIME(AShipPawn, RU_PercentTurn);
-    DOREPLIFETIME(AShipPawn, RU_PercentUp);
+    DOREPLIFETIME(AShipPawn, R_PercentFlightAttitude);
+    DOREPLIFETIME(AShipPawn, R_PercentTurn);
+    DOREPLIFETIME(AShipPawn, R_PercentUp);
 }
 

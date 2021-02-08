@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "SpacelEnum.h"
 #include "SpacelWidget.generated.h"
 
 /**
@@ -54,6 +55,9 @@ private:
 	void OnUpdateMatiere(int32 _value);
 
 	UFUNCTION()
+	void OnChangeStateEscapeMode(EEscapeMode _state);
+
+	UFUNCTION()
 	void OnUpdateCountProtection(int32 _value, int32 _max);
 
 	UFUNCTION()
@@ -87,5 +91,8 @@ private:
 	class UTextBlock* SpeedTextBlock { nullptr };
 
 	UPROPERTY()
-	class UUserWidget* ToggleRepairGridPanel { nullptr };
+	class URepairUserWidget* ToggleRepairGridPanel { nullptr };
+
+	UPROPERTY()
+	class UImage* EscapeModeImage { nullptr };
 };

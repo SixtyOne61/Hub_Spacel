@@ -115,6 +115,9 @@ void APlayerShipController::SetupInputComponent()
     // repair toggle
     this->InputComponent->BindAction("Repair", IE_Pressed, this, &APlayerShipController::toggleRepair);
 
+    // fast move
+    this->InputComponent->BindAction("EscapeMode", IE_Pressed, this, &APlayerShipController::triggerEscapeMode);
+
     // extra
     this->InputComponent->BindAction("ReturnToMainMenu", IE_Pressed, this, &APlayerShipController::returnToMainMenu);
 }
@@ -181,9 +184,7 @@ void APlayerShipController::RPCServerSetFlightAttitude_Implementation(float _val
         return;
     }
 
-    shipPawn->RU_PercentFlightAttitude = _val / 100.0f;
-    // OnRep isn't call on server, but we need this call
-    shipPawn->OnRep_PercentFlightAttitude();
+    shipPawn->R_PercentFlightAttitude = _val / 100.0f;
 }
 
 void APlayerShipController::turn(float _val)
@@ -202,9 +203,7 @@ void APlayerShipController::RPCServerSetTurn_Implementation(float _val)
         return;
     }
 
-    shipPawn->RU_PercentTurn = _val / 100.0f;
-    // OnRep isn't call on server, but we need this call
-    shipPawn->OnRep_PercentTurn();
+    shipPawn->R_PercentTurn = _val / 100.0f;
 }
 
 void APlayerShipController::up(float _val)
@@ -223,9 +222,7 @@ void APlayerShipController::RPCServerSetUp_Implementation(float _val)
         return;
     }
 
-    shipPawn->RU_PercentUp = _val / 100.0f;
-    // OnRep isn't call on server, but we need this call
-    shipPawn->OnRep_PercentUp();
+    shipPawn->R_PercentUp = _val / 100.0f;
 }
 
 void APlayerShipController::fireOn()
@@ -375,4 +372,23 @@ void APlayerShipController::ToggleGiveAlly1(bool _on)
 void APlayerShipController::ToggleGiveAlly2(bool _on)
 {
 
+}
+
+void APlayerShipController::triggerEscapeMode()
+{
+    if (this->m_enableFlyingInput)
+    {
+        this->RPCServerTriggerEscapeMode();
+    }
+}
+
+void APlayerShipController::RPCServerTriggerEscapeMode_Implementation()
+{
+    AShipPawn* shipPawn = Cast<AShipPawn>(this->GetPawn());
+    if (shipPawn == nullptr)
+    {
+        return;
+    }
+
+    shipPawn->TriggerEscapeMode();
 }

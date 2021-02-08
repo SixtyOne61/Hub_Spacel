@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
+#include "Util/EnumUtil.h"
+#include "Enum/SpacelEnum.h"
 #include <functional>
 #include "ShipPawn.generated.h"
 
@@ -13,6 +15,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHitProtection);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHitSupport);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRepairProtection, bool, _on);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRepairSupport, bool, _on);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStateEscapeModeChange, EEscapeMode, _state);
 
 UCLASS()
 class HUB_SPACEL_API AShipPawn : public APawn
@@ -35,15 +38,6 @@ public:
 
 	// Called every frame
 	virtual void Tick(float _deltaTime) override;
-
-    UFUNCTION()
-    void OnRep_PercentFlightAttitude();
-
-    UFUNCTION()
-    void OnRep_PercentTurn();
-
-    UFUNCTION()
-    void OnRep_PercentUp();
 
     /* set collision profile name */
     void setCollisionProfile(FString _team);
@@ -101,7 +95,24 @@ private:
     void OnRep_IsInFog();
 
     UFUNCTION()
+    void OnRep_Matiere();
+
+    UFUNCTION()
     void OnStartGame();
+
+    /* trigger for make a fast move, only call from server */
+    void TriggerEscapeMode();
+
+    UFUNCTION()
+    void SetTriggerEscapeMode(int32 _state);
+
+    /* callback method when state change */
+    void onChangeStateAvailable();
+    void onChangeStateEscape();
+    void onChangeStateCountDown();
+
+    UFUNCTION(Reliable, Client)
+    void RPCClientChangeStateEscapeMode(EEscapeMode _newState);
 
 public:
     UPROPERTY(Category = "Ship", VisibleAnywhere, BlueprintReadOnly)
@@ -149,19 +160,25 @@ protected:
     float R_PercentSpeed = 0.0f;
 
     /* when flight attitude change -1.0f or 0.0f or 1.0f */
-    UPROPERTY(ReplicatedUsing = "OnRep_PercentFlightAttitude")
-    float RU_PercentFlightAttitude = 0.0f;
+    UPROPERTY(Replicated)
+    float R_PercentFlightAttitude = 0.0f;
 
     /* when turn change -1.0f or 0.0f or 1.0f */
-    UPROPERTY(ReplicatedUsing = "OnRep_PercentTurn")
-    float RU_PercentTurn = 0.0f;
+    UPROPERTY(Replicated)
+    float R_PercentTurn = 0.0f;
 
     /* when up change -1.0f or 0.0f or 1.0f */
-    UPROPERTY(ReplicatedUsing = "OnRep_PercentUp")
-    float RU_PercentUp = 0.0f;
+    UPROPERTY(Replicated)
+    float R_PercentUp = 0.0f;
 
     UPROPERTY(ReplicatedUsing = "OnRep_IsInFog")
-    bool RU_IsInFog{ false };
+    bool RU_IsInFog { false };
+
+    UPROPERTY(ReplicatedUsing = "OnRep_Matiere")
+    int32 RU_Matiere { 0 };
+
+    /* state of escape mode phase; only server side */
+    EnumUtil::EnumCallback<EEscapeMode> m_escapeModeState {};
 
 private:
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
@@ -181,4 +198,7 @@ private:
 
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
     FOnEndUpdateMatiere OnEndUpdateMatiereDelegate {};
+
+    UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
+    FOnStateEscapeModeChange OnStateEspaceModeChangeDelegate {};
 };
