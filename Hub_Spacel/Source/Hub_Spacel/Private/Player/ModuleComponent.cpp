@@ -19,6 +19,7 @@ UModuleComponent::UModuleComponent()
 
     ProtectionMeshComponent = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Protection_00"));
     if (!ensure(ProtectionMeshComponent != nullptr)) return;
+    ProtectionMeshComponent->SetRenderCustomDepth(true);
     ProtectionMeshComponent->AttachToComponent(this, FAttachmentTransformRules::KeepRelativeTransform);
 
     WeaponMeshComponent = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Weapon_00"));
@@ -27,6 +28,7 @@ UModuleComponent::UModuleComponent()
 
     SupportMeshComponent = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Support_00"));
     if (!ensure(SupportMeshComponent != nullptr)) return;
+    SupportMeshComponent->SetRenderCustomDepth(true);
     SupportMeshComponent->AttachToComponent(this, FAttachmentTransformRules::KeepRelativeTransform);
 }
 
