@@ -9,6 +9,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "Util/SimplyXml.h"
 #include "Net/UnrealNetwork.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
 
 // Sets default values for this component's properties
 UModuleComponent::UModuleComponent()
@@ -120,6 +122,26 @@ void UModuleComponent::OnStartGame()
 
             this->SetMax(this->RU_ProtectionLocations.Num(), this->RU_SupportLocations.Num());
         }
+    }
+
+    this->GetChildrenComponents(true, this->ExhaustComponents);
+    this->ExhaustComponents.RemoveAll([](USceneComponent* comp)
+        {
+            return comp == nullptr || !comp->GetName().Contains("Exhaust");
+        });
+
+    int i{ 0 };
+    for (; i < this->RU_SupportLocations.Num(); ++i)
+    {
+        if (i < this->ExhaustComponents.Num())
+        {
+            this->ExhaustComponents[i]->SetRelativeLocation(this->RU_SupportLocations[i]);
+        }
+    }
+
+    for (; i < this->ExhaustComponents.Num(); ++i)
+    {
+        this->ExhaustComponents[i]->SetVisibility(false, true);
     }
 }
 

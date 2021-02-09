@@ -67,12 +67,18 @@ public:
     UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)
     class UInstancedStaticMeshComponent* SupportMeshComponent{ nullptr };
 
+    UPROPERTY(Category = "Fx", EditAnywhere, BlueprintReadWrite)
+    TArray<class USceneComponent*> ExhaustComponents{};
+
 public:
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
     FOnUpdateCountProtection OnUpdateCountProtectionDelegate {};
 
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
     FOnUpdateCountSupport OnUpdateCountSupportDelegate {};
+
+    UPROPERTY(EditAnywhere)
+    class UNiagaraSystem* ExhaustFx { nullptr };
 
 private:
     UPROPERTY(ReplicatedUsing = "OnRep_Attack")
