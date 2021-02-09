@@ -98,6 +98,9 @@ private:
     void OnRep_Matiere();
 
     UFUNCTION()
+    void OnRep_PercentSpeed();
+
+    UFUNCTION()
     void OnStartGame();
 
     /* trigger for make a fast move, only call from server */
@@ -156,8 +159,8 @@ public:
 
 protected:
     /* current percent speed value 0.0f - 1.0f */
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
-    float R_PercentSpeed = 0.0f;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = "OnRep_PercentSpeed")
+    float RU_PercentSpeed = 0.0f;
 
     /* when flight attitude change -1.0f or 0.0f or 1.0f */
     UPROPERTY(Replicated)

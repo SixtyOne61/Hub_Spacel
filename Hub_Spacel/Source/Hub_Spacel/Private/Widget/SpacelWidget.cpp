@@ -180,7 +180,7 @@ void USpacelWidget::SetSpeed()
     AShipPawn* shipPawn = Cast<AShipPawn>(UGameplayStatics::GetPlayerPawn(world, 0));
     if (shipPawn != nullptr && this->SpeedTextBlock != nullptr)
     {
-        this->SpeedTextBlock->SetText(FText::FromString(FString::FromInt(FMath::RoundToInt(shipPawn->R_PercentSpeed * 100)) + " %"));
+        this->SpeedTextBlock->SetText(FText::FromString(FString::FromInt(FMath::RoundToInt(shipPawn->RU_PercentSpeed * 100)) + " %"));
     }
 }
 

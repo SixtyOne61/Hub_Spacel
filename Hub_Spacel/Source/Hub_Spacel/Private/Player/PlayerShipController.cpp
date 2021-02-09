@@ -165,7 +165,7 @@ void APlayerShipController::RPCServerSetSpeed_Implementation(float _val)
         m_speed = TOptional<FUnlinearReachGoal>(FUnlinearReachGoal { this, shipPawn->PlayerDataAsset->ReachTimeUpSpeed, shipPawn->PlayerDataAsset->ReachTimeDownSpeed });
     }
 
-    shipPawn->R_PercentSpeed = m_speed.GetValue().addValue(_val, shipPawn->R_PercentSpeed);
+    shipPawn->RU_PercentSpeed = m_speed.GetValue().addValue(_val, shipPawn->RU_PercentSpeed);
 }
 
 void APlayerShipController::flightAttitude(float _val)

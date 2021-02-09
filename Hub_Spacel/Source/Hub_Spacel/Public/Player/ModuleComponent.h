@@ -48,6 +48,8 @@ protected:
 private:
     void buildShip(class UInstancedStaticMeshComponent*& _mesh, class UStaticMeshDataAsset* _staticMesh, TArray<FVector> const& _locations);
 
+    void setPercentVelocity(float _percent);
+
 public:
     UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
     class USetupAttributeDataAsset* ProtectionDataAsset{ nullptr };

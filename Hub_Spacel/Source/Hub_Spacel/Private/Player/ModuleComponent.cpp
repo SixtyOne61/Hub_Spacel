@@ -52,6 +52,12 @@ void UModuleComponent::BeginPlay()
     OnRep_Attack();
     OnRep_Protection();
     OnRep_Support();
+
+    this->GetChildrenComponents(true, this->ExhaustComponents);
+    this->ExhaustComponents.RemoveAll([](USceneComponent* comp)
+        {
+            return comp == nullptr || !comp->GetName().Contains("Exhaust");
+        });
 }
 
 void UModuleComponent::OnRep_Attack()
@@ -158,6 +164,23 @@ void UModuleComponent::buildShip(UInstancedStaticMeshComponent*& _mesh, UStaticM
             FTransform voxelTransform{};
             voxelTransform.SetLocation(_location);
             _mesh->AddInstance(voxelTransform);
+        }
+    }
+}
+
+void UModuleComponent::setPercentVelocity(float _percent)
+{
+    this->GetChildrenComponents(true, this->ExhaustComponents);
+    this->ExhaustComponents.RemoveAll([](USceneComponent* comp)
+        {
+            return comp == nullptr || !comp->GetName().Contains("Exhaust");
+        });
+
+    for (USceneComponent* comp : this->ExhaustComponents)
+    {
+        if (UNiagaraComponent* niagara = Cast<UNiagaraComponent>(comp))
+        {
+            niagara->SetFloatParameter("User.Velocity", _percent);
         }
     }
 }

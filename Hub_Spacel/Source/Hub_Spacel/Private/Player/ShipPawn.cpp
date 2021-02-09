@@ -242,7 +242,7 @@ void AShipPawn::RPCServerMove_Implementation(float const& _deltaTime)
     FVector const& linearVelocity = this->DriverMeshComponent->GetPhysicsLinearVelocity(NAME_None);
     // 9, default support size
     float coefSpeed = this->ModuleComponent->SupportMeshComponent->GetInstanceCount() / 9.0f;
-    FVector newVelocity = this->DriverMeshComponent->GetForwardVector() * this->PlayerDataAsset->MaxForwardSpeed * this->R_PercentSpeed * coefSpeed;
+    FVector newVelocity = this->DriverMeshComponent->GetForwardVector() * this->PlayerDataAsset->MaxForwardSpeed * this->RU_PercentSpeed * coefSpeed;
     newVelocity = FMath::Lerp(linearVelocity, newVelocity, 0.9f);
 
     this->DriverMeshComponent->SetPhysicsLinearVelocity(newVelocity);
@@ -337,6 +337,14 @@ void AShipPawn::OnRep_Matiere()
     }
 }
 
+void AShipPawn::OnRep_PercentSpeed()
+{
+    if (this->ModuleComponent != nullptr)
+    {
+        this->ModuleComponent->setPercentVelocity(this->RU_PercentSpeed);
+    }
+}
+
 void AShipPawn::hit(class UPrimitiveComponent* _comp, int32 _index)
 {
     UCustomCollisionComponent* customCollisionComponent { Cast<UCustomCollisionComponent>(this->GetComponentByClass(UCustomCollisionComponent::StaticClass())) };
@@ -415,7 +423,7 @@ void AShipPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetim
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
     DOREPLIFETIME(AShipPawn, RU_IsInFog);
     DOREPLIFETIME(AShipPawn, RU_Matiere);
-    DOREPLIFETIME(AShipPawn, R_PercentSpeed);
+    DOREPLIFETIME(AShipPawn, RU_PercentSpeed);
     DOREPLIFETIME(AShipPawn, R_PercentFlightAttitude);
     DOREPLIFETIME(AShipPawn, R_PercentTurn);
     DOREPLIFETIME(AShipPawn, R_PercentUp);
