@@ -38,7 +38,7 @@ void ULocalPlayerActionComponent::TickComponent(float _deltaTime, ELevelTick _ti
         // set material parameter
         float percent = FMath::Clamp(m_shipPawnOwner.Get()->R_PercentSpeed, 0.0f, 1.0f);
         m_postProcessMaterial->SetScalarParameterValue("Weight", percent);
-        m_postProcessMaterial->SetVectorParameterValue("SpeedLinesColor", FMath::Lerp(FLinearColor(1.0f, 1.0f, 1.0f, 1.0f), FLinearColor(1.0f, 0.0f, 0.138505f, 1.0f), percent));
+        m_postProcessMaterial->SetVectorParameterValue("SpeedLinesColor", FMath::Lerp(FLinearColor(1.0f, 1.0f, 1.0f, 1.0f), FLinearColor(0.0f, 0.943892f, 1.0f, 1.0f), percent));
 
         // set fov
         float noSmoothFov { FMath::Lerp(90.0f, 130.0f, percent) };

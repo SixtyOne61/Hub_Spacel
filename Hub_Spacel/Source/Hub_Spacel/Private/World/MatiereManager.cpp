@@ -100,7 +100,6 @@ void AMatiereManager::OnRep_Instance()
 	}
 }
 
-
 void AMatiereManager::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
