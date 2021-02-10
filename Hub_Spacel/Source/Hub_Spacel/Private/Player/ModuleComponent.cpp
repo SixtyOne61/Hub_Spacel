@@ -9,8 +9,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "Util/SimplyXml.h"
 #include "Net/UnrealNetwork.h"
-#include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
+#include "Player/ShipPawn.h"
 
 // Sets default values for this component's properties
 UModuleComponent::UModuleComponent()
@@ -52,12 +52,6 @@ void UModuleComponent::BeginPlay()
     OnRep_Attack();
     OnRep_Protection();
     OnRep_Support();
-
-    this->GetChildrenComponents(true, this->ExhaustComponents);
-    this->ExhaustComponents.RemoveAll([](USceneComponent* comp)
-        {
-            return comp == nullptr || !comp->GetName().Contains("Exhaust");
-        });
 }
 
 void UModuleComponent::OnRep_Attack()
@@ -75,6 +69,7 @@ void UModuleComponent::OnRep_Support()
 {
     this->OnUpdateCountSupportDelegate.Broadcast(this->RU_SupportLocations.Num(), m_maxSupport);
     buildShip(this->SupportMeshComponent, this->SupportDataAsset, RU_SupportLocations);
+    setLocationExhaustFx();
 }
 
 void UModuleComponent::SetMax_Implementation(int32 _maxProtection, int32 _maxSupport)
@@ -125,29 +120,10 @@ void UModuleComponent::OnStartGame()
 
             lb_readXml(spacelPlayerState->Support, this->SupportDataAsset, this->RU_SupportLocations);
             buildShip(this->SupportMeshComponent, this->SupportDataAsset, this->RU_SupportLocations);
+            setLocationExhaustFx();
 
             this->SetMax(this->RU_ProtectionLocations.Num(), this->RU_SupportLocations.Num());
         }
-    }
-
-    this->GetChildrenComponents(true, this->ExhaustComponents);
-    this->ExhaustComponents.RemoveAll([](USceneComponent* comp)
-        {
-            return comp == nullptr || !comp->GetName().Contains("Exhaust");
-        });
-
-    int i{ 0 };
-    for (; i < this->RU_SupportLocations.Num(); ++i)
-    {
-        if (i < this->ExhaustComponents.Num())
-        {
-            this->ExhaustComponents[i]->SetRelativeLocation(this->RU_SupportLocations[i]);
-        }
-    }
-
-    for (; i < this->ExhaustComponents.Num(); ++i)
-    {
-        this->ExhaustComponents[i]->SetVisibility(false, true);
     }
 }
 
@@ -168,20 +144,11 @@ void UModuleComponent::buildShip(UInstancedStaticMeshComponent*& _mesh, UStaticM
     }
 }
 
-void UModuleComponent::setPercentVelocity(float _percent)
+void UModuleComponent::setLocationExhaustFx()
 {
-    this->GetChildrenComponents(true, this->ExhaustComponents);
-    this->ExhaustComponents.RemoveAll([](USceneComponent* comp)
-        {
-            return comp == nullptr || !comp->GetName().Contains("Exhaust");
-        });
-
-    for (USceneComponent* comp : this->ExhaustComponents)
+    if (AShipPawn* pawn = Cast<AShipPawn>(this->GetOwner()))
     {
-        if (UNiagaraComponent* niagara = Cast<UNiagaraComponent>(comp))
-        {
-            niagara->SetFloatParameter("User.Velocity", _percent);
-        }
+        pawn->setLocationExhaustFx(this->RU_SupportLocations);
     }
 }
 

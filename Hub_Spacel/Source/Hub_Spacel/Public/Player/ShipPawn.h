@@ -52,6 +52,8 @@ public:
     UFUNCTION(BlueprintCallable)
     void Restarted();
 
+    void setLocationExhaustFx(TArray<FVector> const& _loc);
+
 private:
     /* move ship server */
     UFUNCTION(Reliable, Server)
@@ -179,6 +181,9 @@ protected:
 
     UPROPERTY(ReplicatedUsing = "OnRep_Matiere")
     int32 RU_Matiere { 0 };
+
+    UPROPERTY()
+    class UNiagaraComponent* ExhaustFxComponent { nullptr };
 
     /* state of escape mode phase; only server side */
     EnumUtil::EnumCallback<EEscapeMode> m_escapeModeState {};

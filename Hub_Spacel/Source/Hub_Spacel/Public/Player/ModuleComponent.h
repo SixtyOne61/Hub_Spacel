@@ -48,7 +48,8 @@ protected:
 private:
     void buildShip(class UInstancedStaticMeshComponent*& _mesh, class UStaticMeshDataAsset* _staticMesh, TArray<FVector> const& _locations);
 
-    void setPercentVelocity(float _percent);
+    /* call ship pawn owner for set location of exhaust */
+    void setLocationExhaustFx();
 
 public:
     UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
@@ -69,18 +70,12 @@ public:
     UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)
     class UInstancedStaticMeshComponent* SupportMeshComponent{ nullptr };
 
-    UPROPERTY(Category = "Fx", EditAnywhere, BlueprintReadWrite)
-    TArray<class USceneComponent*> ExhaustComponents{};
-
 public:
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
     FOnUpdateCountProtection OnUpdateCountProtectionDelegate {};
 
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
     FOnUpdateCountSupport OnUpdateCountSupportDelegate {};
-
-    UPROPERTY(EditAnywhere)
-    class UNiagaraSystem* ExhaustFx { nullptr };
 
 private:
     UPROPERTY(ReplicatedUsing = "OnRep_Attack")

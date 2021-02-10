@@ -30,6 +30,7 @@
 #include "Util/Tag.h"
 #include "Util/SimplyMath.h"
 #include "TimerManager.h"
+#include "NiagaraComponent.h"
 
 // Sets default values
 AShipPawn::AShipPawn()
@@ -339,9 +340,14 @@ void AShipPawn::OnRep_Matiere()
 
 void AShipPawn::OnRep_PercentSpeed()
 {
-    if (this->ModuleComponent != nullptr)
+    if (this->ExhaustFxComponent == nullptr)
     {
-        this->ModuleComponent->setPercentVelocity(this->RU_PercentSpeed);
+        this->ExhaustFxComponent = Cast<UNiagaraComponent>(this->GetComponentByClass(UNiagaraComponent::StaticClass()));
+    }
+
+    if (this->ExhaustFxComponent != nullptr)
+    {
+        this->ExhaustFxComponent->SetNiagaraVariableFloat("User.Velocity", this->RU_PercentSpeed);
     }
 }
 
@@ -403,6 +409,24 @@ void AShipPawn::TriggerEscapeMode()
 void AShipPawn::SetTriggerEscapeMode(int32 _state)
 {
     m_escapeModeState = (EEscapeMode)_state;
+}
+
+void AShipPawn::setLocationExhaustFx(TArray<FVector> const& _loc)
+{
+    if (this->ExhaustFxComponent == nullptr)
+    {
+        this->ExhaustFxComponent = Cast<UNiagaraComponent>(this->GetComponentByClass(UNiagaraComponent::StaticClass()));
+    }
+
+    if (this->ExhaustFxComponent != nullptr)
+    {
+        this->ExhaustFxComponent->SetNiagaraVariableInt("User.NbExhaust", _loc.Num());
+        for (int32 i = 0; i < _loc.Num(); ++i)
+        {
+            FString name = "User.Location" + FString::FromInt(i);
+            this->ExhaustFxComponent->SetNiagaraVariableVec3(name, _loc[i]);
+        }
+    }
 }
 
 void AShipPawn::Restarted()
