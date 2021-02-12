@@ -238,14 +238,16 @@ void AShipPawn::serverMove(float _deltaTime)
     if (!ensure(this->ModuleComponent != nullptr)) return;
     if (!ensure(this->ModuleComponent->SupportMeshComponent != nullptr)) return;
 
+    float coefEscape { m_escapeModeState == EEscapeMode::StateEscape ? this->PlayerDataAsset->EscapeModeCoef : 1.0f };
+
     FVector const& angularVelocity { this->DriverMeshComponent->GetPhysicsAngularVelocityInDegrees() };
-    FVector newAngularVelocity { this->DriverMeshComponent->GetForwardVector() * this->PercentFlightAttitude * this->PlayerDataAsset->MaxFlightAttitudeSpeed };
+    FVector newAngularVelocity { this->DriverMeshComponent->GetForwardVector() * this->PercentFlightAttitude * this->PlayerDataAsset->MaxFlightAttitudeSpeed * coefEscape };
     newAngularVelocity = FMath::Lerp(angularVelocity, newAngularVelocity, 0.9f);
     this->DriverMeshComponent->SetPhysicsAngularVelocityInDegrees(newAngularVelocity);
 
     FVector const& linearVelocity = this->DriverMeshComponent->GetPhysicsLinearVelocity(NAME_None);
     // 9, default support size
-    float coefSpeed = this->ModuleComponent->SupportMeshComponent->GetInstanceCount() / 9.0f;
+    float coefSpeed = (this->ModuleComponent->SupportMeshComponent->GetInstanceCount() / 9.0f) * coefEscape;
 
     FVector newVelocity = this->DriverMeshComponent->GetForwardVector() * this->PlayerDataAsset->MaxForwardSpeed * this->RU_PercentSpeed * coefSpeed;
     newVelocity += this->DriverMeshComponent->GetRightVector() * this->PlayerDataAsset->MaxHorizontalSpeed * this->PercentHorizontalStraf * coefSpeed;

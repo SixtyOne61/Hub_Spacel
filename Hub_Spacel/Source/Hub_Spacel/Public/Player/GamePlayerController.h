@@ -55,6 +55,12 @@ private:
 	void RPCServerFlightAttitude(float _val);
 
 	UFUNCTION(Reliable, Server)
+	void RPCServerTriggerEscapeMode();
+
+	UFUNCTION(Reliable, Server)
+	void RPCServerFire(bool _is);
+
+	UFUNCTION(Reliable, Server)
 	void RPCServerStartGame();
 
 	/* input callback */
@@ -62,6 +68,9 @@ private:
 	void horizontalStraf(float _value);
 	void verticalStraf(float _value);
 	void flightAttitude(float _value);
+	void triggerEscapeMode();
+	void fireOn();
+	void fireOff();
 
 	/* from event */
 	UFUNCTION()

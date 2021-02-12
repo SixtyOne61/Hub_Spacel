@@ -18,6 +18,10 @@ void AGamePlayerController::SetupInputComponent()
     this->InputComponent->BindAxis("HorizontalStraf", this, &AGamePlayerController::horizontalStraf);
     this->InputComponent->BindAxis("VerticalStraf", this, &AGamePlayerController::verticalStraf);
     this->InputComponent->BindAxis("FlightAttitude", this, &AGamePlayerController::flightAttitude);
+
+    this->InputComponent->BindAction("EscapeMode", IE_Pressed, this, &AGamePlayerController::triggerEscapeMode);
+    this->InputComponent->BindAction("Fire", IE_Pressed, this, &AGamePlayerController::fireOn);
+    this->InputComponent->BindAction("Fire", IE_Released, this, &AGamePlayerController::fireOff);
 }
 
 void AGamePlayerController::BeginPlay()
@@ -100,6 +104,28 @@ void AGamePlayerController::RPCServerFlightAttitude_Implementation(float _val)
     }
 }
 
+void AGamePlayerController::RPCServerTriggerEscapeMode_Implementation()
+{
+    if (m_enableInput)
+    {
+        if (AShipPawn* shipPawn = Cast<AShipPawn>(this->GetPawn()))
+        {
+            shipPawn->TriggerEscapeMode();
+        }
+    }
+}
+
+void AGamePlayerController::RPCServerFire_Implementation(bool _is)
+{
+    if (m_enableInput)
+    {
+        if (AShipPawn* shipPawn = Cast<AShipPawn>(this->GetPawn()))
+        {
+            shipPawn->setFire(_is);
+        }
+    }
+}
+
 void AGamePlayerController::forward(float _value)
 {
     this->RPCServerForward(_value);
@@ -118,6 +144,21 @@ void AGamePlayerController::verticalStraf(float _value)
 void AGamePlayerController::flightAttitude(float _value)
 {
     this->RPCServerFlightAttitude(_value);
+}
+
+void AGamePlayerController::triggerEscapeMode()
+{
+    this->RPCServerTriggerEscapeMode();
+}
+
+void AGamePlayerController::fireOn()
+{
+    this->RPCServerFire(true);
+}
+
+void AGamePlayerController::fireOff()
+{
+    this->RPCServerFire(false);
 }
 
 void AGamePlayerController::StartGame()
