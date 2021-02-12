@@ -22,7 +22,7 @@
 #include "Player/FireComponent.h"
 #include "Player/ModuleComponent.h"
 #include "Player/CustomCollisionComponent.h"
-#include "Player/PlayerShipController.h"
+#include "Player/GamePlayerController.h"
 #include "Player/RepairComponent.h"
 #include "Player/LocalPlayerActionComponent.h"
 #include "GameState/SpacelGameState.h"
@@ -220,11 +220,18 @@ void AShipPawn::Tick(float _deltaTime)
     if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
     {
         // move ship
-        RPCServerMove(_deltaTime);
+        serverMove(_deltaTime);
     }
 }
 
-void AShipPawn::RPCServerMove_Implementation(float const& _deltaTime)
+void AShipPawn::lookAt(FVector const& _loc, FVector const& _dir)
+{
+    FRotator rotation = UKismetMathLibrary::FindLookAtRotation(this->GetActorLocation(), _loc + _dir * 3000);
+    rotation.Roll = 0.0f;
+    this->SetActorRotation(rotation);
+}
+
+void AShipPawn::serverMove(float _deltaTime)
 {
     if (!ensure(this->DriverMeshComponent != nullptr)) return;
     if (!ensure(this->PlayerDataAsset != nullptr)) return;
@@ -232,18 +239,17 @@ void AShipPawn::RPCServerMove_Implementation(float const& _deltaTime)
     if (!ensure(this->ModuleComponent->SupportMeshComponent != nullptr)) return;
 
     FVector const& angularVelocity { this->DriverMeshComponent->GetPhysicsAngularVelocityInDegrees() };
-
-    float coef { m_escapeModeState == EEscapeMode::StateEscape ? 2.0f : 1.0f };
-    FVector newAngularVelocity { this->DriverMeshComponent->GetRightVector() * this->R_PercentUp * this->PlayerDataAsset->UpSpeed * coef };
-    newAngularVelocity += this->DriverMeshComponent->GetUpVector() * this->R_PercentTurn * this->PlayerDataAsset->TurnSpeed * coef;
-    newAngularVelocity += this->DriverMeshComponent->GetForwardVector() * this->R_PercentFlightAttitude * this->PlayerDataAsset->FlightAttitudeSpeed;
-
+    FVector newAngularVelocity { this->DriverMeshComponent->GetForwardVector() * this->PercentFlightAttitude * this->PlayerDataAsset->MaxFlightAttitudeSpeed };
+    newAngularVelocity = FMath::Lerp(angularVelocity, newAngularVelocity, 0.9f);
     this->DriverMeshComponent->SetPhysicsAngularVelocityInDegrees(newAngularVelocity);
 
     FVector const& linearVelocity = this->DriverMeshComponent->GetPhysicsLinearVelocity(NAME_None);
     // 9, default support size
     float coefSpeed = this->ModuleComponent->SupportMeshComponent->GetInstanceCount() / 9.0f;
+
     FVector newVelocity = this->DriverMeshComponent->GetForwardVector() * this->PlayerDataAsset->MaxForwardSpeed * this->RU_PercentSpeed * coefSpeed;
+    newVelocity += this->DriverMeshComponent->GetRightVector() * this->PlayerDataAsset->MaxHorizontalSpeed * this->PercentHorizontalStraf * coefSpeed;
+    newVelocity += this->DriverMeshComponent->GetUpVector() * this->PlayerDataAsset->MaxVerticalSpeed * this->PercentVerticalStraf * coefSpeed;
     newVelocity = FMath::Lerp(linearVelocity, newVelocity, 0.9f);
 
     this->DriverMeshComponent->SetPhysicsLinearVelocity(newVelocity);
@@ -286,7 +292,7 @@ void AShipPawn::kill()
         UHub_SpacelGameInstance* spacelGameInstance{ Cast<UHub_SpacelGameInstance>(this->GetGameInstance()) };
         spacelGameInstance->OnUnTargetPlayerDelegate.Broadcast(this->TargetComponent->GetChildActor());
 
-        if (APlayerShipController* playerController = this->GetController<APlayerShipController>())
+        if (AGamePlayerController* playerController = this->GetController<AGamePlayerController>())
         {
             playerController->Restart();
         }
@@ -448,8 +454,5 @@ void AShipPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetim
     DOREPLIFETIME(AShipPawn, RU_IsInFog);
     DOREPLIFETIME(AShipPawn, RU_Matiere);
     DOREPLIFETIME(AShipPawn, RU_PercentSpeed);
-    DOREPLIFETIME(AShipPawn, R_PercentFlightAttitude);
-    DOREPLIFETIME(AShipPawn, R_PercentTurn);
-    DOREPLIFETIME(AShipPawn, R_PercentUp);
 }
 

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
+#include "DataAsset/InputDataAsset.h"
 #include "PlayerDataAsset.generated.h"
 
 /**
@@ -15,23 +16,29 @@ class HUB_SPACEL_API UPlayerDataAsset : public UDataAsset
 	GENERATED_BODY()
 	
 public:
-    UPROPERTY(Category = "Movement", EditAnywhere, BlueprintReadWrite)
-    float MaxForwardSpeed = 6000.0f;
+    UPROPERTY(Category = "Input", EditAnywhere, BlueprintReadWrite)
+    UInputDataAsset* ForwardInput { nullptr };
+
+    UPROPERTY(Category = "Input", EditAnywhere, BlueprintReadWrite)
+    UInputDataAsset* HorizontalStrafInput { nullptr };
+
+    UPROPERTY(Category = "Input", EditAnywhere, BlueprintReadWrite)
+    UInputDataAsset* VerticalStrafInput { nullptr };
+
+    UPROPERTY(Category = "Input", EditAnywhere, BlueprintReadWrite)
+    UInputDataAsset* FlightAttitudeInput { nullptr };
 
     UPROPERTY(Category = "Movement", EditAnywhere, BlueprintReadWrite)
-    float ReachTimeUpSpeed = 1.5f;
+    float MaxForwardSpeed { 6000.0f };
 
     UPROPERTY(Category = "Movement", EditAnywhere, BlueprintReadWrite)
-    float ReachTimeDownSpeed = 0.75f;
+    float MaxHorizontalSpeed { 1000.0f };
 
     UPROPERTY(Category = "Movement", EditAnywhere, BlueprintReadWrite)
-    float FlightAttitudeSpeed = 30.0f;
+    float MaxVerticalSpeed { 1000.0f };
 
     UPROPERTY(Category = "Movement", EditAnywhere, BlueprintReadWrite)
-    float TurnSpeed = 30.0f;
-
-    UPROPERTY(Category = "Movement", EditAnywhere, BlueprintReadWrite)
-    float UpSpeed = 40.0f;
+    float MaxFlightAttitudeSpeed { 1000.0f };
 
     UPROPERTY(Category = "Movement", EditAnywhere, BlueprintReadWrite)
     float EscapeModeDuration{ 5.0f };

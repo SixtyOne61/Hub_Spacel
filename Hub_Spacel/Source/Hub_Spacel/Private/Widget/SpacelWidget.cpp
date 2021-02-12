@@ -6,7 +6,7 @@
 #include "Components/UniformGridPanel.h"
 #include "Components/Image.h"
 #include "Player/SpacelPlayerState.h"
-#include "Player/PlayerShipController.h"
+#include "Player/GamePlayerController.h"
 #include "Player/ModuleComponent.h"
 #include "GameState/SpacelGameState.h"
 #include "Hub_SpacelGameInstance.h"
@@ -45,11 +45,11 @@ void USpacelWidget::NativeConstruct()
         spacelGameState->OnStartGameDelegate.AddDynamic(this, &USpacelWidget::StartGame);
     }
 
-    APlayerShipController* playerShipController { this->GetOwningPlayer<APlayerShipController>() };
-    if (playerShipController != nullptr)
-    {
-        playerShipController->OnToggleRepairDelegate.AddDynamic(this, &USpacelWidget::OnToggleRepair);
-    }
+    //APlayerShipController* playerShipController { this->GetOwningPlayer<APlayerShipController>() };
+    //if (playerShipController != nullptr)
+    //{
+    //    playerShipController->OnToggleRepairDelegate.AddDynamic(this, &USpacelWidget::OnToggleRepair);
+    //}
 
     AShipPawn* shipPawn { this->GetOwningPlayerPawn<AShipPawn>() };
     if (shipPawn != nullptr)

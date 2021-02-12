@@ -6,19 +6,19 @@
 #include "Components/Button.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerController.h"
-#include "Player/PlayerShipController.h"
+#include "Player/GamePlayerController.h"
 
 void URepairUserWidget::NativeConstruct()
 {
     Super::NativeConstruct();
 
-    if (APlayerShipController* playerShipController = Cast<APlayerShipController>(UGameplayStatics::GetPlayerController(this->GetWorld(), 0)))
-    {
-        ButtonLinks.Add({ SimplyUI::initSafetyFromName<UUserWidget, UButton>(this, TEXT("Btn_Protection")), false, EKeys::Gamepad_DPad_Up, std::bind(&APlayerShipController::ToggleRepairProtection, playerShipController, std::placeholders::_1) });
-        ButtonLinks.Add({ SimplyUI::initSafetyFromName<UUserWidget, UButton>(this, TEXT("Btn_Support")), false, EKeys::Gamepad_DPad_Right, std::bind(&APlayerShipController::ToggleRepairSupport, playerShipController, std::placeholders::_1) });
-        ButtonLinks.Add({ SimplyUI::initSafetyFromName<UUserWidget, UButton>(this, TEXT("Btn_Ally1")), false, EKeys::Gamepad_DPad_Down, std::bind(&APlayerShipController::ToggleGiveAlly1, playerShipController, std::placeholders::_1) });
-        ButtonLinks.Add({ SimplyUI::initSafetyFromName<UUserWidget, UButton>(this, TEXT("Btn_Ally2")), false, EKeys::Gamepad_DPad_Left, std::bind(&APlayerShipController::ToggleGiveAlly2, playerShipController, std::placeholders::_1) });
-    }
+    //if (APlayerShipController* playerShipController = Cast<APlayerShipController>(UGameplayStatics::GetPlayerController(this->GetWorld(), 0)))
+    //{
+    //    ButtonLinks.Add({ SimplyUI::initSafetyFromName<UUserWidget, UButton>(this, TEXT("Btn_Protection")), false, EKeys::Gamepad_DPad_Up, std::bind(&APlayerShipController::ToggleRepairProtection, playerShipController, std::placeholders::_1) });
+    //    ButtonLinks.Add({ SimplyUI::initSafetyFromName<UUserWidget, UButton>(this, TEXT("Btn_Support")), false, EKeys::Gamepad_DPad_Right, std::bind(&APlayerShipController::ToggleRepairSupport, playerShipController, std::placeholders::_1) });
+    //    ButtonLinks.Add({ SimplyUI::initSafetyFromName<UUserWidget, UButton>(this, TEXT("Btn_Ally1")), false, EKeys::Gamepad_DPad_Down, std::bind(&APlayerShipController::ToggleGiveAlly1, playerShipController, std::placeholders::_1) });
+    //    ButtonLinks.Add({ SimplyUI::initSafetyFromName<UUserWidget, UButton>(this, TEXT("Btn_Ally2")), false, EKeys::Gamepad_DPad_Left, std::bind(&APlayerShipController::ToggleGiveAlly2, playerShipController, std::placeholders::_1) });
+    //}
 
     BaseBackgroundColor = FLinearColor::White;
 

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include <type_traits>
 
 namespace SimplyMath
 {
@@ -44,6 +45,13 @@ namespace SimplyMath
         {
             return FMath::Min(FMath::Max(_a, _value * (_b - _a) + _a), _b);
         }
+    }
+
+    template<typename T,
+        std::enable_if_t<std::is_arithmetic<T>::value, bool> = true>
+    inline bool IsSignDiff(T _a, T _b)
+    {
+        return (_a > 0 && _b < 0) || (_a < 0 && _b > 0);
     }
 
     template<typename T>

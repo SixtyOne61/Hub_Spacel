@@ -22,7 +22,7 @@ class HUB_SPACEL_API AShipPawn : public APawn
 {
 	GENERATED_BODY()
 
-    friend class APlayerShipController;
+    friend class AGamePlayerController;
     friend class USpacelWidget;
     friend class UFireComponent;
     friend class UCustomCollisionComponent;
@@ -55,9 +55,10 @@ public:
     void setLocationExhaustFx(TArray<FVector> const& _loc);
 
 private:
-    /* move ship server */
-    UFUNCTION(Reliable, Server)
-    void RPCServerMove(float const& _deltaTime);
+    void lookAt(FVector const& _loc, FVector const& _dir);
+
+    /* move ship server, only from server */
+    void serverMove(float _deltaTime);
 
     virtual void OnRep_PlayerState() override;
 
@@ -162,19 +163,12 @@ public:
 protected:
     /* current percent speed value 0.0f - 1.0f */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = "OnRep_PercentSpeed")
-    float RU_PercentSpeed = 0.0f;
+    float RU_PercentSpeed { 0.0f };
 
-    /* when flight attitude change -1.0f or 0.0f or 1.0f */
-    UPROPERTY(Replicated)
-    float R_PercentFlightAttitude = 0.0f;
-
-    /* when turn change -1.0f or 0.0f or 1.0f */
-    UPROPERTY(Replicated)
-    float R_PercentTurn = 0.0f;
-
-    /* when up change -1.0f or 0.0f or 1.0f */
-    UPROPERTY(Replicated)
-    float R_PercentUp = 0.0f;
+    /* use by server */
+    float PercentHorizontalStraf { 0.0f };
+    float PercentVerticalStraf { 0.0f };
+    float PercentFlightAttitude { 0.0f };
 
     UPROPERTY(ReplicatedUsing = "OnRep_IsInFog")
     bool RU_IsInFog { false };

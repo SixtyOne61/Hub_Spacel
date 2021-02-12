@@ -4,7 +4,6 @@
 #include "CustomCollisionComponent.h"
 #include "Player/ShipPawn.h"
 #include "Player/ModuleComponent.h"
-#include "Player/PlayerShipController.h"
 #include "Player/SpacelPlayerState.h"
 #include "CollisionQueryParams.h"
 #include "Gameplay/DestroyActor.h"

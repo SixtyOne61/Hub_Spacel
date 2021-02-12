@@ -3,7 +3,6 @@
 
 #include "RepairComponent.h"
 #include "Player/ShipPawn.h"
-#include "Player/PlayerShipController.h"
 #include "Player/ModuleComponent.h"
 #include "Net/UnrealNetwork.h"
 
