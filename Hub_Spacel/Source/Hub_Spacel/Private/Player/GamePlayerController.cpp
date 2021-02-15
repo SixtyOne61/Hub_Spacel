@@ -22,6 +22,11 @@ void AGamePlayerController::SetupInputComponent()
     this->InputComponent->BindAction("EscapeMode", IE_Pressed, this, &AGamePlayerController::triggerEscapeMode);
     this->InputComponent->BindAction("Fire", IE_Pressed, this, &AGamePlayerController::fireOn);
     this->InputComponent->BindAction("Fire", IE_Released, this, &AGamePlayerController::fireOff);
+    this->InputComponent->BindAction("ReturnToMainMenu", IE_Pressed, this, &AGamePlayerController::returnToMainMenu);
+    this->InputComponent->BindAction("RepairProtection", IE_Pressed, this, &AGamePlayerController::repairProtection);
+    this->InputComponent->BindAction("RepairSupport", IE_Pressed, this, &AGamePlayerController::repairSupport);
+    this->InputComponent->BindAction("GiveAlly1", IE_Pressed, this, &AGamePlayerController::giveAlly1);
+    this->InputComponent->BindAction("GiveAlly2", IE_Pressed, this, &AGamePlayerController::giveAlly2);
 }
 
 void AGamePlayerController::BeginPlay()
@@ -51,7 +56,14 @@ void AGamePlayerController::Tick(float _deltaTime)
         FVector mouseWorldLocation{}, mouseWorldDirection{};
         if (this->DeprojectMousePositionToWorld(mouseWorldLocation, mouseWorldDirection))
         {
-            this->RPCServerUpdateMouseLocation(mouseWorldLocation, mouseWorldDirection);
+            FVector hitLoc { FVector::ZeroVector };
+            FHitResult hit;
+            if (this->GetHitResultUnderCursorByChannel(ETraceTypeQuery::TraceTypeQuery_MAX, false, hit))
+            {
+                hitLoc = hit.Location;
+            }
+
+            this->RPCServerUpdateMouseLocation(mouseWorldLocation, mouseWorldDirection, hitLoc);
         }
     }
     else if (this->GetNetMode() == ENetMode::NM_DedicatedServer && shipPawn != nullptr)
@@ -63,12 +75,12 @@ void AGamePlayerController::Tick(float _deltaTime)
     }
 }
 
-void AGamePlayerController::RPCServerUpdateMouseLocation_Implementation(FVector const& _loc, FVector const& _dir)
+void AGamePlayerController::RPCServerUpdateMouseLocation_Implementation(FVector const& _loc, FVector const& _dir, FVector const& _hitLoc)
 {
     AShipPawn* shipPawn = Cast<AShipPawn>(this->GetPawn());
     if (m_enableInput && shipPawn != nullptr)
     {
-        shipPawn->lookAt(_loc, _dir);
+        shipPawn->lookAt(_loc, _dir, _hitLoc);
     }
 }
 
@@ -126,6 +138,34 @@ void AGamePlayerController::RPCServerFire_Implementation(bool _is)
     }
 }
 
+void AGamePlayerController::RPCServerRepairProtection_Implementation()
+{
+    if (m_enableInput)
+    {
+        AShipPawn* shipPawn = Cast<AShipPawn>(this->GetPawn());
+        if (shipPawn == nullptr)
+        {
+            return;
+        }
+
+        shipPawn->OnRepairProtectionDelegate.Broadcast();
+    }
+}
+
+void AGamePlayerController::RPCServerRepairSupport_Implementation()
+{
+    if (m_enableInput)
+    {
+        AShipPawn* shipPawn = Cast<AShipPawn>(this->GetPawn());
+        if (shipPawn == nullptr)
+        {
+            return;
+        }
+
+        shipPawn->OnRepairSupportDelegate.Broadcast();
+    }
+}
+
 void AGamePlayerController::forward(float _value)
 {
     this->RPCServerForward(_value);
@@ -159,6 +199,32 @@ void AGamePlayerController::fireOn()
 void AGamePlayerController::fireOff()
 {
     this->RPCServerFire(false);
+}
+
+void AGamePlayerController::returnToMainMenu()
+{
+    FString levelName{ "MainMenu" };
+    UGameplayStatics::OpenLevel(this->GetWorld(), FName(*levelName), false, "");
+}
+
+void AGamePlayerController::repairProtection()
+{
+    this->RPCServerRepairProtection();
+}
+
+void AGamePlayerController::repairSupport()
+{
+    this->RPCServerRepairSupport();
+}
+
+void AGamePlayerController::giveAlly1()
+{
+
+}
+
+void AGamePlayerController::giveAlly2()
+{
+
 }
 
 void AGamePlayerController::StartGame()

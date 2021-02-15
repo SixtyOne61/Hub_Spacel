@@ -40,7 +40,7 @@ public:
 private:
 	/* network */
 	UFUNCTION(Reliable, Server)
-	void RPCServerUpdateMouseLocation(FVector const& _loc, FVector const& _dir);
+	void RPCServerUpdateMouseLocation(FVector const& _loc, FVector const& _dir, FVector const& _hitLoc);
 
 	UFUNCTION(Reliable, Server)
 	void RPCServerForward(float _val);
@@ -61,6 +61,12 @@ private:
 	void RPCServerFire(bool _is);
 
 	UFUNCTION(Reliable, Server)
+	void RPCServerRepairProtection();
+
+	UFUNCTION(Reliable, Server)
+	void RPCServerRepairSupport();
+
+	UFUNCTION(Reliable, Server)
 	void RPCServerStartGame();
 
 	/* input callback */
@@ -71,6 +77,11 @@ private:
 	void triggerEscapeMode();
 	void fireOn();
 	void fireOff();
+	void returnToMainMenu();
+	void repairProtection();
+	void repairSupport();
+	void giveAlly1();
+	void giveAlly2();
 
 	/* from event */
 	UFUNCTION()

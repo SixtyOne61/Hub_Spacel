@@ -56,9 +56,11 @@ void URepairComponent::onRepair(bool _on, FTimerHandle & _handle, void(URepairCo
     }
 }
 
-void URepairComponent::OnRepairProtection(bool _on)
+void URepairComponent::OnRepairProtection()
 {
-    onRepair(_on, this->RepairProtectionHandle, &URepairComponent::RepairProtection);
+    static bool repair = false;
+    repair = !repair;
+    onRepair(repair, this->RepairProtectionHandle, &URepairComponent::RepairProtection);
 }
 
 void URepairComponent::RepairProtection()
@@ -67,9 +69,11 @@ void URepairComponent::RepairProtection()
         std::bind(&UModuleComponent::OnRep_Protection, m_shipPawnOwner.Get()->ModuleComponent));
 }
 
-void URepairComponent::OnRepairSupport(bool _on)
+void URepairComponent::OnRepairSupport()
 {
-    onRepair(_on, this->RepairSupportHandle, &URepairComponent::RepairSupport);
+    static bool repair = false;
+    repair = !repair;
+    onRepair(repair, this->RepairSupportHandle, &URepairComponent::RepairSupport);
 }
 
 void URepairComponent::RepairSupport()

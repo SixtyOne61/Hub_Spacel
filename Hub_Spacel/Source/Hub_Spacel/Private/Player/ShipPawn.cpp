@@ -224,9 +224,12 @@ void AShipPawn::Tick(float _deltaTime)
     }
 }
 
-void AShipPawn::lookAt(FVector const& _loc, FVector const& _dir)
+void AShipPawn::lookAt(FVector const& _loc, FVector const& _dir, FVector const& _hitLoc)
 {
-    FRotator rotation = UKismetMathLibrary::FindLookAtRotation(this->GetActorLocation(), _loc + _dir * 3000);
+    FVector far = _loc + _dir * 3000;
+    FVector bigFar = _loc + _dir * 100000;
+    TargetLocation = _hitLoc.IsNearlyZero() ? bigFar : _hitLoc;
+    FRotator rotation = UKismetMathLibrary::FindLookAtRotation(this->GetActorLocation(), far);
     rotation.Roll = 0.0f;
     this->SetActorRotation(rotation);
 }

@@ -13,8 +13,8 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUpdateMatiere, int, _value);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEndUpdateMatiere, int32, _value);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHitProtection);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHitSupport);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRepairProtection, bool, _on);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRepairSupport, bool, _on);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnRepairProtection);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnRepairSupport);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStateEscapeModeChange, EEscapeMode, _state);
 
 UCLASS()
@@ -55,7 +55,7 @@ public:
     void setLocationExhaustFx(TArray<FVector> const& _loc);
 
 private:
-    void lookAt(FVector const& _loc, FVector const& _dir);
+    void lookAt(FVector const& _loc, FVector const& _dir, FVector const& _hitLoc);
 
     /* move ship server, only from server */
     void serverMove(float _deltaTime);
@@ -169,6 +169,7 @@ protected:
     float PercentHorizontalStraf { 0.0f };
     float PercentVerticalStraf { 0.0f };
     float PercentFlightAttitude { 0.0f };
+    FVector TargetLocation { FVector::ZeroVector };
 
     UPROPERTY(ReplicatedUsing = "OnRep_IsInFog")
     bool RU_IsInFog { false };

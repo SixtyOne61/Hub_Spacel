@@ -51,20 +51,9 @@ void UFireComponent::TickComponent(float _deltaTime, ELevelTick _tickType, FActo
             m_fireIndex = 0;
         }
 
-        if (m_target != nullptr && !m_target->IsPendingKill())
-        {
-            FVector pawnDir = m_shipPawnOwner.Get()->GetActorForwardVector();
-            pawnDir.Normalize();
-            FVector targetDir = UKismetMathLibrary::FindLookAtRotation(transform.GetLocation(), m_target->GetActorLocation()).Vector();
-            targetDir.Normalize();
-
-            float angle = FMath::RadiansToDegrees(acosf(FVector::DotProduct(pawnDir, targetDir)));
-            if (angle <= 30)
-            {
-                transform.SetRotation(targetDir.ToOrientationQuat());
-            }
-        }
-
+        FVector bulletDir = UKismetMathLibrary::FindLookAtRotation(transform.GetLocation(), m_shipPawnOwner.Get()->TargetLocation).Vector();
+        bulletDir.Normalize();
+        transform.SetRotation(bulletDir.ToOrientationQuat());
         spawnBullet(transform);
 
         // reset count down

@@ -33,10 +33,10 @@ private:
 
 	/* call from server */
 	UFUNCTION()
-	void OnRepairProtection(bool _on);
+	void OnRepairProtection();
 
 	UFUNCTION()
-	void OnRepairSupport(bool _on);
+	void OnRepairSupport();
 
 	/* clean or start timer */
 	void onRepair(bool _on, FTimerHandle& _handle, void(URepairComponent::* _callback)());
