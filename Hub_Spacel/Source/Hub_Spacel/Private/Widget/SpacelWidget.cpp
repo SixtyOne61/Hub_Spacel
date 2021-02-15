@@ -13,6 +13,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Util/SimplyUI.h"
 #include "Player/ShipPawn.h"
+#include "Components/ProgressBar.h"
 
 void USpacelWidget::NativeConstruct()
 {
@@ -20,13 +21,13 @@ void USpacelWidget::NativeConstruct()
 
     TeamNameTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_TeamName"));
     MatiereTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Matiere"));
-    ProtectionTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Protection"));
-    SupportTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Support"));
     TeammateCountTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_TeammateCount"));
     EventTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Event"));
     PingTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Ping"));
     SpeedTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Speed"));
     EscapeModeImage = SimplyUI::initSafetyFromName<UUserWidget, UImage>(this, TEXT("Image_EscapeMode"));
+    ProtectionProgressBar = SimplyUI::initSafetyFromName<UUserWidget, UProgressBar>(this, TEXT("ProgressBar_Protection"));
+    SupportProgressBar = SimplyUI::initSafetyFromName<UUserWidget, UProgressBar>(this, TEXT("ProgressBar_Support"));
 
     UWorld* world{ this->GetWorld() };
     if (!ensure(world != nullptr)) return;
@@ -212,18 +213,24 @@ void USpacelWidget::OnChangeStateEscapeMode(EEscapeMode _state)
 
 void USpacelWidget::OnUpdateCountProtection(int32 _value, int32 _max)
 {
-    updateCount(this->ProtectionTextBlock, "Protection: " + FString::FromInt(_value) + "/" + FString::FromInt(_max));
+    if (_max > 0)
+    {
+        updatePercent(this->ProtectionProgressBar, (float)_value / (float)_max);
+    }
 }
 
 void USpacelWidget::OnUpdateCountSupport(int32 _value, int32 _max)
 {
-    updateCount(this->SupportTextBlock, "Support: " + FString::FromInt(_value) + "/" + FString::FromInt(_max));
+    if (_max > 0)
+    {
+        updatePercent(this->SupportProgressBar, (float)_value / (float)_max);
+    }
 }
 
-void USpacelWidget::updateCount(class UTextBlock* _textBlock, FString&& _str)
+void USpacelWidget::updatePercent(UProgressBar* _progressBar, float _percent)
 {
-    if (_textBlock != nullptr)
+    if (_progressBar != nullptr)
     {
-        _textBlock->SetText(FText::FromString(_str));
+        _progressBar->SetPercent(_percent);
     }
 }

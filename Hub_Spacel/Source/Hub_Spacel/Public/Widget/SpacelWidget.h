@@ -60,7 +60,7 @@ private:
 	UFUNCTION()
 	void OnUpdateCountSupport(int32 _value, int32 _max);
 
-	void updateCount(class UTextBlock* _textBlock, FString && _str);
+	void updatePercent(class UProgressBar* _progressBar, float _percent);
 
 private:
 	UPROPERTY()
@@ -68,12 +68,6 @@ private:
 
 	UPROPERTY()
 	class UTextBlock* MatiereTextBlock { nullptr };
-
-	UPROPERTY()
-	class UTextBlock* ProtectionTextBlock{ nullptr };
-
-	UPROPERTY()
-	class UTextBlock* SupportTextBlock{ nullptr };
 
 	UPROPERTY()
 	class UTextBlock* TeammateCountTextBlock { nullptr };
@@ -89,4 +83,10 @@ private:
 
 	UPROPERTY()
 	class UImage* EscapeModeImage { nullptr };
+
+	UPROPERTY()
+	class UProgressBar* ProtectionProgressBar { nullptr };
+
+	UPROPERTY()
+	class UProgressBar* SupportProgressBar { nullptr };
 };
