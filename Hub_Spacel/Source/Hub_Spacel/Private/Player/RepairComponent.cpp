@@ -66,7 +66,7 @@ void URepairComponent::OnRepairProtection()
 void URepairComponent::RepairProtection()
 {
     repair(m_shipPawnOwner.Get()->ModuleComponent->R_RemovedProtectionLocations, m_shipPawnOwner.Get()->ModuleComponent->RU_ProtectionLocations,
-        std::bind(&UModuleComponent::OnRep_Protection, m_shipPawnOwner.Get()->ModuleComponent));
+        std::bind(&UModuleComponent::OnRep_Protection, m_shipPawnOwner.Get()->ModuleComponent), this->RepairProtectionHandle);
 }
 
 void URepairComponent::OnRepairSupport()
@@ -79,11 +79,19 @@ void URepairComponent::OnRepairSupport()
 void URepairComponent::RepairSupport()
 {
     repair(m_shipPawnOwner.Get()->ModuleComponent->R_RemovedSupportLocations, m_shipPawnOwner.Get()->ModuleComponent->RU_SupportLocations,
-        std::bind(&UModuleComponent::OnRep_Support, m_shipPawnOwner.Get()->ModuleComponent));
+        std::bind(&UModuleComponent::OnRep_Support, m_shipPawnOwner.Get()->ModuleComponent), this->RepairSupportHandle);
 }
 
-void URepairComponent::repair(TArray<FVector>& _removedLocations, TArray<FVector>& _locations, std::function<void(void)> _onRep)
+void URepairComponent::repair(TArray<FVector>& _removedLocations, TArray<FVector>& _locations, std::function<void(void)> _onRep, FTimerHandle & _handle)
 {
+    auto lb_clearTimer = [&]()
+    {
+        UWorld* world{ this->GetWorld() };
+        if (!ensure(world != nullptr)) return;
+        // feedback matiere empty
+        world->GetTimerManager().ClearTimer(_handle);
+    };
+
     if (_removedLocations.Num() != 0)
     {
         if (m_shipPawnOwner.Get()->RU_Matiere > 0)
@@ -95,11 +103,11 @@ void URepairComponent::repair(TArray<FVector>& _removedLocations, TArray<FVector
         }
         else
         {
-            // feedback matiere empty
+            lb_clearTimer();
         }
     }
     else
     {
-        // feedback full repair
+        lb_clearTimer();
     }
 }

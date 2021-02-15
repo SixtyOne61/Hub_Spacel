@@ -43,6 +43,9 @@ private:
 	UFUNCTION()
 	void OnTargetPlayer(AActor* _target);
 
+	UFUNCTION()
+	void OnTryLock();
+
 	/* callback method when state change */
 	void onChangeStateNormal();
 	void onChangeStateHover();

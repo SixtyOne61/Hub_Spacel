@@ -49,7 +49,7 @@ private:
 	UFUNCTION()
 	void RepairSupport();
 
-	void repair(TArray<FVector> & _removedLocations, TArray<FVector> & _locations, std::function<void(void)> _onRep);
+	void repair(TArray<FVector> & _removedLocations, TArray<FVector> & _locations, std::function<void(void)> _onRep, FTimerHandle& _handle);
 
 private:
 	UPROPERTY()

@@ -10,6 +10,7 @@
 #include "GameState/SpacelGameState.h"
 #include "GameMode/FlyingGameMode.h"
 #include "Net/UnrealNetwork.h"
+#include "Hub_SpacelGameInstance.h"
 
 void AGamePlayerController::SetupInputComponent()
 {
@@ -28,6 +29,7 @@ void AGamePlayerController::SetupInputComponent()
     this->InputComponent->BindAction("RepairSupport", IE_Pressed, this, &AGamePlayerController::repairSupport);
     this->InputComponent->BindAction("GiveAlly1", IE_Pressed, this, &AGamePlayerController::giveAlly1);
     this->InputComponent->BindAction("GiveAlly2", IE_Pressed, this, &AGamePlayerController::giveAlly2);
+    this->InputComponent->BindAction("Lock", IE_Pressed, this, &AGamePlayerController::lock);
 }
 
 void AGamePlayerController::BeginPlay()
@@ -237,6 +239,13 @@ void AGamePlayerController::giveAlly1()
 void AGamePlayerController::giveAlly2()
 {
 
+}
+
+void AGamePlayerController::lock()
+{
+    if (!this->R_EnableInput) return;
+    UHub_SpacelGameInstance* spacelGameInstance{ Cast<UHub_SpacelGameInstance>(this->GetGameInstance()) };
+    spacelGameInstance->OnTryLockDelegate.Broadcast();
 }
 
 void AGamePlayerController::StartGame()

@@ -82,6 +82,7 @@ private:
 	void repairSupport();
 	void giveAlly1();
 	void giveAlly2();
+	void lock();
 
 	/* from event */
 	UFUNCTION()

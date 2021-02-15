@@ -9,6 +9,7 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTargetPlayer, AActor*, _target);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUnTarget, AActor*, _target);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnTryLock);
 
 /**
  * 
@@ -69,6 +70,9 @@ public:
 
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
     FOnUnTarget OnUnTargetPlayerDelegate {};
+
+    UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
+    FOnTryLock OnTryLockDelegate {};
 
 private:
     class FHttpModule* HttpModule { nullptr };

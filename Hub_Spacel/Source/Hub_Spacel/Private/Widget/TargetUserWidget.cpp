@@ -27,6 +27,7 @@ void UTargetUserWidget::NativeConstruct()
     {
         spacelGameInstance->OnUnTargetPlayerDelegate.AddDynamic(this, &UTargetUserWidget::OnUnTargetPlayer);
         spacelGameInstance->OnTargetPlayerDelegate.AddDynamic(this, &UTargetUserWidget::OnTargetPlayer);
+        spacelGameInstance->OnTryLockDelegate.AddDynamic(this, &UTargetUserWidget::OnTryLock);
     }
 
     m_state = EState::StateNormal;
@@ -154,6 +155,14 @@ void UTargetUserWidget::OnTargetPlayer(AActor* _target)
     else if (playerTargetId != playerId && m_state == EState::StateLock)
     {
         m_state = EState::StateNormal;
+    }
+}
+
+void UTargetUserWidget::OnTryLock()
+{
+    if (m_state == EState::StateHover)
+    {
+        OnPressed();
     }
 }
 
