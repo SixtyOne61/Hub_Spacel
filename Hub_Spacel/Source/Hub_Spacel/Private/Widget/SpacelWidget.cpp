@@ -13,7 +13,6 @@
 #include "Kismet/GameplayStatics.h"
 #include "Util/SimplyUI.h"
 #include "Player/ShipPawn.h"
-#include "Widget/RepairUserWidget.h"
 
 void USpacelWidget::NativeConstruct()
 {
@@ -27,7 +26,6 @@ void USpacelWidget::NativeConstruct()
     EventTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Event"));
     PingTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Ping"));
     SpeedTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Speed"));
-    ToggleRepairGridPanel = SimplyUI::initSafetyFromName<UUserWidget, URepairUserWidget>(this, TEXT("WBP_ToggleRepair"));
     EscapeModeImage = SimplyUI::initSafetyFromName<UUserWidget, UImage>(this, TEXT("Image_EscapeMode"));
 
     UWorld* world{ this->GetWorld() };
@@ -44,12 +42,6 @@ void USpacelWidget::NativeConstruct()
     {
         spacelGameState->OnStartGameDelegate.AddDynamic(this, &USpacelWidget::StartGame);
     }
-
-    //APlayerShipController* playerShipController { this->GetOwningPlayer<APlayerShipController>() };
-    //if (playerShipController != nullptr)
-    //{
-    //    playerShipController->OnToggleRepairDelegate.AddDynamic(this, &USpacelWidget::OnToggleRepair);
-    //}
 
     AShipPawn* shipPawn { this->GetOwningPlayerPawn<AShipPawn>() };
     if (shipPawn != nullptr)
@@ -181,22 +173,6 @@ void USpacelWidget::SetSpeed()
     if (shipPawn != nullptr && this->SpeedTextBlock != nullptr)
     {
         this->SpeedTextBlock->SetText(FText::FromString(FString::FromInt(FMath::RoundToInt(shipPawn->RU_PercentSpeed * 100)) + " %"));
-    }
-}
-
-void USpacelWidget::OnToggleRepair(bool _on)
-{
-    if (!ensure(this->ToggleRepairGridPanel != nullptr)) return;
-
-    if (_on)
-    {
-        SimplyUI::setVisibility({ ESlateVisibility::Visible },
-            std::make_tuple(this->ToggleRepairGridPanel));
-    }
-    else
-    {
-        SimplyUI::setVisibility({ ESlateVisibility::Hidden },
-            std::make_tuple(this->ToggleRepairGridPanel));
     }
 }
 

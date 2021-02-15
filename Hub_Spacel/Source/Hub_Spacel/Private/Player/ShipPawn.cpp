@@ -228,7 +228,7 @@ void AShipPawn::lookAt(FVector const& _loc, FVector const& _dir, FVector const& 
 {
     FVector far = _loc + _dir * 3000;
     FVector bigFar = _loc + _dir * 100000;
-    TargetLocation = _hitLoc.IsNearlyZero() ? bigFar : _hitLoc;
+    this->TargetLocation = _hitLoc.IsNearlyZero() ? bigFar : _hitLoc;
     FRotator rotation = UKismetMathLibrary::FindLookAtRotation(this->GetActorLocation(), far);
     rotation.Roll = 0.0f;
     this->SetActorRotation(rotation);

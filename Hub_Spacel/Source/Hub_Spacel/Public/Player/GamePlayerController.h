@@ -88,6 +88,8 @@ private:
 	void StartGame();
 
 private:
-	bool m_enableInput { false };
+	UPROPERTY(Replicated)
+	bool R_EnableInput { false };
+
 	TData m_data {};
 };

@@ -49,9 +49,6 @@ private:
 	void SetSpeed();
 
 	UFUNCTION()
-	void OnToggleRepair(bool _on);
-
-	UFUNCTION()
 	void OnUpdateMatiere(int32 _value);
 
 	UFUNCTION()
@@ -89,9 +86,6 @@ private:
 
 	UPROPERTY()
 	class UTextBlock* SpeedTextBlock { nullptr };
-
-	UPROPERTY()
-	class URepairUserWidget* ToggleRepairGridPanel { nullptr };
 
 	UPROPERTY()
 	class UImage* EscapeModeImage { nullptr };

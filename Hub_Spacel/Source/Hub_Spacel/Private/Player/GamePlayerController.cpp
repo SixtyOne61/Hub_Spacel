@@ -9,6 +9,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameState/SpacelGameState.h"
 #include "GameMode/FlyingGameMode.h"
+#include "Net/UnrealNetwork.h"
 
 void AGamePlayerController::SetupInputComponent()
 {
@@ -50,6 +51,8 @@ void AGamePlayerController::Tick(float _deltaTime)
 {
     Super::Tick(_deltaTime);
 
+    if (!this->R_EnableInput) return;
+
     AShipPawn* shipPawn { Cast<AShipPawn>(this->GetPawn()) };
     if (this->IsLocalController())
     {
@@ -78,7 +81,7 @@ void AGamePlayerController::Tick(float _deltaTime)
 void AGamePlayerController::RPCServerUpdateMouseLocation_Implementation(FVector const& _loc, FVector const& _dir, FVector const& _hitLoc)
 {
     AShipPawn* shipPawn = Cast<AShipPawn>(this->GetPawn());
-    if (m_enableInput && shipPawn != nullptr)
+    if (this->R_EnableInput && shipPawn != nullptr)
     {
         shipPawn->lookAt(_loc, _dir, _hitLoc);
     }
@@ -86,7 +89,7 @@ void AGamePlayerController::RPCServerUpdateMouseLocation_Implementation(FVector 
 
 void AGamePlayerController::RPCServerForward_Implementation(float _val)
 {
-    if (m_enableInput)
+    if (this->R_EnableInput)
     {
         m_data.m_lastForwardInput = _val;
     }
@@ -94,7 +97,7 @@ void AGamePlayerController::RPCServerForward_Implementation(float _val)
 
 void AGamePlayerController::RPCServerHorizontalStraf_Implementation(float _val)
 {
-    if (m_enableInput)
+    if (this->R_EnableInput)
     {
         m_data.m_lastHorizontalStrafInput = _val;
     }
@@ -102,7 +105,7 @@ void AGamePlayerController::RPCServerHorizontalStraf_Implementation(float _val)
 
 void AGamePlayerController::RPCServerVerticalStraf_Implementation(float _val)
 {
-    if (m_enableInput)
+    if (this->R_EnableInput)
     {
         m_data.m_lastVerticalStrafInput = _val;
     }
@@ -110,7 +113,7 @@ void AGamePlayerController::RPCServerVerticalStraf_Implementation(float _val)
 
 void AGamePlayerController::RPCServerFlightAttitude_Implementation(float _val)
 {
-    if (m_enableInput)
+    if (this->R_EnableInput)
     {
         m_data.m_lastFlightAttitudeInput = _val;
     }
@@ -118,7 +121,7 @@ void AGamePlayerController::RPCServerFlightAttitude_Implementation(float _val)
 
 void AGamePlayerController::RPCServerTriggerEscapeMode_Implementation()
 {
-    if (m_enableInput)
+    if (this->R_EnableInput)
     {
         if (AShipPawn* shipPawn = Cast<AShipPawn>(this->GetPawn()))
         {
@@ -129,7 +132,7 @@ void AGamePlayerController::RPCServerTriggerEscapeMode_Implementation()
 
 void AGamePlayerController::RPCServerFire_Implementation(bool _is)
 {
-    if (m_enableInput)
+    if (this->R_EnableInput)
     {
         if (AShipPawn* shipPawn = Cast<AShipPawn>(this->GetPawn()))
         {
@@ -140,7 +143,7 @@ void AGamePlayerController::RPCServerFire_Implementation(bool _is)
 
 void AGamePlayerController::RPCServerRepairProtection_Implementation()
 {
-    if (m_enableInput)
+    if (this->R_EnableInput)
     {
         AShipPawn* shipPawn = Cast<AShipPawn>(this->GetPawn());
         if (shipPawn == nullptr)
@@ -154,7 +157,7 @@ void AGamePlayerController::RPCServerRepairProtection_Implementation()
 
 void AGamePlayerController::RPCServerRepairSupport_Implementation()
 {
-    if (m_enableInput)
+    if (this->R_EnableInput)
     {
         AShipPawn* shipPawn = Cast<AShipPawn>(this->GetPawn());
         if (shipPawn == nullptr)
@@ -168,36 +171,43 @@ void AGamePlayerController::RPCServerRepairSupport_Implementation()
 
 void AGamePlayerController::forward(float _value)
 {
+    if (!this->R_EnableInput) return;
     this->RPCServerForward(_value);
 }
 
 void AGamePlayerController::horizontalStraf(float _value)
 {
+    if (!this->R_EnableInput) return;
     this->RPCServerHorizontalStraf(_value);
 }
 
 void AGamePlayerController::verticalStraf(float _value)
 {
+    if (!this->R_EnableInput) return;
     this->RPCServerVerticalStraf(_value);
 }
 
 void AGamePlayerController::flightAttitude(float _value)
 {
+    if (!this->R_EnableInput) return;
     this->RPCServerFlightAttitude(_value);
 }
 
 void AGamePlayerController::triggerEscapeMode()
 {
+    if (!this->R_EnableInput) return;
     this->RPCServerTriggerEscapeMode();
 }
 
 void AGamePlayerController::fireOn()
 {
+    if (!this->R_EnableInput) return;
     this->RPCServerFire(true);
 }
 
 void AGamePlayerController::fireOff()
 {
+    if (!this->R_EnableInput) return;
     this->RPCServerFire(false);
 }
 
@@ -209,11 +219,13 @@ void AGamePlayerController::returnToMainMenu()
 
 void AGamePlayerController::repairProtection()
 {
+    if (!this->R_EnableInput) return;
     this->RPCServerRepairProtection();
 }
 
 void AGamePlayerController::repairSupport()
 {
+    if (!this->R_EnableInput) return;
     this->RPCServerRepairSupport();
 }
 
@@ -253,7 +265,7 @@ void AGamePlayerController::RPCServerStartGame_Implementation()
     lb_init(shipPawn->PlayerDataAsset->VerticalStrafInput, m_data.m_verticalStraf);
     lb_init(shipPawn->PlayerDataAsset->FlightAttitudeInput, m_data.m_flightAttitude);
 
-    m_enableInput = true;
+    R_EnableInput = true;
 }
 
 void AGamePlayerController::Restart()
@@ -269,4 +281,10 @@ void AGamePlayerController::Restart()
     {
         flyingGameMode->Restart(this, spacelPlayerState->PlayerStartTransform);
     }
+}
+
+void AGamePlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+    DOREPLIFETIME(AGamePlayerController, R_EnableInput);
 }
