@@ -243,10 +243,14 @@ void AShipPawn::serverMove(float _deltaTime)
 
     float coefEscape { m_escapeModeState == EEscapeMode::StateEscape ? this->PlayerDataAsset->EscapeModeCoef : 1.0f };
 
+    // rotation
+
     FVector const& angularVelocity { this->DriverMeshComponent->GetPhysicsAngularVelocityInDegrees() };
-    FVector newAngularVelocity { this->DriverMeshComponent->GetForwardVector() * this->PercentFlightAttitude * this->PlayerDataAsset->MaxFlightAttitudeSpeed * coefEscape };
+    FVector newAngularVelocity { this->DriverMeshComponent->GetForwardVector() * this->PercentFlightAttitude * this->PlayerDataAsset->MaxFlightAttitudeSpeed * coefEscape * 16.0f };
     newAngularVelocity = FMath::Lerp(angularVelocity, newAngularVelocity, 0.9f);
     this->DriverMeshComponent->SetPhysicsAngularVelocityInDegrees(newAngularVelocity);
+
+    // linear
 
     FVector const& linearVelocity = this->DriverMeshComponent->GetPhysicsLinearVelocity(NAME_None);
     // 9, default support size
