@@ -4,16 +4,16 @@
 #include "SpacelWidget.h"
 #include "Components/TextBlock.h"
 #include "Components/UniformGridPanel.h"
-#include "Components/Image.h"
+#include "Components/ProgressBar.h"
 #include "Player/SpacelPlayerState.h"
 #include "Player/GamePlayerController.h"
 #include "Player/ModuleComponent.h"
+#include "Player/ShipPawn.h"
 #include "GameState/SpacelGameState.h"
 #include "Hub_SpacelGameInstance.h"
 #include "Kismet/GameplayStatics.h"
 #include "Util/SimplyUI.h"
-#include "Player/ShipPawn.h"
-#include "Components/ProgressBar.h"
+#include "DataAsset/PlayerDataAsset.h"
 
 void USpacelWidget::NativeConstruct()
 {
@@ -24,9 +24,9 @@ void USpacelWidget::NativeConstruct()
     TeammateCountTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_TeammateCount"));
     EventTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Event"));
     PingTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Ping"));
-    EscapeModeImage = SimplyUI::initSafetyFromName<UUserWidget, UImage>(this, TEXT("Image_EscapeMode"));
     ProtectionProgressBar = SimplyUI::initSafetyFromName<UUserWidget, UProgressBar>(this, TEXT("ProgressBar_Protection"));
     SupportProgressBar = SimplyUI::initSafetyFromName<UUserWidget, UProgressBar>(this, TEXT("ProgressBar_Support"));
+    EscapeModeProgressBar = SimplyUI::initSafetyFromName<UUserWidget, UProgressBar>(this, TEXT("ProgressBar_EscapeMode"));
 
     UWorld* world{ this->GetWorld() };
     if (!ensure(world != nullptr)) return;
@@ -64,6 +64,27 @@ void USpacelWidget::NativeDestruct()
         world->GetTimerManager().ClearTimer(SetSpeedHandle);
     }
     Super::NativeDestruct();
+}
+
+void USpacelWidget::NativeTick(const FGeometry& _myGeometry, float _deltaTime)
+{
+    Super::NativeTick(_myGeometry, _deltaTime);
+
+    if (AShipPawn* shipPawn = this->GetOwningPlayerPawn<AShipPawn>())
+    {
+        if (shipPawn->PlayerDataAsset != nullptr)
+        {
+            m_duration += _deltaTime;
+            if (m_escapeMode == EEscapeMode::StateEscape)
+            {
+                updatePercent(this->EscapeModeProgressBar, m_duration / shipPawn->PlayerDataAsset->EscapeModeDuration);
+            }
+            else if (m_escapeMode == EEscapeMode::StateCountDown)
+            {
+                updatePercent(this->EscapeModeProgressBar, 1.0f - m_duration / shipPawn->PlayerDataAsset->EscapeModeCountDown);
+            }
+        }
+    }
 }
 
 void USpacelWidget::StartGame()
@@ -167,33 +188,24 @@ void USpacelWidget::OnUpdateMatiere(int32 _value)
 {
     if (this->MatiereTextBlock != nullptr)
     {
-        this->MatiereTextBlock->SetText(FText::FromString("Matiere: " + FString::FromInt(_value)));
+        this->MatiereTextBlock->SetText(FText::FromString(FString::FromInt(_value)));
     }
 }
 
 void USpacelWidget::OnChangeStateEscapeMode(EEscapeMode _state)
 {
-    if(this->EscapeModeImage == nullptr) return;
+    m_duration = 0.0f;
+    m_escapeMode = _state;
 
     switch (_state)
     {
         case EEscapeMode::StateAvailable:
-        {
-            this->EscapeModeImage->SetBrushTintColor(FSlateColor(FLinearColor::White));
-            break;
-        }
-
         case EEscapeMode::StateEscape:
-        {
-            this->EscapeModeImage->SetBrushTintColor(FSlateColor(FLinearColor::Blue));
-            break;
-        }
-
+            updatePercent(this->EscapeModeProgressBar, 0.0f);
+        break;
         case EEscapeMode::StateCountDown:
-        {
-            this->EscapeModeImage->SetBrushTintColor(FSlateColor(FLinearColor::Red));
-            break;
-        }
+            updatePercent(this->EscapeModeProgressBar, 1.0f);
+        break;
     }
 }
 

@@ -29,8 +29,9 @@ public:
 	FTimerHandle SetSpeedHandle {};
 
 protected:
-	virtual void NativeConstruct() override;
-	virtual void NativeDestruct() override;
+	void NativeConstruct() override;
+	void NativeDestruct() override;
+	void NativeTick(const FGeometry& _myGeometry, float _deltaTime) override;
 
 private:
 	UFUNCTION()
@@ -76,11 +77,14 @@ private:
 	class UTextBlock* PingTextBlock { nullptr };
 
 	UPROPERTY()
-	class UImage* EscapeModeImage { nullptr };
-
-	UPROPERTY()
 	class UProgressBar* ProtectionProgressBar { nullptr };
 
 	UPROPERTY()
 	class UProgressBar* SupportProgressBar { nullptr };
+
+	UPROPERTY()
+	class UProgressBar* EscapeModeProgressBar { nullptr };
+
+	EEscapeMode m_escapeMode { EEscapeMode::StateAvailable };
+	float m_duration { 0.0f };
 };
