@@ -199,10 +199,12 @@ void UCustomCollisionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 		if (sweepForInstancedStaticMesh(m_shipPawnOwner.Get()->ModuleComponent->ProtectionMeshComponent, m_shipPawnOwner.Get()->ModuleComponent->RU_ProtectionLocations, m_shipPawnOwner.Get()->ModuleComponent->R_RemovedProtectionLocations, scale, profileCollision))
 		{
 			m_shipPawnOwner.Get()->OnHitProtectionDelegate.Broadcast();
+			m_shipPawnOwner.Get()->RPCClientPlayCameraShake();
 		}
 		if (sweepForInstancedStaticMesh(m_shipPawnOwner.Get()->ModuleComponent->SupportMeshComponent, m_shipPawnOwner.Get()->ModuleComponent->RU_SupportLocations, m_shipPawnOwner.Get()->ModuleComponent->R_RemovedSupportLocations, scale, profileCollision))
 		{
 			m_shipPawnOwner.Get()->OnHitSupportDelegate.Broadcast();
+			m_shipPawnOwner.Get()->RPCClientPlayCameraShake();
 		}
 	}
 }

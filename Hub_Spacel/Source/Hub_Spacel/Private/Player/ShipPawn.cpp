@@ -453,6 +453,18 @@ void AShipPawn::Restarted()
     //OnStartGame();
 }
 
+void AShipPawn::RPCClientPlayCameraShake_Implementation()
+{
+    if (this->IsLocallyControlled())
+    {
+        if (APlayerController* playerController = this->GetController<APlayerController>())
+        {
+            FVector const& camLoc = this->CameraComponent->GetComponentLocation();
+            playerController->ClientPlayCameraShake(this->CameraShakeClass, 1.0f, ECameraAnimPlaySpace::UserDefined, (this->GetActorLocation() - camLoc).Rotation());
+        }
+    }
+}
+
 void AShipPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetimeProps) const
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);

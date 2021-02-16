@@ -120,6 +120,9 @@ private:
     UFUNCTION(Reliable, Client)
     void RPCClientChangeStateEscapeMode(EEscapeMode _newState);
 
+    UFUNCTION(UnReliable, Client)
+    void RPCClientPlayCameraShake();
+
 public:
     UPROPERTY(Category = "Ship", VisibleAnywhere, BlueprintReadOnly)
     class UStaticMeshComponent* DriverMeshComponent { nullptr };
@@ -159,6 +162,9 @@ public:
 
     UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)
     class UPostProcessComponent* SpeedLinesComponent { nullptr };
+
+    UPROPERTY(Category = "FX", EditAnywhere, BlueprintReadWrite)
+    TSubclassOf<class UCameraShake> CameraShakeClass;
 
 protected:
     /* current percent speed value 0.0f - 1.0f */
