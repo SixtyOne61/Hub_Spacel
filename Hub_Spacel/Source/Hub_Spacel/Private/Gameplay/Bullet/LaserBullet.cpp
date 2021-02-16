@@ -19,7 +19,6 @@ ALaserBullet::ALaserBullet()
 	PrimaryActorTick.bCanEverTick = false;
 
     ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovement"));
-
     ProjectileCollisionComponent = CreateDefaultSubobject<USphereComponent>(TEXT("ProjectileCollision"));
     RootComponent = ProjectileCollisionComponent;
 }
@@ -43,6 +42,22 @@ void ALaserBullet::BeginPlay()
 
     // spawn fx fire
     UNiagaraFunctionLibrary::SpawnSystemAtLocation(this->GetWorld(), this->FireFx, this->GetActorLocation(), this->GetActorRotation());
+
+    FTimerHandle handle;
+    this->GetWorldTimerManager().SetTimer(handle, this, &ALaserBullet::InitProfileCollision, 1.5f, false, 0.0f);
+}
+
+void ALaserBullet::InitProfileCollision()
+{
+    if (this->ProjectileCollisionComponent != nullptr)
+    {
+        this->ProjectileCollisionComponent->SetCollisionProfileName("Projectil");
+    }
+    else
+    {
+        FTimerHandle handle;
+        this->GetWorldTimerManager().SetTimer(handle, this, &ALaserBullet::InitProfileCollision, 1.5f, false, 0.0f);
+    }
 }
 
 void ALaserBullet::applyHit(TArray<int32>& _instance)
