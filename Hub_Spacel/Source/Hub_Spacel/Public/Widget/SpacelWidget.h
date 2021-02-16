@@ -46,9 +46,6 @@ private:
 	void SetAverragePlayerLatency();
 
 	UFUNCTION()
-	void SetSpeed();
-
-	UFUNCTION()
 	void OnUpdateMatiere(int32 _value);
 
 	UFUNCTION()
@@ -77,9 +74,6 @@ private:
 
 	UPROPERTY()
 	class UTextBlock* PingTextBlock { nullptr };
-
-	UPROPERTY()
-	class UTextBlock* SpeedTextBlock { nullptr };
 
 	UPROPERTY()
 	class UImage* EscapeModeImage { nullptr };
