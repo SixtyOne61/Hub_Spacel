@@ -16,6 +16,8 @@ class HUB_SPACEL_API AGamePlayerController : public APlayerController
 {
 	GENERATED_BODY()
 	
+	friend class AShipPawn;
+
 	struct TData
 	{
 		DelayValue m_forward {};
@@ -26,6 +28,14 @@ class HUB_SPACEL_API AGamePlayerController : public APlayerController
 		float m_lastVerticalStrafInput {};
 		DelayValue m_flightAttitude {};
 		float m_lastFlightAttitudeInput {};
+
+		inline void reset()
+		{
+			m_forward.reset();
+			m_horizontalStraf.reset();
+			m_verticalStraf.reset();
+			m_flightAttitude.reset();
+		}
 	};
 
 public:
@@ -33,9 +43,6 @@ public:
 	void BeginPlay() override;
 	void Tick(float _deltaTime) override;
 	void SetupInputComponent() override;
-
-	/* restart player */
-	void Restart();
 
 private:
 	/* network */
@@ -87,6 +94,9 @@ private:
 	/* from event */
 	UFUNCTION()
 	void StartGame();
+
+	void kill();
+	void restarted();
 
 private:
 	UPROPERTY(Replicated)

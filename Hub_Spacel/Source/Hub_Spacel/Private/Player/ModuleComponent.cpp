@@ -167,6 +167,40 @@ void UModuleComponent::setCollisionProfile(FString _team)
     lb(this->SupportMeshComponent);
 }
 
+void UModuleComponent::kill()
+{
+    auto lb = [](TArray<FVector>& _out, TArray<FVector>& _in)
+    {
+        _out.Append(_in);
+        _in.Empty();
+    };
+
+    lb(this->R_RemovedProtectionLocations, this->RU_ProtectionLocations);
+    lb(this->R_RemovedSupportLocations, this->RU_SupportLocations);
+    lb(this->R_RemovedAttackLocations, this->RU_AttackLocations);
+
+    OnRep_Attack();
+    OnRep_Protection();
+    OnRep_Support();
+}
+
+void UModuleComponent::restarted()
+{
+    auto lb = [](TArray<FVector>& _out, TArray<FVector>& _in)
+    {
+        _out.Append(_in);
+        _in.Empty();
+    };
+
+    lb(this->RU_ProtectionLocations, this->R_RemovedProtectionLocations);
+    lb(this->RU_SupportLocations, this->R_RemovedSupportLocations);
+    lb(this->RU_AttackLocations, this->R_RemovedAttackLocations);
+
+    OnRep_Attack();
+    OnRep_Protection();
+    OnRep_Support();
+}
+
 void UModuleComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -175,4 +209,5 @@ void UModuleComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
     DOREPLIFETIME(UModuleComponent, RU_SupportLocations);
     DOREPLIFETIME(UModuleComponent, R_RemovedProtectionLocations);
     DOREPLIFETIME(UModuleComponent, R_RemovedSupportLocations);
+    DOREPLIFETIME(UModuleComponent, R_RemovedAttackLocations);
 }

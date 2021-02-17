@@ -49,9 +49,6 @@ public:
 
     void hit(class UPrimitiveComponent* _comp, int32 _index);
 
-    UFUNCTION(BlueprintCallable)
-    void Restarted();
-
     void setLocationExhaustFx(TArray<FVector> const& _loc);
 
 private:
@@ -86,6 +83,10 @@ private:
 
     /* call for kill a player when red zone is hit */
     void kill();
+
+    /* call on server */
+    UFUNCTION()
+    void Restarted();
 
     template<class T>
     inline void activateComponent(T* _comp)

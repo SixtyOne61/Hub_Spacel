@@ -51,6 +51,11 @@ private:
     /* call ship pawn owner for set location of exhaust */
     void setLocationExhaustFx();
 
+    /* call when red zone is hit */
+    void kill();
+    /* call for when player need to be restarted */
+    void restarted();
+
 public:
     UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
     class USetupAttributeDataAsset* ProtectionDataAsset{ nullptr };
@@ -80,6 +85,9 @@ public:
 private:
     UPROPERTY(ReplicatedUsing = "OnRep_Attack")
     TArray<FVector> RU_AttackLocations{};
+
+    UPROPERTY(Replicated)
+    TArray<FVector> R_RemovedAttackLocations{};
 
     UPROPERTY(ReplicatedUsing = "OnRep_Protection")
     TArray<FVector> RU_ProtectionLocations{};

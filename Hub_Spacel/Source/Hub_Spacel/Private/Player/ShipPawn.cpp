@@ -301,16 +301,37 @@ void AShipPawn::kill()
         UHub_SpacelGameInstance* spacelGameInstance{ Cast<UHub_SpacelGameInstance>(this->GetGameInstance()) };
         spacelGameInstance->OnUnTargetPlayerDelegate.Broadcast(this->TargetComponent->GetChildActor());
 
-        if (AGamePlayerController* playerController = this->GetController<AGamePlayerController>())
+        auto lb = [](auto* _obj)
         {
-            playerController->Restart();
-        }
+            if (_obj != nullptr)
+            {
+                _obj->kill();
+            }
+        };
 
-        this->UnPossessed();
-        this->Destroy();
+        lb(this->GetController<AGamePlayerController>());
+        lb(this->ModuleComponent);
 
         this->GetWorldTimerManager().ClearAllTimersForObject(this);
+
+        // temp respawn
+        FTimerHandle handle;
+        this->GetWorldTimerManager().SetTimer(handle, this, &AShipPawn::Restarted, 1.0f, false, 10.0f);
     }
+}
+
+void AShipPawn::Restarted()
+{
+    auto lb = [](auto* _obj)
+    {
+        if (_obj != nullptr)
+        {
+            _obj->restarted();
+        }
+    };
+
+    lb(this->GetController<AGamePlayerController>());
+    lb(this->ModuleComponent);
 }
 
 void AShipPawn::setCollisionProfile(FString _team)
@@ -442,19 +463,6 @@ void AShipPawn::setLocationExhaustFx(TArray<FVector> const& _loc)
             this->ExhaustFxComponent->SetNiagaraVariableVec3(name, _loc[i]);
         }
     }
-}
-
-void AShipPawn::Restarted()
-{
-    if (!ensure(this->ModuleComponent != nullptr)) return;
-    this->ModuleComponent->OnStartGame();
-
-    if (ASpacelPlayerState* playerState = this->GetPlayerState<ASpacelPlayerState>())
-    {
-        setCollisionProfile(playerState->Team);
-    }
-
-    //OnStartGame();
 }
 
 void AShipPawn::RPCClientPlayCameraShake_Implementation()

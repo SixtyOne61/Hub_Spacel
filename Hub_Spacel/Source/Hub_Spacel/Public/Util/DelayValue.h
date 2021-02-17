@@ -26,6 +26,15 @@ public:
 	}
 
 	float addValue(float _value, float _deltaTime);
+	inline void reset()
+	{
+		m_value = 0.0f;
+		m_valueTime = 0.0f;
+		m_goal = 0.0f;
+		m_start = 0.0f;
+		m_duration = 0.0f;
+		m_up = false;
+	}
 
 	~DelayValue() {};
 

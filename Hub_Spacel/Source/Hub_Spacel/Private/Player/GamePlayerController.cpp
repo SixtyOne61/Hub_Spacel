@@ -277,19 +277,23 @@ void AGamePlayerController::RPCServerStartGame_Implementation()
     R_EnableInput = true;
 }
 
-void AGamePlayerController::Restart()
+void AGamePlayerController::kill()
 {
-    AFlyingGameMode* flyingGameMode = Cast<AFlyingGameMode>(UGameplayStatics::GetGameMode(this->GetWorld()));
-    if (flyingGameMode == nullptr)
-    {
-        return;
-    }
+    this->R_EnableInput = false;
+    m_data.reset();
 
-    ASpacelPlayerState* spacelPlayerState = this->GetPlayerState<ASpacelPlayerState>();
-    if (spacelPlayerState)
+    if (AShipPawn* shipPawn = Cast<AShipPawn>(this->GetPawn()))
     {
-        flyingGameMode->Restart(this, spacelPlayerState->PlayerStartTransform);
+        shipPawn->RU_PercentSpeed = 0.0f;
+        shipPawn->PercentHorizontalStraf = 0.0f;
+        shipPawn->PercentVerticalStraf = 0.0f;
+        shipPawn->PercentFlightAttitude = 0.0f;
     }
+}
+
+void AGamePlayerController::restarted()
+{
+    this->R_EnableInput = true;
 }
 
 void AGamePlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
