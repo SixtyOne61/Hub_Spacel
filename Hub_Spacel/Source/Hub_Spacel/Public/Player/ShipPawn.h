@@ -165,7 +165,10 @@ public:
     class UPostProcessComponent* SpeedLinesComponent { nullptr };
 
     UPROPERTY(Category = "FX", EditAnywhere, BlueprintReadWrite)
-    TSubclassOf<class UCameraShake> CameraShakeClass;
+    TSubclassOf<class UCameraShake> CameraShakeClass { nullptr };
+
+    UPROPERTY(Category = "FX", EditAnywhere)
+    class UMaterialInstance* MaterialSpeedLines { nullptr };
 
 protected:
     /* current percent speed value 0.0f - 1.0f */

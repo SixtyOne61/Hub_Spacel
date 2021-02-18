@@ -19,12 +19,9 @@ void ULocalPlayerActionComponent::BeginPlay()
 {
     Super::BeginPlay();
 
-    UMaterial* mat { Cast<UMaterial>(StaticLoadObject(UMaterial::StaticClass(), nullptr, TEXT("/Game/Materials/PostProcess/M_SpeedLines")))};
-    if (!ensure(mat != nullptr)) return;
-    m_postProcessMaterial = UMaterialInstanceDynamic::Create(mat, this);
-
     if (m_shipPawnOwner.Get() && m_shipPawnOwner.Get()->SpeedLinesComponent != nullptr)
     {
+        m_postProcessMaterial = UMaterialInstanceDynamic::Create(m_shipPawnOwner.Get()->MaterialSpeedLines, this);
         m_shipPawnOwner.Get()->SpeedLinesComponent->AddOrUpdateBlendable(m_postProcessMaterial);
     }
 }
