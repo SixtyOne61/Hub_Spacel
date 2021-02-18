@@ -48,7 +48,7 @@ void UPreparePhaseWidget::UpdateRemainingSkillPoint()
     if (owningPlayerState != nullptr)
     {
         if (!ensure(this->RemainingSkillPointTextBlock != nullptr)) return;
-        this->RemainingSkillPointTextBlock->SetText(FText::FromString("Remaining Skill Point : " + FString::FromInt(owningPlayerState->getRemainingSkillPoint())));
+        this->RemainingSkillPointTextBlock->SetText(FText::FromString(FString::FromInt(owningPlayerState->getRemainingSkillPoint())));
     }
 }
 
