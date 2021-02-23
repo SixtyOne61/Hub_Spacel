@@ -90,5 +90,8 @@ void UFireComponent::spawnBullet(FTransform const& _transform) const
             FVector dir{ FVector{1.0f, 0.0f, .0f } };
             comp->SetVelocityInLocalSpace(dir * comp->InitialSpeed);
         }
+
+        FString tag = "Team:" + m_shipPawnOwner.Get()->Team.ToString();
+        laser->Tags.Add(*tag);
     }
 }

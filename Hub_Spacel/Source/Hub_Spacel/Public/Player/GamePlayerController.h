@@ -90,6 +90,8 @@ private:
 	void giveAlly1();
 	void giveAlly2();
 	void lock();
+	void showScore();
+	void hideScore();
 
 	/* from event */
 	UFUNCTION()

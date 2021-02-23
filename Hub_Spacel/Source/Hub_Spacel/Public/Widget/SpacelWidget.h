@@ -38,6 +38,9 @@ private:
 	void StartGame();
 
 	UFUNCTION()
+	void UpdateScore();
+
+	UFUNCTION()
 	void SetTeammateCount();
 
 	UFUNCTION()
@@ -59,6 +62,9 @@ private:
 	void OnUpdateCountSupport(int32 _value, int32 _max);
 
 	void updatePercent(class UProgressBar* _progressBar, float _percent);
+
+	UFUNCTION()
+	void OnShowScore(bool _show);
 
 private:
 	UPROPERTY()
@@ -84,6 +90,9 @@ private:
 
 	UPROPERTY()
 	class UProgressBar* EscapeModeProgressBar { nullptr };
+
+	UPROPERTY()
+	class UUserWidget* ScoreWidget { nullptr };
 
 	EEscapeMode m_escapeMode { EEscapeMode::StateAvailable };
 	float m_duration { 0.0f };

@@ -59,6 +59,9 @@ void ASpacelPlayerState::WaitPawnCreation()
     if (AShipPawn* shipPawn = this->GetPawn<AShipPawn>())
     {
         shipPawn->setCollisionProfile(this->Team);
+        shipPawn->Team = *(this->Team);
+        FString tag = "Team:" + this->Team;
+        shipPawn->Tags.Add(*tag);
     }
     else
     {

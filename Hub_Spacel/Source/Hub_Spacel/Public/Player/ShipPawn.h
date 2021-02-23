@@ -16,6 +16,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHitSupport);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnRepairProtection);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnRepairSupport);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStateEscapeModeChange, EEscapeMode, _state);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnShowScore, bool, _show);
 
 UCLASS()
 class HUB_SPACEL_API AShipPawn : public APawn
@@ -47,7 +48,7 @@ public:
 
     static int32 getPlayerIdFromTarget(AActor* _target);
 
-    void hit(class UPrimitiveComponent* _comp, int32 _index);
+    void hit(FString const& _team, class UPrimitiveComponent* _comp, int32 _index);
 
     void setLocationExhaustFx(TArray<FVector> const& _loc);
 
@@ -170,6 +171,9 @@ public:
     UPROPERTY(Category = "FX", EditAnywhere)
     class UMaterialInstance* MaterialSpeedLines { nullptr };
 
+    UPROPERTY()
+    FName Team {};
+
 protected:
     /* current percent speed value 0.0f - 1.0f */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = "OnRep_PercentSpeed")
@@ -214,4 +218,7 @@ private:
 
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
     FOnStateEscapeModeChange OnStateEspaceModeChangeDelegate {};
+
+    UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
+    FOnShowScore OnShowScoreDelegate {};
 };

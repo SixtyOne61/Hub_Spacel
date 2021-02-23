@@ -78,7 +78,19 @@ void ALaserBullet::OnComponentHit(UPrimitiveComponent* _hitComp, AActor* _otherA
         AShipPawn* shipPawn{ Cast<AShipPawn>(_otherActor) };
         if (shipPawn != nullptr)
         {
-            shipPawn->hit(_otherComp, _hit.Item);
+            for (FName tag : this->Tags)
+            {
+                FString tagStr = tag.ToString();
+                if (tagStr.Contains("Team:"))
+                {
+                    TArray<FString> out;
+                    tagStr.ParseIntoArray(out, TEXT(":"), true);
+                    if (out.Num() == 2)
+                    {
+                        shipPawn->hit(out[1], _otherComp, _hit.Item);
+                    }
+                }
+            }
         }
     }
     this->Destroy();

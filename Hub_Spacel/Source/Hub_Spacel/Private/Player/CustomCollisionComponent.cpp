@@ -12,6 +12,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Util/Tag.h"
 #include "DrawDebugHelpers.h"
+#include "GameState/SpacelGameState.h"
 
 // Sets default values for this component's properties
 UCustomCollisionComponent::UCustomCollisionComponent()
@@ -141,6 +142,8 @@ bool UCustomCollisionComponent::sweepForInstancedStaticMesh(UInstancedStaticMesh
 			_replicated.Remove(location);
 			_removeReplicated.Add(location);
 
+			addScore(hits, EScoreType::Hit);
+
 			// clean actor hit
 			dispatch(hits);
 
@@ -191,6 +194,7 @@ void UCustomCollisionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 		{
 			dispatch(hits);
 			m_shipPawnOwner.Get()->kill();
+			addScore(hits, EScoreType::Kill);
 			return; // break flow
 		}
 
@@ -236,7 +240,7 @@ void UCustomCollisionComponent::hitMatiere(TArray<FHitResult>& _items) const
 	}
 }
 
-void UCustomCollisionComponent::hit(class UPrimitiveComponent* _comp, int32 _index)
+void UCustomCollisionComponent::hit(FString const& _team, class UPrimitiveComponent* _comp, int32 _index)
 {
 	if(m_shipPawnOwner.Get() == nullptr) return;
 	if(m_shipPawnOwner.Get()->ModuleComponent == nullptr) return;
@@ -276,16 +280,66 @@ void UCustomCollisionComponent::hit(class UPrimitiveComponent* _comp, int32 _ind
 		}
 	};
 
+	auto lb_addScore = [&](EScoreType _type)
+	{
+		if (ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld())))
+		{
+			if (*_team != m_shipPawnOwner.Get()->Team)
+			{
+				spacelGameState->AddScore(_team, _type);
+			}
+		}
+	};
+
 	if (uniqueId == m_shipPawnOwner.Get()->ModuleComponent->ProtectionMeshComponent->GetUniqueID())
 	{
 		lb_removeInstance(m_shipPawnOwner.Get()->ModuleComponent->ProtectionMeshComponent, m_shipPawnOwner.Get()->ModuleComponent->RU_ProtectionLocations, m_shipPawnOwner.Get()->ModuleComponent->R_RemovedProtectionLocations);
+		lb_addScore(EScoreType::Hit);
 	}
 	else if (uniqueId == m_shipPawnOwner.Get()->ModuleComponent->SupportMeshComponent->GetUniqueID())
 	{
 		lb_removeInstance(m_shipPawnOwner.Get()->ModuleComponent->SupportMeshComponent, m_shipPawnOwner.Get()->ModuleComponent->RU_SupportLocations, m_shipPawnOwner.Get()->ModuleComponent->R_RemovedSupportLocations);
+		lb_addScore(EScoreType::Hit);
 	}
 	else if (uniqueId == m_shipPawnOwner.Get()->DriverMeshComponent->GetUniqueID())
 	{
 		m_shipPawnOwner.Get()->kill();
+		lb_addScore(EScoreType::Kill);
+	}
+}
+
+void UCustomCollisionComponent::addScore(TArray<FHitResult> const& _hits, EScoreType _type) const
+{
+	if (ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld())))
+	{
+		TSet<FString> teams;
+		for (FHitResult const& hit : _hits)
+		{
+			if (hit.GetActor() != nullptr)
+			{
+				for (FName const& tag : hit.GetActor()->Tags)
+				{
+					FString stag = tag.ToString();
+					if (stag.Contains("Team:"))
+					{
+						TArray<FString> out;
+						stag.ParseIntoArray(out, TEXT(":"), true);
+						if (out.Num() == 2)
+						{
+							if (*out[1] != m_shipPawnOwner.Get()->Team)
+							{
+								teams.Add(out[1]);
+							}
+						}
+					}
+				}
+			}
+		}
+
+		for (FString const& team : teams)
+		{
+			spacelGameState->AddScore(team, _type);
+		}
+		
 	}
 }

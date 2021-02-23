@@ -387,12 +387,12 @@ void AShipPawn::OnRep_PercentSpeed()
     }
 }
 
-void AShipPawn::hit(class UPrimitiveComponent* _comp, int32 _index)
+void AShipPawn::hit(FString const& _team, class UPrimitiveComponent* _comp, int32 _index)
 {
     UCustomCollisionComponent* customCollisionComponent { Cast<UCustomCollisionComponent>(this->GetComponentByClass(UCustomCollisionComponent::StaticClass())) };
     if (customCollisionComponent != nullptr)
     {
-        customCollisionComponent->hit(_comp, _index);
+        customCollisionComponent->hit(_team, _comp, _index);
     }
 }
 

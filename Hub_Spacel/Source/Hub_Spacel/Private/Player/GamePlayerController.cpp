@@ -30,6 +30,8 @@ void AGamePlayerController::SetupInputComponent()
     this->InputComponent->BindAction("GiveAlly1", IE_Pressed, this, &AGamePlayerController::giveAlly1);
     this->InputComponent->BindAction("GiveAlly2", IE_Pressed, this, &AGamePlayerController::giveAlly2);
     this->InputComponent->BindAction("Lock", IE_Pressed, this, &AGamePlayerController::lock);
+    this->InputComponent->BindAction("Score", IE_Pressed, this, &AGamePlayerController::showScore);
+    this->InputComponent->BindAction("Score", IE_Released, this, &AGamePlayerController::hideScore);
 }
 
 void AGamePlayerController::BeginPlay()
@@ -246,6 +248,22 @@ void AGamePlayerController::lock()
     if (!this->R_EnableInput) return;
     UHub_SpacelGameInstance* spacelGameInstance{ Cast<UHub_SpacelGameInstance>(this->GetGameInstance()) };
     spacelGameInstance->OnTryLockDelegate.Broadcast();
+}
+
+void AGamePlayerController::showScore()
+{
+    AShipPawn* shipPawn = Cast<AShipPawn>(this->GetPawn());
+    if (shipPawn == nullptr) return;
+
+    shipPawn->OnShowScoreDelegate.Broadcast(true);
+}
+
+void AGamePlayerController::hideScore()
+{
+    AShipPawn* shipPawn = Cast<AShipPawn>(this->GetPawn());
+    if (shipPawn == nullptr) return;
+
+    shipPawn->OnShowScoreDelegate.Broadcast(false);
 }
 
 void AGamePlayerController::StartGame()

@@ -9,6 +9,7 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartPrepare);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartGame);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FScoreUpdate);
 
 USTRUCT()
 struct HUB_SPACEL_API FTeamLocation
@@ -22,6 +23,25 @@ struct HUB_SPACEL_API FTeamLocation
 	TArray<FTransform> Transforms {};
 };
 
+USTRUCT()
+struct HUB_SPACEL_API FScore
+{
+	GENERATED_BODY()
+
+	FScore() = default;
+
+	FScore(FString const& _team, int32 _score)
+		: Team(_team)
+		, Score(_score)
+		{};
+
+	UPROPERTY()
+	FString Team {};
+
+	UPROPERTY()
+	int32 Score { 0 };
+};
+
 /**
  * 
  */
@@ -29,6 +49,8 @@ UCLASS()
 class HUB_SPACEL_API ASpacelGameState : public AGameStateBase
 {
 	GENERATED_BODY()
+
+	friend class USpacelWidget;
 
 public:
 	UFUNCTION()
@@ -39,7 +61,7 @@ public:
 
 	FString GetBestTeam() const;
 
-	void AddScore(FString const& _team, int32 _val);
+	void AddScore(FString const& _team, EScoreType _type);
 
 	UFUNCTION()
 	void RegisterTeam();
@@ -64,9 +86,13 @@ public:
 	UPROPERTY()
 	FStartGame OnStartGameDelegate {};
 
+	UPROPERTY()
+	FScoreUpdate OnScoreUpdateDelegate {};
+
 private:
 	UPROPERTY(ReplicatedUsing = OnRep_StateGame)
 	uint8 RU_GameState { (uint8)EGameState::Undefined } ;
 
-	TMap<FString, int32> m_scores{ };
+	UPROPERTY(Replicated)
+	TArray<FScore> R_Scores {};
 };

@@ -68,3 +68,10 @@ enum class EEscapeMode : uint8
     StateEscape UMETA(DisplayName = "StateEscape"),
     StateCountDown UMETA(DisplayName = "StateCountDown")
 };
+
+UENUM(BlueprintType)
+enum class EScoreType : uint8
+{
+    Kill UMETA(DisplayName = "Kill"),
+    Hit UMETA(DisplayName = "Hit"),
+};

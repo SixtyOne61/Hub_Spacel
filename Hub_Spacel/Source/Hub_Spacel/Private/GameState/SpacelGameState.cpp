@@ -28,37 +28,54 @@ FString ASpacelGameState::GetBestTeam() const
 {
     TOptional<int32> val {};
     FString teamName {};
-    for (auto const& score : m_scores)
+    for (FScore const& score : this->R_Scores)
     {
-        if (!val.IsSet() || score.Value > val.GetValue())
+        if (!val.IsSet() || score.Score > val.GetValue())
         {
-            val = score.Value;
-            teamName = score.Key;
+            val = score.Score;
+            teamName = score.Team;
         }
     }
 
     return teamName;
 }
 
-void ASpacelGameState::AddScore(FString const& _team, int32 _val)
+void ASpacelGameState::AddScore(FString const& _team, EScoreType _type)
 {
-    m_scores[_team] += _val;
+    for (FScore & score : this->R_Scores)
+    {
+        if (score.Team == _team)
+        {
+            switch (_type)
+            {
+            case EScoreType::Hit:
+                score.Score += 5;
+                break;
+
+            case EScoreType::Kill:
+                score.Score += 300;
+                break;
+            }
+        }
+    }
 }
 
 void ASpacelGameState::RegisterTeam()
 {
-    m_scores.Empty();
+    this->R_Scores.Empty();
 
     for (APlayerState* playerState : this->PlayerArray)
     {
         if (ASpacelPlayerState* spacelPlayerState = Cast<ASpacelPlayerState>(playerState))
         {
             FString const& teamName = spacelPlayerState->Team;
-            // register team for scoring
-            if (!m_scores.Contains(teamName))
+            for (FScore& score : this->R_Scores)
             {
-                m_scores.Add(teamName);
+                if (score.Team == teamName) break;
             }
+
+            // register team for scoring
+            this->R_Scores.Add(FScore { teamName , 0});
         }
     }
 }
@@ -75,4 +92,5 @@ void ASpacelGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
     DOREPLIFETIME(ASpacelGameState, R_LatestEvent);
     DOREPLIFETIME(ASpacelGameState, R_WinningTeam);
     DOREPLIFETIME(ASpacelGameState, RU_GameState);
+    DOREPLIFETIME(ASpacelGameState, R_Scores);
 }

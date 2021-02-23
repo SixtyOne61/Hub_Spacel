@@ -27,6 +27,7 @@ void USpacelWidget::NativeConstruct()
     ProtectionProgressBar = SimplyUI::initSafetyFromName<UUserWidget, UProgressBar>(this, TEXT("ProgressBar_Protection"));
     SupportProgressBar = SimplyUI::initSafetyFromName<UUserWidget, UProgressBar>(this, TEXT("ProgressBar_Support"));
     EscapeModeProgressBar = SimplyUI::initSafetyFromName<UUserWidget, UProgressBar>(this, TEXT("ProgressBar_EscapeMode"));
+    ScoreWidget = SimplyUI::initSafetyFromName<UUserWidget, UUserWidget>(this, TEXT("WBP_Score"));
 
     UWorld* world{ this->GetWorld() };
     if (!ensure(world != nullptr)) return;
@@ -50,6 +51,8 @@ void USpacelWidget::NativeConstruct()
 
         shipPawn->ModuleComponent->OnUpdateCountProtectionDelegate.AddDynamic(this, &USpacelWidget::OnUpdateCountProtection);
         shipPawn->ModuleComponent->OnUpdateCountSupportDelegate.AddDynamic(this, &USpacelWidget::OnUpdateCountSupport);
+
+        shipPawn->OnShowScoreDelegate.AddDynamic(this, &USpacelWidget::OnShowScore);
     }
 }
 
@@ -84,12 +87,38 @@ void USpacelWidget::NativeTick(const FGeometry& _myGeometry, float _deltaTime)
                 updatePercent(this->EscapeModeProgressBar, 1.0f - m_duration / shipPawn->PlayerDataAsset->EscapeModeCountDown);
             }
         }
+
+        UpdateScore();
     }
 }
 
 void USpacelWidget::StartGame()
 {
     this->SetVisibility(ESlateVisibility::Visible);
+}
+
+void USpacelWidget::UpdateScore()
+{
+    if(this->ScoreWidget == nullptr) return;
+
+    ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld()));
+    if (spacelGameState != nullptr)
+    {
+        TArray<FScore> const& scores = spacelGameState->R_Scores;
+        int i { 1 };
+        for (FScore const& score : scores)
+        {
+            FString teamVariableName = "Txt_" + FString::FromInt(i);
+            UTextBlock* teamTb = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this->ScoreWidget, *teamVariableName);
+            if (teamTb != nullptr) teamTb->SetText(FText::FromString(score.Team));
+
+            FString scoreVariableName = "Team_" + FString::FromInt(i);
+            UTextBlock* scoreTb = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this->ScoreWidget, *scoreVariableName);
+            if (scoreTb != nullptr ) scoreTb->SetText(FText::FromString(FString::FromInt(score.Score)));
+
+            ++i;
+        }
+    }
 }
 
 void USpacelWidget::SetTeammateCount()
@@ -230,5 +259,19 @@ void USpacelWidget::updatePercent(UProgressBar* _progressBar, float _percent)
     if (_progressBar != nullptr)
     {
         _progressBar->SetPercent(_percent);
+    }
+}
+
+void USpacelWidget::OnShowScore(bool _show)
+{
+    if(this->ScoreWidget == nullptr) return;
+
+    if (_show)
+    {
+        this->ScoreWidget->SetVisibility(ESlateVisibility::Visible);
+    }
+    else
+    {
+        this->ScoreWidget->SetVisibility(ESlateVisibility::Hidden);
     }
 }

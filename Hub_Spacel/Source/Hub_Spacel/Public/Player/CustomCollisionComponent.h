@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Player/PlayerActorComponent.h"
 #include "CollisionShape.h"
+#include "Enum/SpacelEnum.h"
 #include "CustomCollisionComponent.generated.h"
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -21,8 +22,8 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	// TO DO : find why laser bullet trigger her component hit
-	void hit(class UPrimitiveComponent* _comp, int32 _index);
+	//
+	void hit(FString const& _team, class UPrimitiveComponent* _comp, int32 _index);
 
 private:
 	/* return true if we find something and fill param */
@@ -47,6 +48,9 @@ private:
 
 	/* check for each instance, can spawn matiere */
 	bool sweepForInstancedStaticMesh(class UInstancedStaticMeshComponent*& _mesh, TArray<FVector>& _replicated, TArray<FVector>& _removeReplicated, FVector const& _scale, FName const& _profile);
+
+	/* call for add score to game state */
+	void addScore(TArray<FHitResult> const& _hits, EScoreType _type) const;
 
 private:
 	/* matiere manager */
