@@ -115,6 +115,9 @@ void AShipPawn::BeginPlay()
             if (!ensure(this->TargetComponent != nullptr)) return;
             this->TargetComponent->SetChildActorClass(this->TargetClass);
             this->TargetComponent->CreateChildActor();
+
+            if (!ensure(this->DriverMeshComponent != nullptr)) return;
+            this->DriverMeshComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
         }
         else
         {
@@ -129,10 +132,10 @@ void AShipPawn::BeginPlay()
             {
                 localPlayerActionComponent->RegisterComponent();
             }
-        }
 
-        if (!ensure(this->DriverMeshComponent != nullptr)) return;
-        this->DriverMeshComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+            // remove collision for local player (for disable hit with cursor for target)
+            setCollisionProfile("NoCollision");
+        }
     }
 }
 
