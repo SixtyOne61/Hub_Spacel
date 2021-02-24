@@ -43,21 +43,7 @@ void ALaserBullet::BeginPlay()
     // spawn fx fire
     UNiagaraFunctionLibrary::SpawnSystemAtLocation(this->GetWorld(), this->FireFx, this->GetActorLocation(), this->GetActorRotation());
 
-    FTimerHandle handle;
-    this->GetWorldTimerManager().SetTimer(handle, this, &ALaserBullet::InitProfileCollision, 1.5f, false, 0.0f);
-}
-
-void ALaserBullet::InitProfileCollision()
-{
-    if (this->ProjectileCollisionComponent != nullptr)
-    {
-        this->ProjectileCollisionComponent->SetCollisionProfileName("Projectil");
-    }
-    else
-    {
-        FTimerHandle handle;
-        this->GetWorldTimerManager().SetTimer(handle, this, &ALaserBullet::InitProfileCollision, 1.5f, false, 0.0f);
-    }
+    this->ProjectileCollisionComponent->SetCollisionProfileName("Projectil");
 }
 
 void ALaserBullet::applyHit(TArray<int32>& _instance)
@@ -71,6 +57,22 @@ void ALaserBullet::OnComponentHit(UPrimitiveComponent* _hitComp, AActor* _otherA
     if (_otherActor->ActorHasTag(Tags::Matiere))
     {
         return;
+    }
+
+    // check if the same team
+    for (FName const& tag : this->Tags)
+    {
+        FString tagStr { tag.ToString() };
+        if (tagStr.Contains("Team:"))
+        {
+            for (FName const& tagOther : _otherActor->Tags)
+            {
+                if (tagOther == tag)
+                {
+                    return;
+                }
+            }
+        }
     }
 
     if (_otherActor->ActorHasTag(Tags::Player))

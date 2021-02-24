@@ -87,7 +87,7 @@ void UFireComponent::spawnBullet(FTransform const& _transform) const
         UGameplayStatics::FinishSpawningActor(laser, _transform);
         if (UProjectileMovementComponent* comp = Cast<UProjectileMovementComponent>(laser->GetComponentByClass(UProjectileMovementComponent::StaticClass())))
         {
-            FVector dir{ FVector{1.0f, 0.0f, .0f } };
+            FVector dir{ FVector{ 1.0f, 0.0f, .0f } };
             comp->SetVelocityInLocalSpace(dir * comp->InitialSpeed);
         }
 

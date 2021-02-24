@@ -109,7 +109,7 @@ void UCustomCollisionComponent::dispatch(TArray<FHitResult> const& _items) const
 	}
 }
 
-bool UCustomCollisionComponent::sweepForInstancedStaticMesh(UInstancedStaticMeshComponent*& _mesh, TArray<FVector>& _replicated, TArray<FVector>& _removeReplicated, FVector const& _scale, FName const& _profile)
+bool UCustomCollisionComponent::sweepForInstancedStaticMesh(UInstancedStaticMeshComponent*& _mesh, TArray<FVector>& _replicated, TArray<FVector>& _removeReplicated, FVector const& _scale, FName const& _profile, FName const& _teamTag)
 {
 	if (_mesh == nullptr || _mesh->GetInstanceCount() == 0) return false;
 
@@ -125,7 +125,7 @@ bool UCustomCollisionComponent::sweepForInstancedStaticMesh(UInstancedStaticMesh
 		TArray<FHitResult> hits;
 		if (_mesh->GetInstanceTransform(index, localTransform, false)
 			&& _mesh->GetInstanceTransform(index, worldTransform, true)
-			&& sweepByProfile(hits, worldTransform.GetLocation(), _profile, shape, {Tags::Matiere, Tags::Fog}))
+			&& sweepByProfile(hits, worldTransform.GetLocation(), _profile, shape, {Tags::Matiere, Tags::Fog, _teamTag }))
 		{
 			// spawn matiere
 			if (m_matiereManager.IsValid())
@@ -187,11 +187,12 @@ void UCustomCollisionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 		}
 
 		FVector const& scale = m_shipPawnOwner.Get()->GetTransform().GetScale3D();
+		FString tagTeam = "Team:" + m_shipPawnOwner.Get()->Team.ToString();
 
 		// first check red zone
 		FCollisionShape redZoneShape = createCollisionShapeWithLocalBounds<UStaticMeshComponent>(m_shipPawnOwner.Get()->DriverMeshComponent, scale);
 		FVector const& redZoneLocation = m_shipPawnOwner.Get()->DriverMeshComponent->GetComponentLocation();
-		if (sweepByProfile(hits, redZoneLocation, profileCollision, redZoneShape, { Tags::Matiere, Tags::Fog }))
+		if (sweepByProfile(hits, redZoneLocation, profileCollision, redZoneShape, { Tags::Matiere, Tags::Fog, *tagTeam }))
 		{
 			dispatch(hits);
 			m_shipPawnOwner.Get()->kill();
@@ -201,12 +202,12 @@ void UCustomCollisionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 
 		FName prot = m_shipPawnOwner.Get()->ModuleComponent->ProtectionMeshComponent->GetCollisionProfileName();
 		// for each module, we need to check each instance
-		if (sweepForInstancedStaticMesh(m_shipPawnOwner.Get()->ModuleComponent->ProtectionMeshComponent, m_shipPawnOwner.Get()->ModuleComponent->RU_ProtectionLocations, m_shipPawnOwner.Get()->ModuleComponent->R_RemovedProtectionLocations, scale, profileCollision))
+		if (sweepForInstancedStaticMesh(m_shipPawnOwner.Get()->ModuleComponent->ProtectionMeshComponent, m_shipPawnOwner.Get()->ModuleComponent->RU_ProtectionLocations, m_shipPawnOwner.Get()->ModuleComponent->R_RemovedProtectionLocations, scale, profileCollision, *tagTeam))
 		{
 			m_shipPawnOwner.Get()->OnHitProtectionDelegate.Broadcast();
 			m_shipPawnOwner.Get()->RPCClientPlayCameraShake();
 		}
-		if (sweepForInstancedStaticMesh(m_shipPawnOwner.Get()->ModuleComponent->SupportMeshComponent, m_shipPawnOwner.Get()->ModuleComponent->RU_SupportLocations, m_shipPawnOwner.Get()->ModuleComponent->R_RemovedSupportLocations, scale, profileCollision))
+		if (sweepForInstancedStaticMesh(m_shipPawnOwner.Get()->ModuleComponent->SupportMeshComponent, m_shipPawnOwner.Get()->ModuleComponent->RU_SupportLocations, m_shipPawnOwner.Get()->ModuleComponent->R_RemovedSupportLocations, scale, profileCollision, *tagTeam))
 		{
 			m_shipPawnOwner.Get()->OnHitSupportDelegate.Broadcast();
 			m_shipPawnOwner.Get()->RPCClientPlayCameraShake();
