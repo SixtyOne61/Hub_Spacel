@@ -311,6 +311,9 @@ void AShipPawn::kill()
 
         lb(this->GetController<AGamePlayerController>());
         lb(this->ModuleComponent);
+        lb(this->RepairComponent);
+
+        setFire(false);
 
         this->GetWorldTimerManager().ClearAllTimersForObject(this);
 

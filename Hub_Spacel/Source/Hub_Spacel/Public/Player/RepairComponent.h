@@ -15,6 +15,8 @@ class HUB_SPACEL_API URepairComponent : public UPlayerActorComponent
 {
 	GENERATED_BODY()
 
+	friend class AShipPawn;
+
 public:
 	URepairComponent();
 
@@ -51,10 +53,16 @@ private:
 
 	void repair(TArray<FVector> & _removedLocations, TArray<FVector> & _locations, std::function<void(void)> _onRep, FTimerHandle& _handle);
 
+	/* call when ship is kill */
+	void kill();
+
 private:
 	UPROPERTY()
 	FTimerHandle RepairProtectionHandle {};
 
 	UPROPERTY()
 	FTimerHandle RepairSupportHandle {};
+
+	bool m_isRepairProtection { false };
+	bool m_isRepairSupport { false };
 };

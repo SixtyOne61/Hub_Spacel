@@ -58,9 +58,8 @@ void URepairComponent::onRepair(bool _on, FTimerHandle & _handle, void(URepairCo
 
 void URepairComponent::OnRepairProtection()
 {
-    static bool repair = false;
-    repair = !repair;
-    onRepair(repair, this->RepairProtectionHandle, &URepairComponent::RepairProtection);
+    m_isRepairProtection = !m_isRepairProtection;
+    onRepair(m_isRepairProtection, this->RepairProtectionHandle, &URepairComponent::RepairProtection);
 }
 
 void URepairComponent::RepairProtection()
@@ -71,9 +70,8 @@ void URepairComponent::RepairProtection()
 
 void URepairComponent::OnRepairSupport()
 {
-    static bool repair = false;
-    repair = !repair;
-    onRepair(repair, this->RepairSupportHandle, &URepairComponent::RepairSupport);
+    m_isRepairSupport = !m_isRepairSupport;
+    onRepair(m_isRepairSupport, this->RepairSupportHandle, &URepairComponent::RepairSupport);
 }
 
 void URepairComponent::RepairSupport()
@@ -110,4 +108,22 @@ void URepairComponent::repair(TArray<FVector>& _removedLocations, TArray<FVector
     {
         lb_clearTimer();
     }
+}
+
+void URepairComponent::kill()
+{
+    UWorld* world{ this->GetWorld() };
+    if (!ensure(world != nullptr)) return;
+
+    auto lb_clean = [&world](FTimerHandle& _handle, bool& _toggle)
+    {
+        if (_toggle)
+        {
+            _toggle = false;
+            world->GetTimerManager().ClearTimer(_handle);
+        }
+    };
+
+    lb_clean(this->RepairProtectionHandle, this->m_isRepairProtection);
+    lb_clean(this->RepairSupportHandle, this->m_isRepairSupport);
 }
