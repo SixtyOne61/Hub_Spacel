@@ -197,6 +197,9 @@ protected:
     /* state of escape mode phase; only server side */
     EnumUtil::EnumCallback<EEscapeMode> m_escapeModeState {};
 
+    /* true during waiting respawn */
+    bool m_isKilled { false };
+
 private:
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
     FOnUpdateMatiere OnUpdateMatiereDelegate {};

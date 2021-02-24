@@ -320,6 +320,11 @@ void AShipPawn::kill()
         // temp respawn
         FTimerHandle handle;
         this->GetWorldTimerManager().SetTimer(handle, this, &AShipPawn::Restarted, 1.0f, false, 10.0f);
+
+        // disable collision
+        setCollisionProfile("NoCollision");
+
+        m_isKilled = true;
     }
 }
 
@@ -335,6 +340,11 @@ void AShipPawn::Restarted()
 
     lb(this->GetController<AGamePlayerController>());
     lb(this->ModuleComponent);
+
+    // enable collision
+    setCollisionProfile(this->Team.ToString());
+
+    m_isKilled = false;
 }
 
 void AShipPawn::setCollisionProfile(FString _team)

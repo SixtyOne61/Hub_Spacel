@@ -163,6 +163,7 @@ void UCustomCollisionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 
 	if (!m_shipPawnOwner.IsValid() && !initShipPawnOwner()) return;
 	if (m_shipPawnOwner.Get()->DriverMeshComponent == nullptr) return;
+	if (m_shipPawnOwner.Get()->m_isKilled) return;
 
 	FName const& profileCollision = m_shipPawnOwner.Get()->DriverMeshComponent->GetCollisionProfileName();
 
