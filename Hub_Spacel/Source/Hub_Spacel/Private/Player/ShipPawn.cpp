@@ -144,7 +144,8 @@ void AShipPawn::BeginPlay()
             }
 
             // remove collision for local player (for disable hit with cursor for target)
-            setCollisionProfile("NoCollision");
+            setCollisionProfile("OverlapAll");
+            this->DriverMeshComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
         }
     }
 }
