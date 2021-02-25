@@ -21,5 +21,9 @@ public:
 	void TickComponent(float _deltaTime, ELevelTick _tickType, FActorComponentTickFunction* _thisTickFunction) override;
 
 private:
+	UFUNCTION()
+	void OnUpdateTeam(FString const& _team);
+
+private:
 	class UMaterialInstanceDynamic* m_postProcessMaterial { nullptr };
 };

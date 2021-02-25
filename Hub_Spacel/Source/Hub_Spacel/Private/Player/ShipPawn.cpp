@@ -86,6 +86,16 @@ void AShipPawn::OnStartGame()
     {
         customCollisionComponent->RegisterComponent();
     }
+
+    RPCClientStartGame(this->Team);
+}
+
+void AShipPawn::RPCClientStartGame_Implementation(FName const& _team)
+{
+    if (this->IsLocallyControlled())
+    {
+        this->OnLocalTeamUpdateDelegate.Broadcast(_team.ToString());
+    }
 }
 
 // Called when the game starts or when spawned

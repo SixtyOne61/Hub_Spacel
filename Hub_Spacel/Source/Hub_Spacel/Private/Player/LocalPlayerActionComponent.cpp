@@ -3,10 +3,12 @@
 
 #include "LocalPlayerActionComponent.h"
 #include "Materials/Material.h"
-#include "Components/PostProcessComponent.h"
-#include "Camera/CameraComponent.h"
 #include "Materials/MaterialInstanceDynamic.h"
+#include "Camera/CameraComponent.h"
+#include "Components/PostProcessComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "Player/ShipPawn.h"
+#include "World/MatiereManager.h"
 
 ULocalPlayerActionComponent::ULocalPlayerActionComponent()
 {
@@ -23,6 +25,8 @@ void ULocalPlayerActionComponent::BeginPlay()
     {
         m_postProcessMaterial = UMaterialInstanceDynamic::Create(m_shipPawnOwner.Get()->MaterialSpeedLines, this);
         m_shipPawnOwner.Get()->SpeedLinesComponent->AddOrUpdateBlendable(m_postProcessMaterial);
+
+        m_shipPawnOwner.Get()->OnLocalTeamUpdateDelegate.AddDynamic(this, &ULocalPlayerActionComponent::OnUpdateTeam);
     }
 }
 
@@ -42,5 +46,13 @@ void ULocalPlayerActionComponent::TickComponent(float _deltaTime, ELevelTick _ti
         float currentFov { m_shipPawnOwner.Get()->CameraComponent->FieldOfView };
         float smoothFov { FMath::Lerp(currentFov, noSmoothFov, _deltaTime) };
         m_shipPawnOwner.Get()->CameraComponent->SetFieldOfView(smoothFov);
+    }
+}
+
+void ULocalPlayerActionComponent::OnUpdateTeam(FString const& _team)
+{
+    if (AMatiereManager* matiereManager = Cast<AMatiereManager>(UGameplayStatics::GetActorOfClass(this->GetWorld(), AMatiereManager::StaticClass())))
+    {
+        matiereManager->LocalTeam = _team;
     }
 }

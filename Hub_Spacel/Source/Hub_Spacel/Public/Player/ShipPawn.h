@@ -17,6 +17,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnRepairProtection);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnRepairSupport);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStateEscapeModeChange, EEscapeMode, _state);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnShowScore, bool, _show);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLocalTeamUpdate, FString const&, _team);
 
 UCLASS()
 class HUB_SPACEL_API AShipPawn : public APawn
@@ -125,6 +126,9 @@ private:
     UFUNCTION(UnReliable, Client)
     void RPCClientPlayCameraShake();
 
+    UFUNCTION(Reliable, Client)
+    void RPCClientStartGame(FName const& _team);
+
 public:
     UPROPERTY(Category = "Ship", VisibleAnywhere, BlueprintReadOnly)
     class UStaticMeshComponent* DriverMeshComponent { nullptr };
@@ -224,4 +228,7 @@ private:
 
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
     FOnShowScore OnShowScoreDelegate {};
+
+    UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
+    FOnLocalTeamUpdate OnLocalTeamUpdateDelegate {};
 };
