@@ -17,6 +17,16 @@ void USelectorSkillWidget::NativeConstruct()
     Super::NativeConstruct();
 
     bIsFocusable = true;
+
+    Buttons[0] = SimplyUI::initSafetyFromName<UUserWidget, UButton>(this, TEXT("Btn_Lvl1"));
+    Buttons[1] = SimplyUI::initSafetyFromName<UUserWidget, UButton>(this, TEXT("Btn_Lvl2"));
+    Buttons[2] = SimplyUI::initSafetyFromName<UUserWidget, UButton>(this, TEXT("Btn_Lvl3"));
+
+    Images[0] = SimplyUI::initSafetyFromName<UUserWidget, UImage>(this, TEXT("Img_Lvl1"));
+    Images[1] = SimplyUI::initSafetyFromName<UUserWidget, UImage>(this, TEXT("Img_Lvl2"));
+    Images[2] = SimplyUI::initSafetyFromName<UUserWidget, UImage>(this, TEXT("Img_Lvl3"));
+
+    return;
     MinButton = SimplyUI::initSafetyFromName<UUserWidget, UButton>(this, TEXT("MinBtn"));
     FScriptDelegate minDelegate {};
     minDelegate.BindUFunction(this, "OnMinButtonClicked");
@@ -27,9 +37,6 @@ void USelectorSkillWidget::NativeConstruct()
     maxDelegate.BindUFunction(this, "OnMaxButtonClicked");
     MaxButton->OnClicked.Add(maxDelegate);
 
-    Images[0] = SimplyUI::initSafetyFromName<UUserWidget, UImage>(this, TEXT("Level1"));
-    Images[1] = SimplyUI::initSafetyFromName<UUserWidget, UImage>(this, TEXT("Level2"));
-    Images[2] = SimplyUI::initSafetyFromName<UUserWidget, UImage>(this, TEXT("Level3"));
 }
 
 void USelectorSkillWidget::OnMinButtonClicked()

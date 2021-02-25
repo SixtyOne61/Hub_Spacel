@@ -46,5 +46,8 @@ private:
 	class UButton* MaxButton { nullptr };
 
 	UPROPERTY()
+	TArray<class UButton*> Buttons{ nullptr, nullptr, nullptr };
+
+	UPROPERTY()
 	TArray<class UImage*> Images { nullptr, nullptr, nullptr };
 };

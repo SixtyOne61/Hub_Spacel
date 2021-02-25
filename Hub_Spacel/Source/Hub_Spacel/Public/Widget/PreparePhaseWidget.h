@@ -35,6 +35,10 @@ private:
 	UFUNCTION()
 	void SetPlayerCard();
 
+public:
+	UPROPERTY(EditAnywhere)
+	class UTeamColorDataAsset* Colors { nullptr };
+
 private:
 	UPROPERTY()
 	class UTextBlock* RemainingSkillPointTextBlock { nullptr };
@@ -43,13 +47,13 @@ private:
 	class UTextBlock* TimeTextBlock { nullptr };
 
 	UPROPERTY()
-	class UTextBlock* TeamNameTextBlock { nullptr };
-
-	UPROPERTY()
 	class UPlayerCardWidget* Player1 { nullptr };
 
 	UPROPERTY()
 	class UPlayerCardWidget* Player2 { nullptr };
+
+	UPROPERTY()
+	class UImage* TeamImage { nullptr };
 
 	UPROPERTY()
 	FTimerHandle TimeHandle {};

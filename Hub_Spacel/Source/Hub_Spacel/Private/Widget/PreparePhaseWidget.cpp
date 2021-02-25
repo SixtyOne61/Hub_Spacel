@@ -2,11 +2,14 @@
 
 #include "PreparePhaseWidget.h"
 #include "Components/TextBlock.h"
+#include "Components/Button.h"
+#include "Components/Image.h"
 #include "Util/SimplyUI.h"
 #include "Player/SpacelPlayerState.h"
 #include "GameState/SpacelGameState.h"
 #include "Kismet/GameplayStatics.h"
 #include "Widget/PlayerCardWidget.h"
+#include "DataAsset/TeamColorDataAsset.h"
 
 void UPreparePhaseWidget::NativeConstruct()
 {
@@ -15,7 +18,7 @@ void UPreparePhaseWidget::NativeConstruct()
 
     RemainingSkillPointTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_RemainingSkillPoint"));
     TimeTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Time"));
-    TeamNameTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_TeamName"));
+    TeamImage = SimplyUI::initSafetyFromName<UUserWidget, UImage>(this, TEXT("Image_TeamColor"));
     Player1 = SimplyUI::initSafetyFromName<UUserWidget, UPlayerCardWidget>(this, TEXT("WBP_Player1"));
     Player2 = SimplyUI::initSafetyFromName<UUserWidget, UPlayerCardWidget>(this, TEXT("WBP_Player2"));
 
@@ -104,9 +107,10 @@ void UPreparePhaseWidget::SetPlayerCard()
     }
 
     FString owningPlayerTeam{ owningPlayerState->Team };
-    if (this->TeamNameTextBlock)
+    if (this->TeamImage != nullptr && this->Colors != nullptr)
     {
-        this->TeamNameTextBlock->SetText(FText::FromString(owningPlayerTeam));
+        FSlateColor color = this->Colors->GetColor(owningPlayerTeam);
+        this->TeamImage->SetBrushTintColor(color);
     }
 
     if (owningPlayerTeam.Len() > 0)
