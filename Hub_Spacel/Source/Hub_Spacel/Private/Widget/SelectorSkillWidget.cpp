@@ -26,17 +26,15 @@ void USelectorSkillWidget::NativeConstruct()
     Images[1] = SimplyUI::initSafetyFromName<UUserWidget, UImage>(this, TEXT("Img_Lvl2"));
     Images[2] = SimplyUI::initSafetyFromName<UUserWidget, UImage>(this, TEXT("Img_Lvl3"));
 
-    return;
-    MinButton = SimplyUI::initSafetyFromName<UUserWidget, UButton>(this, TEXT("MinBtn"));
-    FScriptDelegate minDelegate {};
-    minDelegate.BindUFunction(this, "OnMinButtonClicked");
-    MinButton->OnClicked.Add(minDelegate);
-
-    MaxButton = SimplyUI::initSafetyFromName<UUserWidget, UButton>(this, TEXT("MaxBtn"));
-    FScriptDelegate maxDelegate{};
-    maxDelegate.BindUFunction(this, "OnMaxButtonClicked");
-    MaxButton->OnClicked.Add(maxDelegate);
-
+    //MinButton = SimplyUI::initSafetyFromName<UUserWidget, UButton>(this, TEXT("MinBtn"));
+    //FScriptDelegate minDelegate {};
+    //minDelegate.BindUFunction(this, "OnMinButtonClicked");
+    //MinButton->OnClicked.Add(minDelegate);
+    //
+    //MaxButton = SimplyUI::initSafetyFromName<UUserWidget, UButton>(this, TEXT("MaxBtn"));
+    //FScriptDelegate maxDelegate{};
+    //maxDelegate.BindUFunction(this, "OnMaxButtonClicked");
+    //MaxButton->OnClicked.Add(maxDelegate);
 }
 
 void USelectorSkillWidget::OnMinButtonClicked()
