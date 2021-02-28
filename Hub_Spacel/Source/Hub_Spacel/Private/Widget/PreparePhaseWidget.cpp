@@ -18,7 +18,6 @@ void UPreparePhaseWidget::NativeConstruct()
 
     RemainingSkillPointTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_RemainingSkillPoint"));
     TimeTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Time"));
-    TeamImage = SimplyUI::initSafetyFromName<UUserWidget, UImage>(this, TEXT("Image_TeamColor"));
     Player1 = SimplyUI::initSafetyFromName<UUserWidget, UPlayerCardWidget>(this, TEXT("WBP_Player1"));
     Player2 = SimplyUI::initSafetyFromName<UUserWidget, UPlayerCardWidget>(this, TEXT("WBP_Player2"));
 
@@ -107,10 +106,9 @@ void UPreparePhaseWidget::SetPlayerCard()
     }
 
     FString owningPlayerTeam{ owningPlayerState->Team };
-    if (this->TeamImage != nullptr && this->Colors != nullptr)
+    if (this->Colors != nullptr)
     {
-        FSlateColor color = this->Colors->GetColor(owningPlayerTeam);
-        this->TeamImage->SetBrushTintColor(color);
+        this->SetupOutline(this->Colors->GetColor(owningPlayerTeam));
     }
 
     if (owningPlayerTeam.Len() > 0)

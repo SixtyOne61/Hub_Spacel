@@ -15,6 +15,10 @@ class HUB_SPACEL_API UPreparePhaseWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
+public:
+	UFUNCTION(BlueprintImplementableEvent)
+	void SetupOutline(FSlateColor _color);
+
 protected:
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
@@ -51,9 +55,6 @@ private:
 
 	UPROPERTY()
 	class UPlayerCardWidget* Player2 { nullptr };
-
-	UPROPERTY()
-	class UImage* TeamImage { nullptr };
 
 	UPROPERTY()
 	FTimerHandle TimeHandle {};
