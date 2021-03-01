@@ -143,7 +143,7 @@ void UPreparePhaseWidget::OnClickLevel(ESkillType _type, uint8 _level)
             owningPlayerState->RPCSetSkillPoint(skill->SkillType, 0);
         }
 
-        owningPlayerState->setRemainingSkillPoint(4 - _level);
+        owningPlayerState->setRemainingSkillPoint(ASpacelPlayerState::MaxSkillPoint - _level);
     }
     else
     {

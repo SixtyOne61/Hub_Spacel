@@ -43,6 +43,8 @@ private:
     void WaitPawnCreation();
 	
 public:
+    static constexpr uint8 MaxSkillPoint { 4 };
+
     /* event */
 
     UPROPERTY(BlueprintAssignable)
@@ -72,5 +74,5 @@ public:
 
 private:
     UPROPERTY()
-    uint8 RemainingSkillPoint { 4 };
+    uint8 RemainingSkillPoint { MaxSkillPoint };
 };
