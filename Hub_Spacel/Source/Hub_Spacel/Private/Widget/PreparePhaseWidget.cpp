@@ -99,6 +99,7 @@ void UPreparePhaseWidget::updatePlayerInfo()
                 && this->PlayerCardWidget[i] != nullptr)
             {
                 this->PlayerCardWidget[i]->Setup(spacelPlayerState);
+                this->PlayerCardWidget[i]->Visibility = ESlateVisibility::Visible;
                 ++i;
             }
         }
