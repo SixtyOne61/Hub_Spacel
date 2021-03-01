@@ -8,16 +8,6 @@
 #include "Widget/PreparePhaseWidget.h"
 #include "Framework/SlateDelegates.h"
 
-template<class T>
-void initArray(USelectorSkillWidget* _owner, TArray<T*>& _out, TArray<FName> const& _names)
-{
-    _out.Empty();
-    for (FName const& name : _names)
-    {
-        _out.Add(SimplyUI::initSafetyFromName<UUserWidget, T>(_owner, name));
-    }
-}
-
 USelectorSkillWidget::USelectorSkillWidget(FObjectInitializer const& _objectInitializer)
     : Super(_objectInitializer)
 {
@@ -30,9 +20,9 @@ void USelectorSkillWidget::NativeConstruct()
     bIsFocusable = true;
 
     TArray<FName> btnName {TEXT("Btn_Lvl1"), TEXT("Btn_Lvl2"), TEXT("Btn_Lvl3")};
-    initArray(this, Buttons, btnName);
+    SimplyUI::initArray(this, Buttons, btnName);
     TArray<FName> imgName{ TEXT("Img_Lvl1"), TEXT("Img_Lvl2"), TEXT("Img_Lvl3") };
-    initArray(this, Images, imgName);
+    SimplyUI::initArray(this, Images, imgName);
 
     for (int i{ 0 }; i < Buttons.Num(); ++i)
     {

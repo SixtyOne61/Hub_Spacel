@@ -21,11 +21,15 @@ void UPreparePhaseWidget::NativeConstruct()
     TimeTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Time"));
 
     TArray<FName> skillName { TEXT("SelectorAttack"), TEXT("SelectorProtection"), TEXT("SelectorSupport") };
-    for (int i{ 0 }; i < skillName.Num(); ++i)
+    SimplyUI::initArray(this, SelectorSkillWidget, skillName);
+    for (USelectorSkillWidget* widget : SelectorSkillWidget)
     {
-        SelectorSkillWidget[i] = SimplyUI::initSafetyFromName<UUserWidget, USelectorSkillWidget>(this, skillName[i]);
-        SelectorSkillWidget[i]->OnClickLevelDelegate.AddDynamic(this, &UPreparePhaseWidget::OnClickLevel);
+        if(widget == nullptr) continue;
+        widget->OnClickLevelDelegate.AddDynamic(this, &UPreparePhaseWidget::OnClickLevel);
     }
+
+    TArray<FName> playerCardName { TEXT("Ally1"), TEXT("Ally2") };
+    SimplyUI::initArray(this, PlayerCardWidget, playerCardName);
 
     if (!ensure(this->TimeTextBlock != nullptr)) return;
     this->TimeTextBlock->SetText(FText::FromString(FString::FromInt(this->RemainingTime)));
@@ -69,6 +73,35 @@ void UPreparePhaseWidget::SetTime()
         if (!ensure(world != nullptr)) return;
 
         world->GetTimerManager().ClearTimer(this->TimeHandle);
+    }
+
+    updatePlayerInfo();
+}
+
+void UPreparePhaseWidget::updatePlayerInfo()
+{
+    UWorld* world{ this->GetWorld() };
+    if (!ensure(world != nullptr)) return;
+    TArray<APlayerState*> const& playerStates{ world->GetGameState()->PlayerArray };
+
+    ASpacelPlayerState* owningPlayerState{ Cast<ASpacelPlayerState>(this->GetOwningPlayerState()) };
+    if (owningPlayerState == nullptr) return;
+    FString owningPlayerTeam{ owningPlayerState->Team };
+
+    int i {0};
+    for (APlayerState* playerState : playerStates)
+    {
+        if (ASpacelPlayerState* spacelPlayerState = Cast<ASpacelPlayerState>(playerState))
+        {
+            if(spacelPlayerState->GetUniqueID() == owningPlayerState->GetUniqueID()) continue;
+
+            if (spacelPlayerState->Team.Equals(owningPlayerTeam)
+                && this->PlayerCardWidget[i] != nullptr)
+            {
+                this->PlayerCardWidget[i]->Setup(spacelPlayerState);
+                ++i;
+            }
+        }
     }
 }
 

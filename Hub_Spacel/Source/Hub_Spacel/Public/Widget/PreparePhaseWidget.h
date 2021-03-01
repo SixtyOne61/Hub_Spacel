@@ -42,6 +42,8 @@ private:
 	UFUNCTION()
 	void OnClickLevel(ESkillType _type, uint8 _level);
 
+	void updatePlayerInfo();
+
 public:
 	UPROPERTY(EditAnywhere)
 	class UTeamColorDataAsset* Colors { nullptr };
@@ -54,7 +56,10 @@ private:
 	class UTextBlock* TimeTextBlock { nullptr };
 
 	UPROPERTY()
-	TArray<class USelectorSkillWidget*> SelectorSkillWidget { nullptr, nullptr, nullptr };
+	TArray<class USelectorSkillWidget*> SelectorSkillWidget { };
+
+	UPROPERTY()
+	TArray<class UPlayerCardWidget*> PlayerCardWidget { };
 
 	UPROPERTY()
 	FTimerHandle TimeHandle {};

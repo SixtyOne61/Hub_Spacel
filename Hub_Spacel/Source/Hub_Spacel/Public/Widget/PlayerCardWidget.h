@@ -15,7 +15,7 @@ class HUB_SPACEL_API UPlayerCardWidget : public UUserWidget
 	GENERATED_BODY()
 
 public:
-	void SetPlayerCardName(FString const& _playerName);
+	void Setup(class ASpacelPlayerState* _playerState);
 
 protected:
 	virtual void NativeConstruct() override;
@@ -24,4 +24,13 @@ protected:
 private:
 	UPROPERTY()
 	class UTextBlock* PlayerNameTextBlock { nullptr };
+
+	UPROPERTY()
+	class UTextBlock* AttackTextBlock { nullptr };
+
+	UPROPERTY()
+	class UTextBlock* ProtectionTextBlock{ nullptr };
+
+	UPROPERTY()
+	class UTextBlock* SupportTextBlock{ nullptr };
 };

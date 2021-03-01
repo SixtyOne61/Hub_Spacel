@@ -53,5 +53,16 @@ namespace SimplyUI
         if (!ensure(obj != nullptr)) return nullptr;
         return obj;
     }
+
+
+    template<class U, class T>
+    void initArray(U* _owner, TArray<T*>& _out, TArray<FName> const& _names)
+    {
+        _out.Empty();
+        for (FName const& name : _names)
+        {
+            _out.Add(SimplyUI::initSafetyFromName<UUserWidget, T>(_owner, name));
+        }
+    }
 }
 
