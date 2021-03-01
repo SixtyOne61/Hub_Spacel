@@ -143,7 +143,7 @@ public:
 	int RemainingGameTime { 690 }; // 11'30
 
 	UPROPERTY()
-	int RemainingPrepareTime { 60 }; // 60
+	int RemainingPrepareTime { 10 }; // 60
 
 	UPROPERTY()
 	int SuspendBackfillTime { 45 };

@@ -6,6 +6,17 @@
 #include "Components/Image.h"
 #include "Player/SpacelPlayerState.h"
 #include "Widget/PreparePhaseWidget.h"
+#include "Framework/SlateDelegates.h"
+
+template<class T>
+void initArray(USelectorSkillWidget* _owner, TArray<T*>& _out, TArray<FName> const& _names)
+{
+    _out.Empty();
+    for (FName const& name : _names)
+    {
+        _out.Add(SimplyUI::initSafetyFromName<UUserWidget, T>(_owner, name));
+    }
+}
 
 USelectorSkillWidget::USelectorSkillWidget(FObjectInitializer const& _objectInitializer)
     : Super(_objectInitializer)
@@ -18,60 +29,55 @@ void USelectorSkillWidget::NativeConstruct()
 
     bIsFocusable = true;
 
-    Buttons[0] = SimplyUI::initSafetyFromName<UUserWidget, UButton>(this, TEXT("Btn_Lvl1"));
-    Buttons[1] = SimplyUI::initSafetyFromName<UUserWidget, UButton>(this, TEXT("Btn_Lvl2"));
-    Buttons[2] = SimplyUI::initSafetyFromName<UUserWidget, UButton>(this, TEXT("Btn_Lvl3"));
+    TArray<FName> btnName {TEXT("Btn_Lvl1"), TEXT("Btn_Lvl2"), TEXT("Btn_Lvl3")};
+    initArray(this, Buttons, btnName);
+    TArray<FName> imgName{ TEXT("Img_Lvl1"), TEXT("Img_Lvl2"), TEXT("Img_Lvl3") };
+    initArray(this, Images, imgName);
 
-    Images[0] = SimplyUI::initSafetyFromName<UUserWidget, UImage>(this, TEXT("Img_Lvl1"));
-    Images[1] = SimplyUI::initSafetyFromName<UUserWidget, UImage>(this, TEXT("Img_Lvl2"));
-    Images[2] = SimplyUI::initSafetyFromName<UUserWidget, UImage>(this, TEXT("Img_Lvl3"));
-
-    //MinButton = SimplyUI::initSafetyFromName<UUserWidget, UButton>(this, TEXT("MinBtn"));
-    //FScriptDelegate minDelegate {};
-    //minDelegate.BindUFunction(this, "OnMinButtonClicked");
-    //MinButton->OnClicked.Add(minDelegate);
-    //
-    //MaxButton = SimplyUI::initSafetyFromName<UUserWidget, UButton>(this, TEXT("MaxBtn"));
-    //FScriptDelegate maxDelegate{};
-    //maxDelegate.BindUFunction(this, "OnMaxButtonClicked");
-    //MaxButton->OnClicked.Add(maxDelegate);
-}
-
-void USelectorSkillWidget::OnMinButtonClicked()
-{
-    ASpacelPlayerState* owningPlayerState{ Cast<ASpacelPlayerState>(this->GetOwningPlayerState()) };
-    if (owningPlayerState != nullptr)
+    for (int i{ 0 }; i < Buttons.Num(); ++i)
     {
-        uint8 level = owningPlayerState->getSkillPoint(this->SkillType);
-        if (level > 0)
-        {
-            level--;
-            if (level < Images.Num())
-            {
-                this->Images[level]->SetBrushTintColor(this->OffColor);
-            }
-            owningPlayerState->RPCSetSkillPoint(this->SkillType, level);
-            owningPlayerState->setRemainingSkillPoint(owningPlayerState->RemainingSkillPoint + 1);
-        }
+        if (Buttons[i] == nullptr) continue;
+
+        FScriptDelegate btnDelegate{};
+        FString name = "OnLevel" + FString::FromInt(i+1);
+        btnDelegate.BindUFunction(this, *name);
+        Buttons[i]->OnClicked.Add(btnDelegate);
     }
 }
 
-void USelectorSkillWidget::OnMaxButtonClicked()
+void USelectorSkillWidget::OnLevel1()
 {
-    ASpacelPlayerState* owningPlayerState{ Cast<ASpacelPlayerState>(this->GetOwningPlayerState()) };
-    if (owningPlayerState != nullptr)
+    onLevel(0);
+}
+
+void USelectorSkillWidget::OnLevel2()
+{
+    onLevel(1);
+}
+
+void USelectorSkillWidget::OnLevel3()
+{
+    onLevel(2);
+}
+
+void USelectorSkillWidget::onLevel(uint8 _level)
+{
+    for (int i{ 0 }; i < this->Images.Num(); ++i)
     {
-        uint8 level = owningPlayerState->getSkillPoint(this->SkillType);
-        if (owningPlayerState->RemainingSkillPoint > 0
-            && level < 3)
-        {
-            if (level < Images.Num())
-            {
-                this->Images[level]->SetBrushTintColor(this->OnColor);
-            }
-            ++level;
-            owningPlayerState->RPCSetSkillPoint(this->SkillType, level);
-            owningPlayerState->setRemainingSkillPoint(owningPlayerState->RemainingSkillPoint - 1);
-        }
+        if(this->Images[i] == nullptr) continue;
+
+        this->Images[i]->SetBrushTintColor(i <= _level ? this->OnColor : this->OffColor);
+    }
+
+    this->OnClickLevelDelegate.Broadcast(this->SkillType, _level+1);
+}
+
+void USelectorSkillWidget::reset()
+{
+    for (int i{ 0 }; i < this->Images.Num(); ++i)
+    {
+        if (this->Images[i] == nullptr) continue;
+
+        this->Images[i]->SetBrushTintColor(this->OffColor);
     }
 }

@@ -7,6 +7,8 @@
 #include "Enum/SpacelEnum.h"
 #include "SelectorSkillWidget.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnClickLevel, ESkillType, _type, uint8, _value);
+
 /**
  * 
  */
@@ -14,6 +16,8 @@ UCLASS()
 class HUB_SPACEL_API USelectorSkillWidget : public UUserWidget
 {
 	GENERATED_BODY()
+
+	friend class UPreparePhaseWidget;
 
 public:
 	USelectorSkillWidget(FObjectInitializer const& _objectInitializer);
@@ -23,10 +27,17 @@ protected:
 	
 private:
 	UFUNCTION()
-	void OnMinButtonClicked();
+	void OnLevel1();
 
 	UFUNCTION()
-	void OnMaxButtonClicked();
+	void OnLevel2();
+
+	UFUNCTION()
+	void OnLevel3();
+
+	void onLevel(uint8 _level);
+
+	void reset();
 
 public:
 	UPROPERTY(EditAnywhere)
@@ -40,14 +51,11 @@ public:
 
 private:
 	UPROPERTY()
-	class UButton* MinButton { nullptr };
+	TArray<class UButton*> Buttons;
 
 	UPROPERTY()
-	class UButton* MaxButton { nullptr };
+	TArray<class UImage*> Images;
 
 	UPROPERTY()
-	TArray<class UButton*> Buttons{ nullptr, nullptr, nullptr };
-
-	UPROPERTY()
-	TArray<class UImage*> Images { nullptr, nullptr, nullptr };
+	FOnClickLevel OnClickLevelDelegate {};
 };

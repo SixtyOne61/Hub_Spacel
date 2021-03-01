@@ -37,7 +37,10 @@ private:
 	void StartGame();
 
 	UFUNCTION()
-	void SetPlayerCard();
+	void SetupOwningTeam();
+
+	UFUNCTION()
+	void OnClickLevel(ESkillType _type, uint8 _level);
 
 public:
 	UPROPERTY(EditAnywhere)
@@ -51,16 +54,10 @@ private:
 	class UTextBlock* TimeTextBlock { nullptr };
 
 	UPROPERTY()
-	class UPlayerCardWidget* Player1 { nullptr };
-
-	UPROPERTY()
-	class UPlayerCardWidget* Player2 { nullptr };
+	TArray<class USelectorSkillWidget*> SelectorSkillWidget { nullptr, nullptr, nullptr };
 
 	UPROPERTY()
 	FTimerHandle TimeHandle {};
-	
-	UPROPERTY()
-	FTimerHandle SetPlayerCardHandle {};
 
 	UPROPERTY()
 	int RemainingTime { 60 };

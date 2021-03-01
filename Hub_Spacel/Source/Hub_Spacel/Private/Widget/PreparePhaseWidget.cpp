@@ -9,6 +9,7 @@
 #include "GameState/SpacelGameState.h"
 #include "Kismet/GameplayStatics.h"
 #include "Widget/PlayerCardWidget.h"
+#include "Widget/SelectorSKillWidget.h"
 #include "DataAsset/TeamColorDataAsset.h"
 
 void UPreparePhaseWidget::NativeConstruct()
@@ -18,8 +19,13 @@ void UPreparePhaseWidget::NativeConstruct()
 
     RemainingSkillPointTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_RemainingSkillPoint"));
     TimeTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Time"));
-    Player1 = SimplyUI::initSafetyFromName<UUserWidget, UPlayerCardWidget>(this, TEXT("WBP_Player1"));
-    Player2 = SimplyUI::initSafetyFromName<UUserWidget, UPlayerCardWidget>(this, TEXT("WBP_Player2"));
+
+    TArray<FName> skillName { TEXT("SelectorAttack"), TEXT("SelectorProtection"), TEXT("SelectorSupport") };
+    for (int i{ 0 }; i < skillName.Num(); ++i)
+    {
+        SelectorSkillWidget[i] = SimplyUI::initSafetyFromName<UUserWidget, USelectorSkillWidget>(this, skillName[i]);
+        SelectorSkillWidget[i]->OnClickLevelDelegate.AddDynamic(this, &UPreparePhaseWidget::OnClickLevel);
+    }
 
     if (!ensure(this->TimeTextBlock != nullptr)) return;
     this->TimeTextBlock->SetText(FText::FromString(FString::FromInt(this->RemainingTime)));
@@ -38,10 +44,7 @@ void UPreparePhaseWidget::NativeConstruct()
         spacelGameState->OnStartGameDelegate.AddDynamic(this, &UPreparePhaseWidget::StartGame);
     }
 
-    UWorld* world{ this->GetWorld() };
-    if (!ensure(world != nullptr)) return;
-
-    world->GetTimerManager().SetTimer(SetPlayerCardHandle, this, &UPreparePhaseWidget::SetPlayerCard, 1.0f, true, 1.0f);
+    SetupOwningTeam();
 }
 
 void UPreparePhaseWidget::UpdateRemainingSkillPoint()
@@ -84,7 +87,6 @@ void UPreparePhaseWidget::StartGame()
     UWorld* world{ this->GetWorld() };
     if (!ensure(world != nullptr)) return;
     world->GetTimerManager().ClearTimer(this->TimeHandle);
-    world->GetTimerManager().ClearTimer(this->SetPlayerCardHandle);
 }
 
 void UPreparePhaseWidget::NativeDestruct()
@@ -92,16 +94,20 @@ void UPreparePhaseWidget::NativeDestruct()
     UWorld* world{ this->GetWorld() };
     if (!ensure(world != nullptr)) return;
     world->GetTimerManager().ClearTimer(this->TimeHandle);
-    world->GetTimerManager().ClearTimer(this->SetPlayerCardHandle);
 
     Super::NativeDestruct();
 }
 
-void UPreparePhaseWidget::SetPlayerCard()
+void UPreparePhaseWidget::SetupOwningTeam()
 {
     ASpacelPlayerState* owningPlayerState{ Cast<ASpacelPlayerState>(this->GetOwningPlayerState()) };
     if (owningPlayerState == nullptr)
     {
+        UWorld* world{ this->GetWorld() };
+        if (!ensure(world != nullptr)) return;
+
+        FTimerHandle handle;
+        world->GetTimerManager().SetTimer(handle, this, &UPreparePhaseWidget::SetupOwningTeam, 1.0f, false, 0.0f);
         return;
     }
 
@@ -110,31 +116,37 @@ void UPreparePhaseWidget::SetPlayerCard()
     {
         this->SetupOutline(this->Colors->GetColor(owningPlayerTeam));
     }
+}
 
-    if (owningPlayerTeam.Len() > 0)
+void UPreparePhaseWidget::OnClickLevel(ESkillType _type, uint8 _level)
+{
+    ASpacelPlayerState* owningPlayerState{ Cast<ASpacelPlayerState>(this->GetOwningPlayerState()) };
+    if (owningPlayerState == nullptr) return;
+
+    uint8 remainingSkillPoint = owningPlayerState->getRemainingSkillPoint();
+    uint8 currentSkillPoint = owningPlayerState->getSkillPoint(_type);
+    if(currentSkillPoint == _level) return;
+
+    if (currentSkillPoint > _level)
     {
-        UWorld* world{ this->GetWorld() };
-        if (!ensure(world != nullptr)) return;
-        if (!ensure(world->GetGameState() != nullptr)) return;
+        owningPlayerState->setRemainingSkillPoint(remainingSkillPoint + currentSkillPoint - _level);
+    }
 
-        bool isFirst = true;
-        TArray<APlayerState*> const& playerStates{ world->GetGameState()->PlayerArray };
-        for (APlayerState* playerState : playerStates)
+    owningPlayerState->RPCSetSkillPoint(_type, _level);
+    if (remainingSkillPoint < _level)
+    {
+        // reset other skill type
+        for (USelectorSkillWidget* skill : this->SelectorSkillWidget)
         {
-            ASpacelPlayerState* spacelPlayerState{ Cast<ASpacelPlayerState>(playerState) };
-            if (spacelPlayerState != nullptr && spacelPlayerState->Team.Equals(owningPlayerTeam))
-            {
-                // TO DO Better
-                if (isFirst)
-                {
-                    this->Player1->SetPlayerCardName(spacelPlayerState->GetPlayerName());
-                    isFirst = false;
-                }
-                else
-                {
-                    this->Player2->SetPlayerCardName(spacelPlayerState->GetPlayerName());
-                }
-            }
+            if(skill == nullptr || skill->SkillType == _type) continue;
+            skill->reset();
+            owningPlayerState->RPCSetSkillPoint(skill->SkillType, 0);
         }
+
+        owningPlayerState->setRemainingSkillPoint(4 - _level);
+    }
+    else
+    {
+        owningPlayerState->setRemainingSkillPoint(remainingSkillPoint - _level);
     }
 }
