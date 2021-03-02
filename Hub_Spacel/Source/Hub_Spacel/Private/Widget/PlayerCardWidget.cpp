@@ -26,7 +26,7 @@ void UPlayerCardWidget::Setup(ASpacelPlayerState* _playerState)
 
     if (this->PlayerNameTextBlock != nullptr)
     {
-        this->PlayerNameTextBlock->SetText(FText::FromString(_playerState->PlayerName));
+        this->PlayerNameTextBlock->SetText(FText::FromString(_playerState->GetPlayerName()));
     }
 
     if (this->AttackTextBlock != nullptr)

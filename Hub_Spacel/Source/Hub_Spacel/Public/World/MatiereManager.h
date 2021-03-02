@@ -11,8 +11,8 @@ UCLASS()
 class HUB_SPACEL_API AMatiereManager : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	// Sets default values for this actor's properties
 	AMatiereManager();
 
@@ -28,6 +28,8 @@ public:
 private:
 	void populate(class UInstancedStaticMeshComponent* _comp, TArray<FVector> const& _loc);
 	int depopulate(class UInstancedStaticMeshComponent* _comp, FHitResult const& _hit, TSet<int32> & _index);
+
+	void genericOnRep(FString const& _team);
 
 	UFUNCTION()
 	void OnRep_InstanceTeam1();
@@ -48,50 +50,31 @@ private:
 	void OnRep_InstanceTeam6();
 
 public:
-	UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)
-	class UInstancedStaticMeshComponent* MatieresTeam1 { nullptr };
-
-	UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)
-	class UInstancedStaticMeshComponent* MatieresTeam2 { nullptr };
-
-	UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)
-	class UInstancedStaticMeshComponent* MatieresTeam3 { nullptr };
-
-	UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)
-	class UInstancedStaticMeshComponent* MatieresTeam4 { nullptr };
-
-	UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)
-	class UInstancedStaticMeshComponent* MatieresTeam5 { nullptr };
-
-	UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)
-	class UInstancedStaticMeshComponent* MatieresTeam6 { nullptr };
-
 	/* for client only */
 	UPROPERTY()
 	FString LocalTeam {};
 
 private:
+	UPROPERTY()
+	TArray<class UInstancedStaticMeshComponent*> Matieres{};
+	
 	UPROPERTY(ReplicatedUsing = "OnRep_InstanceTeam1")
-	TArray<FVector> RU_InstanceTeam1{};
-	TSet<int32> m_toRemoveTeam1 {};
+	TArray<FVector> RU_InstanceTeam1 {};
 
 	UPROPERTY(ReplicatedUsing = "OnRep_InstanceTeam2")
 	TArray<FVector> RU_InstanceTeam2{};
-	TSet<int32> m_toRemoveTeam2{};
-
+	
 	UPROPERTY(ReplicatedUsing = "OnRep_InstanceTeam3")
 	TArray<FVector> RU_InstanceTeam3{};
-	TSet<int32> m_toRemoveTeam3{};
 
 	UPROPERTY(ReplicatedUsing = "OnRep_InstanceTeam4")
 	TArray<FVector> RU_InstanceTeam4{};
-	TSet<int32> m_toRemoveTeam4{};
 
 	UPROPERTY(ReplicatedUsing = "OnRep_InstanceTeam5")
 	TArray<FVector> RU_InstanceTeam5{};
-	TSet<int32> m_toRemoveTeam5{};
 
 	UPROPERTY(ReplicatedUsing = "OnRep_InstanceTeam6")
 	TArray<FVector> RU_InstanceTeam6{};
-	TSet<int32> m_toRemoveTeam6{};
+
+	TArray<TSet<int32>> ToRemoveTeams { };
 };
