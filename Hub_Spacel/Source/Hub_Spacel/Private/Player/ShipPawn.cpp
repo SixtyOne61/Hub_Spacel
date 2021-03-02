@@ -504,6 +504,20 @@ void AShipPawn::RPCClientPlayCameraShake_Implementation()
     }
 }
 
+float AShipPawn::getPercentProtection() const
+{
+    if(this->ModuleComponent == nullptr) return 0.0f;
+
+    return this->ModuleComponent->getPercentProtection();
+}
+
+float AShipPawn::getPercentSupport() const
+{
+    if (this->ModuleComponent == nullptr) return 0.0f;
+
+    return this->ModuleComponent->getPercentSupport();
+}
+
 void AShipPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetimeProps) const
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);

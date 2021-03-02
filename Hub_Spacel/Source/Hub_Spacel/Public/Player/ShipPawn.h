@@ -53,6 +53,9 @@ public:
 
     void setLocationExhaustFx(TArray<FVector> const& _loc);
 
+    float getPercentProtection() const;
+    float getPercentSupport() const;
+
 private:
     void lookAt(FVector const& _loc, FVector const& _dir, FVector const& _hitLoc);
 

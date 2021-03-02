@@ -14,14 +14,13 @@
 #include "Kismet/GameplayStatics.h"
 #include "Util/SimplyUI.h"
 #include "DataAsset/PlayerDataAsset.h"
+#include "Widget/AllyWidget.h"
 
 void USpacelWidget::NativeConstruct()
 {
     Super::NativeConstruct();
 
-    TeamNameTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_TeamName"));
     MatiereTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Matiere"));
-    TeammateCountTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_TeammateCount"));
     EventTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Event"));
     PingTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Ping"));
     ProtectionProgressBar = SimplyUI::initSafetyFromName<UUserWidget, UProgressBar>(this, TEXT("ProgressBar_Protection"));
@@ -29,10 +28,12 @@ void USpacelWidget::NativeConstruct()
     EscapeModeProgressBar = SimplyUI::initSafetyFromName<UUserWidget, UProgressBar>(this, TEXT("ProgressBar_EscapeMode"));
     ScoreWidget = SimplyUI::initSafetyFromName<UUserWidget, UUserWidget>(this, TEXT("WBP_Score"));
 
+    TArray<FName> allyNames { TEXT("Widget_Ally1"), TEXT("Widget_Ally2") };
+    SimplyUI::initArray(this, AllyWidgets, allyNames);
+
     UWorld* world{ this->GetWorld() };
     if (!ensure(world != nullptr)) return;
 
-    world->GetTimerManager().SetTimer(SetTeammateCountHandle, this, &USpacelWidget::SetTeammateCount, 1.0f, true, 1.0f);
     world->GetTimerManager().SetTimer(SetLatestEventHandle, this, &USpacelWidget::SetLatestEvent, 1.0f, true, 1.0f);
     world->GetTimerManager().SetTimer(SetAverragePlayerLatencyHandle, this, &USpacelWidget::SetAverragePlayerLatency, 1.0f, true, 1.0f);
 
@@ -61,7 +62,6 @@ void USpacelWidget::NativeDestruct()
     UWorld* world{ this->GetWorld() };
     if (world)
     {
-        world->GetTimerManager().ClearTimer(SetTeammateCountHandle);
         world->GetTimerManager().ClearTimer(SetLatestEventHandle);
         world->GetTimerManager().ClearTimer(SetAverragePlayerLatencyHandle);
         world->GetTimerManager().ClearTimer(SetSpeedHandle);
@@ -95,6 +95,31 @@ void USpacelWidget::NativeTick(const FGeometry& _myGeometry, float _deltaTime)
 void USpacelWidget::StartGame()
 {
     this->SetVisibility(ESlateVisibility::Visible);
+
+    UWorld* world{ this->GetWorld() };
+    if (!ensure(world != nullptr)) return;
+    TArray<APlayerState*> const& playerStates{ world->GetGameState()->PlayerArray };
+
+    ASpacelPlayerState* owningPlayerState{ Cast<ASpacelPlayerState>(this->GetOwningPlayerState()) };
+    if (owningPlayerState == nullptr) return;
+    FString owningPlayerTeam{ owningPlayerState->Team };
+
+    int i{ 0 };
+    for (APlayerState* playerState : playerStates)
+    {
+        if (ASpacelPlayerState* spacelPlayerState = Cast<ASpacelPlayerState>(playerState))
+        {
+            if (spacelPlayerState->GetUniqueID() == owningPlayerState->GetUniqueID()) continue;
+
+            if (spacelPlayerState->Team.Equals(owningPlayerTeam)
+                && this->AllyWidgets[i] != nullptr)
+            {
+                this->AllyWidgets[i]->setWatcher(spacelPlayerState);
+                this->AllyWidgets[i]->Visibility = ESlateVisibility::Visible;
+                ++i;
+            }
+        }
+    }
 }
 
 void USpacelWidget::UpdateScore()
@@ -117,46 +142,6 @@ void USpacelWidget::UpdateScore()
             if (scoreTb != nullptr ) scoreTb->SetText(FText::FromString(FString::FromInt(score.Score)));
 
             ++i;
-        }
-    }
-}
-
-void USpacelWidget::SetTeammateCount()
-{
-    // TO DO : optimize this, did we need to call this every second ??? Team name never change
-    ASpacelPlayerState* owningPlayerState { Cast<ASpacelPlayerState>(this->GetOwningPlayerState()) };
-    if (owningPlayerState == nullptr)
-    {
-        return;
-    }
-
-    FString owningPlayerTeam { owningPlayerState->Team };
-    if (this->TeamNameTextBlock)
-    {
-        this->TeamNameTextBlock->SetText(FText::FromString("Team Name: " + owningPlayerTeam));
-    }
-
-    if (owningPlayerTeam.Len() > 0)
-    {
-        UWorld* world { this->GetWorld() };
-        if (!ensure(world != nullptr)) return;
-        if (!ensure(world->GetGameState() != nullptr)) return;
-
-        int teammateCount { 0 };
-
-        TArray<APlayerState*> const& playerStates { world->GetGameState()->PlayerArray };
-        for (APlayerState* playerState : playerStates)
-        {
-            ASpacelPlayerState* spacelPlayerState { Cast<ASpacelPlayerState>(playerState) };
-            if (spacelPlayerState != nullptr && spacelPlayerState->Team.Equals(owningPlayerTeam))
-            {
-                teammateCount++;
-            }
-        }
-
-        if (this->TeammateCountTextBlock)
-        {
-            this->TeammateCountTextBlock->SetText(FText::FromString("Teammate Count: " + FString::FromInt(teammateCount)));
         }
     }
 }

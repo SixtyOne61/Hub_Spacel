@@ -17,9 +17,6 @@ class HUB_SPACEL_API USpacelWidget : public UUserWidget
 	
 public:
 	UPROPERTY()
-	FTimerHandle SetTeammateCountHandle {};
-
-	UPROPERTY()
 	FTimerHandle SetLatestEventHandle {};
 
 	UPROPERTY()
@@ -39,9 +36,6 @@ private:
 
 	UFUNCTION()
 	void UpdateScore();
-
-	UFUNCTION()
-	void SetTeammateCount();
 
 	UFUNCTION()
 	void SetLatestEvent();
@@ -68,13 +62,7 @@ private:
 
 private:
 	UPROPERTY()
-	class UTextBlock* TeamNameTextBlock { nullptr };
-
-	UPROPERTY()
 	class UTextBlock* MatiereTextBlock { nullptr };
-
-	UPROPERTY()
-	class UTextBlock* TeammateCountTextBlock { nullptr };
 
 	UPROPERTY()
 	class UTextBlock* EventTextBlock { nullptr };
@@ -90,6 +78,9 @@ private:
 
 	UPROPERTY()
 	class UProgressBar* EscapeModeProgressBar { nullptr };
+
+	UPROPERTY()
+	TArray<class UAllyWidget*> AllyWidgets { };
 
 	UPROPERTY()
 	class UUserWidget* ScoreWidget { nullptr };
