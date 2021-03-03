@@ -100,6 +100,8 @@ private:
 	void kill();
 	void restarted();
 
+	bool GetHitResultUnderCursor(ECollisionChannel TraceChannel, bool bTraceComplex, FHitResult& HitResult, AActor* _ignoreActor);
+
 private:
 	UPROPERTY(Replicated)
 	bool R_EnableInput { false };

@@ -96,6 +96,8 @@ void AShipPawn::RPCClientStartGame_Implementation(FName const& _team)
     {
         this->OnLocalTeamUpdateDelegate.Broadcast(_team.ToString());
     }
+
+    this->Team = _team;
 }
 
 // Called when the game starts or when spawned
@@ -144,7 +146,7 @@ void AShipPawn::BeginPlay()
             }
 
             // remove collision for local player (for disable hit with cursor for target)
-            setCollisionProfile("OverlapAll");
+            setCollisionProfile("NoOverlapTeam");
             this->DriverMeshComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
         }
     }

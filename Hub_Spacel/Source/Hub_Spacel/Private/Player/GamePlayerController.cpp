@@ -51,6 +51,29 @@ void AGamePlayerController::BeginPlay()
     }
 }
 
+bool AGamePlayerController::GetHitResultUnderCursor(ECollisionChannel TraceChannel, bool bTraceComplex, FHitResult& HitResult, AActor* _ignoreActor)
+{
+    ULocalPlayer* LocalPlayer = Cast<ULocalPlayer>(Player);
+    bool bHit = false;
+    if (LocalPlayer && LocalPlayer->ViewportClient)
+    {
+        FVector2D MousePosition;
+        if (LocalPlayer->ViewportClient->GetMousePosition(MousePosition))
+        {
+            FCollisionQueryParams CollisionQueryParams(SCENE_QUERY_STAT(ClickableTrace), bTraceComplex);
+            CollisionQueryParams.AddIgnoredActor(_ignoreActor);
+            bHit = GetHitResultAtScreenPosition(MousePosition, TraceChannel, CollisionQueryParams, HitResult);
+        }
+    }
+
+    if (!bHit)	//If there was no hit we reset the results. This is redundant but helps Blueprint users
+    {
+        HitResult = FHitResult();
+    }
+
+    return bHit;
+}
+
 void AGamePlayerController::Tick(float _deltaTime)
 {
     Super::Tick(_deltaTime);
@@ -64,8 +87,9 @@ void AGamePlayerController::Tick(float _deltaTime)
         if (this->DeprojectMousePositionToWorld(mouseWorldLocation, mouseWorldDirection))
         {
             FVector hitLoc { FVector::ZeroVector };
+
             FHitResult hit;
-            if (this->GetHitResultUnderCursorByChannel(ETraceTypeQuery::TraceTypeQuery_MAX, false, hit))
+            if (this->GetHitResultUnderCursor(ECollisionChannel::ECC_MAX, false, hit, shipPawn))
             {
                 hitLoc = hit.Location;
             }
