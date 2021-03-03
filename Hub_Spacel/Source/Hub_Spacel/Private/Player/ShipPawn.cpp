@@ -257,12 +257,11 @@ void AShipPawn::serverMove(float _deltaTime)
 
     float coefEscape { m_escapeModeState == EEscapeMode::StateEscape ? this->PlayerDataAsset->EscapeModeCoef : 1.0f };
 
-    // rotation
+    // roll rotation
 
-    FVector const& angularVelocity { this->DriverMeshComponent->GetPhysicsAngularVelocityInDegrees() };
-    FVector newAngularVelocity { this->DriverMeshComponent->GetForwardVector() * this->PercentFlightAttitude * this->PlayerDataAsset->MaxFlightAttitudeSpeed * coefEscape * 16.0f };
-    newAngularVelocity = FMath::Lerp(angularVelocity, newAngularVelocity, 0.9f);
-    this->DriverMeshComponent->SetPhysicsAngularVelocityInDegrees(newAngularVelocity);
+    FRotator rotation = this->GetActorRotation();
+    rotation.Add(0.0f, 0.0f, this->PercentFlightAttitude * coefEscape * this->PlayerDataAsset->MaxFlightAttitudeSpeed);
+    this->SetActorRotation(rotation);
 
     // linear
 
