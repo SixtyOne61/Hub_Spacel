@@ -244,7 +244,7 @@ void AShipPawn::lookAt(FVector const& _loc, FVector const& _dir, FVector const& 
     FVector bigFar = _loc + _dir * 100000;
     this->TargetLocation = _hitLoc.IsNearlyZero() ? bigFar : _hitLoc;
 
-    FRotator rotation = SimplyMath::MyLookRotation(farpoint, this->GetActorUpVector(), this->GetActorLocation());
+    FRotator rotation = SimplyMath::MyLookRotation(bigFar, this->GetActorUpVector(), this->GetActorLocation());
     this->SetActorRotation(rotation);
 }
 

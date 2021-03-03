@@ -42,8 +42,6 @@ void ALaserBullet::BeginPlay()
 
     // spawn fx fire
     UNiagaraFunctionLibrary::SpawnSystemAtLocation(this->GetWorld(), this->FireFx, this->GetActorLocation(), this->GetActorRotation());
-
-    this->ProjectileCollisionComponent->SetCollisionProfileName("Projectil");
 }
 
 void ALaserBullet::applyHit(TArray<int32>& _instance)

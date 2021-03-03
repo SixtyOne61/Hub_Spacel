@@ -91,6 +91,13 @@ void UFireComponent::spawnBullet(FTransform const& _transform) const
             comp->SetVelocityInLocalSpace(dir * comp->InitialSpeed);
         }
 
+        if (USphereComponent* comp = Cast<USphereComponent>(laser->GetComponentByClass(USphereComponent::StaticClass())))
+        {
+            FString profile = "P"+ m_shipPawnOwner.Get()->Team.ToString();
+            profile = profile.Replace(TEXT(" "), TEXT(""));
+            comp->SetCollisionProfileName(*profile);
+        }
+
         FString tag = "Team:" + m_shipPawnOwner.Get()->Team.ToString();
         laser->Tags.Add(*tag);
     }
