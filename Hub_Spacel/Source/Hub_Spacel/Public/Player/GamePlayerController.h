@@ -74,6 +74,9 @@ private:
 	void RPCServerRepairSupport();
 
 	UFUNCTION(Reliable, Server)
+	void RPCServerSpecial();
+
+	UFUNCTION(Reliable, Server)
 	void RPCServerStartGame();
 
 	/* input callback */
@@ -92,6 +95,7 @@ private:
 	void lock();
 	void showScore();
 	void hideScore();
+	void special();
 
 	/* from event */
 	UFUNCTION()

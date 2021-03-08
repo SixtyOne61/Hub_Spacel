@@ -32,6 +32,7 @@ void AGamePlayerController::SetupInputComponent()
     this->InputComponent->BindAction("Lock", IE_Pressed, this, &AGamePlayerController::lock);
     this->InputComponent->BindAction("Score", IE_Pressed, this, &AGamePlayerController::showScore);
     this->InputComponent->BindAction("Score", IE_Released, this, &AGamePlayerController::hideScore);
+    this->InputComponent->BindAction("Special", IE_Pressed, this, &AGamePlayerController::special);
 }
 
 void AGamePlayerController::BeginPlay()
@@ -197,6 +198,10 @@ void AGamePlayerController::RPCServerRepairSupport_Implementation()
     }
 }
 
+void AGamePlayerController::RPCServerSpecial_Implementation()
+{
+}
+
 void AGamePlayerController::forward(float _value)
 {
     if (!this->R_EnableInput) return;
@@ -237,6 +242,12 @@ void AGamePlayerController::fireOff()
 {
     if (!this->R_EnableInput) return;
     this->RPCServerFire(false);
+}
+
+void AGamePlayerController::special()
+{
+    if (!this->R_EnableInput) return;
+    this->RPCServerSpecial();
 }
 
 void AGamePlayerController::returnToMainMenu()
