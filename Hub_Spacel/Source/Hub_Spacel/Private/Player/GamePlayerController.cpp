@@ -20,19 +20,14 @@ void AGamePlayerController::SetupInputComponent()
     this->InputComponent->BindAxis("HorizontalStraf", this, &AGamePlayerController::horizontalStraf);
     this->InputComponent->BindAxis("VerticalStraf", this, &AGamePlayerController::verticalStraf);
     this->InputComponent->BindAxis("FlightAttitude", this, &AGamePlayerController::flightAttitude);
+    this->InputComponent->BindAxis("Skill", this, &AGamePlayerController::skill);
 
-    this->InputComponent->BindAction("EscapeMode", IE_Pressed, this, &AGamePlayerController::triggerEscapeMode);
     this->InputComponent->BindAction("Fire", IE_Pressed, this, &AGamePlayerController::fireOn);
     this->InputComponent->BindAction("Fire", IE_Released, this, &AGamePlayerController::fireOff);
     this->InputComponent->BindAction("ReturnToMainMenu", IE_Pressed, this, &AGamePlayerController::returnToMainMenu);
-    this->InputComponent->BindAction("RepairProtection", IE_Pressed, this, &AGamePlayerController::repairProtection);
-    this->InputComponent->BindAction("RepairSupport", IE_Pressed, this, &AGamePlayerController::repairSupport);
-    this->InputComponent->BindAction("GiveAlly1", IE_Pressed, this, &AGamePlayerController::giveAlly1);
-    this->InputComponent->BindAction("GiveAlly2", IE_Pressed, this, &AGamePlayerController::giveAlly2);
     this->InputComponent->BindAction("Lock", IE_Pressed, this, &AGamePlayerController::lock);
     this->InputComponent->BindAction("Score", IE_Pressed, this, &AGamePlayerController::showScore);
     this->InputComponent->BindAction("Score", IE_Released, this, &AGamePlayerController::hideScore);
-    this->InputComponent->BindAction("Special", IE_Pressed, this, &AGamePlayerController::special);
 }
 
 void AGamePlayerController::BeginPlay()
@@ -148,17 +143,6 @@ void AGamePlayerController::RPCServerFlightAttitude_Implementation(float _val)
     }
 }
 
-void AGamePlayerController::RPCServerTriggerEscapeMode_Implementation()
-{
-    if (this->R_EnableInput)
-    {
-        if (AShipPawn* shipPawn = Cast<AShipPawn>(this->GetPawn()))
-        {
-            shipPawn->TriggerEscapeMode();
-        }
-    }
-}
-
 void AGamePlayerController::RPCServerFire_Implementation(bool _is)
 {
     if (this->R_EnableInput)
@@ -170,7 +154,7 @@ void AGamePlayerController::RPCServerFire_Implementation(bool _is)
     }
 }
 
-void AGamePlayerController::RPCServerRepairProtection_Implementation()
+void AGamePlayerController::RPCServerSkill_Implementation(float _slot)
 {
     if (this->R_EnableInput)
     {
@@ -180,26 +164,8 @@ void AGamePlayerController::RPCServerRepairProtection_Implementation()
             return;
         }
 
-        shipPawn->OnRepairProtectionDelegate.Broadcast();
+        shipPawn->useSkill(_slot);
     }
-}
-
-void AGamePlayerController::RPCServerRepairSupport_Implementation()
-{
-    if (this->R_EnableInput)
-    {
-        AShipPawn* shipPawn = Cast<AShipPawn>(this->GetPawn());
-        if (shipPawn == nullptr)
-        {
-            return;
-        }
-
-        shipPawn->OnRepairSupportDelegate.Broadcast();
-    }
-}
-
-void AGamePlayerController::RPCServerSpecial_Implementation()
-{
 }
 
 void AGamePlayerController::forward(float _value)
@@ -226,12 +192,6 @@ void AGamePlayerController::flightAttitude(float _value)
     this->RPCServerFlightAttitude(_value);
 }
 
-void AGamePlayerController::triggerEscapeMode()
-{
-    if (!this->R_EnableInput) return;
-    this->RPCServerTriggerEscapeMode();
-}
-
 void AGamePlayerController::fireOn()
 {
     if (!this->R_EnableInput) return;
@@ -244,38 +204,16 @@ void AGamePlayerController::fireOff()
     this->RPCServerFire(false);
 }
 
-void AGamePlayerController::special()
+void AGamePlayerController::skill(float _slot)
 {
-    if (!this->R_EnableInput) return;
-    this->RPCServerSpecial();
+    if (!this->R_EnableInput || _slot == 0.0f) return;
+    this->RPCServerSkill(_slot - 1.0f);
 }
 
 void AGamePlayerController::returnToMainMenu()
 {
     FString levelName{ "MainMenu" };
     UGameplayStatics::OpenLevel(this->GetWorld(), FName(*levelName), false, "");
-}
-
-void AGamePlayerController::repairProtection()
-{
-    if (!this->R_EnableInput) return;
-    this->RPCServerRepairProtection();
-}
-
-void AGamePlayerController::repairSupport()
-{
-    if (!this->R_EnableInput) return;
-    this->RPCServerRepairSupport();
-}
-
-void AGamePlayerController::giveAlly1()
-{
-
-}
-
-void AGamePlayerController::giveAlly2()
-{
-
 }
 
 void AGamePlayerController::lock()

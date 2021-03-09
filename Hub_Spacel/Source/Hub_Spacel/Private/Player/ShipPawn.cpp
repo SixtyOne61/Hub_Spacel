@@ -31,6 +31,7 @@
 #include "Util/SimplyMath.h"
 #include "TimerManager.h"
 #include "NiagaraComponent.h"
+#include "Gameplay/SkillComponent.h"
 
 // Sets default values
 AShipPawn::AShipPawn()
@@ -65,6 +66,10 @@ AShipPawn::AShipPawn()
     if (!ensure(FireComponent != nullptr)) return;
     FireComponent->Deactivate();
 
+    SkillComponent = CreateDefaultSubobject<USkillComponent>(TEXT("Skill_00"));
+    if (!ensure(SkillComponent != nullptr)) return;
+    SkillComponent->Deactivate();
+
     RepairComponent = CreateDefaultSubobject<URepairComponent>(TEXT("Repair_00"));
     if (!ensure(RepairComponent != nullptr)) return;
     RepairComponent->Deactivate();
@@ -85,6 +90,11 @@ void AShipPawn::OnStartGame()
     if (UCustomCollisionComponent* customCollisionComponent = NewObject<UCustomCollisionComponent>(this, "CustomCollision_00"))
     {
         customCollisionComponent->RegisterComponent();
+    }
+
+    if (this->SkillComponent != nullptr)
+    {
+        this->SkillComponent->setupSkill();
     }
 
     RPCClientStartGame(this->Team);
@@ -114,11 +124,7 @@ void AShipPawn::BeginPlay()
         }
         activateComponent(this->FireComponent);
         activateComponent(this->RepairComponent);
-
-        m_escapeModeState = EEscapeMode::StateAvailable;
-        m_escapeModeState.init({ std::bind(&AShipPawn::onChangeStateAvailable, this),
-                        std::bind(&AShipPawn::onChangeStateEscape, this),
-                        std::bind(&AShipPawn::onChangeStateCountDown, this) });
+        activateComponent(this->SkillComponent);
     }
     else
     {
@@ -150,6 +156,26 @@ void AShipPawn::BeginPlay()
             this->DriverMeshComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
         }
     }
+}
+
+void AShipPawn::RPCClientChangeStateEscapeMode_Implementation(ECountDown _newState)
+{
+    if (this->IsLocallyControlled())
+    {
+        this->OnStateEspaceModeChangeDelegate.Broadcast(_newState);
+    }
+}
+
+bool AShipPawn::isTargetPlayer() const
+{
+    if (!ensure(this->FireComponent != nullptr)) return false;
+    return this->FireComponent->m_target != nullptr;
+}
+
+void AShipPawn::launchMissile()
+{
+    if (!ensure(this->FireComponent != nullptr)) return;
+    this->FireComponent->launchMissile();
 }
 
 void AShipPawn::OnTargetPlayer(AActor* _target)
@@ -257,7 +283,7 @@ void AShipPawn::serverMove(float _deltaTime)
     if (!ensure(this->ModuleComponent != nullptr)) return;
     if (!ensure(this->ModuleComponent->SupportMeshComponent != nullptr)) return;
 
-    float coefEscape { m_escapeModeState == EEscapeMode::StateEscape ? this->PlayerDataAsset->EscapeModeCoef : 1.0f };
+    float coefEscape { m_isEscape ? this->PlayerDataAsset->EscapeModeCoef : 1.0f };
 
     // roll rotation
 
@@ -424,57 +450,6 @@ void AShipPawn::hit(FString const& _team, class UPrimitiveComponent* _comp, int3
     }
 }
 
-void AShipPawn::RPCClientChangeStateEscapeMode_Implementation(EEscapeMode _newState)
-{
-    if (this->GetNetMode() != ENetMode::NM_DedicatedServer
-        && this->IsLocallyControlled())
-    {
-        this->OnStateEspaceModeChangeDelegate.Broadcast(_newState);
-    }
-}
-
-void AShipPawn::onChangeStateAvailable()
-{
-    this->RPCClientChangeStateEscapeMode(m_escapeModeState.get());
-}
-
-void AShipPawn::onChangeStateEscape()
-{
-    FTimerDelegate TimerDel;
-    FTimerHandle TimerHandle;
-
-    //Binding the function with specific values
-    TimerDel.BindUFunction(this, FName("SetTriggerEscapeMode"), EEscapeMode::StateCountDown);
-    GetWorld()->GetTimerManager().SetTimer(TimerHandle, TimerDel, this->PlayerDataAsset->EscapeModeDuration, false);
-
-    this->RPCClientChangeStateEscapeMode(m_escapeModeState.get());
-}
-
-void AShipPawn::onChangeStateCountDown()
-{
-    FTimerDelegate TimerDel;
-    FTimerHandle TimerHandle;
-
-    //Binding the function with specific values
-    TimerDel.BindUFunction(this, FName("SetTriggerEscapeMode"), EEscapeMode::StateAvailable);
-    GetWorld()->GetTimerManager().SetTimer(TimerHandle, TimerDel, this->PlayerDataAsset->EscapeModeCountDown, false);
-
-    this->RPCClientChangeStateEscapeMode(m_escapeModeState.get());
-}
-
-void AShipPawn::TriggerEscapeMode()
-{
-    if (m_escapeModeState == EEscapeMode::StateAvailable)
-    {
-        m_escapeModeState = EEscapeMode::StateEscape;
-    }
-}
-
-void AShipPawn::SetTriggerEscapeMode(int32 _state)
-{
-    m_escapeModeState = (EEscapeMode)_state;
-}
-
 void AShipPawn::setLocationExhaustFx(TArray<FVector> const& _loc)
 {
     if (this->ExhaustFxComponent == nullptr)
@@ -517,6 +492,14 @@ float AShipPawn::getPercentSupport() const
     if (this->ModuleComponent == nullptr) return 0.0f;
 
     return this->ModuleComponent->getPercentSupport();
+}
+
+void AShipPawn::useSkill(float _slot)
+{
+    if (this->SkillComponent != nullptr)
+    {
+        this->SkillComponent->useSkill(_slot);
+    }
 }
 
 void AShipPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetimeProps) const

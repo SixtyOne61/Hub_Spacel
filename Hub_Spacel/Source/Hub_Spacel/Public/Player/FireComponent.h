@@ -15,7 +15,7 @@ class HUB_SPACEL_API UFireComponent : public UPlayerActorComponent
 
 	friend class AShipPawn;
 
-public:	
+public:
 	// Sets default values for this component's properties
 	UFireComponent();
 
@@ -24,6 +24,7 @@ public:
 
 private:
 	void spawnBullet(FTransform const& _transform) const;
+	void launchMissile();
 
 private:
 	/* use only on server, say if we are in fire */

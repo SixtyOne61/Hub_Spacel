@@ -78,11 +78,11 @@ void USpacelWidget::NativeTick(const FGeometry& _myGeometry, float _deltaTime)
         if (shipPawn->PlayerDataAsset != nullptr)
         {
             m_duration += _deltaTime;
-            if (m_escapeMode == EEscapeMode::StateEscape)
+            if (m_escapeMode == ECountDown::Ing)
             {
                 updatePercent(this->EscapeModeProgressBar, m_duration / shipPawn->PlayerDataAsset->EscapeModeDuration);
             }
-            else if (m_escapeMode == EEscapeMode::StateCountDown)
+            else if (m_escapeMode == ECountDown::CountDown)
             {
                 updatePercent(this->EscapeModeProgressBar, 1.0f - m_duration / shipPawn->PlayerDataAsset->EscapeModeCountDown);
             }
@@ -206,18 +206,18 @@ void USpacelWidget::OnUpdateMatiere(int32 _value)
     }
 }
 
-void USpacelWidget::OnChangeStateEscapeMode(EEscapeMode _state)
+void USpacelWidget::OnChangeStateEscapeMode(ECountDown _state)
 {
     m_duration = 0.0f;
     m_escapeMode = _state;
 
     switch (_state)
     {
-        case EEscapeMode::StateAvailable:
-        case EEscapeMode::StateEscape:
+        case ECountDown::Available:
+        case ECountDown::Ing:
             updatePercent(this->EscapeModeProgressBar, 0.0f);
         break;
-        case EEscapeMode::StateCountDown:
+        case ECountDown::CountDown:
             updatePercent(this->EscapeModeProgressBar, 1.0f);
         break;
     }

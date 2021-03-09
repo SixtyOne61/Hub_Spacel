@@ -47,7 +47,7 @@ private:
 	void OnUpdateMatiere(int32 _value);
 
 	UFUNCTION()
-	void OnChangeStateEscapeMode(EEscapeMode _state);
+	void OnChangeStateEscapeMode(ECountDown _state);
 
 	UFUNCTION()
 	void OnUpdateCountProtection(int32 _value, int32 _max);
@@ -85,6 +85,6 @@ private:
 	UPROPERTY()
 	class UUserWidget* ScoreWidget { nullptr };
 
-	EEscapeMode m_escapeMode { EEscapeMode::StateAvailable };
+	ECountDown m_escapeMode { ECountDown::Available };
 	float m_duration { 0.0f };
 };

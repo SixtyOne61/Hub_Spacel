@@ -38,6 +38,22 @@ enum class ESkillType : uint8
     Support UMETA(DisplayName = "Support")
 };
 
+UENUM(BlueprintType)
+enum class ESkill : uint8
+{
+    RepairProtection UMETA(DisplayName = "RepairProtection"),
+    RepairSupport UMETA(DisplayName = "RepairSupport"),
+    GiveAlly1 UMETA(DisplayName = "GiveAlly1"),
+    GiveAlly2 UMETA(DisplayName = "GiveAlly2"),
+    SpecialAttack UMETA(DisplayName = "SpecialAttack"),
+    SpecialProtection UMETA(DisplayName = "SpecialProtection"),
+    SpecialSupport UMETA(DisplayName = "SpecialSupport"),
+    EscapeMode UMETA(DisplayName = "EscapeMode"),
+    MetaFormAttack UMETA(DisplayName = "MetaFormAttack"),
+    MetaFormProtection UMETA(DisplayName = "MetaFormAttack"),
+    MetaFormSupport UMETA(DisplayName = "MetaFormAttack"),
+};
+
 UENUM(BlueprintType, meta = (Bitflags, UseEnumValuesAsMaskValuesInEditor = "true"))
 enum class EFace : uint8
 {
@@ -62,11 +78,11 @@ enum class EShipModuleType : uint8
 };
 
 UENUM(BlueprintType)
-enum class EEscapeMode : uint8
+enum class ECountDown : uint8
 {
-    StateAvailable UMETA(DisplayName = "StateAvailable"),
-    StateEscape UMETA(DisplayName = "StateEscape"),
-    StateCountDown UMETA(DisplayName = "StateCountDown")
+    Available UMETA(DisplayName = "Available"),
+    Ing UMETA(DisplayName = "Ing"),
+    CountDown UMETA(DisplayName = "CountDown")
 };
 
 UENUM(BlueprintType)

@@ -62,19 +62,10 @@ private:
 	void RPCServerFlightAttitude(float _val);
 
 	UFUNCTION(Reliable, Server)
-	void RPCServerTriggerEscapeMode();
-
-	UFUNCTION(Reliable, Server)
 	void RPCServerFire(bool _is);
 
 	UFUNCTION(Reliable, Server)
-	void RPCServerRepairProtection();
-
-	UFUNCTION(Reliable, Server)
-	void RPCServerRepairSupport();
-
-	UFUNCTION(Reliable, Server)
-	void RPCServerSpecial();
+	void RPCServerSkill(float _slot);
 
 	UFUNCTION(Reliable, Server)
 	void RPCServerStartGame();
@@ -84,18 +75,13 @@ private:
 	void horizontalStraf(float _value);
 	void verticalStraf(float _value);
 	void flightAttitude(float _value);
-	void triggerEscapeMode();
 	void fireOn();
 	void fireOff();
 	void returnToMainMenu();
-	void repairProtection();
-	void repairSupport();
-	void giveAlly1();
-	void giveAlly2();
 	void lock();
 	void showScore();
 	void hideScore();
-	void special();
+	void skill(float _slot);
 
 	/* from event */
 	UFUNCTION()

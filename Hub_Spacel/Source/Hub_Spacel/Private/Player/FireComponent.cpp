@@ -102,3 +102,8 @@ void UFireComponent::spawnBullet(FTransform const& _transform) const
         laser->Tags.Add(*tag);
     }
 }
+
+void UFireComponent::launchMissile()
+{
+
+}

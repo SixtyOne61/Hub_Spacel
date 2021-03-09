@@ -15,7 +15,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHitProtection);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHitSupport);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnRepairProtection);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnRepairSupport);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStateEscapeModeChange, EEscapeMode, _state);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStateEscapeModeChange, ECountDown, _state);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnShowScore, bool, _show);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLocalTeamUpdate, FString const&, _team);
 
@@ -30,6 +30,7 @@ class HUB_SPACEL_API AShipPawn : public APawn
     friend class UCustomCollisionComponent;
     friend class URepairComponent;
     friend class ULocalPlayerActionComponent;
+    friend class USkillComponent;
 
 public:
 	// Sets default values for this pawn's properties
@@ -55,6 +56,17 @@ public:
 
     float getPercentProtection() const;
     float getPercentSupport() const;
+
+    UFUNCTION(Reliable, Client)
+    void RPCClientChangeStateEscapeMode(ECountDown _newState);
+
+    inline void setIsEscape(bool _value) { m_isEscape = _value; }
+
+    /* work on server side */
+    bool isTargetPlayer() const;
+
+    /* server side */
+    void launchMissile();
 
 private:
     void lookAt(FVector const& _loc, FVector const& _dir, FVector const& _hitLoc);
@@ -112,25 +124,13 @@ private:
     UFUNCTION()
     void OnStartGame();
 
-    /* trigger for make a fast move, only call from server */
-    void TriggerEscapeMode();
-
-    UFUNCTION()
-    void SetTriggerEscapeMode(int32 _state);
-
-    /* callback method when state change */
-    void onChangeStateAvailable();
-    void onChangeStateEscape();
-    void onChangeStateCountDown();
-
-    UFUNCTION(Reliable, Client)
-    void RPCClientChangeStateEscapeMode(EEscapeMode _newState);
-
     UFUNCTION(UnReliable, Client)
     void RPCClientPlayCameraShake();
 
     UFUNCTION(Reliable, Client)
     void RPCClientStartGame(FName const& _team);
+
+    void useSkill(float _slot);
 
 public:
     UPROPERTY(Category = "Ship", VisibleAnywhere, BlueprintReadOnly)
@@ -155,6 +155,9 @@ public:
     /* only on server side */
     UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)
     class UFireComponent* FireComponent { nullptr };
+
+    UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)
+    class USkillComponent* SkillComponent { nullptr };
 
     /* only on server side */
     UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)
@@ -181,6 +184,15 @@ public:
     UPROPERTY()
     FName Team {};
 
+    UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
+    FOnRepairProtection OnRepairProtectionDelegate {};
+
+    UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
+    FOnRepairSupport OnRepairSupportDelegate {};
+
+    UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
+    FOnStateEscapeModeChange OnStateEspaceModeChangeDelegate {};
+
 protected:
     /* current percent speed value 0.0f - 1.0f */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = "OnRep_PercentSpeed")
@@ -201,11 +213,10 @@ protected:
     UPROPERTY()
     class UNiagaraComponent* ExhaustFxComponent { nullptr };
 
-    /* state of escape mode phase; only server side */
-    EnumUtil::EnumCallback<EEscapeMode> m_escapeModeState {};
-
     /* true during waiting respawn */
     bool m_isKilled { false };
+    /* true during escape mode */
+    bool m_isEscape { false };
 
 private:
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
@@ -218,16 +229,7 @@ private:
     FOnHitSupport OnHitSupportDelegate {};
 
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
-    FOnRepairProtection OnRepairProtectionDelegate {};
-
-    UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
-    FOnRepairSupport OnRepairSupportDelegate {};
-
-    UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
     FOnEndUpdateMatiere OnEndUpdateMatiereDelegate {};
-
-    UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
-    FOnStateEscapeModeChange OnStateEspaceModeChangeDelegate {};
 
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
     FOnShowScore OnShowScoreDelegate {};
