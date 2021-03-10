@@ -5,6 +5,7 @@
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "Util/SimplyMath.h"
+#include "GameFramework/ProjectileMovementComponent.h"
 
 AMissile::AMissile()
     : AProjectileBase()
@@ -12,17 +13,12 @@ AMissile::AMissile()
     Cubes = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("InstancedStaticMesh"));
     if (!ensure(Cubes != nullptr)) return;
     Cubes->SetupAttachment(RootComponent);
+
+    PrimaryActorTick.bCanEverTick = true;
 }
 
 AMissile::~AMissile()
 {
-    if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
-    {
-        UWorld* world{ this->GetWorld() };
-        if (!ensure(world != nullptr)) return;
-
-        world->GetTimerManager().ClearAllTimersForObject(this);
-    }
 }
 
 void AMissile::BeginPlay()
@@ -31,10 +27,26 @@ void AMissile::BeginPlay()
 
     if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
     {
-        UWorld* world{ this->GetWorld() };
-        if (!ensure(world != nullptr)) return;
+        m_isSeekPlayer = false;
+        FTimerHandle handle;
+        this->GetWorldTimerManager().SetTimer(handle, this, &AMissile::Seek, 0.2f, false);
+    }
+}
 
-        world->GetTimerManager().SetTimer(this->TimerHandle, this, &AMissile::FlyToTarget, 0.25f, true, 0.5f);
+void AMissile::Seek()
+{
+    m_isSeekPlayer = true;
+}
+
+void AMissile::Tick(float _deltaTime)
+{
+    Super::Tick(_deltaTime);
+    if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
+    {
+        if (m_isSeekPlayer)
+        {
+            FlyToTarget();
+        }
     }
 }
 
@@ -100,9 +112,9 @@ void AMissile::FlyToTarget()
         return;
     }
 
-    FRotator rotation = SimplyMath::MyLookRotation(this->Target->GetActorLocation(), this->GetActorUpVector(), this->GetActorLocation());
-    rotation = FMath::Lerp(this->GetActorRotation(), rotation, 0.8f);
-    this->SetActorRotation(rotation);
+    FVector dir = (this->Target->GetActorLocation() - this->GetActorLocation()).GetSafeNormal();
+    this->SetActorRotation(dir.ToOrientationQuat());
+    this->ProjectileMovementComponent->Velocity = dir * this->ProjectileMovementComponent->InitialSpeed;
 }
 
 void AMissile::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

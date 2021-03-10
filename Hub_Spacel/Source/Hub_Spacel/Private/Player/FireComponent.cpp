@@ -11,6 +11,7 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Components/SphereComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/InstancedStaticMeshComponent.h"
 #include "Gameplay/Bullet/Missile.h"
 
 // Sets default values for this component's properties
@@ -107,10 +108,15 @@ void UFireComponent::setupProjectile(AActor* _projectile) const
         comp->SetVelocityInLocalSpace(dir * comp->InitialSpeed);
     }
 
+    FString profile = "P" + m_shipPawnOwner.Get()->Team.ToString();
+    profile = profile.Replace(TEXT(" "), TEXT(""));
     if (USphereComponent* comp = Cast<USphereComponent>(_projectile->GetComponentByClass(USphereComponent::StaticClass())))
     {
-        FString profile = "P" + m_shipPawnOwner.Get()->Team.ToString();
-        profile = profile.Replace(TEXT(" "), TEXT(""));
+        comp->SetCollisionProfileName(*profile);
+    }
+
+    if (UInstancedStaticMeshComponent* comp = Cast<UInstancedStaticMeshComponent>(_projectile->GetComponentByClass(UInstancedStaticMeshComponent::StaticClass())))
+    {
         comp->SetCollisionProfileName(*profile);
     }
 

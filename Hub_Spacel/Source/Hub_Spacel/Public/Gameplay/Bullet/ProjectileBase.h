@@ -25,16 +25,9 @@ protected:
 
 	FString && getLocalTeam() const;
 
-private:
-	UFUNCTION()
-	void OnComponentHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit);
-
 public:
 	UPROPERTY(EditAnywhere, Category = "Default")
 	class UProjectileMovementComponent* ProjectileMovementComponent{ nullptr };
-
-	UPROPERTY(EditAnywhere, Category = "Collision")
-	class USphereComponent* ProjectileCollisionComponent{ nullptr };
 
 protected:
 	UPROPERTY(EditAnywhere)
