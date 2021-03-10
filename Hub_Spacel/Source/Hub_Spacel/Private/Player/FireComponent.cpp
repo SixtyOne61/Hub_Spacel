@@ -80,10 +80,11 @@ void UFireComponent::TickComponent(float _deltaTime, ELevelTick _tickType, FActo
 
 void UFireComponent::spawnBullet(FTransform const& _transform) const
 {
-    AActor* laser = Cast<AActor>(UGameplayStatics::BeginDeferredActorSpawnFromClass(this->GetWorld(), m_shipPawnOwner.Get()->PlayerDataAsset->BulletClass, _transform));
-    if (laser)
+    AActor* actor = Cast<AActor>(UGameplayStatics::BeginDeferredActorSpawnFromClass(this->GetWorld(), m_shipPawnOwner.Get()->PlayerDataAsset->BulletClass, _transform));
+    if (AProjectileBase* laser = Cast<AProjectileBase>(actor))
     {
         // init bullet
+        laser->R_Team = m_shipPawnOwner.Get()->Team;
         UGameplayStatics::FinishSpawningActor(laser, _transform);
         setupProjectile(laser);
     }
@@ -95,6 +96,7 @@ void UFireComponent::launchMissile(FTransform const _transform) const
     if (AMissile* missile = Cast<AMissile>(actor))
     {
         missile->Target = m_target;
+        missile->R_Team = m_shipPawnOwner.Get()->Team;
         UGameplayStatics::FinishSpawningActor(missile, _transform);
         setupProjectile(missile);
     }

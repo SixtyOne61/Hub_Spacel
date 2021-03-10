@@ -30,4 +30,7 @@ private:
 protected:
 	UPROPERTY(EditAnywhere, Category = "Collision")
 	class USphereComponent* ProjectileCollisionComponent{ nullptr };
+
+	UPROPERTY(EditAnywhere)
+	class UTeamColorDataAsset* Colors{ nullptr };
 };

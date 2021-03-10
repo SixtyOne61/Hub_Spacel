@@ -147,7 +147,7 @@ void UPreparePhaseWidget::SetupOwningTeam()
     FString owningPlayerTeam{ owningPlayerState->Team };
     if (this->Colors != nullptr)
     {
-        this->SetupOutline(this->Colors->GetColor(owningPlayerTeam));
+        this->SetupOutline(this->Colors->GetColor<FSlateColor>(owningPlayerTeam));
     }
 }
 

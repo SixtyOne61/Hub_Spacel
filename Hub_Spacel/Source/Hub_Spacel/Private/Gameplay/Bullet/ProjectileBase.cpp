@@ -6,6 +6,7 @@
 #include "NiagaraFunctionLibrary.h"
 #include "Util/Tag.h"
 #include "Player/ShipPawn.h"
+#include "Net/UnrealNetwork.h"
 
 AProjectileBase::AProjectileBase()
 {
@@ -42,22 +43,13 @@ bool AProjectileBase::OnHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, 
     return true;
 }
 
-FString&& AProjectileBase::getLocalTeam() const
+FString AProjectileBase::getLocalTeam() const
 {
-    for (FName tag : this->Tags)
-    {
-        FString tagStr = tag.ToString();
-        if (tagStr.Contains("Team:"))
-        {
-            TArray<FString> out;
-            tagStr.ParseIntoArray(out, TEXT(":"), true);
-            if (out.Num() == 2)
-            {
-                return std::move(out[1]);
-            }
-        }
-    }
+    return R_Team.ToString();
+}
 
-    ensure(false);
-    return std::move("");
+void AProjectileBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+    DOREPLIFETIME(AProjectileBase, R_Team);
 }

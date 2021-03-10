@@ -5,12 +5,11 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Components/SphereComponent.h"
 #include "Components/StaticMeshComponent.h"
-#include "Materials/MaterialInstance.h"
-#include "Materials/MaterialInstanceDynamic.h"
+#include "Components/SphereComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Util/Tag.h"
 #include "Player/ModuleComponent.h"
-#include "Components/SphereComponent.h"
+#include "DataAsset/TeamColorDataAsset.h"
 
 ALaserBullet::ALaserBullet()
     : AProjectileBase()
@@ -27,6 +26,16 @@ void ALaserBullet::BeginPlay()
     {
         if (!ensure(ProjectileCollisionComponent != nullptr)) return;
         this->ProjectileCollisionComponent->OnComponentHit.AddDynamic(this, &ALaserBullet::OnComponentHit);
+    }
+
+    if (UStaticMeshComponent* comp = Cast<UStaticMeshComponent>(this->GetComponentByClass(UStaticMeshComponent::StaticClass())))
+    {
+        if (this->Colors != nullptr)
+        {
+            FString team = getLocalTeam();
+            FColor color = this->Colors->GetColor<FColor>(team);
+            comp->SetVectorParameterValueOnMaterials("Color", FVector(color.R / 255.0f, color.G / 255.0f, color.B / 255.0f));
+        }
     }
 }
 

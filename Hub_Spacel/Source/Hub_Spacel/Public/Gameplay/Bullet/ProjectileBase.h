@@ -23,11 +23,14 @@ protected:
 
 	virtual bool OnHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit);
 
-	FString && getLocalTeam() const;
+	FString getLocalTeam() const;
 
 public:
 	UPROPERTY(EditAnywhere, Category = "Default")
 	class UProjectileMovementComponent* ProjectileMovementComponent{ nullptr };
+
+	UPROPERTY(Replicated)
+	FName R_Team {};
 
 protected:
 	UPROPERTY(EditAnywhere)
