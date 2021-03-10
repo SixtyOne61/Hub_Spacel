@@ -175,7 +175,9 @@ bool AShipPawn::isTargetPlayer() const
 void AShipPawn::launchMissile()
 {
     if (!ensure(this->FireComponent != nullptr)) return;
-    this->FireComponent->launchMissile();
+    if (!ensure(this->ModuleComponent != nullptr)) return;
+    if (!ensure(this->ModuleComponent->MissileMeshComponent != nullptr)) return;
+    this->FireComponent->launchMissile(this->ModuleComponent->MissileMeshComponent->GetComponentTransform());
 }
 
 void AShipPawn::OnTargetPlayer(AActor* _target)

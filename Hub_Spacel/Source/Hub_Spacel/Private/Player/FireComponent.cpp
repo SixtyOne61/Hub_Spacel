@@ -11,6 +11,7 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Components/SphereComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Gameplay/Bullet/Missile.h"
 
 // Sets default values for this component's properties
 UFireComponent::UFireComponent()
@@ -82,28 +83,37 @@ void UFireComponent::spawnBullet(FTransform const& _transform) const
     if (laser)
     {
         // init bullet
-        laser->SetReplicates(true);
-        laser->SetReplicateMovement(true);
         UGameplayStatics::FinishSpawningActor(laser, _transform);
-        if (UProjectileMovementComponent* comp = Cast<UProjectileMovementComponent>(laser->GetComponentByClass(UProjectileMovementComponent::StaticClass())))
-        {
-            FVector dir{ FVector{ 1.0f, 0.0f, .0f } };
-            comp->SetVelocityInLocalSpace(dir * comp->InitialSpeed);
-        }
-
-        if (USphereComponent* comp = Cast<USphereComponent>(laser->GetComponentByClass(USphereComponent::StaticClass())))
-        {
-            FString profile = "P"+ m_shipPawnOwner.Get()->Team.ToString();
-            profile = profile.Replace(TEXT(" "), TEXT(""));
-            comp->SetCollisionProfileName(*profile);
-        }
-
-        FString tag = "Team:" + m_shipPawnOwner.Get()->Team.ToString();
-        laser->Tags.Add(*tag);
+        setupProjectile(laser);
     }
 }
 
-void UFireComponent::launchMissile()
+void UFireComponent::launchMissile(FTransform const _transform) const
 {
+    AActor* actor = Cast<AActor>(UGameplayStatics::BeginDeferredActorSpawnFromClass(this->GetWorld(), m_shipPawnOwner.Get()->PlayerDataAsset->MissileClass, _transform));
+    if (AMissile* missile = Cast<AMissile>(actor))
+    {
+        missile->Target = m_target;
+        UGameplayStatics::FinishSpawningActor(missile, _transform);
+        setupProjectile(missile);
+    }
+}
 
+void UFireComponent::setupProjectile(AActor* _projectile) const
+{
+    if (UProjectileMovementComponent* comp = Cast<UProjectileMovementComponent>(_projectile->GetComponentByClass(UProjectileMovementComponent::StaticClass())))
+    {
+        FVector dir{ FVector{ 1.0f, 0.0f, .0f } };
+        comp->SetVelocityInLocalSpace(dir * comp->InitialSpeed);
+    }
+
+    if (USphereComponent* comp = Cast<USphereComponent>(_projectile->GetComponentByClass(USphereComponent::StaticClass())))
+    {
+        FString profile = "P" + m_shipPawnOwner.Get()->Team.ToString();
+        profile = profile.Replace(TEXT(" "), TEXT(""));
+        comp->SetCollisionProfileName(*profile);
+    }
+
+    FString tag = "Team:" + m_shipPawnOwner.Get()->Team.ToString();
+    _projectile->Tags.Add(*tag);
 }

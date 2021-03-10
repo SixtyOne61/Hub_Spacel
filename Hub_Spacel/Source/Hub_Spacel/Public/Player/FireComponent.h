@@ -24,7 +24,9 @@ public:
 
 private:
 	void spawnBullet(FTransform const& _transform) const;
-	void launchMissile();
+	void launchMissile(FTransform const _transform) const;
+
+	void setupProjectile(AActor* _projectile) const;
 
 private:
 	/* use only on server, say if we are in fire */

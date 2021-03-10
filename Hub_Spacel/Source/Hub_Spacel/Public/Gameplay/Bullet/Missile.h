@@ -14,7 +14,7 @@ class HUB_SPACEL_API AMissile : public AProjectileBase
 {
 	GENERATED_BODY()
 	
-	friend class AShipPawn;
+	friend class UFireComponent;
 
 public:
 	AMissile();

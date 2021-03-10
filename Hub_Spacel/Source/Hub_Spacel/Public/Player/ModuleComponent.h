@@ -78,6 +78,9 @@ public:
     UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)
     class UInstancedStaticMeshComponent* SupportMeshComponent{ nullptr };
 
+    UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)
+    class UStaticMeshComponent* MissileMeshComponent { nullptr };
+
 public:
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
     FOnUpdateCountProtection OnUpdateCountProtectionDelegate {};
@@ -103,6 +106,9 @@ private:
 
     UPROPERTY(Replicated)
     TArray<FVector> R_RemovedSupportLocations{};
+
+    UPROPERTY(Replicated)
+    TArray<FVector> R_MissileLocations {};
 
     /* max protection and support cube */
     int32 m_maxProtection { -1 };

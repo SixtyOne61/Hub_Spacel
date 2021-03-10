@@ -41,16 +41,19 @@ public:
     float MaxFlightAttitudeSpeed { 1000.0f };
 
     UPROPERTY(Category = "Escape Mode", EditAnywhere, BlueprintReadWrite)
-    float EscapeModeDuration { 5.0f };
+    float EscapeModeDuration { 5.0f }; // deprecated
 
     UPROPERTY(Category = "Escape Mode", EditAnywhere, BlueprintReadWrite)
-    float EscapeModeCountDown { 15.0f };
+    float EscapeModeCountDown { 15.0f }; // deprecated
 
     UPROPERTY(Category = "Escape Mode", EditAnywhere, BlueprintReadWrite)
     float EscapeModeCoef { 1.5f };
 
     UPROPERTY(Category = "Fire", EditAnywhere, BlueprintReadOnly)
     TSubclassOf<class AActor> BulletClass;
+
+    UPROPERTY(Category = "Fire", EditAnywhere, BlueprintReadOnly)
+    TSubclassOf<class AActor> MissileClass;
 
     UPROPERTY(Category = "Fire", EditAnywhere, BlueprintReadWrite)
     float TimeBetweenFire = 0.3f;

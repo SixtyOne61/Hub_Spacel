@@ -32,6 +32,10 @@ UModuleComponent::UModuleComponent()
     if (!ensure(SupportMeshComponent != nullptr)) return;
     SupportMeshComponent->SetRenderCustomDepth(true);
     SupportMeshComponent->AttachToComponent(this, FAttachmentTransformRules::KeepRelativeTransform);
+
+    MissileMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Missile_00"));
+    if (!ensure(MissileMeshComponent != nullptr)) return;
+    MissileMeshComponent->AttachToComponent(this, FAttachmentTransformRules::KeepRelativeTransform);
 }
 
 // Called when the game starts
@@ -84,12 +88,12 @@ void UModuleComponent::SetMax_Implementation(int32 _maxProtection, int32 _maxSup
 
 void UModuleComponent::OnStartGame()
 {
-    auto lb_readXml = [](uint8 _level, USetupAttributeDataAsset* _dataAsset, TArray<FVector>& _out)
+    auto lb_readXml = [](uint8 _level, USetupAttributeDataAsset* _dataAsset, TArray<FVector>& _out, FString && _name)
     {
         if (!ensure(_dataAsset != nullptr)) return;
         FString const& path{ _level > 0 ? _dataAsset->HeavyPath : _dataAsset->DefaultPath };
 
-        SimplyXml::FContainer<FVector> locationInformation{ "Location" };
+        SimplyXml::FContainer<FVector> locationInformation{ _name };
         SimplyXml::FReader reader{ FPaths::ProjectDir() + path };
         reader.read(locationInformation);
 
@@ -102,25 +106,37 @@ void UModuleComponent::OnStartGame()
         if (spacelPlayerState == nullptr)
         {
 #if WITH_EDITOR
-            lb_readXml(0, this->WeaponDataAsset, RU_AttackLocations);
+            lb_readXml(0, this->WeaponDataAsset, RU_AttackLocations, "Location");
             buildShip(this->WeaponMeshComponent, this->WeaponDataAsset, RU_AttackLocations);
-            lb_readXml(0, this->ProtectionDataAsset, RU_ProtectionLocations);
+            lb_readXml(0, this->ProtectionDataAsset, RU_ProtectionLocations, "Location");
             buildShip(this->ProtectionMeshComponent, this->ProtectionDataAsset, RU_ProtectionLocations);
-            lb_readXml(0, this->SupportDataAsset, RU_SupportLocations);
+            lb_readXml(0, this->SupportDataAsset, RU_SupportLocations, "Location");
             buildShip(this->SupportMeshComponent, this->SupportDataAsset, RU_SupportLocations);
+
+            lb_readXml(0, this->WeaponDataAsset, this->R_MissileLocations, "Missile");
+            if (this->MissileMeshComponent != nullptr && this->R_MissileLocations.Num() != 0)
+            {
+                this->MissileMeshComponent->SetRelativeLocation(this->R_MissileLocations[0]);
+            }
 #endif // WITH_EDITOR
         }
         else
         {
-            lb_readXml(spacelPlayerState->Attack, this->WeaponDataAsset, this->RU_AttackLocations);
+            lb_readXml(spacelPlayerState->Attack, this->WeaponDataAsset, this->RU_AttackLocations, "Location");
             buildShip(this->WeaponMeshComponent, this->WeaponDataAsset, this->RU_AttackLocations);
 
-            lb_readXml(spacelPlayerState->Protection, this->ProtectionDataAsset, this->RU_ProtectionLocations);
+            lb_readXml(spacelPlayerState->Protection, this->ProtectionDataAsset, this->RU_ProtectionLocations, "Location");
             buildShip(this->ProtectionMeshComponent, this->ProtectionDataAsset, this->RU_ProtectionLocations);
 
-            lb_readXml(spacelPlayerState->Support, this->SupportDataAsset, this->RU_SupportLocations);
+            lb_readXml(spacelPlayerState->Support, this->SupportDataAsset, this->RU_SupportLocations, "Location");
             buildShip(this->SupportMeshComponent, this->SupportDataAsset, this->RU_SupportLocations);
             setLocationExhaustFx();
+
+            lb_readXml(spacelPlayerState->Attack, this->WeaponDataAsset, R_MissileLocations, "Missile");
+            if (this->MissileMeshComponent != nullptr && this->R_MissileLocations.Num() != 0)
+            {
+                this->MissileMeshComponent->SetRelativeLocation(this->R_MissileLocations[0]);
+            }
 
             this->SetMax(this->RU_ProtectionLocations.Num(), this->RU_SupportLocations.Num());
         }
@@ -220,4 +236,5 @@ void UModuleComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
     DOREPLIFETIME(UModuleComponent, R_RemovedProtectionLocations);
     DOREPLIFETIME(UModuleComponent, R_RemovedSupportLocations);
     DOREPLIFETIME(UModuleComponent, R_RemovedAttackLocations);
+    DOREPLIFETIME(UModuleComponent, R_MissileLocations);
 }
