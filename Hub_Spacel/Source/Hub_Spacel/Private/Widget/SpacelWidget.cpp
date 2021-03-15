@@ -31,7 +31,6 @@ void USpacelWidget::NativeConstruct()
     PingTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Ping"));
     ProtectionProgressBar = SimplyUI::initSafetyFromName<UUserWidget, UProgressBar>(this, TEXT("ProgressBar_Protection"));
     SupportProgressBar = SimplyUI::initSafetyFromName<UUserWidget, UProgressBar>(this, TEXT("ProgressBar_Support"));
-    EscapeModeProgressBar = SimplyUI::initSafetyFromName<UUserWidget, UProgressBar>(this, TEXT("ProgressBar_EscapeMode"));
     ScoreWidget = SimplyUI::initSafetyFromName<UUserWidget, UUserWidget>(this, TEXT("WBP_Score"));
     SkillBarHorizontalBox = SimplyUI::initSafetyFromName<UUserWidget, UHorizontalBox>(this, TEXT("SkillBar"));
 
@@ -55,7 +54,6 @@ void USpacelWidget::NativeConstruct()
     if (shipPawn != nullptr)
     {
         shipPawn->OnEndUpdateMatiereDelegate.AddDynamic(this, &USpacelWidget::OnUpdateMatiere);
-        shipPawn->OnStateEspaceModeChangeDelegate.AddDynamic(this, &USpacelWidget::OnChangeStateEscapeMode);
 
         shipPawn->ModuleComponent->OnUpdateCountProtectionDelegate.AddDynamic(this, &USpacelWidget::OnUpdateCountProtection);
         shipPawn->ModuleComponent->OnUpdateCountSupportDelegate.AddDynamic(this, &USpacelWidget::OnUpdateCountSupport);
@@ -79,24 +77,7 @@ void USpacelWidget::NativeDestruct()
 void USpacelWidget::NativeTick(const FGeometry& _myGeometry, float _deltaTime)
 {
     Super::NativeTick(_myGeometry, _deltaTime);
-
-    if (AShipPawn* shipPawn = this->GetOwningPlayerPawn<AShipPawn>())
-    {
-        if (shipPawn->PlayerDataAsset != nullptr)
-        {
-            m_duration += _deltaTime;
-            if (m_escapeMode == ECountDown::Ing)
-            {
-                updatePercent(this->EscapeModeProgressBar, m_duration / shipPawn->PlayerDataAsset->EscapeModeDuration);
-            }
-            else if (m_escapeMode == ECountDown::CountDown)
-            {
-                updatePercent(this->EscapeModeProgressBar, 1.0f - m_duration / shipPawn->PlayerDataAsset->EscapeModeCountDown);
-            }
-        }
-
-        UpdateScore();
-    }
+    UpdateScore();
 }
 
 void USpacelWidget::StartGame()
@@ -143,6 +124,9 @@ void USpacelWidget::StartGame()
             USkillWidget* skillWidget = CreateWidget<USkillWidget, UHorizontalBox>(this->SkillBarHorizontalBox, this->SkillWidgetClass, *name);
             skillWidget->SetSkill(skill.BackgroundColorBtn, skill.IconeBtn);
             this->SkillBarHorizontalBox->AddChildToHorizontalBox(skillWidget);
+
+            UProgressBar * progress = SimplyUI::initSafetyFromName<UUserWidget, UProgressBar>(skillWidget, TEXT("ProgressBar_Skill"));
+            skillPtr->addProgressBar(progress);
         }
     }
 }
@@ -228,23 +212,6 @@ void USpacelWidget::OnUpdateMatiere(int32 _value)
     if (this->MatiereTextBlock != nullptr)
     {
         this->MatiereTextBlock->SetText(FText::FromString(FString::FromInt(_value)));
-    }
-}
-
-void USpacelWidget::OnChangeStateEscapeMode(ECountDown _state)
-{
-    m_duration = 0.0f;
-    m_escapeMode = _state;
-
-    switch (_state)
-    {
-        case ECountDown::Available:
-        case ECountDown::Ing:
-            updatePercent(this->EscapeModeProgressBar, 0.0f);
-        break;
-        case ECountDown::CountDown:
-            updatePercent(this->EscapeModeProgressBar, 1.0f);
-        break;
     }
 }
 

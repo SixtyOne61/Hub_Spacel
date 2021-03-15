@@ -15,7 +15,6 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHitProtection);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHitSupport);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnRepairProtection);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnRepairSupport);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStateEscapeModeChange, ECountDown, _state);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnShowScore, bool, _show);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLocalTeamUpdate, FString const&, _team);
 
@@ -56,9 +55,6 @@ public:
 
     float getPercentProtection() const;
     float getPercentSupport() const;
-
-    UFUNCTION(Reliable, Client)
-    void RPCClientChangeStateEscapeMode(ECountDown _newState);
 
     inline void setIsEscape(bool _value) { m_isEscape = _value; }
 
@@ -192,9 +188,6 @@ public:
 
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
     FOnRepairSupport OnRepairSupportDelegate {};
-
-    UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
-    FOnStateEscapeModeChange OnStateEspaceModeChangeDelegate {};
 
 protected:
     /* current percent speed value 0.0f - 1.0f */

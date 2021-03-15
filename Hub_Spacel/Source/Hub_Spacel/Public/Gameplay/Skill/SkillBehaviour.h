@@ -12,7 +12,7 @@
 class HUB_SPACEL_API SkillBehaviour
 {
 public:
-	SkillBehaviour(class AShipPawn* _pawn);
+	SkillBehaviour(class AShipPawn* _pawn, ENetMode _netMode);
 	virtual ~SkillBehaviour() {}
 
 	virtual bool onStart() { return true; }
@@ -21,6 +21,7 @@ public:
 
 protected:
 	class AShipPawn* m_pawn { nullptr };
+	ENetMode m_netMode {};
 };
 
 class HUB_SPACEL_API SkillRepairProtection : public SkillBehaviour
@@ -110,5 +111,5 @@ public:
 class HUB_SPACEL_API SkillFactory
 {
 public:
-	static TUniquePtr<SkillBehaviour> create(ESkill _skill, class AShipPawn* _pawn);
+	static TUniquePtr<SkillBehaviour> create(ESkill _skill, class AShipPawn* _pawn, ENetMode _netMode);
 };

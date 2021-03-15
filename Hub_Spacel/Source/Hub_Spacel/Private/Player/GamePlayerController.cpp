@@ -208,6 +208,16 @@ void AGamePlayerController::skill(float _slot)
 {
     if (!this->R_EnableInput || _slot == 0.0f) return;
     this->RPCServerSkill(_slot - 1.0f);
+
+    // for local feedback (count down etc)
+    AShipPawn* shipPawn = Cast<AShipPawn>(this->GetPawn());
+    if (shipPawn == nullptr)
+    {
+        return;
+    }
+
+    // behaviour of each skill is disable on client
+    shipPawn->useSkill(_slot - 1.0f);
 }
 
 void AGamePlayerController::returnToMainMenu()

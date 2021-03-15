@@ -18,7 +18,7 @@ public:
 	ESkill Skill {};
 
 	UPROPERTY(EditAnywhere)
-	uint32 CoundDown { 0 };
+	uint32 CountDown { 0 };
 
 	UPROPERTY(EditAnywhere)
 	uint32 Duration { 0 };

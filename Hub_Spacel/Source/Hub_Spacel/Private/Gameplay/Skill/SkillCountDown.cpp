@@ -5,6 +5,7 @@
 #include "Engine/World.h"
 #include "TimerManager.h"
 #include "Gameplay/Skill/SkillBehaviour.h"
+#include "Components/ProgressBar.h"
 
 SkillCountDown::SkillCountDown(SkillCountDown const& _cpy)
     : m_netMode(_cpy.m_netMode)
@@ -13,12 +14,12 @@ SkillCountDown::SkillCountDown(SkillCountDown const& _cpy)
 {
     if (m_netMode == ENetMode::NM_DedicatedServer)
     {
-        m_behaviour = SkillFactory::create(m_param.Skill, m_pawn);
+        m_behaviour = SkillFactory::create(m_param.Skill, m_pawn, m_netMode);
     }
     m_state = ECountDown::Available;
     m_state.init({ std::bind(&SkillCountDown::onAvailable, this),
-                        std::bind(&SkillCountDown::onIng, this),
-                        std::bind(&SkillCountDown::onCountDown, this) });
+                    std::bind(&SkillCountDown::onIng, this),
+                    std::bind(&SkillCountDown::onCountDown, this) });
 }
 
 SkillCountDown::SkillCountDown(FSkill _skill, class AShipPawn* _pawn, ENetMode _netMode)
@@ -28,12 +29,12 @@ SkillCountDown::SkillCountDown(FSkill _skill, class AShipPawn* _pawn, ENetMode _
 {
     if (m_netMode == ENetMode::NM_DedicatedServer)
     {
-        m_behaviour = SkillFactory::create(m_param.Skill, m_pawn);
+        m_behaviour = SkillFactory::create(m_param.Skill, m_pawn, m_netMode);
     }
     m_state = ECountDown::Available;
     m_state.init({ std::bind(&SkillCountDown::onAvailable, this),
-                        std::bind(&SkillCountDown::onIng, this),
-                        std::bind(&SkillCountDown::onCountDown, this) });
+                    std::bind(&SkillCountDown::onIng, this),
+                    std::bind(&SkillCountDown::onCountDown, this) });
 }
 
 SkillCountDown::~SkillCountDown()
@@ -44,19 +45,47 @@ void SkillCountDown::tick(float _delta)
 {
     m_currentTime += _delta;
 
-    if (m_state == ECountDown::Ing && m_currentTime >= m_param.Duration)
+    if (m_state == ECountDown::Ing)
     {
-        m_state = ECountDown::CountDown;
+        if (m_currentTime >= m_param.Duration)
+        {
+            m_state = ECountDown::CountDown;
+        }
+        else
+        {
+            updatePercent(m_progressBar, m_currentTime / m_param.Duration);
+        }
     }
-    else if (m_state == ECountDown::CountDown && m_currentTime >= m_param.CoundDown)
+    else if (m_state == ECountDown::CountDown)
     {
-        m_state = ECountDown::Available;
+        if (m_currentTime >= m_param.CountDown)
+        {
+            m_state = ECountDown::Available;
+        }
+        else
+        {
+            updatePercent(m_progressBar, 1.0f - m_currentTime / m_param.CountDown);
+        }
     }
+}
+
+void SkillCountDown::updatePercent(UProgressBar* _progressBar, float _percent)
+{
+    if (_progressBar != nullptr)
+    {
+        _progressBar->SetPercent(_percent);
+    }
+}
+
+void SkillCountDown::addProgressBar(class UProgressBar* _progressBar)
+{
+    m_progressBar = _progressBar;
 }
 
 void SkillCountDown::onAvailable()
 {
     m_currentTime = 0.0f;
+    updatePercent(m_progressBar, 0.0f);
     if(m_behaviour.IsValid())
     {
         m_behaviour.Get()->onEndCountDown();
@@ -66,6 +95,7 @@ void SkillCountDown::onAvailable()
 void SkillCountDown::onIng()
 {
     m_currentTime = 0.0f;
+    updatePercent(m_progressBar, 0.0f);
     if (m_netMode == ENetMode::NM_DedicatedServer
         && (!m_behaviour.IsValid() || !m_behaviour.Get()->onStart()))
     {
@@ -76,6 +106,7 @@ void SkillCountDown::onIng()
 void SkillCountDown::onCountDown()
 {
     m_currentTime = 0.0f;
+    updatePercent(m_progressBar, 1.0f);
     if (m_behaviour.IsValid()) m_behaviour.Get()->onEnd();
 }
 

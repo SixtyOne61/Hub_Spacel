@@ -170,14 +170,6 @@ void AShipPawn::BeginPlay()
     }
 }
 
-void AShipPawn::RPCClientChangeStateEscapeMode_Implementation(ECountDown _newState)
-{
-    if (this->IsLocallyControlled())
-    {
-        this->OnStateEspaceModeChangeDelegate.Broadcast(_newState);
-    }
-}
-
 bool AShipPawn::isTargetPlayer() const
 {
     if (!ensure(this->FireComponent != nullptr)) return false;

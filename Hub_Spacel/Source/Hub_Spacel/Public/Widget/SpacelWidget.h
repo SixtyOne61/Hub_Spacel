@@ -47,9 +47,6 @@ private:
 	void OnUpdateMatiere(int32 _value);
 
 	UFUNCTION()
-	void OnChangeStateEscapeMode(ECountDown _state);
-
-	UFUNCTION()
 	void OnUpdateCountProtection(int32 _value, int32 _max);
 
 	UFUNCTION()
@@ -80,9 +77,6 @@ private:
 	class UProgressBar* SupportProgressBar { nullptr };
 
 	UPROPERTY()
-	class UProgressBar* EscapeModeProgressBar { nullptr };
-
-	UPROPERTY()
 	class UHorizontalBox* SkillBarHorizontalBox { nullptr };
 
 	UPROPERTY()
@@ -90,7 +84,4 @@ private:
 
 	UPROPERTY()
 	class UUserWidget* ScoreWidget { nullptr };
-
-	ECountDown m_escapeMode { ECountDown::Available };
-	float m_duration { 0.0f };
 };
