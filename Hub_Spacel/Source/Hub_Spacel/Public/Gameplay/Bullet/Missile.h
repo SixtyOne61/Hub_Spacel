@@ -23,6 +23,9 @@ public:
 	/* override */
 	void applyHit(TArray<int32>& _instance) override;
 
+	UFUNCTION()
+	void OnTargetFogIn();
+
 protected:
 	void BeginPlay() override;
 	void Tick(float _deltaTime) override;

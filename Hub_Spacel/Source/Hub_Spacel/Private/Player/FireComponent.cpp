@@ -97,6 +97,7 @@ void UFireComponent::launchMissile(FTransform const _transform) const
     {
         missile->Target = m_target;
         missile->R_Team = m_shipPawnOwner.Get()->Team;
+        m_shipPawnOwner->OnInFogDelegate.AddDynamic(missile, &AMissile::OnTargetFogIn);
         UGameplayStatics::FinishSpawningActor(missile, _transform);
         setupProjectile(missile);
     }

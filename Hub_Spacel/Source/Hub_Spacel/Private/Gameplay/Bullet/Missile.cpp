@@ -117,6 +117,12 @@ void AMissile::FlyToTarget()
     this->ProjectileMovementComponent->Velocity = dir * this->ProjectileMovementComponent->InitialSpeed;
 }
 
+void AMissile::OnTargetFogIn()
+{
+    this->Destroy();
+}
+
+
 void AMissile::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);

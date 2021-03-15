@@ -407,6 +407,7 @@ void AShipPawn::setCollisionProfile(FString _team)
 void AShipPawn::setIsInFog(bool _isIn)
 {
     this->RU_IsInFog = _isIn;
+    this->OnInFogDelegate.Broadcast();
 }
 
 void AShipPawn::OnRep_IsInFog()
