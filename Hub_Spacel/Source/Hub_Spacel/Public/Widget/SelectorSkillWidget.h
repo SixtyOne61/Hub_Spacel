@@ -36,8 +36,8 @@ private:
 	void OnLevel3();
 
 	void onLevel(uint8 _level);
-
 	void reset();
+	inline void setLock(bool _isLock) { m_isLock = _isLock; }
 
 public:
 	UPROPERTY(EditAnywhere)
@@ -58,4 +58,6 @@ private:
 
 	UPROPERTY()
 	FOnClickLevel OnClickLevelDelegate {};
+
+	bool m_isLock {false};
 };

@@ -37,16 +37,19 @@ void USelectorSkillWidget::NativeConstruct()
 
 void USelectorSkillWidget::OnLevel1()
 {
+    if(m_isLock) return;
     onLevel(0);
 }
 
 void USelectorSkillWidget::OnLevel2()
 {
+    if (m_isLock) return;
     onLevel(1);
 }
 
 void USelectorSkillWidget::OnLevel3()
 {
+    if (m_isLock) return;
     onLevel(2);
 }
 

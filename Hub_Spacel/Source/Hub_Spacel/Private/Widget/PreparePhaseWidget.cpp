@@ -111,6 +111,11 @@ void UPreparePhaseWidget::updatePlayerInfo()
 void UPreparePhaseWidget::LockPrepare()
 {
     m_isLock = true;
+
+    for (auto* selectorWidget : this->SelectorSkillWidget)
+    {
+        selectorWidget->setLock(true);
+    }
 }
 
 void UPreparePhaseWidget::StartPrepare()
