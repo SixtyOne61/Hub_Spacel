@@ -61,6 +61,9 @@ private:
 	void OnShowScore(bool _show);
 
 private:
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class USkillWidget> SkillWidgetClass { nullptr };
+
 	UPROPERTY()
 	class UTextBlock* MatiereTextBlock { nullptr };
 
@@ -78,6 +81,9 @@ private:
 
 	UPROPERTY()
 	class UProgressBar* EscapeModeProgressBar { nullptr };
+
+	UPROPERTY()
+	class UHorizontalBox* SkillBarHorizontalBox { nullptr };
 
 	UPROPERTY()
 	TArray<class UAllyWidget*> AllyWidgets { };

@@ -5,16 +5,22 @@
 #include "Components/TextBlock.h"
 #include "Components/UniformGridPanel.h"
 #include "Components/ProgressBar.h"
+#include "Components/HorizontalBox.h"
+#include "Components/HorizontalBoxSlot.h"
 #include "Player/SpacelPlayerState.h"
 #include "Player/GamePlayerController.h"
 #include "Player/ModuleComponent.h"
 #include "Player/ShipPawn.h"
+#include "Gameplay/SkillComponent.h"
 #include "GameState/SpacelGameState.h"
 #include "Hub_SpacelGameInstance.h"
 #include "Kismet/GameplayStatics.h"
 #include "Util/SimplyUI.h"
 #include "DataAsset/PlayerDataAsset.h"
+#include "DataAsset/SkillDataAsset.h"
 #include "Widget/AllyWidget.h"
+#include "Widget/SkillWidget.h"
+#include "Factory/SpacelFactory.h"
 
 void USpacelWidget::NativeConstruct()
 {
@@ -27,6 +33,7 @@ void USpacelWidget::NativeConstruct()
     SupportProgressBar = SimplyUI::initSafetyFromName<UUserWidget, UProgressBar>(this, TEXT("ProgressBar_Support"));
     EscapeModeProgressBar = SimplyUI::initSafetyFromName<UUserWidget, UProgressBar>(this, TEXT("ProgressBar_EscapeMode"));
     ScoreWidget = SimplyUI::initSafetyFromName<UUserWidget, UUserWidget>(this, TEXT("WBP_Score"));
+    SkillBarHorizontalBox = SimplyUI::initSafetyFromName<UUserWidget, UHorizontalBox>(this, TEXT("SkillBar"));
 
     TArray<FName> allyNames { TEXT("Widget_Ally1"), TEXT("Widget_Ally2") };
     SimplyUI::initArray(this, AllyWidgets, allyNames);
@@ -118,6 +125,24 @@ void USpacelWidget::StartGame()
                 this->AllyWidgets[i]->Visibility = ESlateVisibility::Visible;
                 ++i;
             }
+        }
+    }
+
+    // create skill bar
+    if (this->SkillBarHorizontalBox == nullptr) return;
+    if (this->SkillWidgetClass == nullptr) return;
+    if (AShipPawn* shipPawn = this->GetOwningPlayerPawn<AShipPawn>())
+    {
+        if(shipPawn->SkillComponent == nullptr) return;
+        TArray<TUniquePtr<SkillCountDown>> const& skills = shipPawn->SkillComponent->getSkills();
+        for (auto const& skillPtr : skills)
+        {
+            FSkill const& skill = skillPtr.Get()->getParam();
+            FString name = "Skill";
+            name.Append(FString::FromInt((int)skill.Skill));
+            USkillWidget* skillWidget = CreateWidget<USkillWidget, UHorizontalBox>(this->SkillBarHorizontalBox, this->SkillWidgetClass, *name);
+            skillWidget->SetSkill(skill.BackgroundColorBtn, skill.IconeBtn);
+            this->SkillBarHorizontalBox->AddChildToHorizontalBox(skillWidget);
         }
     }
 }

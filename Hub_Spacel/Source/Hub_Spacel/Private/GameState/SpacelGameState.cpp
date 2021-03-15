@@ -15,6 +15,10 @@ void ASpacelGameState::OnRep_StateGame()
         OnStartPrepareDelegate.Broadcast();
         break;
 
+    case (uint8)EGameState::LockPrepare:
+        OnLockPrepareDelegate.Broadcast();
+        break;
+
     case (uint8)EGameState::InGame:
         OnStartGameDelegate.Broadcast();
         break;

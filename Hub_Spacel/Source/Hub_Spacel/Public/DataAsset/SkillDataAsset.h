@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
 #include "Enum/SpacelEnum.h"
+#include "Styling/SlateColor.h"
 #include "SkillDataAsset.generated.h"
 
 USTRUCT()
@@ -21,6 +22,12 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	uint32 Duration { 0 };
+
+	UPROPERTY(EditAnywhere)
+	class UTexture2D * IconeBtn { nullptr };
+
+	UPROPERTY(EditAnywhere)
+	FSlateColor BackgroundColorBtn { };
 };
 
 /**

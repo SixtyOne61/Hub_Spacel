@@ -45,10 +45,13 @@ void UPreparePhaseWidget::NativeConstruct()
     if (spacelGameState != nullptr)
     {
         spacelGameState->OnStartPrepareDelegate.AddDynamic(this, &UPreparePhaseWidget::StartPrepare);
+        spacelGameState->OnLockPrepareDelegate.AddDynamic(this, &UPreparePhaseWidget::LockPrepare);
         spacelGameState->OnStartGameDelegate.AddDynamic(this, &UPreparePhaseWidget::StartGame);
     }
 
     SetupOwningTeam();
+
+    m_isLock = false;
 }
 
 void UPreparePhaseWidget::UpdateRemainingSkillPoint()
@@ -105,6 +108,11 @@ void UPreparePhaseWidget::updatePlayerInfo()
     }
 }
 
+void UPreparePhaseWidget::LockPrepare()
+{
+    m_isLock = true;
+}
+
 void UPreparePhaseWidget::StartPrepare()
 {
     UWorld* world{ this->GetWorld() };
@@ -153,6 +161,8 @@ void UPreparePhaseWidget::SetupOwningTeam()
 
 void UPreparePhaseWidget::OnClickLevel(ESkillType _type, uint8 _level)
 {
+    if(m_isLock) return;
+
     ASpacelPlayerState* owningPlayerState{ Cast<ASpacelPlayerState>(this->GetOwningPlayerState()) };
     if (owningPlayerState == nullptr) return;
 

@@ -84,17 +84,20 @@ AShipPawn::AShipPawn()
     Tags.Add(Tags::Player);
 }
 
+void AShipPawn::OnLockPrepare()
+{
+    if (this->SkillComponent != nullptr)
+    {
+        this->SkillComponent->setupSkill();
+    }
+}
+
 void AShipPawn::OnStartGame()
 {
     // add custom collision component
     if (UCustomCollisionComponent* customCollisionComponent = NewObject<UCustomCollisionComponent>(this, "CustomCollision_00"))
     {
         customCollisionComponent->RegisterComponent();
-    }
-
-    if (this->SkillComponent != nullptr)
-    {
-        this->SkillComponent->setupSkill();
     }
 
     RPCClientStartGame(this->Team);
@@ -121,6 +124,7 @@ void AShipPawn::BeginPlay()
         if (spacelGameState != nullptr)
         {
             spacelGameState->OnStartGameDelegate.AddDynamic(this, &AShipPawn::OnStartGame);
+            spacelGameState->OnLockPrepareDelegate.AddDynamic(this, &AShipPawn::OnLockPrepare);
         }
         activateComponent(this->FireComponent);
         activateComponent(this->RepairComponent);
@@ -154,6 +158,14 @@ void AShipPawn::BeginPlay()
             // remove collision for local player (for disable hit with cursor for target)
             setCollisionProfile("NoOverlapTeam");
             this->DriverMeshComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+
+            activateComponent(this->SkillComponent);
+
+            ASpacelGameState* spacelGameState{ Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld())) };
+            if (spacelGameState != nullptr)
+            {
+                spacelGameState->OnLockPrepareDelegate.AddDynamic(this, &AShipPawn::OnLockPrepare);
+            }
         }
     }
 }

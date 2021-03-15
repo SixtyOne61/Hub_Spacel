@@ -122,6 +122,9 @@ private:
     void OnRep_PercentSpeed();
 
     UFUNCTION()
+    void OnLockPrepare();
+
+    UFUNCTION()
     void OnStartGame();
 
     UFUNCTION(UnReliable, Client)

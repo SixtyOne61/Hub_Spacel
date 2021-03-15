@@ -9,6 +9,7 @@ enum class EGameState : uint8
 {
     Undefined = 0,
     Prepare,
+    LockPrepare,
     InGame
 };
 

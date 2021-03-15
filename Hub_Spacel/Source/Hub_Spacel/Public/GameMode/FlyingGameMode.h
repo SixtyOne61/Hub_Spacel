@@ -97,6 +97,9 @@ private:
 	void CountDownUntilGameOver();
 
 	UFUNCTION()
+	void PreparePhaseUntilLock();
+
+	UFUNCTION()
 	void PreparePhaseUntilOver();
 
 	UFUNCTION()
@@ -140,10 +143,15 @@ public:
 	FTimerHandle PreparePhaseUntilOverHandle {};
 
 	UPROPERTY()
+	FTimerHandle PreparePhaseUntilLockHandle {};
+
+	UPROPERTY()
 	int RemainingGameTime { 690 }; // 11'30
 
 	UPROPERTY()
 	int RemainingPrepareTime { 10 }; // 60
+
+	int m_lockTime { RemainingPrepareTime  - 5 };
 
 	UPROPERTY()
 	int SuspendBackfillTime { 45 };

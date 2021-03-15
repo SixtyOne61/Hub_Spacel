@@ -34,6 +34,9 @@ private:
 	void StartPrepare();
 
 	UFUNCTION()
+	void LockPrepare();
+
+	UFUNCTION()
 	void StartGame();
 
 	UFUNCTION()
@@ -66,4 +69,6 @@ private:
 
 	UPROPERTY()
 	int RemainingTime { 60 };
+
+	bool m_isLock { false };
 };

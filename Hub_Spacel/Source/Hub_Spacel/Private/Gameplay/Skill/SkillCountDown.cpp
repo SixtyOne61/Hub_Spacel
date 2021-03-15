@@ -7,21 +7,29 @@
 #include "Gameplay/Skill/SkillBehaviour.h"
 
 SkillCountDown::SkillCountDown(SkillCountDown const& _cpy)
-    : m_param(_cpy.m_param)
+    : m_netMode(_cpy.m_netMode)
+    , m_param(_cpy.m_param)
     , m_pawn(_cpy.m_pawn)
 {
-    m_behaviour = SkillFactory::create(m_param.Skill, m_pawn);
+    if (m_netMode == ENetMode::NM_DedicatedServer)
+    {
+        m_behaviour = SkillFactory::create(m_param.Skill, m_pawn);
+    }
     m_state = ECountDown::Available;
     m_state.init({ std::bind(&SkillCountDown::onAvailable, this),
                         std::bind(&SkillCountDown::onIng, this),
                         std::bind(&SkillCountDown::onCountDown, this) });
 }
 
-SkillCountDown::SkillCountDown(FSkill _skill, class AShipPawn* _pawn)
-    : m_param(_skill)
+SkillCountDown::SkillCountDown(FSkill _skill, class AShipPawn* _pawn, ENetMode _netMode)
+    : m_netMode(_netMode)
+    , m_param(_skill)
     , m_pawn(_pawn)
 {
-    m_behaviour = SkillFactory::create(m_param.Skill, m_pawn);
+    if (m_netMode == ENetMode::NM_DedicatedServer)
+    {
+        m_behaviour = SkillFactory::create(m_param.Skill, m_pawn);
+    }
     m_state = ECountDown::Available;
     m_state.init({ std::bind(&SkillCountDown::onAvailable, this),
                         std::bind(&SkillCountDown::onIng, this),
@@ -58,7 +66,8 @@ void SkillCountDown::onAvailable()
 void SkillCountDown::onIng()
 {
     m_currentTime = 0.0f;
-    if (!m_behaviour.IsValid() || !m_behaviour.Get()->onStart())
+    if (m_netMode == ENetMode::NM_DedicatedServer
+        && (!m_behaviour.IsValid() || !m_behaviour.Get()->onStart()))
     {
         m_state = ECountDown::Available;
     }

@@ -8,6 +8,7 @@
 #include "SpacelGameState.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartPrepare);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FLockPrepare);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartGame);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FScoreUpdate);
 
@@ -57,6 +58,9 @@ public:
 	void GoToPrepare() { this->RU_GameState = (uint8)EGameState::Prepare; OnRep_StateGame(); }
 
 	UFUNCTION()
+	void GoToLockPrepare() { this->RU_GameState = (uint8)EGameState::LockPrepare; OnRep_StateGame(); }
+
+	UFUNCTION()
 	void GoToInGame() { this->RU_GameState = (uint8)EGameState::InGame; OnRep_StateGame(); }
 
 	FString GetBestTeam() const;
@@ -82,6 +86,9 @@ public:
 
 	UPROPERTY()
 	FStartPrepare OnStartPrepareDelegate {};
+
+	UPROPERTY()
+	FLockPrepare OnLockPrepareDelegate {};
 
 	UPROPERTY()
 	FStartGame OnStartGameDelegate {};

@@ -20,6 +20,8 @@ class HUB_SPACEL_API USkillComponent : public UPlayerActorComponent
 public:
 	USkillComponent();
 
+	inline TArray<TUniquePtr<SkillCountDown>> const& getSkills() const { return m_skills; }
+
 protected:
 	void TickComponent(float _deltaTime, ELevelTick _tickType, FActorComponentTickFunction* _thisTickFunction) override;
 

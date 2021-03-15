@@ -223,6 +223,8 @@ void AFlyingGameMode::BeginPlay()
     if (!ensure(spacelGameState != nullptr)) return;
     spacelGameState->GoToPrepare();
     GetWorldTimerManager().SetTimer(this->PreparePhaseUntilOverHandle, this, &AFlyingGameMode::PreparePhaseUntilOver, 1.0f, true, 0.0f);
+    GetWorldTimerManager().SetTimer(this->PreparePhaseUntilLockHandle, this, &AFlyingGameMode::PreparePhaseUntilLock, 1.0f, true, 0.0f);
+
 #endif
 
     TArray<AActor*> out {};
@@ -409,6 +411,21 @@ void AFlyingGameMode::CountDownUntilGameOver()
     }
 }
 
+void AFlyingGameMode::PreparePhaseUntilLock()
+{
+    if(m_lockTime > 0)
+    {
+        m_lockTime--;
+    }
+    else
+    {
+        GetWorldTimerManager().ClearTimer(this->PreparePhaseUntilLockHandle);
+        ASpacelGameState* spacelGameState{ Cast<ASpacelGameState>(this->GameState) };
+        if (!ensure(spacelGameState != nullptr)) return;
+        spacelGameState->GoToLockPrepare();
+    }
+}
+
 void AFlyingGameMode::PreparePhaseUntilOver()
 {
     if (this->RemainingPrepareTime > 0)
@@ -440,6 +457,7 @@ void AFlyingGameMode::EndGame()
     GetWorldTimerManager().ClearTimer(this->HandleGameSessionUpdateHandle);
     GetWorldTimerManager().ClearTimer(this->SuspendBackfillHandle);
     GetWorldTimerManager().ClearTimer(this->PreparePhaseUntilOverHandle);
+    GetWorldTimerManager().ClearTimer(this->PreparePhaseUntilLockHandle);
 
 #if WITH_GAMELIFT
     Aws::GameLift::Server::TerminateGameSession();
@@ -491,6 +509,7 @@ void AFlyingGameMode::HandleProcessTermination()
     {
         GetWorldTimerManager().ClearTimer(this->CountDownUntilGameOverHandle);
         GetWorldTimerManager().ClearTimer(this->PreparePhaseUntilOverHandle);
+        GetWorldTimerManager().ClearTimer(this->PreparePhaseUntilLockHandle);
         GetWorldTimerManager().ClearTimer(this->HandleProcessTerminationHandle);
         GetWorldTimerManager().ClearTimer(this->HandleGameSessionUpdateHandle);
         GetWorldTimerManager().ClearTimer(this->SuspendBackfillHandle);
@@ -546,6 +565,7 @@ void AFlyingGameMode::HandleGameSessionUpdate()
         if (!ensure(spacelGameState != nullptr)) return;
         spacelGameState->GoToPrepare();
         GetWorldTimerManager().SetTimer(this->PreparePhaseUntilOverHandle, this, &AFlyingGameMode::PreparePhaseUntilOver, 1.0f, true, 0.0f);
+        GetWorldTimerManager().SetTimer(this->PreparePhaseUntilLockHandle, this, &AFlyingGameMode::PreparePhaseUntilLock, 1.0f, true, 0.0f);
     }
     else if(this->WaitingForPlayersToJoin)
     {

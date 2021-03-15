@@ -15,12 +15,14 @@ void USkillComponent::setupSkill()
 {
     if(this->SkillDataAsset == nullptr) return;
 
+    ENetMode mode = this->GetNetMode();
+
     // order is important
-    m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::RepairProtection), m_shipPawnOwner.Get()));
-    m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::RepairSupport), m_shipPawnOwner.Get()));
-    m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::GiveAlly1), m_shipPawnOwner.Get()));
-    m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::GiveAlly2), m_shipPawnOwner.Get()));
-    m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::EscapeMode), m_shipPawnOwner.Get()));
+    m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::RepairProtection), m_shipPawnOwner.Get(), mode));
+    m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::RepairSupport), m_shipPawnOwner.Get(), mode));
+    m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::GiveAlly1), m_shipPawnOwner.Get(), mode));
+    m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::GiveAlly2), m_shipPawnOwner.Get(), mode));
+    m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::EscapeMode), m_shipPawnOwner.Get(), mode));
 
     if (ASpacelPlayerState* spacelPlayerState = Cast<ASpacelPlayerState>(m_shipPawnOwner.Get()->GetPlayerState()))
     {
@@ -28,7 +30,7 @@ void USkillComponent::setupSkill()
         {
             if (spacelPlayerState->getSkillPoint(_skilltype) >= _level)
             {
-                m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(_skill), m_shipPawnOwner.Get()));
+                m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(_skill), m_shipPawnOwner.Get(), mode));
             }
         };
         
