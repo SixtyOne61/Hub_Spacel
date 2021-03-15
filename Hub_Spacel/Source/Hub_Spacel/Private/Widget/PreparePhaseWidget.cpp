@@ -34,12 +34,7 @@ void UPreparePhaseWidget::NativeConstruct()
     if (!ensure(this->TimeTextBlock != nullptr)) return;
     this->TimeTextBlock->SetText(FText::FromString(FString::FromInt(this->RemainingTime)));
 
-    ASpacelPlayerState* owningPlayerState{ Cast<ASpacelPlayerState>(this->GetOwningPlayerState()) };
-    if (owningPlayerState != nullptr)
-    {
-        owningPlayerState->OnUpdateRemainingSkillPointDelegate.AddDynamic(this, &UPreparePhaseWidget::UpdateRemainingSkillPoint);
-        this->UpdateRemainingSkillPoint();
-    }
+    RegisterEvent();
 
     ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld()));
     if (spacelGameState != nullptr)
@@ -52,6 +47,24 @@ void UPreparePhaseWidget::NativeConstruct()
     SetupOwningTeam();
 
     m_isLock = false;
+}
+
+void UPreparePhaseWidget::RegisterEvent()
+{
+    ASpacelPlayerState* owningPlayerState{ Cast<ASpacelPlayerState>(this->GetOwningPlayerState()) };
+    if (owningPlayerState != nullptr)
+    {
+        owningPlayerState->OnUpdateRemainingSkillPointDelegate.AddDynamic(this, &UPreparePhaseWidget::UpdateRemainingSkillPoint);
+        this->UpdateRemainingSkillPoint();
+    }
+    else
+    {
+        UWorld* world{ this->GetWorld() };
+        if (!ensure(world != nullptr)) return;
+
+        FTimerHandle handle;
+        world->GetTimerManager().SetTimer(handle, this, &UPreparePhaseWidget::RegisterEvent, 1.0f, false);
+    }
 }
 
 void UPreparePhaseWidget::UpdateRemainingSkillPoint()
@@ -116,6 +129,8 @@ void UPreparePhaseWidget::LockPrepare()
     {
         selectorWidget->setLock(true);
     }
+
+    this->OnLock();
 }
 
 void UPreparePhaseWidget::StartPrepare()

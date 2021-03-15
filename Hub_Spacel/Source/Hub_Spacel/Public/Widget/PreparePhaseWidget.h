@@ -19,6 +19,9 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void SetupOutline(FSlateColor _color);
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnLock();
+
 protected:
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
@@ -44,6 +47,9 @@ private:
 
 	UFUNCTION()
 	void OnClickLevel(ESkillType _type, uint8 _level);
+
+	UFUNCTION()
+	void RegisterEvent();
 
 	void updatePlayerInfo();
 
