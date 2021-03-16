@@ -59,8 +59,20 @@ void ASpacelGameState::AddScore(FString const& _team, EScoreType _type)
             case EScoreType::Kill:
                 score.Score += 300;
                 break;
+
+            case EScoreType::Tank:
+                score.Score += 10;
+                break;
             }
         }
+    }
+}
+
+void ASpacelGameState::AddScore(FString const& _team, EScoreType _type, int32 _nb)
+{
+    for (int i = 0; i < _nb; ++i)
+    {
+        AddScore(_team, _type);
     }
 }
 

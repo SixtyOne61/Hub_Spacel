@@ -81,6 +81,10 @@ AShipPawn::AShipPawn()
     SpeedLinesComponent = CreateDefaultSubobject<UPostProcessComponent>(TEXT("SpeedLines_00"));
     if (!ensure(TargetComponent != nullptr)) return;
 
+    ShieldComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Shield_00"));
+    if (!ensure(ShieldComponent != nullptr)) return;
+    ShieldComponent->SetupAttachment(RootComponent);
+
     Tags.Add(Tags::Player);
 }
 
@@ -182,6 +186,25 @@ void AShipPawn::launchMissile()
     if (!ensure(this->ModuleComponent != nullptr)) return;
     if (!ensure(this->ModuleComponent->MissileMeshComponent != nullptr)) return;
     this->FireComponent->launchMissile(this->ModuleComponent->MissileMeshComponent->GetComponentTransform());
+}
+
+void AShipPawn::addShield()
+{
+    if(this->PlayerDataAsset == nullptr || m_isKilled) return;
+    this->R_ShieldLife = this->PlayerDataAsset->ShieldLife;
+    if (this->ShieldComponent != nullptr)
+    {
+        this->ShieldComponent->SetVisibility(true);
+    }
+}
+
+void AShipPawn::removeShield()
+{
+    this->R_ShieldLife = 0;
+    if (this->ShieldComponent != nullptr)
+    {
+        this->ShieldComponent->SetVisibility(false);
+    }
 }
 
 void AShipPawn::OnTargetPlayer(AActor* _target)
@@ -509,11 +532,34 @@ void AShipPawn::useSkill(float _slot)
     }
 }
 
+bool AShipPawn::canTank(int32 _val)
+{
+    int32 newValue = this->R_ShieldLife - _val;
+    newValue = FMath::Max(0, newValue);
+
+    if (ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld())))
+    {
+        spacelGameState->AddScore(this->Team.ToString(), EScoreType::Tank, this->R_ShieldLife - newValue);
+    }
+
+    if (newValue == 0 && this->R_ShieldLife > 0)
+    {
+        if (this->ShieldComponent != nullptr)
+        {
+            this->ShieldComponent->SetVisibility(false);
+        }
+    }
+
+    this->R_ShieldLife = newValue;
+    return this->R_ShieldLife > 0;
+}
+
 void AShipPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetimeProps) const
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
     DOREPLIFETIME(AShipPawn, RU_IsInFog);
     DOREPLIFETIME(AShipPawn, RU_Matiere);
     DOREPLIFETIME(AShipPawn, RU_PercentSpeed);
+    DOREPLIFETIME(AShipPawn, R_ShieldLife);
 }
 

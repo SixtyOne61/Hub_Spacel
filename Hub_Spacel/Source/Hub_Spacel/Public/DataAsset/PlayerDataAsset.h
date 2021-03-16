@@ -40,14 +40,11 @@ public:
     UPROPERTY(Category = "Movement", EditAnywhere, BlueprintReadWrite)
     float MaxFlightAttitudeSpeed { 1000.0f };
 
-    UPROPERTY(Category = "Escape Mode", EditAnywhere, BlueprintReadWrite)
-    float EscapeModeDuration { 5.0f }; // deprecated
-
-    UPROPERTY(Category = "Escape Mode", EditAnywhere, BlueprintReadWrite)
-    float EscapeModeCountDown { 15.0f }; // deprecated
-
-    UPROPERTY(Category = "Escape Mode", EditAnywhere, BlueprintReadWrite)
+    UPROPERTY(Category = "Skill", EditAnywhere, BlueprintReadWrite)
     float EscapeModeCoef { 1.5f };
+
+    UPROPERTY(Category = "Skill", EditAnywhere, BlueprintReadWrite)
+    int32 ShieldLife { 50 };
 
     UPROPERTY(Category = "Fire", EditAnywhere, BlueprintReadOnly)
     TSubclassOf<class AActor> BulletClass;

@@ -94,8 +94,12 @@ class HUB_SPACEL_API SkillSpecialProtection : public SkillBehaviour
 public:
 	virtual ~SkillSpecialProtection() {}
 
-	void onEnd() override {};
+	bool onStart() override;
+	void onEnd() override;
 	void onEndCountDown() override {};
+
+private:
+	void fillPlayer(FName const& _team, TArray<class AShipPawn*>& _pawns) const;
 };
 
 class HUB_SPACEL_API SkillSpecialSupport : public SkillBehaviour

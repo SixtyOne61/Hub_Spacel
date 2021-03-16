@@ -127,6 +127,15 @@ bool UCustomCollisionComponent::sweepForInstancedStaticMesh(UInstancedStaticMesh
 			&& _mesh->GetInstanceTransform(index, worldTransform, true)
 			&& sweepByProfile(hits, worldTransform.GetLocation(), _profile, shape, {Tags::Matiere, Tags::Fog, _teamTag }))
 		{
+			if (m_shipPawnOwner->canTank(hits.Num()))
+			{
+				// clean actor hit
+				dispatch(hits);
+
+				++index;
+				continue;
+			}
+
 			// spawn matiere
 			if (m_matiereManager.IsValid())
 			{
@@ -195,9 +204,12 @@ void UCustomCollisionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 		if (sweepByProfile(hits, redZoneLocation, profileCollision, redZoneShape, { Tags::Matiere, Tags::Fog, *tagTeam }))
 		{
 			dispatch(hits);
-			m_shipPawnOwner.Get()->kill();
-			addScore(hits, EScoreType::Kill);
-			return; // break flow
+			if (!m_shipPawnOwner->canTank(hits.Num()))
+			{
+				m_shipPawnOwner.Get()->kill();
+				addScore(hits, EScoreType::Kill);
+				return; // break flow
+			}
 		}
 
 		FName prot = m_shipPawnOwner.Get()->ModuleComponent->ProtectionMeshComponent->GetCollisionProfileName();
@@ -342,6 +354,5 @@ void UCustomCollisionComponent::addScore(TArray<FHitResult> const& _hits, EScore
 		{
 			spacelGameState->AddScore(team, _type);
 		}
-		
 	}
 }

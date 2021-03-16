@@ -64,6 +64,8 @@ public:
 
     /* server side */
     void launchMissile();
+    void addShield();
+    void removeShield();
 
 private:
     void lookAt(FVector const& _loc, FVector const& _dir, FVector const& _hitLoc);
@@ -131,10 +133,14 @@ private:
     void RPCClientStartGame(FName const& _team);
 
     void useSkill(float _slot);
+    bool canTank(int32 _val);
 
 public:
     UPROPERTY(Category = "Ship", VisibleAnywhere, BlueprintReadOnly)
     class UStaticMeshComponent* DriverMeshComponent { nullptr };
+
+    UPROPERTY(Category = "Ship", VisibleAnywhere, BlueprintReadOnly)
+    class UStaticMeshComponent* ShieldComponent { nullptr };
 
     UPROPERTY(Category = "Ship", VisibleAnywhere, BlueprintReadOnly)
     class UPoseableMeshComponent* BaseShipMeshComponent { nullptr };
@@ -214,6 +220,9 @@ protected:
     bool m_isKilled { false };
     /* true during escape mode */
     bool m_isEscape { false };
+
+    UPROPERTY(Replicated)
+    int32 R_ShieldLife { 0 };
 
 private:
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")

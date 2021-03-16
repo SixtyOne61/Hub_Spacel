@@ -3,6 +3,9 @@
 
 #include "Gameplay/Skill/SkillBehaviour.h"
 #include "Player/ShipPawn.h"
+#include "GameState/SpacelGameState.h"
+#include "Kismet/GameplayStatics.h"
+#include "GameFramework/PlayerState.h"
 
 SkillBehaviour::SkillBehaviour(AShipPawn* _pawn, ENetMode _netMode)
     : m_pawn(_pawn)
@@ -47,6 +50,56 @@ bool SkillSpecialAttack::onStart()
 
     m_pawn->launchMissile();
     return true;
+}
+
+void SkillSpecialProtection::fillPlayer(FName const& _team, TArray<AShipPawn*>& _pawns) const
+{
+    _pawns.Empty();
+    if (AGameStateBase* gameState = UGameplayStatics::GetGameState(m_pawn->GetWorld()))
+    {
+        for (APlayerState const* playerState : gameState->PlayerArray)
+        {
+            if (playerState)
+            {
+                if (AShipPawn* pawn = Cast<AShipPawn>(playerState->GetPawn()))
+                {
+                    if (pawn->Team == _team)
+                    {
+                        _pawns.Add(pawn);
+                    }
+                }
+            }
+        }
+    }
+}
+
+bool SkillSpecialProtection::onStart()
+{
+    if (m_pawn == nullptr) return false;
+
+    FName team = m_pawn->Team;
+    TArray<AShipPawn*> pawns;
+    fillPlayer(team, pawns);
+
+    for (AShipPawn* pawn : pawns)
+    {
+        pawn->addShield();
+    }
+    return true;
+}
+
+void SkillSpecialProtection::onEnd()
+{
+    if (m_pawn == nullptr) return;
+
+    FName team = m_pawn->Team;
+    TArray<AShipPawn*> pawns;
+    fillPlayer(team, pawns);
+
+    for (AShipPawn* pawn : pawns)
+    {
+        pawn->removeShield();
+    }
 }
 
 TUniquePtr<SkillBehaviour> SkillFactory::create(ESkill _skill, class AShipPawn* _pawn, ENetMode _netMode)
