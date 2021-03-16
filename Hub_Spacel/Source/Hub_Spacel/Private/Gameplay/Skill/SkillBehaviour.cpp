@@ -102,6 +102,14 @@ void SkillSpecialProtection::onEnd()
     }
 }
 
+bool SkillSpecialSupport::onStart()
+{
+    if (m_pawn == nullptr || !m_pawn->isTargetPlayer()) return false;
+
+    m_pawn->emp();
+    return true;
+}
+
 TUniquePtr<SkillBehaviour> SkillFactory::create(ESkill _skill, class AShipPawn* _pawn, ENetMode _netMode)
 {
     switch (_skill)

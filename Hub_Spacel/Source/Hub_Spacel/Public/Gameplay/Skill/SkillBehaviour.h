@@ -108,6 +108,7 @@ class HUB_SPACEL_API SkillSpecialSupport : public SkillBehaviour
 public:
 	virtual ~SkillSpecialSupport() {}
 
+	bool onStart() override;
 	void onEnd() override {};
 	void onEndCountDown() override {};
 };

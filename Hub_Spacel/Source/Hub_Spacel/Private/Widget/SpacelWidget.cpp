@@ -7,6 +7,7 @@
 #include "Components/ProgressBar.h"
 #include "Components/HorizontalBox.h"
 #include "Components/HorizontalBoxSlot.h"
+#include "Components/Border.h"
 #include "Player/SpacelPlayerState.h"
 #include "Player/GamePlayerController.h"
 #include "Player/ModuleComponent.h"
@@ -33,6 +34,7 @@ void USpacelWidget::NativeConstruct()
     SupportProgressBar = SimplyUI::initSafetyFromName<UUserWidget, UProgressBar>(this, TEXT("ProgressBar_Support"));
     ScoreWidget = SimplyUI::initSafetyFromName<UUserWidget, UUserWidget>(this, TEXT("WBP_Score"));
     SkillBarHorizontalBox = SimplyUI::initSafetyFromName<UUserWidget, UHorizontalBox>(this, TEXT("SkillBar"));
+    EmpWidget = SimplyUI::initSafetyFromName<UUserWidget, UBorder>(this, TEXT("EMP"));
 
     TArray<FName> allyNames { TEXT("Widget_Ally1"), TEXT("Widget_Ally2") };
     SimplyUI::initArray(this, AllyWidgets, allyNames);
@@ -59,6 +61,7 @@ void USpacelWidget::NativeConstruct()
         shipPawn->ModuleComponent->OnUpdateCountSupportDelegate.AddDynamic(this, &USpacelWidget::OnUpdateCountSupport);
 
         shipPawn->OnShowScoreDelegate.AddDynamic(this, &USpacelWidget::OnShowScore);
+        shipPawn->OnUnderEmpDelegate.AddDynamic(this, &USpacelWidget::OnUnderEmp);
     }
 }
 
@@ -239,16 +242,14 @@ void USpacelWidget::updatePercent(UProgressBar* _progressBar, float _percent)
     }
 }
 
+
+
 void USpacelWidget::OnShowScore(bool _show)
 {
-    if(this->ScoreWidget == nullptr) return;
+    setVisibility(this->ScoreWidget, _show);
+}
 
-    if (_show)
-    {
-        this->ScoreWidget->SetVisibility(ESlateVisibility::Visible);
-    }
-    else
-    {
-        this->ScoreWidget->SetVisibility(ESlateVisibility::Hidden);
-    }
+void USpacelWidget::OnUnderEmp(bool _show)
+{
+    setVisibility(this->EmpWidget, _show);
 }

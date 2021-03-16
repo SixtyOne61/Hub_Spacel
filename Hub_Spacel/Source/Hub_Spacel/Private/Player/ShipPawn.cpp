@@ -207,6 +207,45 @@ void AShipPawn::removeShield()
     }
 }
 
+void AShipPawn::emp()
+{
+    if(this->FireComponent == nullptr) return;
+    if (AShipPawn* target = Cast<AShipPawn>(this->FireComponent->m_target))
+    {
+        if(this->SkillComponent == nullptr) return;
+        if(this->SkillComponent->SkillDataAsset == nullptr) return;
+        uint32 duration = this->SkillComponent->SkillDataAsset->getSKill(ESkill::SpecialSupport).Duration;
+        target->emp(duration);
+    }
+}
+
+void AShipPawn::emp(uint32 _duration)
+{
+    if (AGamePlayerController* playerController = this->GetController<AGamePlayerController>())
+    {
+        RPCClientUnderEmp(true);
+        m_isUnderEmp = true;
+        playerController->R_Emp = true;
+        FTimerHandle handle;
+        this->GetWorldTimerManager().SetTimer(handle, this, &AShipPawn::CleanEmp, _duration, false);
+    }
+}
+
+void AShipPawn::CleanEmp()
+{
+    if (AGamePlayerController* playerController = this->GetController<AGamePlayerController>())
+    {
+        RPCClientUnderEmp(false);
+        m_isUnderEmp = false;
+        playerController->R_Emp = false;
+    }
+}
+
+void AShipPawn::RPCClientUnderEmp_Implementation(bool _val)
+{
+    this->OnUnderEmpDelegate.Broadcast(_val);
+}
+
 void AShipPawn::OnTargetPlayer(AActor* _target)
 {
     rpcTargetCall(_target, std::bind(&AShipPawn::RPCServerTargetPlayer, this, std::placeholders::_1));

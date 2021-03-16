@@ -57,6 +57,24 @@ private:
 	UFUNCTION()
 	void OnShowScore(bool _show);
 
+	UFUNCTION()
+	void OnUnderEmp(bool _show);
+
+	template<class T>
+	void setVisibility(T* _widget, bool _show)
+	{
+		if (_widget == nullptr) return;
+
+		if (_show)
+		{
+			_widget->SetVisibility(ESlateVisibility::Visible);
+		}
+		else
+		{
+			_widget->SetVisibility(ESlateVisibility::Hidden);
+		}
+	}
+
 private:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class USkillWidget> SkillWidgetClass { nullptr };
@@ -84,4 +102,7 @@ private:
 
 	UPROPERTY()
 	class UUserWidget* ScoreWidget { nullptr };
+
+	UPROPERTY()
+	class UBorder* EmpWidget { nullptr };
 };

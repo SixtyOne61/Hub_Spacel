@@ -74,7 +74,7 @@ void AGamePlayerController::Tick(float _deltaTime)
 {
     Super::Tick(_deltaTime);
 
-    if (!this->R_EnableInput) return;
+    if (!this->R_EnableInput || this->R_Emp) return;
 
     AShipPawn* shipPawn { Cast<AShipPawn>(this->GetPawn()) };
     if (this->IsLocalController())
@@ -105,7 +105,7 @@ void AGamePlayerController::Tick(float _deltaTime)
 void AGamePlayerController::RPCServerUpdateMouseLocation_Implementation(FVector const& _loc, FVector const& _dir, FVector const& _hitLoc)
 {
     AShipPawn* shipPawn = Cast<AShipPawn>(this->GetPawn());
-    if (this->R_EnableInput && shipPawn != nullptr)
+    if (this->R_EnableInput && shipPawn != nullptr && !this->R_Emp)
     {
         shipPawn->lookAt(_loc, _dir, _hitLoc);
     }
@@ -113,7 +113,7 @@ void AGamePlayerController::RPCServerUpdateMouseLocation_Implementation(FVector 
 
 void AGamePlayerController::RPCServerForward_Implementation(float _val)
 {
-    if (this->R_EnableInput)
+    if (this->R_EnableInput && !this->R_Emp)
     {
         m_data.m_lastForwardInput = _val;
     }
@@ -121,7 +121,7 @@ void AGamePlayerController::RPCServerForward_Implementation(float _val)
 
 void AGamePlayerController::RPCServerHorizontalStraf_Implementation(float _val)
 {
-    if (this->R_EnableInput)
+    if (this->R_EnableInput && !this->R_Emp)
     {
         m_data.m_lastHorizontalStrafInput = _val;
     }
@@ -129,7 +129,7 @@ void AGamePlayerController::RPCServerHorizontalStraf_Implementation(float _val)
 
 void AGamePlayerController::RPCServerVerticalStraf_Implementation(float _val)
 {
-    if (this->R_EnableInput)
+    if (this->R_EnableInput && !this->R_Emp)
     {
         m_data.m_lastVerticalStrafInput = _val;
     }
@@ -137,7 +137,7 @@ void AGamePlayerController::RPCServerVerticalStraf_Implementation(float _val)
 
 void AGamePlayerController::RPCServerFlightAttitude_Implementation(float _val)
 {
-    if (this->R_EnableInput)
+    if (this->R_EnableInput && !this->R_Emp)
     {
         m_data.m_lastFlightAttitudeInput = _val;
     }
@@ -145,7 +145,7 @@ void AGamePlayerController::RPCServerFlightAttitude_Implementation(float _val)
 
 void AGamePlayerController::RPCServerFire_Implementation(bool _is)
 {
-    if (this->R_EnableInput)
+    if (this->R_EnableInput && !this->R_Emp)
     {
         if (AShipPawn* shipPawn = Cast<AShipPawn>(this->GetPawn()))
         {
@@ -156,7 +156,7 @@ void AGamePlayerController::RPCServerFire_Implementation(bool _is)
 
 void AGamePlayerController::RPCServerSkill_Implementation(float _slot)
 {
-    if (this->R_EnableInput)
+    if (this->R_EnableInput && !this->R_Emp)
     {
         AShipPawn* shipPawn = Cast<AShipPawn>(this->GetPawn());
         if (shipPawn == nullptr)
@@ -170,43 +170,43 @@ void AGamePlayerController::RPCServerSkill_Implementation(float _slot)
 
 void AGamePlayerController::forward(float _value)
 {
-    if (!this->R_EnableInput) return;
+    if (!this->R_EnableInput || this->R_Emp) return;
     this->RPCServerForward(_value);
 }
 
 void AGamePlayerController::horizontalStraf(float _value)
 {
-    if (!this->R_EnableInput) return;
+    if (!this->R_EnableInput || this->R_Emp) return;
     this->RPCServerHorizontalStraf(_value);
 }
 
 void AGamePlayerController::verticalStraf(float _value)
 {
-    if (!this->R_EnableInput) return;
+    if (!this->R_EnableInput || this->R_Emp) return;
     this->RPCServerVerticalStraf(_value);
 }
 
 void AGamePlayerController::flightAttitude(float _value)
 {
-    if (!this->R_EnableInput) return;
+    if (!this->R_EnableInput || this->R_Emp) return;
     this->RPCServerFlightAttitude(_value);
 }
 
 void AGamePlayerController::fireOn()
 {
-    if (!this->R_EnableInput) return;
+    if (!this->R_EnableInput || this->R_Emp) return;
     this->RPCServerFire(true);
 }
 
 void AGamePlayerController::fireOff()
 {
-    if (!this->R_EnableInput) return;
+    if (!this->R_EnableInput || this->R_Emp) return;
     this->RPCServerFire(false);
 }
 
 void AGamePlayerController::skill(float _slot)
 {
-    if (!this->R_EnableInput || _slot == 0.0f) return;
+    if (!this->R_EnableInput || _slot == 0.0f || this->R_Emp) return;
     this->RPCServerSkill(_slot - 1.0f);
 
     // for local feedback (count down etc)
@@ -228,7 +228,7 @@ void AGamePlayerController::returnToMainMenu()
 
 void AGamePlayerController::lock()
 {
-    if (!this->R_EnableInput) return;
+    if (!this->R_EnableInput || this->R_Emp) return;
     UHub_SpacelGameInstance* spacelGameInstance{ Cast<UHub_SpacelGameInstance>(this->GetGameInstance()) };
     spacelGameInstance->OnTryLockDelegate.Broadcast();
 }
@@ -281,6 +281,7 @@ void AGamePlayerController::RPCServerStartGame_Implementation()
 void AGamePlayerController::kill()
 {
     this->R_EnableInput = false;
+    this->R_Emp = false;
     m_data.reset();
 
     if (AShipPawn* shipPawn = Cast<AShipPawn>(this->GetPawn()))
@@ -301,4 +302,5 @@ void AGamePlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
     DOREPLIFETIME(AGamePlayerController, R_EnableInput);
+    DOREPLIFETIME(AGamePlayerController, R_Emp);
 }

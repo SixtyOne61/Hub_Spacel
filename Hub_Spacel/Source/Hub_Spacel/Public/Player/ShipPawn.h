@@ -16,6 +16,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHitSupport);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnRepairProtection);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnRepairSupport);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnInFog);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUnderEmp, bool, _show);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnShowScore, bool, _show);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLocalTeamUpdate, FString const&, _team);
 
@@ -66,6 +67,8 @@ public:
     void launchMissile();
     void addShield();
     void removeShield();
+    void emp();
+    void emp(uint32 _duration);
 
 private:
     void lookAt(FVector const& _loc, FVector const& _dir, FVector const& _hitLoc);
@@ -132,8 +135,14 @@ private:
     UFUNCTION(Reliable, Client)
     void RPCClientStartGame(FName const& _team);
 
+    UFUNCTION(Reliable, Client)
+    void RPCClientUnderEmp(bool _val);
+
     void useSkill(float _slot);
     bool canTank(int32 _val);
+
+    UFUNCTION()
+    void CleanEmp();
 
 public:
     UPROPERTY(Category = "Ship", VisibleAnywhere, BlueprintReadOnly)
@@ -220,6 +229,8 @@ protected:
     bool m_isKilled { false };
     /* true during escape mode */
     bool m_isEscape { false };
+    /* true during emp */
+    bool m_isUnderEmp { false };
 
     UPROPERTY(Replicated)
     int32 R_ShieldLife { 0 };
@@ -239,6 +250,9 @@ private:
 
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
     FOnShowScore OnShowScoreDelegate {};
+
+    UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
+    FUnderEmp OnUnderEmpDelegate {};
 
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
     FOnLocalTeamUpdate OnLocalTeamUpdateDelegate {};

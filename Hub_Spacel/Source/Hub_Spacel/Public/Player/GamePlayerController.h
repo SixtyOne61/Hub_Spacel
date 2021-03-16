@@ -96,5 +96,8 @@ private:
 	UPROPERTY(Replicated)
 	bool R_EnableInput { false };
 
+	UPROPERTY(Replicated)
+	bool R_Emp { false };
+
 	TData m_data {};
 };
