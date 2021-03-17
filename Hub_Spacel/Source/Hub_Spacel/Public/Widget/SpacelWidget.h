@@ -58,7 +58,10 @@ private:
 	void OnShowScore(bool _show);
 
 	UFUNCTION()
-	void OnUnderEmp(bool _show);
+	void OnAddEffect(EEffect _type);
+
+	UFUNCTION()
+	void OnRemoveEffect(EEffect _type);
 
 	template<class T>
 	void setVisibility(T* _widget, bool _show)
@@ -75,9 +78,16 @@ private:
 		}
 	}
 
+protected:
+	UPROPERTY(EditAnywhere)
+	class UEffectDataAsset* EffectDataAsset { nullptr };
+
 private:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class USkillWidget> SkillWidgetClass { nullptr };
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class UEffectWidget> EffectWidgetClass { nullptr };
 
 	UPROPERTY()
 	class UTextBlock* MatiereTextBlock { nullptr };
@@ -98,11 +108,11 @@ private:
 	class UHorizontalBox* SkillBarHorizontalBox { nullptr };
 
 	UPROPERTY()
+	class UHorizontalBox* EffectBarHorizontalBox { nullptr };
+
+	UPROPERTY()
 	TArray<class UAllyWidget*> AllyWidgets { };
 
 	UPROPERTY()
 	class UUserWidget* ScoreWidget { nullptr };
-
-	UPROPERTY()
-	class UBorder* EmpWidget { nullptr };
 };

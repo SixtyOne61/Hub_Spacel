@@ -45,7 +45,7 @@ void AFogActor::onOverlap(class AActor* _otherActor, bool _value) const
 	{
 		if (AShipPawn* shipPawn = Cast<AShipPawn>(_otherActor))
 		{
-			shipPawn->setIsInFog(_value);
+			_value ? shipPawn->addEffect(EEffect::Fog) : shipPawn->removeEffect(EEffect::Fog);
 		}
 	}
 }

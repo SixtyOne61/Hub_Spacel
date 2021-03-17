@@ -69,14 +69,17 @@ enum class EFace : uint8
 ENUM_CLASS_FLAGS(EFace);
 
 UENUM(BlueprintType, meta = (Bitflags, UseEnumValuesAsMaskValuesInEditor = "true"))
-enum class EShipModuleType : uint8
+enum class EEffect : uint8
 {
-    Empty = 0x00,
-    BaseDefault = 0x01,
-    EngineDefault = 0x02,
-    EngineSmall = 0x04,
-    ShellDefault = 0x08,
+    None = 0,
+    TargetLock = 1 << 0,
+    Fog = 1 << 1,
+    Shield = 1 << 2,
+    Emp = 1 << 3,
+    Killed = 1 << 4,
+    EscapeMode = 1 << 5
 };
+ENUM_CLASS_FLAGS(EEffect);
 
 UENUM(BlueprintType)
 enum class ECountDown : uint8

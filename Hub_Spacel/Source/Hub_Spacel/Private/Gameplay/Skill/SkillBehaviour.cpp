@@ -30,14 +30,14 @@ bool SkillRepairSupport::onStart()
 bool SkillEscapeMode::onStart()
 {
     if (m_pawn == nullptr) return false;
-    m_pawn->setIsEscape(true);
+    m_pawn->addEffect(EEffect::EscapeMode);
     return true;
 }
 
 void SkillEscapeMode::onEnd()
 {
     if (m_pawn == nullptr) return;
-    m_pawn->setIsEscape(false);
+    m_pawn->removeEffect(EEffect::EscapeMode);
 }
 
 void SkillEscapeMode::onEndCountDown()
@@ -83,7 +83,7 @@ bool SkillSpecialProtection::onStart()
 
     for (AShipPawn* pawn : pawns)
     {
-        pawn->addShield();
+        pawn->addEffect(EEffect::Shield);
     }
     return true;
 }
@@ -98,7 +98,7 @@ void SkillSpecialProtection::onEnd()
 
     for (AShipPawn* pawn : pawns)
     {
-        pawn->removeShield();
+        pawn->removeEffect(EEffect::Shield);
     }
 }
 

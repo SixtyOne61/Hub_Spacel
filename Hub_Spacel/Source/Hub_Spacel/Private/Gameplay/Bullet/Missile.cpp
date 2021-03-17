@@ -117,9 +117,12 @@ void AMissile::FlyToTarget()
     this->ProjectileMovementComponent->Velocity = dir * this->ProjectileMovementComponent->InitialSpeed;
 }
 
-void AMissile::OnTargetFogIn()
+void AMissile::OnTargetEffect(EEffect _type)
 {
-    this->Destroy();
+    if (_type == EEffect::Fog)
+    {
+        this->Destroy();
+    }
 }
 
 

@@ -15,10 +15,10 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHitProtection);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHitSupport);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnRepairProtection);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnRepairSupport);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnInFog);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUnderEmp, bool, _show);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnShowScore, bool, _show);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLocalTeamUpdate, FString const&, _team);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAddEffect, EEffect, _type);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRemoveEffect, EEffect, _type);
 
 UCLASS()
 class HUB_SPACEL_API AShipPawn : public APawn
@@ -46,9 +46,6 @@ public:
     /* set collision profile name */
     void setCollisionProfile(FString _team);
 
-    /* call from server */
-    void setIsInFog(bool _isIn);
-
     static int32 getPlayerIdFromTarget(AActor* _target);
 
     void hit(FString const& _team, class UPrimitiveComponent* _comp, int32 _index);
@@ -58,17 +55,20 @@ public:
     float getPercentProtection() const;
     float getPercentSupport() const;
 
-    inline void setIsEscape(bool _value) { m_isEscape = _value; }
-
     /* work on server side */
     bool isTargetPlayer() const;
 
     /* server side */
+    void addEffect(EEffect _type);
+    void removeEffect(EEffect _type);
+    bool hasEffect(EEffect _type);
+    void behaviourAddEffect(EEffect _type);
+    void behaviourRemoveEffect(EEffect _type);
+
     void launchMissile();
-    void addShield();
-    void removeShield();
     void emp();
     void emp(uint32 _duration);
+    void visibilityTargetWidget(bool _show);
 
 private:
     void lookAt(FVector const& _loc, FVector const& _dir, FVector const& _hitLoc);
@@ -115,9 +115,6 @@ private:
     }
 
     UFUNCTION()
-    void OnRep_IsInFog();
-
-    UFUNCTION()
     void OnRep_Matiere();
 
     UFUNCTION()
@@ -136,7 +133,10 @@ private:
     void RPCClientStartGame(FName const& _team);
 
     UFUNCTION(Reliable, Client)
-    void RPCClientUnderEmp(bool _val);
+    void RPCClientAddEffect(EEffect _effect);
+
+    UFUNCTION(Reliable, Client)
+    void RPCClientRemoveEffect(EEffect _effect);
 
     void useSkill(float _slot);
     bool canTank(int32 _val);
@@ -216,24 +216,17 @@ protected:
     float PercentFlightAttitude { 0.0f };
     FVector TargetLocation { FVector::ZeroVector };
 
-    UPROPERTY(ReplicatedUsing = "OnRep_IsInFog")
-    bool RU_IsInFog { false };
-
     UPROPERTY(ReplicatedUsing = "OnRep_Matiere")
     int32 RU_Matiere { 0 };
 
     UPROPERTY()
     class UNiagaraComponent* ExhaustFxComponent { nullptr };
 
-    /* true during waiting respawn */
-    bool m_isKilled { false };
-    /* true during escape mode */
-    bool m_isEscape { false };
-    /* true during emp */
-    bool m_isUnderEmp { false };
-
     UPROPERTY(Replicated)
     int32 R_ShieldLife { 0 };
+
+    UPROPERTY(Replicated)
+    EEffect R_Effect { EEffect::None };
 
 private:
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
@@ -252,11 +245,11 @@ private:
     FOnShowScore OnShowScoreDelegate {};
 
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
-    FUnderEmp OnUnderEmpDelegate {};
-
-    UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
     FOnLocalTeamUpdate OnLocalTeamUpdateDelegate {};
 
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
-    FOnInFog OnInFogDelegate {};
+    FOnAddEffect OnAddEffectDelegate {};
+
+    UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
+    FOnRemoveEffect OnRemoveEffectDelegate {};
 };

@@ -19,8 +19,10 @@
 #include "Util/SimplyUI.h"
 #include "DataAsset/PlayerDataAsset.h"
 #include "DataAsset/SkillDataAsset.h"
+#include "DataAsset/EffectDataAsset.h"
 #include "Widget/AllyWidget.h"
 #include "Widget/SkillWidget.h"
+#include "Widget/EffectWidget.h"
 #include "Factory/SpacelFactory.h"
 
 void USpacelWidget::NativeConstruct()
@@ -34,7 +36,7 @@ void USpacelWidget::NativeConstruct()
     SupportProgressBar = SimplyUI::initSafetyFromName<UUserWidget, UProgressBar>(this, TEXT("ProgressBar_Support"));
     ScoreWidget = SimplyUI::initSafetyFromName<UUserWidget, UUserWidget>(this, TEXT("WBP_Score"));
     SkillBarHorizontalBox = SimplyUI::initSafetyFromName<UUserWidget, UHorizontalBox>(this, TEXT("SkillBar"));
-    EmpWidget = SimplyUI::initSafetyFromName<UUserWidget, UBorder>(this, TEXT("EMP"));
+    EffectBarHorizontalBox = SimplyUI::initSafetyFromName<UUserWidget, UHorizontalBox>(this, TEXT("EffectBar"));
 
     TArray<FName> allyNames { TEXT("Widget_Ally1"), TEXT("Widget_Ally2") };
     SimplyUI::initArray(this, AllyWidgets, allyNames);
@@ -61,7 +63,8 @@ void USpacelWidget::NativeConstruct()
         shipPawn->ModuleComponent->OnUpdateCountSupportDelegate.AddDynamic(this, &USpacelWidget::OnUpdateCountSupport);
 
         shipPawn->OnShowScoreDelegate.AddDynamic(this, &USpacelWidget::OnShowScore);
-        shipPawn->OnUnderEmpDelegate.AddDynamic(this, &USpacelWidget::OnUnderEmp);
+        shipPawn->OnAddEffectDelegate.AddDynamic(this, &USpacelWidget::OnAddEffect);
+        shipPawn->OnRemoveEffectDelegate.AddDynamic(this, &USpacelWidget::OnRemoveEffect);
     }
 }
 
@@ -242,14 +245,43 @@ void USpacelWidget::updatePercent(UProgressBar* _progressBar, float _percent)
     }
 }
 
-
-
 void USpacelWidget::OnShowScore(bool _show)
 {
     setVisibility(this->ScoreWidget, _show);
 }
 
-void USpacelWidget::OnUnderEmp(bool _show)
+void USpacelWidget::OnAddEffect(EEffect _type)
 {
-    setVisibility(this->EmpWidget, _show);
+    if(this->EffectBarHorizontalBox == nullptr) return;
+    if(this->EffectWidgetClass == nullptr) return;
+    if(this->EffectDataAsset == nullptr) return;
+
+    FString name = "Effect";
+    name.Append(FString::FromInt((int)_type));
+    UEffectWidget* effectWidget = CreateWidget<UEffectWidget, UHorizontalBox>(this->EffectBarHorizontalBox, this->EffectWidgetClass, *name);
+    if (effectWidget != nullptr)
+    {
+        effectWidget->Effect = _type;
+        FEffect const& effectParam = this->EffectDataAsset->getEffect(_type);
+        effectWidget->SetEffect(effectParam.BackgroundColor, effectParam.Icone);
+        this->EffectBarHorizontalBox->AddChildToHorizontalBox(effectWidget);
+    }
+}
+
+void USpacelWidget::OnRemoveEffect(EEffect _type)
+{
+    if (this->EffectBarHorizontalBox == nullptr) return;
+
+    TArray<UWidget*> widgets = this->EffectBarHorizontalBox->GetAllChildren();
+    for (UWidget* widget : widgets)
+    {
+        if (UEffectWidget * effect = Cast<UEffectWidget>(widget))
+        {
+            if (effect->Effect == _type)
+            {
+                this->EffectBarHorizontalBox->RemoveChild(widget);
+                break;
+            }
+        }
+    }
 }

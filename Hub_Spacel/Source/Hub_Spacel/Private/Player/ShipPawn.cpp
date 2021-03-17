@@ -188,25 +188,6 @@ void AShipPawn::launchMissile()
     this->FireComponent->launchMissile(this->ModuleComponent->MissileMeshComponent->GetComponentTransform());
 }
 
-void AShipPawn::addShield()
-{
-    if(this->PlayerDataAsset == nullptr || m_isKilled) return;
-    this->R_ShieldLife = this->PlayerDataAsset->ShieldLife;
-    if (this->ShieldComponent != nullptr)
-    {
-        this->ShieldComponent->SetVisibility(true);
-    }
-}
-
-void AShipPawn::removeShield()
-{
-    this->R_ShieldLife = 0;
-    if (this->ShieldComponent != nullptr)
-    {
-        this->ShieldComponent->SetVisibility(false);
-    }
-}
-
 void AShipPawn::emp()
 {
     if(this->FireComponent == nullptr) return;
@@ -223,8 +204,7 @@ void AShipPawn::emp(uint32 _duration)
 {
     if (AGamePlayerController* playerController = this->GetController<AGamePlayerController>())
     {
-        RPCClientUnderEmp(true);
-        m_isUnderEmp = true;
+        addEffect(EEffect::Emp);
         playerController->R_Emp = true;
         FTimerHandle handle;
         this->GetWorldTimerManager().SetTimer(handle, this, &AShipPawn::CleanEmp, _duration, false);
@@ -235,15 +215,9 @@ void AShipPawn::CleanEmp()
 {
     if (AGamePlayerController* playerController = this->GetController<AGamePlayerController>())
     {
-        RPCClientUnderEmp(false);
-        m_isUnderEmp = false;
+        removeEffect(EEffect::Emp);
         playerController->R_Emp = false;
     }
-}
-
-void AShipPawn::RPCClientUnderEmp_Implementation(bool _val)
-{
-    this->OnUnderEmpDelegate.Broadcast(_val);
 }
 
 void AShipPawn::OnTargetPlayer(AActor* _target)
@@ -265,6 +239,7 @@ void AShipPawn::RPCServerTargetPlayer_Implementation(int32 _playerId)
                 {
                     AActor* act = playerState->GetPawn();
                     this->FireComponent->m_target = act;
+                    addEffect(EEffect::TargetLock);
                     UE_LOG(LogTemp, Warning, TEXT("Target actor"));
                     break;
                 }
@@ -294,6 +269,7 @@ void AShipPawn::RPCServerUnTargetPlayer_Implementation(int32 _playerId)
                 && act->GetUniqueID() == this->FireComponent->m_target->GetUniqueID())
             {
                 this->FireComponent->m_target = nullptr;
+                removeEffect(EEffect::TargetLock);
                 break;
             }
         }
@@ -351,7 +327,7 @@ void AShipPawn::serverMove(float _deltaTime)
     if (!ensure(this->ModuleComponent != nullptr)) return;
     if (!ensure(this->ModuleComponent->SupportMeshComponent != nullptr)) return;
 
-    float coefEscape { m_isEscape ? this->PlayerDataAsset->EscapeModeCoef : 1.0f };
+    float coefEscape { hasEffect(EEffect::EscapeMode) ? this->PlayerDataAsset->EscapeModeCoef : 1.0f };
 
     // roll rotation
 
@@ -433,7 +409,7 @@ void AShipPawn::kill()
         // disable collision
         setCollisionProfile("NoCollision");
 
-        m_isKilled = true;
+        addEffect(EEffect::Killed);
     }
 }
 
@@ -453,7 +429,7 @@ void AShipPawn::Restarted()
     // enable collision
     setCollisionProfile(this->Team.ToString());
 
-    m_isKilled = false;
+    removeEffect(EEffect::Killed);
 }
 
 void AShipPawn::setCollisionProfile(FString _team)
@@ -466,21 +442,15 @@ void AShipPawn::setCollisionProfile(FString _team)
     this->ModuleComponent->setCollisionProfile(_team);
 }
 
-void AShipPawn::setIsInFog(bool _isIn)
-{
-    this->RU_IsInFog = _isIn;
-    this->OnInFogDelegate.Broadcast();
-}
-
-void AShipPawn::OnRep_IsInFog()
+void AShipPawn::visibilityTargetWidget(bool _hide)
 {
     if (this->TargetComponent != nullptr)
     {
         if (ATargetActor* targetActor = Cast<ATargetActor>(this->TargetComponent->GetChildActor()))
         {
-            targetActor->showTarget(!this->RU_IsInFog);
+            targetActor->showTarget(!_hide);
 
-            if (this->RU_IsInFog)
+            if (_hide)
             {
                 UHub_SpacelGameInstance* spacelGameInstance{ Cast<UHub_SpacelGameInstance>(this->GetGameInstance()) };
                 spacelGameInstance->OnUnTargetPlayerDelegate.Broadcast(targetActor);
@@ -583,6 +553,7 @@ bool AShipPawn::canTank(int32 _val)
 
     if (newValue == 0 && this->R_ShieldLife > 0)
     {
+        removeEffect(EEffect::Shield);
         if (this->ShieldComponent != nullptr)
         {
             this->ShieldComponent->SetVisibility(false);
@@ -593,12 +564,82 @@ bool AShipPawn::canTank(int32 _val)
     return this->R_ShieldLife > 0;
 }
 
+void AShipPawn::RPCClientAddEffect_Implementation(EEffect _effect)
+{
+    OnAddEffectDelegate.Broadcast(_effect);
+
+    if (_effect == EEffect::Fog)
+    {
+        visibilityTargetWidget(true);
+    }
+}
+
+void AShipPawn::RPCClientRemoveEffect_Implementation(EEffect _effect)
+{
+    OnRemoveEffectDelegate.Broadcast(_effect);
+
+    if(_effect == EEffect::Fog)
+    {
+        visibilityTargetWidget(false);
+    }
+}
+
+void AShipPawn::behaviourAddEffect(EEffect _type)
+{
+    if (_type == EEffect::Shield)
+    {
+        if (this->PlayerDataAsset != nullptr && !hasEffect(EEffect::Killed))
+        {
+            this->R_ShieldLife = this->PlayerDataAsset->ShieldLife;
+            if (this->ShieldComponent != nullptr)
+            {
+                this->ShieldComponent->SetVisibility(true);
+            }
+        }
+    }
+}
+
+void AShipPawn::addEffect(EEffect _type)
+{
+    if (!hasEffect(_type))
+    {
+        this->R_Effect |= _type;
+
+        behaviourAddEffect(_type);
+        RPCClientAddEffect(_type);
+    }
+}
+
+void AShipPawn::removeEffect(EEffect _type)
+{
+    this->R_Effect &= ~_type;
+    behaviourRemoveEffect(_type);
+    RPCClientRemoveEffect(_type);
+}
+
+void AShipPawn::behaviourRemoveEffect(EEffect _type)
+{
+    if (_type == EEffect::Shield)
+    {
+        this->R_ShieldLife = 0;
+        if (this->ShieldComponent != nullptr)
+        {
+            this->ShieldComponent->SetVisibility(false);
+        }
+    }
+}
+
+bool AShipPawn::hasEffect(EEffect _type)
+{
+    return (this->R_Effect & _type) != (EEffect)0;
+}
+
 void AShipPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetimeProps) const
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-    DOREPLIFETIME(AShipPawn, RU_IsInFog);
     DOREPLIFETIME(AShipPawn, RU_Matiere);
     DOREPLIFETIME(AShipPawn, RU_PercentSpeed);
     DOREPLIFETIME(AShipPawn, R_ShieldLife);
+    DOREPLIFETIME(AShipPawn, R_Effect);
 }
 

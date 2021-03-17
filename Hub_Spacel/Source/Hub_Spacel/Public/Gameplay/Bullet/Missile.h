@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Gameplay/Bullet/ProjectileBase.h"
+#include "Enum/SpacelEnum.h"
 #include "Missile.generated.h"
 
 /**
@@ -24,7 +25,7 @@ public:
 	void applyHit(TArray<int32>& _instance) override;
 
 	UFUNCTION()
-	void OnTargetFogIn();
+	void OnTargetEffect(EEffect _type);
 
 protected:
 	void BeginPlay() override;
