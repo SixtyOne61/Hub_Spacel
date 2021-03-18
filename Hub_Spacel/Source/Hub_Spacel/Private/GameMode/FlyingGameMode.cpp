@@ -398,7 +398,12 @@ void AFlyingGameMode::CountDownUntilGameOver()
 {
     ASpacelGameState* spacelGameState { Cast<ASpacelGameState>(this->GameState) };
     if (!ensure(spacelGameState != nullptr)) return;
-    spacelGameState->R_LatestEvent = FString::FromInt(this->RemainingGameTime) + " seconds until game is over";
+    // format time
+    int min = this->RemainingGameTime / 60;
+    int sec = this->RemainingGameTime % 60;
+    FString minStr = min < 10 ? "0" + FString::FromInt(min) : FString::FromInt(min);
+    FString secStr = sec < 10 ? "0" + FString::FromInt(sec) : FString::FromInt(sec);
+    spacelGameState->R_LatestEvent = minStr + ":" + secStr;
 
     if (this->RemainingGameTime > 0)
     {
