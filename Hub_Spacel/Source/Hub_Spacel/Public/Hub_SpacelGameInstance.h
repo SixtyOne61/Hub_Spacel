@@ -7,8 +7,7 @@
 #include "Runtime/Online/HTTP/Public/Http.h"
 #include "Hub_SpacelGameInstance.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTargetPlayer, AActor*, _target);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUnTarget, AActor*, _target);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnTargetPlayer, int32, _playerId, bool, _lock);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnTryLock);
 
 /**
@@ -27,12 +26,6 @@ public:
 
     UFUNCTION()
     void SetCognitoTokens(FString _accessToken, FString _idToken, FString _refreshToken);
-
-    UFUNCTION(BlueprintCallable)
-    void OnTargetPlayer(class AActor* _target);
-
-    UFUNCTION(BlueprintCallable)
-    void OnUnTargetPlayer(class AActor* _target);
 
 private:
     UFUNCTION()
@@ -67,9 +60,6 @@ public:
 
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
     FOnTargetPlayer OnTargetPlayerDelegate {};
-
-    UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
-    FOnUnTarget OnUnTargetPlayerDelegate {};
 
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
     FOnTryLock OnTryLockDelegate {};

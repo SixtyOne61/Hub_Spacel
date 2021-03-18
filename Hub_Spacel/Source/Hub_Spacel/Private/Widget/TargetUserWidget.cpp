@@ -25,7 +25,6 @@ void UTargetUserWidget::NativeConstruct()
 
     if (UHub_SpacelGameInstance* spacelGameInstance = Cast<UHub_SpacelGameInstance>(GetGameInstance()))
     {
-        spacelGameInstance->OnUnTargetPlayerDelegate.AddDynamic(this, &UTargetUserWidget::OnUnTargetPlayer);
         spacelGameInstance->OnTargetPlayerDelegate.AddDynamic(this, &UTargetUserWidget::OnTargetPlayer);
         spacelGameInstance->OnTryLockDelegate.AddDynamic(this, &UTargetUserWidget::OnTryLock);
     }
@@ -126,41 +125,28 @@ void UTargetUserWidget::NativeDestruct()
     Super::NativeDestruct();
 }
 
-void UTargetUserWidget::OnUnTargetPlayer(AActor* _target)
+void UTargetUserWidget::OnTargetPlayer(int32 _playerId, bool _lock)
 {
-    if (_target == nullptr || m_state != EState::StateLock) return;
-
-    // find player id of target
-    int32 playerTargetId { AShipPawn::getPlayerIdFromTarget(_target) };
-    int32 playerId { AShipPawn::getPlayerIdFromTarget(this->Owner) };
-
-    if (playerTargetId == playerId)
+    if (_lock && m_state == EState::StateLock)
     {
-        m_state = EState::StateNormal;
-    }
-}
-
-void UTargetUserWidget::OnTargetPlayer(AActor* _target)
-{
-    if (_target == nullptr) return;
-
-    // find player id of target
-    int32 playerTargetId { AShipPawn::getPlayerIdFromTarget(_target) };
-    int32 playerId { AShipPawn::getPlayerIdFromTarget(this->Owner) };
-
-    if (playerTargetId == playerId && m_state != EState::StateLock)
-    {
-        m_state = EState::StateLock;
-    }
-    else if (playerTargetId != playerId && m_state == EState::StateLock)
-    {
-        m_state = EState::StateNormal;
+        if (this->Owner == nullptr) return;
+        if (AShipPawn* ownerPawn = Cast<AShipPawn>(this->Owner->GetParentActor()))
+        {
+            if (ASpacelPlayerState* playerState = ownerPawn->GetPlayerState<ASpacelPlayerState>())
+            {
+                if (playerState->PlayerId != _playerId)
+                {
+                    m_state = EState::StateNormal;
+                }
+            }
+        }
     }
 }
 
 void UTargetUserWidget::OnTryLock()
 {
-    if (m_state == EState::StateHover)
+    if (m_state == EState::StateHover
+        || m_state == EState::StateLock)
     {
         OnPressed();
     }
@@ -191,18 +177,26 @@ void UTargetUserWidget::onChangeStateLock()
 
 void UTargetUserWidget::OnPressed()
 {
-    AShipPawn* ownerPawn{ this->GetOwningPlayerPawn<AShipPawn>() };
-    if (ownerPawn == nullptr) return;
+    if(m_isSameTeam) return;
+    if (this->Owner == nullptr) return;
 
-    if (UHub_SpacelGameInstance* spacelGameInstance = Cast<UHub_SpacelGameInstance>(this->GetGameInstance()))
+    if (AShipPawn* localPawn = Cast<AShipPawn>(UGameplayStatics::GetPlayerPawn(this->GetWorld(), 0)))
     {
-        if (m_state == EState::StateLock)
+        if (AShipPawn* ownerPawn = Cast<AShipPawn>(this->Owner->GetParentActor()))
         {
-            spacelGameInstance->OnUnTargetPlayerDelegate.Broadcast(this->Owner);
-        }
-        else
-        {
-            spacelGameInstance->OnTargetPlayerDelegate.Broadcast(this->Owner);
+            if (ASpacelPlayerState* playerState = ownerPawn->GetPlayerState<ASpacelPlayerState>())
+            {
+                if (m_state == EState::StateLock)
+                {
+                    m_state = EState::StateNormal;
+                    localPawn->lockTarget(playerState->PlayerId, false);
+                }
+                else
+                {
+                    m_state = EState::StateLock;
+                    localPawn->lockTarget(playerState->PlayerId, true);
+                }
+            }
         }
     }
 }
@@ -210,4 +204,23 @@ void UTargetUserWidget::OnPressed()
 void UTargetUserWidget::OnHovered()
 {
     m_isHovered = true;
+}
+
+void UTargetUserWidget::showTarget(bool _show)
+{
+    if (m_isSameTeam) return;
+
+    if (_show)
+    {
+        this->SetVisibility(ESlateVisibility::Visible);
+    }
+    else
+    {
+        this->SetVisibility(ESlateVisibility::Hidden);
+        if (m_state != EState::StateNormal)
+        {
+            m_state = EState::StateNormal;
+            m_isHovered = false;
+        }
+    }
 }

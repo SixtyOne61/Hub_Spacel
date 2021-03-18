@@ -24,6 +24,8 @@ public:
 		StateLock
 	};
 
+	void showTarget(bool _show);
+
 protected:
 	void NativeConstruct() override;
 	void NativeDestruct() override;
@@ -36,12 +38,6 @@ private:
 
 	/* check distance with local player for hide or scale target */
 	void adjust();
-
-	UFUNCTION()
-	void OnUnTargetPlayer(AActor* _target);
-
-	UFUNCTION()
-	void OnTargetPlayer(AActor* _target);
 
 	UFUNCTION()
 	void OnTryLock();
@@ -61,9 +57,12 @@ private:
 	UFUNCTION()
 	void OnHovered();
 
+	UFUNCTION()
+	void OnTargetPlayer(int32 _playerId, bool _lock);
+
 public:
 	UPROPERTY(VisibleAnywhere)
-	class AActor* Owner { nullptr };
+	class AActor* Owner{ nullptr };
 
 private:
 	UPROPERTY()

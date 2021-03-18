@@ -21,7 +21,7 @@ void ATargetActor::BeginPlay()
 	this->TargetWidgetComponent = Cast<UWidgetComponent>(this->GetComponentByClass(UWidgetComponent::StaticClass()));
 	if (this->TargetWidgetComponent != nullptr)
 	{
-		if(UTargetUserWidget* targetWidget = Cast<UTargetUserWidget>(this->TargetWidgetComponent->GetUserWidgetObject()))
+		if (UTargetUserWidget* targetWidget = Cast<UTargetUserWidget>(this->TargetWidgetComponent->GetUserWidgetObject()))
 		{
 			targetWidget->Owner = this;
 		}
@@ -53,5 +53,9 @@ void ATargetActor::Tick(float DeltaTime)
 
 void ATargetActor::showTarget(bool _show)
 {
-	this->TargetWidgetComponent->SetVisibility(_show, true);
+	if (!ensure(this->TargetWidgetComponent != nullptr)) return;
+	if (UTargetUserWidget* targetWidget = Cast<UTargetUserWidget>(this->TargetWidgetComponent->GetUserWidgetObject()))
+	{
+		targetWidget->showTarget(_show);
+	}
 }

@@ -46,8 +46,6 @@ public:
     /* set collision profile name */
     void setCollisionProfile(FString _team);
 
-    static int32 getPlayerIdFromTarget(AActor* _target);
-
     void hit(FString const& _team, class UPrimitiveComponent* _comp, int32 _index);
 
     void setLocationExhaustFx(TArray<FVector> const& _loc);
@@ -55,8 +53,8 @@ public:
     float getPercentProtection() const;
     float getPercentSupport() const;
 
-    /* work on server side */
-    bool isTargetPlayer() const;
+    /* client side */
+    void lockTarget(int32 _playerId, bool _lock);
 
     /* server side */
     void addEffect(EEffect _type);
@@ -68,7 +66,6 @@ public:
     void launchMissile();
     void emp();
     void emp(uint32 _duration);
-    void visibilityTargetWidget(bool _show);
 
 private:
     void lookAt(FVector const& _loc, FVector const& _dir, FVector const& _hitLoc);
@@ -83,19 +80,8 @@ private:
     void BuildDefaultShip();
 
     /* target system */
-    UFUNCTION()
-    void OnTargetPlayer(class AActor* _target);
-
     UFUNCTION(Reliable, Server)
-    void RPCServerTargetPlayer(int32 _playerId);
-
-    UFUNCTION()
-    void OnUnTargetPlayer(class AActor* _target);
-
-    UFUNCTION(Reliable, Server)
-    void RPCServerUnTargetPlayer(int32 _playerId);
-
-    void rpcTargetCall(class AActor* _target, std::function<void(int32)> _rpc);
+    void RPCServerTargetPlayer(int32 _playerId, bool _lock);
 
     /* set fire boolean on component fire */
     void setFire(bool _on);
@@ -125,6 +111,12 @@ private:
 
     UFUNCTION()
     void OnStartGame();
+
+    UFUNCTION()
+    void OnPlayerEnterFog(int32 _playerId, bool _enter);
+
+    UFUNCTION(Reliable, NetMulticast)
+    void RPCNetMulticastEnterFog(int32 _playerId, bool _enter);
 
     UFUNCTION(UnReliable, Client)
     void RPCClientPlayCameraShake();

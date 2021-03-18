@@ -129,6 +129,7 @@ void AShipPawn::BeginPlay()
         {
             spacelGameState->OnStartGameDelegate.AddDynamic(this, &AShipPawn::OnStartGame);
             spacelGameState->OnLockPrepareDelegate.AddDynamic(this, &AShipPawn::OnLockPrepare);
+            spacelGameState->OnPlayerEnterFogDelegate.AddDynamic(this, &AShipPawn::OnPlayerEnterFog);
         }
         activateComponent(this->FireComponent);
         activateComponent(this->RepairComponent);
@@ -147,10 +148,6 @@ void AShipPawn::BeginPlay()
         }
         else
         {
-            UHub_SpacelGameInstance* spacelGameInstance{ Cast<UHub_SpacelGameInstance>(this->GetGameInstance()) };
-            spacelGameInstance->OnTargetPlayerDelegate.AddDynamic(this, &AShipPawn::OnTargetPlayer);
-            spacelGameInstance->OnUnTargetPlayerDelegate.AddDynamic(this, &AShipPawn::OnUnTargetPlayer);
-
             this->WidgetTargetComponent = Cast<UWidgetInteractionComponent>(this->GetComponentByClass(UWidgetInteractionComponent::StaticClass()));
 
             // add speed line component
@@ -174,10 +171,43 @@ void AShipPawn::BeginPlay()
     }
 }
 
-bool AShipPawn::isTargetPlayer() const
+void AShipPawn::lockTarget(int32 _playerId, bool _lock)
 {
-    if (!ensure(this->FireComponent != nullptr)) return false;
-    return this->FireComponent->m_target != nullptr;
+    // call event on client for UI
+    UHub_SpacelGameInstance* spacelGameInstance{ Cast<UHub_SpacelGameInstance>(this->GetGameInstance()) };
+    spacelGameInstance->OnTargetPlayerDelegate.Broadcast(_playerId, _lock);
+
+    RPCServerTargetPlayer(_playerId, _lock);
+}
+
+void AShipPawn::RPCServerTargetPlayer_Implementation(int32 _playerId, bool _lock)
+{
+    if (!ensure(this->FireComponent != nullptr)) return;
+
+    if (_lock)
+    {
+        if (AGameStateBase* gameState = UGameplayStatics::GetGameState(this->GetWorld()))
+        {
+            for (APlayerState const* playerState : gameState->PlayerArray)
+            {
+                if (playerState)
+                {
+                    if (playerState->PlayerId == _playerId)
+                    {
+                        AActor* act = playerState->GetPawn();
+                        this->FireComponent->m_target = act;
+                        addEffect(EEffect::TargetLock);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    else
+    {
+        this->FireComponent->m_target = nullptr;
+        removeEffect(EEffect::TargetLock);
+    }
 }
 
 void AShipPawn::launchMissile()
@@ -218,84 +248,6 @@ void AShipPawn::CleanEmp()
         removeEffect(EEffect::Emp);
         playerController->R_Emp = false;
     }
-}
-
-void AShipPawn::OnTargetPlayer(AActor* _target)
-{
-    rpcTargetCall(_target, std::bind(&AShipPawn::RPCServerTargetPlayer, this, std::placeholders::_1));
-}
-
-void AShipPawn::RPCServerTargetPlayer_Implementation(int32 _playerId)
-{
-    if (!ensure(this->FireComponent != nullptr)) return;
-
-    if (AGameStateBase* gameState = UGameplayStatics::GetGameState(this->GetWorld()))
-    {
-        for (APlayerState const* playerState : gameState->PlayerArray)
-        {
-            if (playerState)
-            {
-                if (playerState->PlayerId == _playerId)
-                {
-                    AActor* act = playerState->GetPawn();
-                    this->FireComponent->m_target = act;
-                    addEffect(EEffect::TargetLock);
-                    UE_LOG(LogTemp, Warning, TEXT("Target actor"));
-                    break;
-                }
-            }
-        }
-    }
-}
-
-void AShipPawn::OnUnTargetPlayer(class AActor* _target)
-{
-    rpcTargetCall(_target, std::bind(&AShipPawn::RPCServerUnTargetPlayer, this, std::placeholders::_1));
-}
-
-void AShipPawn::RPCServerUnTargetPlayer_Implementation(int32 _playerId)
-{
-    if (!ensure(this->FireComponent != nullptr)) return;
-
-    if (AGameStateBase* gameState = UGameplayStatics::GetGameState(this->GetWorld()))
-    {
-        for (APlayerState const* playerState : gameState->PlayerArray)
-        {
-            AActor* act { playerState->GetPawn() };
-            if (playerState != nullptr
-                && playerState->PlayerId == _playerId
-                && act != nullptr
-                && this->FireComponent->m_target != nullptr
-                && act->GetUniqueID() == this->FireComponent->m_target->GetUniqueID())
-            {
-                this->FireComponent->m_target = nullptr;
-                removeEffect(EEffect::TargetLock);
-                break;
-            }
-        }
-    }
-}
-
-void AShipPawn::rpcTargetCall(class AActor* _target, std::function<void(int32)> _rpc)
-{
-    _rpc(AShipPawn::getPlayerIdFromTarget(_target));
-}
-
-int32 AShipPawn::getPlayerIdFromTarget(AActor* _target)
-{
-    if (_target != nullptr)
-    {
-        if (AShipPawn const* pawnOwner = Cast<AShipPawn>(_target->GetParentActor()))
-        {
-            if (ASpacelPlayerState* playerState = pawnOwner->GetPlayerState<ASpacelPlayerState>())
-            {
-                return playerState->PlayerId;
-            }
-        }
-    }
-
-    ensure(false);
-    return {};
 }
 
 // Called every frame
@@ -383,9 +335,6 @@ void AShipPawn::kill()
 {
     if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
     {
-        UHub_SpacelGameInstance* spacelGameInstance{ Cast<UHub_SpacelGameInstance>(this->GetGameInstance()) };
-        spacelGameInstance->OnUnTargetPlayerDelegate.Broadcast(this->TargetComponent->GetChildActor());
-
         auto lb = [](auto* _obj)
         {
             if (_obj != nullptr)
@@ -442,19 +391,41 @@ void AShipPawn::setCollisionProfile(FString _team)
     this->ModuleComponent->setCollisionProfile(_team);
 }
 
-void AShipPawn::visibilityTargetWidget(bool _hide)
+void AShipPawn::OnPlayerEnterFog(int32 _playerId, bool _enter)
+{
+    // server side, check if it's my target
+    if (_enter && this->FireComponent != nullptr && this->FireComponent->m_target != nullptr)
+    {
+        if (AShipPawn* pawn = Cast<AShipPawn>(this->FireComponent->m_target))
+        {
+            if (APlayerState* playerState = pawn->GetPlayerState())
+            {
+                if (playerState->PlayerId == _playerId)
+                {
+                    // remove target
+                    this->FireComponent->m_target = nullptr;
+                    removeEffect(EEffect::TargetLock);
+                }
+            }
+        }
+    }
+
+    if (APlayerState* playerState = this->GetPlayerState())
+    {
+        if (playerState->PlayerId == _playerId)
+        {
+            RPCNetMulticastEnterFog(_playerId, _enter);
+        }
+    }
+}
+
+void AShipPawn::RPCNetMulticastEnterFog_Implementation(int32 _playerId, bool _enter)
 {
     if (this->TargetComponent != nullptr)
     {
         if (ATargetActor* targetActor = Cast<ATargetActor>(this->TargetComponent->GetChildActor()))
         {
-            targetActor->showTarget(!_hide);
-
-            if (_hide)
-            {
-                UHub_SpacelGameInstance* spacelGameInstance{ Cast<UHub_SpacelGameInstance>(this->GetGameInstance()) };
-                spacelGameInstance->OnUnTargetPlayerDelegate.Broadcast(targetActor);
-            }
+            targetActor->showTarget(!_enter);
         }
     }
 }
@@ -567,21 +538,11 @@ bool AShipPawn::canTank(int32 _val)
 void AShipPawn::RPCClientAddEffect_Implementation(EEffect _effect)
 {
     OnAddEffectDelegate.Broadcast(_effect);
-
-    if (_effect == EEffect::Fog)
-    {
-        visibilityTargetWidget(true);
-    }
 }
 
 void AShipPawn::RPCClientRemoveEffect_Implementation(EEffect _effect)
 {
     OnRemoveEffectDelegate.Broadcast(_effect);
-
-    if(_effect == EEffect::Fog)
-    {
-        visibilityTargetWidget(false);
-    }
 }
 
 void AShipPawn::behaviourAddEffect(EEffect _type)
@@ -594,6 +555,16 @@ void AShipPawn::behaviourAddEffect(EEffect _type)
             if (this->ShieldComponent != nullptr)
             {
                 this->ShieldComponent->SetVisibility(true);
+            }
+        }
+    }
+    else if (_type == EEffect::Fog || _type == EEffect::Killed)
+    {
+        if (APlayerState* playerState = this->GetPlayerState())
+        {
+            if (ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld())))
+            {
+                spacelGameState->OnPlayerEnterFogDelegate.Broadcast(playerState->PlayerId, true);
             }
         }
     }
@@ -625,6 +596,16 @@ void AShipPawn::behaviourRemoveEffect(EEffect _type)
         if (this->ShieldComponent != nullptr)
         {
             this->ShieldComponent->SetVisibility(false);
+        }
+    }
+    else if (_type == EEffect::Fog || _type == EEffect::Killed)
+    {
+        if (APlayerState* playerState = this->GetPlayerState())
+        {
+            if (ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld())))
+            {
+                spacelGameState->OnPlayerEnterFogDelegate.Broadcast(playerState->PlayerId, false);
+            }
         }
     }
 }

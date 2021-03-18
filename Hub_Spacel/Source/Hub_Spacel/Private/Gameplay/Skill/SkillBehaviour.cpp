@@ -46,7 +46,7 @@ void SkillEscapeMode::onEndCountDown()
 
 bool SkillSpecialAttack::onStart()
 {
-    if (m_pawn == nullptr || !m_pawn->isTargetPlayer()) return false;
+    if (m_pawn == nullptr || !m_pawn->hasEffect(EEffect::TargetLock)) return false;
 
     m_pawn->launchMissile();
     return true;
@@ -104,7 +104,7 @@ void SkillSpecialProtection::onEnd()
 
 bool SkillSpecialSupport::onStart()
 {
-    if (m_pawn == nullptr || !m_pawn->isTargetPlayer()) return false;
+    if (m_pawn == nullptr || !m_pawn->hasEffect(EEffect::TargetLock)) return false;
 
     m_pawn->emp();
     return true;

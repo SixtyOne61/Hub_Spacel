@@ -11,6 +11,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartPrepare);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FLockPrepare);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartGame);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FScoreUpdate);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FPlayerEnterFog, int32, _playerId, bool, _enter);
 
 USTRUCT()
 struct HUB_SPACEL_API FTeamLocation
@@ -96,6 +97,9 @@ public:
 
 	UPROPERTY()
 	FScoreUpdate OnScoreUpdateDelegate {};
+
+	UPROPERTY()
+	FPlayerEnterFog OnPlayerEnterFogDelegate {};
 
 private:
 	UPROPERTY(ReplicatedUsing = OnRep_StateGame)
