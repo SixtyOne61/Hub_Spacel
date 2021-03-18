@@ -21,7 +21,7 @@ public:
 	uint32 CountDown { 0 };
 
 	UPROPERTY(EditAnywhere)
-	uint32 Duration { 0 };
+	float FlatDuration { 0.0f };
 
 	UPROPERTY(EditAnywhere)
 	class UTexture2D * IconeBtn { nullptr };

@@ -241,7 +241,7 @@ void AShipPawn::emp()
     {
         if(this->SkillComponent == nullptr) return;
         if(this->SkillComponent->SkillDataAsset == nullptr) return;
-        uint32 duration = this->SkillComponent->SkillDataAsset->getSKill(ESkill::SpecialSupport).Duration;
+        uint32 duration = this->SkillComponent->SkillDataAsset->getSKill(ESkill::SpecialSupport).FlatDuration;
         target->emp(duration);
     }
 }

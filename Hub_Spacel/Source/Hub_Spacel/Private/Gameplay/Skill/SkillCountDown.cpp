@@ -47,13 +47,13 @@ void SkillCountDown::tick(float _delta)
 
     if (m_state == ECountDown::Ing)
     {
-        if (m_currentTime >= m_param.Duration)
+        if (m_currentTime >= m_param.FlatDuration)
         {
             m_state = ECountDown::CountDown;
         }
         else
         {
-            updatePercent(m_progressBar, m_currentTime / m_param.Duration);
+            updatePercent(m_progressBar, m_currentTime / m_param.FlatDuration);
         }
     }
     else if (m_state == ECountDown::CountDown)
