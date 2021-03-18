@@ -134,6 +134,9 @@ void AShipPawn::BeginPlay()
         activateComponent(this->FireComponent);
         activateComponent(this->RepairComponent);
         activateComponent(this->SkillComponent);
+
+        FTimerHandle handle;
+        this->GetWorldTimerManager().SetTimer(handle, this, &AShipPawn::LinkPawn, 1.0f, false);
     }
     else
     {
@@ -168,6 +171,19 @@ void AShipPawn::BeginPlay()
                 spacelGameState->OnLockPrepareDelegate.AddDynamic(this, &AShipPawn::OnLockPrepare);
             }
         }
+    }
+}
+
+void AShipPawn::LinkPawn()
+{
+    if (AGamePlayerController* gamePlayerController = this->GetController<AGamePlayerController>())
+    {
+        gamePlayerController->LinkPawn = this;
+    }
+    else
+    {
+        FTimerHandle handle;
+        this->GetWorldTimerManager().SetTimer(handle, this, &AShipPawn::LinkPawn, 1.0f, false);
     }
 }
 

@@ -43,8 +43,32 @@ void AGamePlayerController::BeginPlay()
             {
                 spacelGameState->OnStartGameDelegate.AddDynamic(this, &AGamePlayerController::StartGame);
             }
+
+            shipPawn->OnAddEffectDelegate.AddDynamic(this, &AGamePlayerController::OnAddEffect);
+            shipPawn->OnRemoveEffectDelegate.AddDynamic(this, &AGamePlayerController::OnRemoveEffect);
         }
     }
+}
+
+void AGamePlayerController::OnAddEffect(EEffect _effect)
+{
+    if (_effect == EEffect::Killed)
+    {
+        this->UnPossess();
+    }
+}
+
+void AGamePlayerController::OnRemoveEffect(EEffect _effect)
+{
+    if (_effect == EEffect::Killed)
+    {
+        RPCServerPossess();
+    }
+}
+
+void AGamePlayerController::RPCServerPossess_Implementation()
+{
+    this->Possess(this->LinkPawn);
 }
 
 bool AGamePlayerController::GetHitResultUnderCursor(ECollisionChannel TraceChannel, bool bTraceComplex, FHitResult& HitResult, AActor* _ignoreActor)

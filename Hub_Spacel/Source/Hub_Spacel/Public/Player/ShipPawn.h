@@ -136,6 +136,9 @@ private:
     UFUNCTION()
     void CleanEmp();
 
+    UFUNCTION()
+    void LinkPawn();
+
 public:
     UPROPERTY(Category = "Ship", VisibleAnywhere, BlueprintReadOnly)
     class UStaticMeshComponent* DriverMeshComponent { nullptr };

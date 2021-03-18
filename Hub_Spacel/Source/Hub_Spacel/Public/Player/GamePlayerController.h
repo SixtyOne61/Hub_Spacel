@@ -92,6 +92,19 @@ private:
 
 	bool GetHitResultUnderCursor(ECollisionChannel TraceChannel, bool bTraceComplex, FHitResult& HitResult, AActor* _ignoreActor);
 
+	UFUNCTION()
+	void OnAddEffect(EEffect _effect);
+
+	UFUNCTION()
+	void OnRemoveEffect(EEffect _effect);
+
+	UFUNCTION(Reliable, Server)
+	void RPCServerPossess();
+
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	APawn* LinkPawn { nullptr };
+
 private:
 	UPROPERTY(Replicated)
 	bool R_EnableInput { false };
