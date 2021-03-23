@@ -39,17 +39,17 @@ void AWorldManager::BeginPlay()
 
     // define chunck size by number of chunk
     if (!ensure(this->BoxComponent != nullptr)) return;
-    int chunckSize = this->WorldDataAsset->NbCubePerChunckPerAxis * this->WorldDataAsset->CubeSize;
-    int environmentSize = this->WorldDataAsset->NbChunckPerAxis * this->WorldDataAsset->NbCubePerChunckPerAxis * this->WorldDataAsset->CubeSize;
-    FVector box = FVector(environmentSize, environmentSize, environmentSize);
-    this->BoxComponent->InitBoxExtent(box);
 
+    int nbCubePerChunckPerAxis = this->WorldDataAsset->NbCubePerChunckPerAxis;
+    int nb = this->WorldDataAsset->NbChunckPerAxis;
+    int32 cubeSize = this->WorldDataAsset->CubeSize;
+
+    int chunckSize = nbCubePerChunckPerAxis * cubeSize;
+    int environmentSize = nb * chunckSize;
+    FVector box = FVector(environmentSize, environmentSize, environmentSize);
     this->BoxComponent->OnComponentEndOverlap.AddDynamic(this, &AWorldManager::OnComponentEndOverlap);
 
     FVector offset = box / 2.0f;
-
-    int nb = this->WorldDataAsset->NbChunckPerAxis;
-    int32 cubeSize = this->WorldDataAsset->CubeSize;
 
     for (int x = 0; x < nb; ++x)
     {
