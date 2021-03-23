@@ -125,7 +125,7 @@ bool UCustomCollisionComponent::sweepForInstancedStaticMesh(UInstancedStaticMesh
 		TArray<FHitResult> hits;
 		if (_mesh->GetInstanceTransform(index, localTransform, false)
 			&& _mesh->GetInstanceTransform(index, worldTransform, true)
-			&& sweepByProfile(hits, worldTransform.GetLocation(), _profile, shape, {Tags::Matiere, Tags::Fog, _teamTag }))
+			&& sweepByProfile(hits, worldTransform.GetLocation(), _profile, shape, {Tags::Matiere, Tags::Fog, _teamTag, Tags::WorldManager }))
 		{
 			if (m_shipPawnOwner->canTank(hits.Num()))
 			{
@@ -198,20 +198,6 @@ void UCustomCollisionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 		FVector const& scale = m_shipPawnOwner.Get()->GetTransform().GetScale3D();
 		FString tagTeam = "Team:" + m_shipPawnOwner.Get()->Team.ToString();
 
-		// first check red zone
-		FCollisionShape redZoneShape = createCollisionShapeWithLocalBounds<UStaticMeshComponent>(m_shipPawnOwner.Get()->DriverMeshComponent, scale);
-		FVector const& redZoneLocation = m_shipPawnOwner.Get()->DriverMeshComponent->GetComponentLocation();
-		if (sweepByProfile(hits, redZoneLocation, profileCollision, redZoneShape, { Tags::Matiere, Tags::Fog, *tagTeam }))
-		{
-			dispatch(hits);
-			if (!m_shipPawnOwner->canTank(hits.Num()))
-			{
-				m_shipPawnOwner.Get()->kill();
-				addScore(hits, EScoreType::Kill);
-				return; // break flow
-			}
-		}
-
 		FName prot = m_shipPawnOwner.Get()->ModuleComponent->ProtectionMeshComponent->GetCollisionProfileName();
 		// for each module, we need to check each instance
 		if (sweepForInstancedStaticMesh(m_shipPawnOwner.Get()->ModuleComponent->ProtectionMeshComponent, m_shipPawnOwner.Get()->ModuleComponent->RU_ProtectionLocations, m_shipPawnOwner.Get()->ModuleComponent->R_RemovedProtectionLocations, scale, profileCollision, *tagTeam))
@@ -223,6 +209,20 @@ void UCustomCollisionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 		{
 			m_shipPawnOwner.Get()->OnHitSupportDelegate.Broadcast();
 			m_shipPawnOwner.Get()->RPCClientPlayCameraShake();
+		}
+
+		// end check red zone
+		FCollisionShape redZoneShape = createCollisionShapeWithLocalBounds<UStaticMeshComponent>(m_shipPawnOwner.Get()->DriverMeshComponent, scale);
+		FVector const& redZoneLocation = m_shipPawnOwner.Get()->DriverMeshComponent->GetComponentLocation();
+		if (sweepByProfile(hits, redZoneLocation, profileCollision, redZoneShape, { Tags::Matiere, Tags::Fog, *tagTeam, Tags::WorldManager }))
+		{
+			dispatch(hits);
+			if (!m_shipPawnOwner->canTank(hits.Num()))
+			{
+				m_shipPawnOwner.Get()->kill();
+				addScore(hits, EScoreType::Kill);
+				return; // break flow
+			}
 		}
 	}
 }

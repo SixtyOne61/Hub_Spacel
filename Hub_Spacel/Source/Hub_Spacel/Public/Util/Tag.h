@@ -7,4 +7,5 @@ namespace Tags
     static const FName DestroyActor { "DestroyActor" };
     static const FName Player { "Player" };
     static const FName BlockingActor { "BlockingActor" };
+    static const FName WorldManager { "WorldManager" };
 }

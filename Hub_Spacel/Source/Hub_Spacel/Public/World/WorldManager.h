@@ -17,10 +17,13 @@ public:
 
 protected:
 	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+	void BeginPlay() override;
+
+	UFUNCTION()
+	void OnComponentEndOverlap(UPrimitiveComponent* _overlappedComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, int32 _otherBodyIndex);
 
 public:
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
+    UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Settings")
     class UBoxComponent* BoxComponent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")

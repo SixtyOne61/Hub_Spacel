@@ -584,6 +584,13 @@ void AShipPawn::behaviourAddEffect(EEffect _type)
             }
         }
     }
+    else if (_type == EEffect::Emp)
+    {
+        if (this->FireComponent != nullptr)
+        {
+            this->FireComponent->m_isFire = false;
+        }
+    }
 }
 
 void AShipPawn::addEffect(EEffect _type)

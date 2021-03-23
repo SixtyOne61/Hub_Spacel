@@ -5,6 +5,9 @@
 #include "DataAsset/WorldDataAsset.h"
 #include "Components/BoxComponent.h"
 #include "Mesh/SpacelProceduralMeshComponent.h"
+#include "Player/ShipPawn.h"
+#include "Util/SimplyMath.h"
+#include "Util/Tag.h"
 
 // Sets default values
 AWorldManager::AWorldManager()
@@ -15,6 +18,8 @@ AWorldManager::AWorldManager()
     BoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("Delimiter"));
     if (!ensure(BoxComponent != nullptr)) return;
     RootComponent = BoxComponent;
+
+    Tags.Add(Tags::WorldManager);
 }
 
 // Called when the game starts or when spawned
@@ -38,6 +43,8 @@ void AWorldManager::BeginPlay()
     int environmentSize = this->WorldDataAsset->NbChunckPerAxis * this->WorldDataAsset->NbCubePerChunckPerAxis * this->WorldDataAsset->CubeSize;
     FVector box = FVector(environmentSize, environmentSize, environmentSize);
     this->BoxComponent->InitBoxExtent(box);
+
+    this->BoxComponent->OnComponentEndOverlap.AddDynamic(this, &AWorldManager::OnComponentEndOverlap);
 
     FVector offset = box / 2.0f;
 
@@ -71,4 +78,16 @@ void AWorldManager::BeginPlay()
     }
 }
 
-
+void AWorldManager::OnComponentEndOverlap(UPrimitiveComponent* _overlappedComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, int32 _otherBodyIndex)
+{
+    if (AShipPawn* pawn = Cast<AShipPawn>(_otherActor))
+    {
+        if (!pawn->hasEffect(EEffect::Killed))
+        {
+            FRotator rot = SimplyMath::MyLookRotation(this->GetActorLocation(), pawn->GetActorUpVector(), pawn->GetActorLocation());
+            pawn->SetActorRotation(rot, ETeleportType::ResetPhysics);
+            pawn->emp(1);
+            UE_LOG(LogTemp, Warning, TEXT("Move pawn to zero"));
+        }
+    }
+}
