@@ -77,7 +77,8 @@ enum class EEffect : uint8
     Shield = 1 << 2,
     Emp = 1 << 3,
     Killed = 1 << 4,
-    EscapeMode = 1 << 5
+    EscapeMode = 1 << 5,
+    BackToGame = 1 << 6
 };
 ENUM_CLASS_FLAGS(EEffect);
 

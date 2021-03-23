@@ -342,7 +342,8 @@ bool AGamePlayerController::isAvailable() const
 {
     if (AShipPawn* shipPawn = Cast<AShipPawn>(this->GetPawn()))
     {
-        if (shipPawn->hasEffect(EEffect::Emp)) return false;
+        if (shipPawn->hasEffect(EEffect::Emp)
+            || shipPawn->hasEffect(EEffect::BackToGame)) return false;
     }
 
     return this->R_EnableInput;

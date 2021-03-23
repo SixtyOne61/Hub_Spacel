@@ -248,12 +248,9 @@ void AShipPawn::emp()
 
 void AShipPawn::emp(uint32 _duration)
 {
-    if (AGamePlayerController* playerController = this->GetController<AGamePlayerController>())
-    {
-        addEffect(EEffect::Emp);
-        FTimerHandle handle;
-        this->GetWorldTimerManager().SetTimer(handle, this, &AShipPawn::CleanEmp, _duration, false);
-    }
+    addEffect(EEffect::Emp);
+    FTimerHandle handle;
+    this->GetWorldTimerManager().SetTimer(handle, this, &AShipPawn::CleanEmp, _duration, false);
 }
 
 void AShipPawn::CleanEmp()
@@ -589,6 +586,16 @@ void AShipPawn::behaviourAddEffect(EEffect _type)
             this->FireComponent->m_isFire = false;
         }
     }
+    else if (_type == EEffect::BackToGame)
+    {
+        FTimerHandle handle;
+        this->GetWorldTimerManager().SetTimer(handle, this, &AShipPawn::BackToGame, 1.0f, false);
+    }
+}
+
+void AShipPawn::BackToGame()
+{
+    removeEffect(EEffect::BackToGame);
 }
 
 void AShipPawn::addEffect(EEffect _type)

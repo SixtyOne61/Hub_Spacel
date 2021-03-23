@@ -86,7 +86,7 @@ void AWorldManager::OnComponentEndOverlap(UPrimitiveComponent* _overlappedComp, 
         {
             FRotator rot = SimplyMath::MyLookRotation(this->GetActorLocation(), pawn->GetActorUpVector(), pawn->GetActorLocation());
             pawn->SetActorRotation(rot, ETeleportType::ResetPhysics);
-            pawn->emp(1);
+            pawn->addEffect(EEffect::BackToGame);
             UE_LOG(LogTemp, Warning, TEXT("Move pawn to zero"));
         }
     }
