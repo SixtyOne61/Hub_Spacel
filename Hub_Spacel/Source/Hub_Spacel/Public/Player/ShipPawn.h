@@ -73,7 +73,7 @@ private:
     /* move ship server, only from server */
     void serverMove(float _deltaTime);
 
-    virtual void OnRep_PlayerState() override;
+    void OnRep_PlayerState() override;
 
     /* only use for debug in editor */
     UFUNCTION(BlueprintCallable)

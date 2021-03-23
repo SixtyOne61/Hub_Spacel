@@ -101,6 +101,8 @@ private:
 	UFUNCTION(Reliable, Server)
 	void RPCServerPossess();
 
+	bool isAvailable() const;
+
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	APawn* LinkPawn { nullptr };
@@ -108,9 +110,6 @@ protected:
 private:
 	UPROPERTY(Replicated)
 	bool R_EnableInput { false };
-
-	UPROPERTY(Replicated)
-	bool R_Emp { false };
 
 	TData m_data {};
 };

@@ -251,7 +251,6 @@ void AShipPawn::emp(uint32 _duration)
     if (AGamePlayerController* playerController = this->GetController<AGamePlayerController>())
     {
         addEffect(EEffect::Emp);
-        playerController->R_Emp = true;
         FTimerHandle handle;
         this->GetWorldTimerManager().SetTimer(handle, this, &AShipPawn::CleanEmp, _duration, false);
     }
@@ -262,7 +261,6 @@ void AShipPawn::CleanEmp()
     if (AGamePlayerController* playerController = this->GetController<AGamePlayerController>())
     {
         removeEffect(EEffect::Emp);
-        playerController->R_Emp = false;
     }
 }
 
