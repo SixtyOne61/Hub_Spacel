@@ -10,6 +10,7 @@
 #include "Json.h"
 #include "JsonUtilities.h"
 #include "Util/SimplyHttpRequest.h"
+#include "Util/SimplyMath.h"
 
 AFlyingGameMode::AFlyingGameMode()
 {
@@ -257,6 +258,9 @@ FTransform AFlyingGameMode::GetSpawnLocation(FName const& _team)
         if(!startLocation.m_isUse)
         {
             startLocation.m_isUse = true;
+            startLocation.m_transform.SetRotation(
+                SimplyMath::MyLookRotation(FVector::ZeroVector, startLocation.m_transform.GetRotation().GetUpVector(), startLocation.m_transform.GetLocation()).Quaternion()
+                );
             return startLocation.m_transform;
         }
     }
