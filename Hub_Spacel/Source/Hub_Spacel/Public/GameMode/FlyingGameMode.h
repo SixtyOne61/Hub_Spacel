@@ -149,7 +149,7 @@ public:
 	int RemainingGameTime { 690 }; // 11'30
 
 	UPROPERTY()
-	int RemainingPrepareTime { 10 }; // 60
+	int RemainingPrepareTime { 60 }; // 60
 
 	int m_lockTime { RemainingPrepareTime  - 5 };
 
