@@ -139,9 +139,35 @@ bool UCustomCollisionComponent::sweepForInstancedStaticMesh(UInstancedStaticMesh
 			// spawn matiere
 			if (m_matiereManager.IsValid())
 			{
-				if (ASpacelPlayerState const* spacelPlayerState = m_shipPawnOwner.Get()->GetPlayerState<ASpacelPlayerState>())
+				bool needSpawnMatiere = true;
+				if (!m_shipPawnOwner->hasEffect(EEffect::Emp))
 				{
-					m_matiereManager.Get()->spawnMatiere(worldTransform.GetLocation(), spacelPlayerState->Team);
+					needSpawnMatiere = false;
+					// check if we have team player in hits
+					for (FHitResult const& hit : hits)
+					{
+						if (hit.Actor.IsValid())
+						{
+							for (FName const& name : hit.Actor->Tags)
+							{
+								if (name.ToString().Contains("Team"))
+								{
+									needSpawnMatiere = true;
+									break;
+								}
+							}
+						}
+
+						if (needSpawnMatiere) break;
+					}
+				}
+
+				if (needSpawnMatiere)
+				{
+					if (ASpacelPlayerState const* spacelPlayerState = m_shipPawnOwner.Get()->GetPlayerState<ASpacelPlayerState>())
+					{
+						m_matiereManager.Get()->spawnMatiere(worldTransform.GetLocation(), spacelPlayerState->Team);
+					}
 				}
 			}
 
