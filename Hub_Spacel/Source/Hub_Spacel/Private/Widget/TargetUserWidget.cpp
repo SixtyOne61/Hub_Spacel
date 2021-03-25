@@ -184,17 +184,20 @@ void UTargetUserWidget::OnPressed()
     {
         if (AShipPawn* ownerPawn = Cast<AShipPawn>(this->Owner->GetParentActor()))
         {
-            if (ASpacelPlayerState* playerState = ownerPawn->GetPlayerState<ASpacelPlayerState>())
+            if (!ownerPawn->hasEffect(EEffect::Fog))
             {
-                if (m_state == EState::StateLock)
+                if (ASpacelPlayerState* playerState = ownerPawn->GetPlayerState<ASpacelPlayerState>())
                 {
-                    m_state = EState::StateNormal;
-                    localPawn->lockTarget(playerState->PlayerId, false);
-                }
-                else
-                {
-                    m_state = EState::StateLock;
-                    localPawn->lockTarget(playerState->PlayerId, true);
+                    if (m_state == EState::StateLock)
+                    {
+                        m_state = EState::StateNormal;
+                        localPawn->lockTarget(playerState->PlayerId, false);
+                    }
+                    else
+                    {
+                        m_state = EState::StateLock;
+                        localPawn->lockTarget(playerState->PlayerId, true);
+                    }
                 }
             }
         }
