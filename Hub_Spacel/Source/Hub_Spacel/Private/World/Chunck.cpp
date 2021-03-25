@@ -80,6 +80,8 @@ void AChunck::generateChunck(bool _isServer)
 	UWorld* const world{ this->GetWorld() };
 	if (!ensure(world != nullptr)) return;
 
+	bool bChunckHasGenerateFog = false;
+
 	for (int x = 0; x < maxX; ++x)
 	{
 		for (int y = 0; y < maxY; ++y)
@@ -93,8 +95,9 @@ void AChunck::generateChunck(bool _isServer)
 				{
 					this->Voxels->AddInstance(FTransform { location });
 				}
-				else if (_isServer && noise > 0.60 && noise < 0.600001)
+				else if (_isServer && !bChunckHasGenerateFog && noise >= 0.561609 && noise <= 0.561610)
 				{
+					bChunckHasGenerateFog = true;
 					world->SpawnActor<AFogActor>(this->FogClass, FTransform { actorLocation + location });
 				}
 			}

@@ -28,8 +28,8 @@ protected:
 private:
 	void onOverlap(class AActor* _otherActor, bool _value) const;
 
-private:
-	UPROPERTY(Category = "Component", VisibleAnywhere)
+protected:
+	UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)
 	class UNiagaraComponent* FogNiagaraSystem { nullptr };
 
 	UPROPERTY(Category = "Component", VisibleAnywhere)
