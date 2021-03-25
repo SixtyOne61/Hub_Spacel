@@ -95,5 +95,6 @@ enum class EScoreType : uint8
 {
     Kill UMETA(DisplayName = "Kill"),
     Hit UMETA(DisplayName = "Hit"),
-    Tank UMETA(DisplayName = "Tank")
+    Tank UMETA(DisplayName = "Tank"),
+    Emp UMETA(DisplayName = "Emp")
 };

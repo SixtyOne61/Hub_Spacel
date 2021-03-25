@@ -63,6 +63,9 @@ void ASpacelGameState::AddScore(FString const& _team, EScoreType _type)
             case EScoreType::Tank:
                 score.Score += 10;
                 break;
+
+            case EScoreType::Emp:
+                score.Score += 30;
             }
         }
     }

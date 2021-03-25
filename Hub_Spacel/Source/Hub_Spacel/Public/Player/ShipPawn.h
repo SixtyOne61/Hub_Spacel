@@ -65,7 +65,7 @@ public:
 
     void launchMissile();
     void emp();
-    void emp(uint32 _duration);
+    void emp(uint32 _duration, FName const& _team);
 
 private:
     void lookAt(FVector const& _loc, FVector const& _dir, FVector const& _hitLoc);
@@ -225,6 +225,8 @@ protected:
 
     UPROPERTY(Replicated)
     EEffect R_Effect { EEffect::None };
+
+    FName m_lastTeamEmp {};
 
 private:
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")

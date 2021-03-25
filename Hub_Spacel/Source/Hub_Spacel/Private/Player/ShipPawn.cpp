@@ -242,12 +242,13 @@ void AShipPawn::emp()
         if(this->SkillComponent == nullptr) return;
         if(this->SkillComponent->SkillDataAsset == nullptr) return;
         uint32 duration = this->SkillComponent->SkillDataAsset->getSKill(ESkill::SpecialSupport).FlatDuration;
-        target->emp(duration);
+        target->emp(duration, this->Team);
     }
 }
 
-void AShipPawn::emp(uint32 _duration)
+void AShipPawn::emp(uint32 _duration, FName const& _team)
 {
+    m_lastTeamEmp = _team;
     addEffect(EEffect::Emp);
     FTimerHandle handle;
     this->GetWorldTimerManager().SetTimer(handle, this, &AShipPawn::CleanEmp, _duration, false);
@@ -635,6 +636,10 @@ void AShipPawn::behaviourRemoveEffect(EEffect _type)
                 spacelGameState->OnPlayerEnterFogDelegate.Broadcast(playerState->PlayerId, false);
             }
         }
+    }
+    else if (_type == EEffect::Emp)
+    {
+        m_lastTeamEmp = FName();
     }
 }
 

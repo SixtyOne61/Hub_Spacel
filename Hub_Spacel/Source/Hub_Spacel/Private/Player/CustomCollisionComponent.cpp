@@ -352,33 +352,40 @@ void UCustomCollisionComponent::addScore(TArray<FHitResult> const& _hits, EScore
 {
 	if (ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld())))
 	{
-		TSet<FString> teams;
-		for (FHitResult const& hit : _hits)
+		if (m_shipPawnOwner.IsValid() && m_shipPawnOwner->hasEffect(EEffect::Emp))
 		{
-			if (hit.GetActor() != nullptr)
+			spacelGameState->AddScore(m_shipPawnOwner->m_lastTeamEmp.ToString(), EScoreType::Emp);
+		}
+		else
+		{
+			TSet<FString> teams;
+			for (FHitResult const& hit : _hits)
 			{
-				for (FName const& tag : hit.GetActor()->Tags)
+				if (hit.GetActor() != nullptr)
 				{
-					FString stag = tag.ToString();
-					if (stag.Contains("Team:"))
+					for (FName const& tag : hit.GetActor()->Tags)
 					{
-						TArray<FString> out;
-						stag.ParseIntoArray(out, TEXT(":"), true);
-						if (out.Num() == 2)
+						FString stag = tag.ToString();
+						if (stag.Contains("Team:"))
 						{
-							if (*out[1] != m_shipPawnOwner.Get()->Team)
+							TArray<FString> out;
+							stag.ParseIntoArray(out, TEXT(":"), true);
+							if (out.Num() == 2)
 							{
-								teams.Add(out[1]);
+								if (*out[1] != m_shipPawnOwner.Get()->Team)
+								{
+									teams.Add(out[1]);
+								}
 							}
 						}
 					}
 				}
 			}
-		}
 
-		for (FString const& team : teams)
-		{
-			spacelGameState->AddScore(team, _type);
+			for (FString const& team : teams)
+			{
+				spacelGameState->AddScore(team, _type);
+			}
 		}
 	}
 }
