@@ -31,7 +31,7 @@ private:
 	bool sweepByProfile(TArray<FHitResult>& _outHit, FVector const& _worldLocation, FName const& _profile, FCollisionShape const& _shape, bool _drawDebug = false) const;
 
 	/* manage if we hit matiere */
-	void hitMatiere(TArray<FHitResult>& _items) const;
+	void hitMatiere(FVector const& _ownerLocation, FName const& _profileCollision) const;
 
 	/* create collision shape */
 	template<class T>

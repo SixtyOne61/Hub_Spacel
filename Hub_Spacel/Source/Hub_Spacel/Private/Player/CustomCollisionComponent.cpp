@@ -209,18 +209,12 @@ void UCustomCollisionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 
 	FVector const& ownerLocation { m_shipPawnOwner.Get()->GetActorLocation() };
 
+	// add matiere if we hit it
+	hitMatiere(ownerLocation, profileCollision);
+
 	TArray<FHitResult> hits;
 	if (sweepByProfile(hits, ownerLocation, profileCollision, { FCollisionShape::MakeBox({400, 350, 200}) }))
 	{
-		// add matiere if we hit it
-		hitMatiere(hits);
-
-		// if we hit only matiere return
-		if (hits.Num() == 0)
-		{
-			return;
-		}
-
 		FVector const& scale = m_shipPawnOwner.Get()->GetTransform().GetScale3D();
 		FString tagTeam = "Team:" + m_shipPawnOwner.Get()->Team.ToString();
 
@@ -253,30 +247,34 @@ void UCustomCollisionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 	}
 }
 
-void UCustomCollisionComponent::hitMatiere(TArray<FHitResult>& _items) const
+void UCustomCollisionComponent::hitMatiere(FVector const& _ownerLocation, FName const& _profileCollision) const
 {
-	int addMatiere {};
-	ASpacelPlayerState const* spacelPlayerState { m_shipPawnOwner.Get()->GetPlayerState<ASpacelPlayerState>() };
-	if (spacelPlayerState == nullptr) return;
-
-	FString const& team = spacelPlayerState->Team;
-	_items.RemoveAll([&addMatiere, &team](FHitResult const& _item)
-		{
-			if (_item.Actor.IsValid() && _item.Actor.Get()->ActorHasTag(Tags::Matiere))
-			{
-				if (AMatiereManager* matiere = Cast<AMatiereManager>(_item.Actor.Get()))
-				{
-					addMatiere += matiere->hit(_item, team);
-					return true;
-				}
-			}
-			return false;
-		});
-
-	// make event for add matiere like updateMatiere for decrease or increase matiere
-	if (m_shipPawnOwner.IsValid() && addMatiere != int{})
+	TArray<FHitResult> hits;
+	if (sweepByProfile(hits, _ownerLocation, _profileCollision, { FCollisionShape::MakeBox({800, 800, 800}) }))
 	{
-		m_shipPawnOwner.Get()->OnUpdateMatiereDelegate.Broadcast(addMatiere);
+		int addMatiere{};
+		ASpacelPlayerState const* spacelPlayerState{ m_shipPawnOwner.Get()->GetPlayerState<ASpacelPlayerState>() };
+		if (spacelPlayerState == nullptr) return;
+
+		FString const& team = spacelPlayerState->Team;
+		hits.RemoveAll([&addMatiere, &team](FHitResult const& _item)
+			{
+				if (_item.Actor.IsValid() && _item.Actor.Get()->ActorHasTag(Tags::Matiere))
+				{
+					if (AMatiereManager* matiere = Cast<AMatiereManager>(_item.Actor.Get()))
+					{
+						addMatiere += matiere->hit(_item, team);
+						return true;
+					}
+				}
+				return false;
+			});
+
+		// make event for add matiere like updateMatiere for decrease or increase matiere
+		if (m_shipPawnOwner.IsValid() && addMatiere != int{})
+		{
+			m_shipPawnOwner.Get()->OnUpdateMatiereDelegate.Broadcast(addMatiere);
+		}
 	}
 }
 
