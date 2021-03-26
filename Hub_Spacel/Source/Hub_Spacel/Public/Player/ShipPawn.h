@@ -224,7 +224,7 @@ protected:
     int32 R_ShieldLife { 0 };
 
     UPROPERTY(Replicated)
-    EEffect R_Effect { EEffect::None };
+    int32 R_Effect { 0 };
 
     FName m_lastTeamEmp {};
 

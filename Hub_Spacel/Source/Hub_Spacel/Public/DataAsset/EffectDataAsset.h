@@ -7,13 +7,13 @@
 #include "Enum/SpacelEnum.h"
 #include "EffectDataAsset.generated.h"
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct HUB_SPACEL_API FEffect
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere)
-	EEffect Effect {};
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BitmaskEnum = "EEffect"))
+	int32 Effect {};
 
 	UPROPERTY(EditAnywhere)
 	class UTexture2D* Icone { nullptr };

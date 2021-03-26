@@ -7,7 +7,7 @@ FEffect UEffectDataAsset::getEffect(EEffect _type) const
 {
     for (FEffect const& effect : this->Effects)
     {
-        if (effect.Effect == _type)
+        if (TOFLAG(effect.Effect) & TOFLAG(_type))
         {
             return effect;
         }

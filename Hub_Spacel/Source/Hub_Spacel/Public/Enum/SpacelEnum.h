@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 
+#define TOFLAG(Enum) (1 << static_cast<uint8>(Enum))
+
 UENUM(BlueprintType)
 enum class EGameState : uint8
 {
@@ -51,8 +53,8 @@ enum class ESkill : uint8
     SpecialSupport UMETA(DisplayName = "SpecialSupport"),
     EscapeMode UMETA(DisplayName = "EscapeMode"),
     MetaFormAttack UMETA(DisplayName = "MetaFormAttack"),
-    MetaFormProtection UMETA(DisplayName = "MetaFormAttack"),
-    MetaFormSupport UMETA(DisplayName = "MetaFormAttack"),
+    MetaFormProtection UMETA(DisplayName = "MetaFormProtection"),
+    MetaFormSupport UMETA(DisplayName = "MetaFormSupport"),
 };
 
 UENUM(BlueprintType, meta = (Bitflags, UseEnumValuesAsMaskValuesInEditor = "true"))
@@ -71,16 +73,18 @@ ENUM_CLASS_FLAGS(EFace);
 UENUM(BlueprintType, meta = (Bitflags, UseEnumValuesAsMaskValuesInEditor = "true"))
 enum class EEffect : uint8
 {
-    None = 0,
-    TargetLock = 1 << 0,
-    Fog = 1 << 1,
-    Shield = 1 << 2,
-    Emp = 1 << 3,
-    Killed = 1 << 4,
-    EscapeMode = 1 << 5,
-    BackToGame = 1 << 6
+    None,
+    TargetLock,
+    Fog,
+    Shield,
+    Emp,
+    Killed,
+    EscapeMode,
+    BackToGame,
+    MetaFormAttack,
+    MetaFormProtection,
+    MetaFormSupport,
 };
-ENUM_CLASS_FLAGS(EEffect);
 
 UENUM(BlueprintType)
 enum class ECountDown : uint8

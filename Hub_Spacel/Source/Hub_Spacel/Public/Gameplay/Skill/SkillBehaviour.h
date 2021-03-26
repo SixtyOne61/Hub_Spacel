@@ -113,6 +113,37 @@ public:
 	void onEndCountDown() override {};
 };
 
+class HUB_SPACEL_API SkillMetaFormAttack : public SkillBehaviour
+{
+	using SkillBehaviour::SkillBehaviour;
+public:
+	virtual ~SkillMetaFormAttack() {}
+
+	void onEnd() override {};
+	void onEndCountDown() override {};
+};
+
+class HUB_SPACEL_API SkillMetaFormProtection : public SkillBehaviour
+{
+	using SkillBehaviour::SkillBehaviour;
+public:
+	virtual ~SkillMetaFormProtection() {}
+
+	bool onStart() override;
+	void onEnd() override;
+	void onEndCountDown() override {};
+};
+
+class HUB_SPACEL_API SkillMetaFormSupport : public SkillBehaviour
+{
+	using SkillBehaviour::SkillBehaviour;
+public:
+	virtual ~SkillMetaFormSupport() {}
+
+	void onEnd() override {};
+	void onEndCountDown() override {};
+};
+
 class HUB_SPACEL_API SkillFactory
 {
 public:

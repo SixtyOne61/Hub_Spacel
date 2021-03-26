@@ -39,10 +39,10 @@ void USkillComponent::setupSkill()
         lb(ESkillType::Protection, ESkill::SpecialProtection, levelSpecial);
         lb(ESkillType::Support, ESkill::SpecialSupport, levelSpecial);
         
-        //uint8 levelMetaForm = this->SkillDataAsset->LevelMetaForm;
-        //lb(ESkillType::Attack, ESkill::MetaFormAttack, levelMetaForm);
-        //lb(ESkillType::Protection, ESkill::MetaFormProtection, levelMetaForm);
-        //lb(ESkillType::Support, ESkill::MetaFormSupport, levelMetaForm);
+        uint8 levelMetaForm = this->SkillDataAsset->LevelMetaForm;
+        lb(ESkillType::Attack, ESkill::MetaFormAttack, levelMetaForm);
+        lb(ESkillType::Protection, ESkill::MetaFormProtection, levelMetaForm);
+        lb(ESkillType::Support, ESkill::MetaFormSupport, levelMetaForm);
     }
 }
 

@@ -110,6 +110,22 @@ bool SkillSpecialSupport::onStart()
     return true;
 }
 
+bool SkillMetaFormProtection::onStart()
+{
+    if (m_pawn == nullptr) return false;
+
+    m_pawn->addEffect(EEffect::MetaFormAttack);
+    return true;
+}
+
+void SkillMetaFormProtection::onEnd()
+{
+    if (m_pawn != nullptr)
+    {
+        m_pawn->removeEffect(EEffect::MetaFormAttack);
+    }
+}
+
 TUniquePtr<SkillBehaviour> SkillFactory::create(ESkill _skill, class AShipPawn* _pawn, ENetMode _netMode)
 {
     switch (_skill)
@@ -122,6 +138,9 @@ TUniquePtr<SkillBehaviour> SkillFactory::create(ESkill _skill, class AShipPawn* 
         case ESkill::SpecialAttack : return MakeUnique<SkillSpecialAttack>(_pawn, _netMode);
         case ESkill::SpecialProtection: return MakeUnique<SkillSpecialProtection>(_pawn, _netMode);
         case ESkill::SpecialSupport: return MakeUnique<SkillSpecialSupport>(_pawn, _netMode);
+        case ESkill::MetaFormAttack: return MakeUnique<SkillMetaFormAttack>(_pawn, _netMode);
+        case ESkill::MetaFormProtection: return MakeUnique<SkillMetaFormProtection>(_pawn, _netMode);
+        case ESkill::MetaFormSupport: return MakeUnique<SkillMetaFormSupport>(_pawn, _netMode);
     }
 
     return nullptr;

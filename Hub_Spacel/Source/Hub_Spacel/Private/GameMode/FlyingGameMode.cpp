@@ -14,6 +14,10 @@
 
 AFlyingGameMode::AFlyingGameMode()
 {
+#if WITH_EDITOR
+    RemainingPrepareTime = 7;
+#endif
+
     UTextReaderComponent* textReader = CreateDefaultSubobject<UTextReaderComponent>(TEXT("TextReaderComponent"));
     if (!ensure(textReader != nullptr)) return;
     ApiUrl = textReader->ReadFile("Urls/ApiUrl.txt");

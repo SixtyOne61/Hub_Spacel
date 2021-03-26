@@ -603,7 +603,7 @@ void AShipPawn::addEffect(EEffect _type)
 {
     if (!hasEffect(_type))
     {
-        this->R_Effect |= _type;
+        this->R_Effect |= TOFLAG(_type);
 
         behaviourAddEffect(_type);
         RPCClientAddEffect(_type);
@@ -612,7 +612,7 @@ void AShipPawn::addEffect(EEffect _type)
 
 void AShipPawn::removeEffect(EEffect _type)
 {
-    this->R_Effect &= ~_type;
+    this->R_Effect &= ~TOFLAG(_type);
     behaviourRemoveEffect(_type);
     RPCClientRemoveEffect(_type);
 }
@@ -645,7 +645,7 @@ void AShipPawn::behaviourRemoveEffect(EEffect _type)
 
 bool AShipPawn::hasEffect(EEffect _type)
 {
-    return (this->R_Effect & _type) != (EEffect)0;
+    return (this->R_Effect & TOFLAG(_type));
 }
 
 void AShipPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetimeProps) const
