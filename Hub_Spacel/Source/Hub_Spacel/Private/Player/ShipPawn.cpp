@@ -303,7 +303,8 @@ void AShipPawn::serverMove(float _deltaTime)
 
     FVector const& linearVelocity = this->DriverMeshComponent->GetPhysicsLinearVelocity(NAME_None);
     // 9, default support size
-    float coefSpeed = FMath::Max((this->ModuleComponent->SupportMeshComponent->GetInstanceCount() / 9.0f) * coefEscape, 0.2f);
+    float coefSpeed = (hasEffect(EEffect::MetaFormAttack) || hasEffect(EEffect::MetaFormProtection) || hasEffect(EEffect::MetaFormSupport))
+        ? coefEscape : FMath::Max((this->ModuleComponent->SupportMeshComponent->GetInstanceCount() / 9.0f) * coefEscape, 0.2f);
 
     FVector newVelocity = this->DriverMeshComponent->GetForwardVector() * this->PlayerDataAsset->MaxForwardSpeed * this->RU_PercentSpeed * coefSpeed;
     newVelocity += this->DriverMeshComponent->GetRightVector() * this->PlayerDataAsset->MaxHorizontalSpeed * this->PercentHorizontalStraf * coefSpeed;
@@ -526,25 +527,38 @@ void AShipPawn::useSkill(float _slot)
 
 bool AShipPawn::canTank(int32 _val)
 {
-    int32 newValue = this->R_ShieldLife - _val;
-    newValue = FMath::Max(0, newValue);
-
-    if (ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld())))
+    auto lb_addScore = [&](int32 _val)
     {
-        spacelGameState->AddScore(this->Team.ToString(), EScoreType::Tank, this->R_ShieldLife - newValue);
-    }
-
-    if (newValue == 0 && this->R_ShieldLife > 0)
-    {
-        removeEffect(EEffect::Shield);
-        if (this->ShieldComponent != nullptr)
+        if (ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld())))
         {
-            this->ShieldComponent->SetVisibility(false);
+            spacelGameState->AddScore(this->Team.ToString(), EScoreType::Tank, _val);
         }
-    }
+    };
 
-    this->R_ShieldLife = newValue;
-    return this->R_ShieldLife > 0;
+    if (hasEffect(EEffect::MetaFormProtection))
+    {
+        lb_addScore(_val);
+        return true;
+    }
+    else
+    {
+        int32 newValue = this->R_ShieldLife - _val;
+        newValue = FMath::Max(0, newValue);
+
+        lb_addScore(this->R_ShieldLife - newValue);
+
+        if (newValue == 0 && this->R_ShieldLife > 0)
+        {
+            removeEffect(EEffect::Shield);
+            if (this->ShieldComponent != nullptr)
+            {
+                this->ShieldComponent->SetVisibility(false);
+            }
+        }
+
+        this->R_ShieldLife = newValue;
+        return this->R_ShieldLife > 0;
+    }
 }
 
 void AShipPawn::RPCClientAddEffect_Implementation(EEffect _effect)

@@ -114,7 +114,7 @@ bool SkillMetaFormProtection::onStart()
 {
     if (m_pawn == nullptr) return false;
 
-    m_pawn->addEffect(EEffect::MetaFormAttack);
+    m_pawn->addEffect(EEffect::MetaFormProtection);
     return true;
 }
 
@@ -122,7 +122,23 @@ void SkillMetaFormProtection::onEnd()
 {
     if (m_pawn != nullptr)
     {
-        m_pawn->removeEffect(EEffect::MetaFormAttack);
+        m_pawn->removeEffect(EEffect::MetaFormProtection);
+    }
+}
+
+bool SkillMetaFormSupport::onStart()
+{
+    if (m_pawn == nullptr) return false;
+
+    m_pawn->addEffect(EEffect::MetaFormSupport);
+    return true;
+}
+
+void SkillMetaFormSupport::onEnd()
+{
+    if (m_pawn != nullptr)
+    {
+        m_pawn->removeEffect(EEffect::MetaFormSupport);
     }
 }
 
