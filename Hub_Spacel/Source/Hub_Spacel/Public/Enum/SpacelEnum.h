@@ -73,17 +73,17 @@ ENUM_CLASS_FLAGS(EFace);
 UENUM(BlueprintType, meta = (Bitflags, UseEnumValuesAsMaskValuesInEditor = "true"))
 enum class EEffect : uint8
 {
-    None,
-    TargetLock,
-    Fog,
-    Shield,
-    Emp,
-    Killed,
-    EscapeMode,
-    BackToGame,
-    MetaFormAttack,
-    MetaFormProtection,
-    MetaFormSupport,
+    None UMETA(DisplayName = "None"),
+    TargetLock UMETA(DisplayName = "TargetLock"),
+    Fog UMETA(DisplayName = "Fog"),
+    Shield UMETA(DisplayName = "Shield"),
+    Emp UMETA(DisplayName = "Emp"),
+    Killed UMETA(DisplayName = "Killed"),
+    EscapeMode UMETA(DisplayName = "EscapeMode"),
+    BackToGame UMETA(DisplayName = "BackToGame"),
+    MetaFormAttack UMETA(DisplayName = "MetaFormAttack"),
+    MetaFormProtection UMETA(DisplayName = "MetaFormProtection"),
+    MetaFormSupport UMETA(DisplayName = "MetaFormSupport"),
 };
 
 UENUM(BlueprintType)

@@ -15,7 +15,8 @@
 AFlyingGameMode::AFlyingGameMode()
 {
 #if WITH_EDITOR
-    RemainingPrepareTime = 7;
+    RemainingPrepareTime = 10;
+    m_lockTime = RemainingPrepareTime - 5;
 #endif
 
     UTextReaderComponent* textReader = CreateDefaultSubobject<UTextReaderComponent>(TEXT("TextReaderComponent"));
