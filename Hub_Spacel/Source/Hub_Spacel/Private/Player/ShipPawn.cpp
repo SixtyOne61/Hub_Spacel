@@ -561,6 +561,25 @@ bool AShipPawn::canTank(int32 _val)
     }
 }
 
+void AShipPawn::RPCNetMulticastEnterHidding_Implementation(int32 _playerId, bool _enter)
+{
+    if(this->RootComponent == nullptr) return;
+    if(this->IsLocallyControlled() || this->GetNetMode() == ENetMode::NM_DedicatedServer) return;
+
+    if (_enter)
+    {
+        this->RootComponent->SetVisibility(false, true);
+    }
+    else
+    {
+        this->RootComponent->SetVisibility(true, true);
+        if (!hasEffect(EEffect::Shield))
+        {
+            this->ShieldComponent->SetVisibility(false);
+        }
+    }
+}
+
 void AShipPawn::RPCClientAddEffect_Implementation(EEffect _effect)
 {
     OnAddEffectDelegate.Broadcast(_effect);
@@ -578,7 +597,7 @@ void AShipPawn::behaviourAddEffect(EEffect _type)
         if (this->PlayerDataAsset != nullptr && !hasEffect(EEffect::Killed))
         {
             this->R_ShieldLife = this->PlayerDataAsset->ShieldLife;
-            if (this->ShieldComponent != nullptr)
+            if (this->ShieldComponent != nullptr && !hasEffect(EEffect::MetaFormSupport))
             {
                 this->ShieldComponent->SetVisibility(true);
             }
@@ -605,6 +624,18 @@ void AShipPawn::behaviourAddEffect(EEffect _type)
     {
         FTimerHandle handle;
         this->GetWorldTimerManager().SetTimer(handle, this, &AShipPawn::BackToGame, 1.0f, false);
+    }
+    else if (_type == EEffect::MetaFormSupport)
+    {
+        if (APlayerState* playerState = this->GetPlayerState())
+        {
+            RPCNetMulticastEnterHidding(playerState->PlayerId, true);
+
+            if (ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld())))
+            {
+                spacelGameState->OnPlayerEnterFogDelegate.Broadcast(playerState->PlayerId, true);
+            }
+        }
     }
 }
 
@@ -654,6 +685,18 @@ void AShipPawn::behaviourRemoveEffect(EEffect _type)
     else if (_type == EEffect::Emp)
     {
         m_lastTeamEmp = FName();
+    }
+    else if (_type == EEffect::MetaFormSupport)
+    {
+        if (APlayerState* playerState = this->GetPlayerState())
+        {
+            RPCNetMulticastEnterHidding(playerState->PlayerId, false);
+
+            if (ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld())))
+            {
+                spacelGameState->OnPlayerEnterFogDelegate.Broadcast(playerState->PlayerId, false);
+            }
+        }
     }
 }
 

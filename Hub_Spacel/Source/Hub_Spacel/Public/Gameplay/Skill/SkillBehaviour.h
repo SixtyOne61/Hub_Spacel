@@ -141,7 +141,7 @@ public:
 	virtual ~SkillMetaFormSupport() {}
 
 	bool onStart() override;
-	void onEnd() override {};
+	void onEnd() override;
 	void onEndCountDown() override {};
 };
 

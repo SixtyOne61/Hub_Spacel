@@ -119,7 +119,7 @@ void AMissile::FlyToTarget()
 
 void AMissile::OnTargetEffect(EEffect _type)
 {
-    if (_type == EEffect::Fog)
+    if (_type == EEffect::Fog || _type == EEffect::MetaFormSupport)
     {
         this->Destroy();
     }

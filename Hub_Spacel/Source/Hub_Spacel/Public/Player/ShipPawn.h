@@ -118,6 +118,9 @@ private:
     UFUNCTION(Reliable, NetMulticast)
     void RPCNetMulticastEnterFog(int32 _playerId, bool _enter);
 
+    UFUNCTION(Reliable, NetMulticast)
+    void RPCNetMulticastEnterHidding(int32 _playerId, bool _enter);
+
     UFUNCTION(UnReliable, Client)
     void RPCClientPlayCameraShake();
 
