@@ -125,7 +125,6 @@ void AMissile::OnTargetEffect(EEffect _type)
     }
 }
 
-
 void AMissile::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
