@@ -57,4 +57,7 @@ public:
 
     UPROPERTY(Category = "Fire", EditAnywhere, BlueprintReadWrite)
     float ReduceTimeBetweenFireWithLevel = 0.7f;
+
+    UPROPERTY(Category = "Fire", EditAnywhere, BlueprintReadWrite)
+    float ReduceTimeBetweenFireWithMetaForm = 0.2f;
 };

@@ -110,6 +110,22 @@ bool SkillSpecialSupport::onStart()
     return true;
 }
 
+bool SkillMetaFormAttack::onStart()
+{
+    if (m_pawn == nullptr) return false;
+
+    m_pawn->addEffect(EEffect::MetaFormAttack);
+    return true;
+}
+
+void SkillMetaFormAttack::onEnd()
+{
+    if (m_pawn != nullptr)
+    {
+        m_pawn->removeEffect(EEffect::MetaFormAttack);
+    }
+}
+
 bool SkillMetaFormProtection::onStart()
 {
     if (m_pawn == nullptr) return false;

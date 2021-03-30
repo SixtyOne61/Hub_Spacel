@@ -62,6 +62,10 @@ void UFireComponent::TickComponent(float _deltaTime, ELevelTick _tickType, FActo
         if (ASpacelPlayerState* spacelPlayerState = m_shipPawnOwner.Get()->GetPlayerState<ASpacelPlayerState>())
         {
             float coef = spacelPlayerState->IsIncreaseFireRate() ? m_shipPawnOwner.Get()->PlayerDataAsset->ReduceTimeBetweenFireWithLevel : 1.0f;
+            if (m_shipPawnOwner->hasEffect(EEffect::MetaFormAttack))
+            {
+                coef = m_shipPawnOwner.Get()->PlayerDataAsset->ReduceTimeBetweenFireWithMetaForm;
+            }
             m_fireCountDown = m_shipPawnOwner.Get()->PlayerDataAsset->TimeBetweenFire * coef;
         }
         else

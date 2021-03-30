@@ -119,7 +119,8 @@ class HUB_SPACEL_API SkillMetaFormAttack : public SkillBehaviour
 public:
 	virtual ~SkillMetaFormAttack() {}
 
-	void onEnd() override {};
+	bool onStart() override;
+	void onEnd() override;
 	void onEndCountDown() override {};
 };
 
