@@ -254,6 +254,43 @@ void AShipPawn::emp(uint32 _duration, FName const& _team)
     this->GetWorldTimerManager().SetTimer(handle, this, &AShipPawn::CleanEmp, _duration, false);
 }
 
+void AShipPawn::giveMatiereToAlly(uint8 _id)
+{
+    if(this->RU_Matiere <= 0) return;
+
+    if (ASpacelPlayerState* localSpacelPlayerState = GetPlayerState<ASpacelPlayerState>())
+    {
+        FString const& localTeam = localSpacelPlayerState->Team;
+
+        if (AGameStateBase* gameStateBase = GetWorld()->GetGameState())
+        {
+            TArray<APlayerState*> const& playerStates = gameStateBase->PlayerArray;
+            uint8 i = 0;
+            for (APlayerState const* playerState : playerStates)
+            {
+                if (ASpacelPlayerState const* spacelPlayerState = Cast<ASpacelPlayerState>(playerState))
+                {
+                    if(localSpacelPlayerState->PlayerId == playerState->PlayerId) continue;
+
+                    if (spacelPlayerState->Team == localTeam)
+                    {
+                        if (i == _id)
+                        {
+                            if (AShipPawn* allyPawn = spacelPlayerState->GetPawn<AShipPawn>())
+                            {
+                                allyPawn->RU_Matiere += 1;
+                                this->RU_Matiere -= 1;
+                            }
+                            break;
+                        }
+                        ++i;
+                    }
+                }
+            }
+        }
+    }
+}
+
 void AShipPawn::CleanEmp()
 {
     if (AGamePlayerController* playerController = this->GetController<AGamePlayerController>())

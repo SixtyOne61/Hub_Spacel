@@ -66,6 +66,7 @@ public:
     void launchMissile();
     void emp();
     void emp(uint32 _duration, FName const& _team);
+    void giveMatiereToAlly(uint8 _id);
 
 private:
     void lookAt(FVector const& _loc, FVector const& _dir, FVector const& _hitLoc);

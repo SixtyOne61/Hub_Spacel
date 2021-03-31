@@ -52,6 +52,7 @@ class HUB_SPACEL_API SkillGiveAlly1 : public SkillBehaviour
 public:
 	virtual ~SkillGiveAlly1() {}
 
+	bool onStart() override;
 	void onEnd() override {};
 	void onEndCountDown() override {};
 };
@@ -62,6 +63,7 @@ class HUB_SPACEL_API SkillGiveAlly2 : public SkillBehaviour
 public:
 	virtual ~SkillGiveAlly2() {}
 
+	bool onStart() override;
 	void onEnd() override {};
 	void onEndCountDown() override {};
 };

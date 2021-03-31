@@ -6,6 +6,7 @@
 #include "GameState/SpacelGameState.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerState.h"
+#include "Player/SpacelPlayerState.h"
 
 SkillBehaviour::SkillBehaviour(AShipPawn* _pawn, ENetMode _netMode)
     : m_pawn(_pawn)
@@ -24,6 +25,45 @@ bool SkillRepairSupport::onStart()
 {
     if (m_pawn == nullptr) return false;
     m_pawn->OnRepairSupportDelegate.Broadcast();
+    return true;
+}
+
+bool giveMatiere(AShipPawn* _shipPawn, uint8 _id)
+{
+    if (ASpacelPlayerState* localSpacelPlayerState = _shipPawn->GetPlayerState<ASpacelPlayerState>())
+    {
+        FString const& localTeam = localSpacelPlayerState->Team;
+        TArray<APlayerState*> const& playerStates = _shipPawn->GetWorld()->GetGameState()->PlayerArray;
+        uint8 i = 0;
+        for (APlayerState const* playerState : playerStates)
+        {
+            if (ASpacelPlayerState const* spacelPlayerState = Cast<ASpacelPlayerState>(playerState))
+            {
+                if (spacelPlayerState->Team == localTeam)
+                {
+                    if (i == _id)
+                    {
+                        
+                    }
+                    ++i;
+                }
+            }
+        }
+    }
+    return false;
+}
+
+bool SkillGiveAlly1::onStart()
+{
+    if (m_pawn == nullptr) return false;
+    m_pawn->giveMatiereToAlly(0);
+    return true;
+}
+
+bool SkillGiveAlly2::onStart()
+{
+    if (m_pawn == nullptr) return false;
+    m_pawn->giveMatiereToAlly(1);
     return true;
 }
 
