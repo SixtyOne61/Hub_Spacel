@@ -340,20 +340,21 @@ void AShipPawn::serverMove(float _deltaTime)
     if (!ensure(this->ModuleComponent != nullptr)) return;
     if (!ensure(this->ModuleComponent->SupportMeshComponent != nullptr)) return;
 
-    float coefEscape { hasEffect(EEffect::EscapeMode) ? this->PlayerDataAsset->EscapeModeCoef : 1.0f };
+    // 9, default support size
+    float coefSpeed = FMath::Max((this->ModuleComponent->SupportMeshComponent->GetInstanceCount() / 9.0f), this->PlayerDataAsset->MinCoefSpeed);
+    if (hasEffect(EEffect::MetaFormAttack) || hasEffect(EEffect::MetaFormProtection) || hasEffect(EEffect::MetaFormSupport) || hasEffect(EEffect::EscapeMode))
+    {
+        // override speed max
+        coefSpeed = this->PlayerDataAsset->EscapeModeCoef;
+    }
 
     // roll rotation
-
     FRotator rotation = this->GetActorRotation();
-    rotation.Add(0.0f, 0.0f, this->PercentFlightAttitude * coefEscape * this->PlayerDataAsset->MaxFlightAttitudeSpeed);
+    rotation.Add(0.0f, 0.0f, this->PercentFlightAttitude * FMath::Max(coefSpeed, 1.0f) * this->PlayerDataAsset->MaxFlightAttitudeSpeed);
     this->SetActorRotation(rotation);
 
     // linear
-
     FVector const& linearVelocity = this->DriverMeshComponent->GetPhysicsLinearVelocity(NAME_None);
-    // 9, default support size
-    float coefSpeed = (hasEffect(EEffect::MetaFormAttack) || hasEffect(EEffect::MetaFormProtection) || hasEffect(EEffect::MetaFormSupport))
-        ? coefEscape : FMath::Max((this->ModuleComponent->SupportMeshComponent->GetInstanceCount() / 9.0f) * coefEscape, 0.2f);
 
     FVector newVelocity = this->DriverMeshComponent->GetForwardVector() * this->PlayerDataAsset->MaxForwardSpeed * this->RU_PercentSpeed * coefSpeed;
     newVelocity += this->DriverMeshComponent->GetRightVector() * this->PlayerDataAsset->MaxHorizontalSpeed * this->PercentHorizontalStraf * coefSpeed;

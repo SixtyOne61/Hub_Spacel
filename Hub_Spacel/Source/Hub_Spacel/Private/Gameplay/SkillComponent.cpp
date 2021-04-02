@@ -20,8 +20,6 @@ void USkillComponent::setupSkill()
     // order is important
     m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::RepairProtection), m_shipPawnOwner.Get(), mode));
     m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::RepairSupport), m_shipPawnOwner.Get(), mode));
-    m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::GiveAlly1), m_shipPawnOwner.Get(), mode));
-    m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::GiveAlly2), m_shipPawnOwner.Get(), mode));
     m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::EscapeMode), m_shipPawnOwner.Get(), mode));
 
     if (ASpacelPlayerState* spacelPlayerState = Cast<ASpacelPlayerState>(m_shipPawnOwner.Get()->GetPlayerState()))
@@ -38,12 +36,15 @@ void USkillComponent::setupSkill()
         lb(ESkillType::Attack, ESkill::SpecialAttack, levelSpecial);
         lb(ESkillType::Protection, ESkill::SpecialProtection, levelSpecial);
         lb(ESkillType::Support, ESkill::SpecialSupport, levelSpecial);
-        
+
         uint8 levelMetaForm = this->SkillDataAsset->LevelMetaForm;
         lb(ESkillType::Attack, ESkill::MetaFormAttack, levelMetaForm);
         lb(ESkillType::Protection, ESkill::MetaFormProtection, levelMetaForm);
         lb(ESkillType::Support, ESkill::MetaFormSupport, levelMetaForm);
     }
+
+    m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::GiveAlly1), m_shipPawnOwner.Get(), mode));
+    m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::GiveAlly2), m_shipPawnOwner.Get(), mode));
 }
 
 void USkillComponent::TickComponent(float _deltaTime, ELevelTick _tickType, FActorComponentTickFunction* _thisTickFunction)

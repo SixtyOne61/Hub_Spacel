@@ -40,6 +40,9 @@ public:
     UPROPERTY(Category = "Movement", EditAnywhere, BlueprintReadWrite)
     float MaxFlightAttitudeSpeed { 1000.0f };
 
+    UPROPERTY(Category = "Movement", EditAnywhere, BlueprintReadWrite)
+    float MinCoefSpeed { 0.6f };
+
     UPROPERTY(Category = "Skill", EditAnywhere, BlueprintReadWrite)
     float EscapeModeCoef { 1.5f };
 
