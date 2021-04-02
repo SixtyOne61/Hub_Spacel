@@ -40,7 +40,7 @@ private:
 	UPROPERTY()
 	class UImage* DisconnectImage { nullptr };
 
-	TSharedPtr<class ASpacelPlayerState> m_watcher {};
+	TWeakObjectPtr<class ASpacelPlayerState> m_watcher {};
 
 	UPROPERTY()
 	FTimerHandle WatcherHandle {};

@@ -44,7 +44,7 @@ void UAllyWidget::setWatcher(class ASpacelPlayerState* _state)
     {
         this->NameTextBlock->SetText(FText::FromString(_state->GetPlayerName()));
     }
-    m_watcher = MakeShareable(_state);
+    m_watcher = _state;
 
     UWorld* world{ this->GetWorld() };
     if (!ensure(world != nullptr)) return;
