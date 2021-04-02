@@ -39,7 +39,6 @@ void ABillboardActor::Tick(float DeltaTime)
 	FVector const& widgetLocation = this->BillboardWidgetComponent->GetComponentLocation();
 
 	FRotator rot = UKismetMathLibrary::FindLookAtRotation(widgetLocation, pawnLocation);
-	//rot.Roll = 90.0f;
 
 	this->BillboardWidgetComponent->SetWorldRotation(rot);
 }
