@@ -30,6 +30,12 @@ protected:
 	void NativeDestruct() override;
 	void NativeTick(const FGeometry& _myGeometry, float _deltaTime) override;
 
+	UFUNCTION(BlueprintImplementableEvent, Category = "Setup")
+	void SetBackgroundRanking(FSlateColor const& _teamColor);
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "Setup")
+	void SetRanking(uint8 _rank);
+
 private:
 	UFUNCTION()
 	void StartGame();
@@ -82,6 +88,9 @@ protected:
 	UPROPERTY(EditAnywhere)
 	class UEffectDataAsset* EffectDataAsset { nullptr };
 
+	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
+	class UTeamColorDataAsset* TeamColorDataAsset{ nullptr };
+
 private:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class USkillWidget> SkillWidgetClass { nullptr };
@@ -114,5 +123,7 @@ private:
 	TArray<class UAllyWidget*> AllyWidgets { };
 
 	UPROPERTY()
-	class UUserWidget* ScoreWidget { nullptr };
+	class UScoreUserWidget* ScoreWidget { nullptr };
+
+	FString Team {};
 };

@@ -20,10 +20,13 @@
 #include "DataAsset/PlayerDataAsset.h"
 #include "DataAsset/SkillDataAsset.h"
 #include "DataAsset/EffectDataAsset.h"
+#include "DataAsset/TeamColorDataAsset.h"
 #include "Widget/AllyWidget.h"
 #include "Widget/SkillWidget.h"
 #include "Widget/EffectWidget.h"
+#include "Widget/ScoreUserWidget.h"
 #include "Factory/SpacelFactory.h"
+#include "Styling/SlateColor.h"
 
 void USpacelWidget::NativeConstruct()
 {
@@ -34,7 +37,7 @@ void USpacelWidget::NativeConstruct()
     PingTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Ping"));
     ProtectionProgressBar = SimplyUI::initSafetyFromName<UUserWidget, UProgressBar>(this, TEXT("ProgressBar_Protection"));
     SupportProgressBar = SimplyUI::initSafetyFromName<UUserWidget, UProgressBar>(this, TEXT("ProgressBar_Support"));
-    ScoreWidget = SimplyUI::initSafetyFromName<UUserWidget, UUserWidget>(this, TEXT("WBP_Score"));
+    ScoreWidget = SimplyUI::initSafetyFromName<UUserWidget, UScoreUserWidget>(this, TEXT("WBP_Score"));
     SkillBarHorizontalBox = SimplyUI::initSafetyFromName<UUserWidget, UHorizontalBox>(this, TEXT("SkillBar"));
     EffectBarHorizontalBox = SimplyUI::initSafetyFromName<UUserWidget, UHorizontalBox>(this, TEXT("EffectBar"));
 
@@ -98,6 +101,20 @@ void USpacelWidget::StartGame()
     if (owningPlayerState == nullptr) return;
     FString owningPlayerTeam{ owningPlayerState->Team };
 
+    Team = owningPlayerTeam;
+
+    //set background color for ranking
+    if (this->TeamColorDataAsset != nullptr)
+    {
+        SetBackgroundRanking(this->TeamColorDataAsset->GetColor<FSlateColor>(Team));
+    }
+
+    // create score array
+    if (this->ScoreWidget != nullptr)
+    {
+        this->ScoreWidget->initScoreArray();
+    }
+
     int i{ 0 };
     for (APlayerState* playerState : playerStates)
     {
@@ -140,23 +157,28 @@ void USpacelWidget::StartGame()
 void USpacelWidget::UpdateScore()
 {
     if(this->ScoreWidget == nullptr) return;
+    this->ScoreWidget->updateScore();
 
     ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld()));
     if (spacelGameState != nullptr)
     {
-        TArray<FScore> const& scores = spacelGameState->R_Scores;
-        int i { 1 };
+        TArray<FScore> scores = spacelGameState->R_Scores;
+
+        // search ranking
+        scores.Sort([](FScore const& _s1, FScore const& _s2)
+        {
+            return _s1.Score > _s2.Score;
+        });
+
+        uint8 rank = 1;
         for (FScore const& score : scores)
         {
-            FString teamVariableName = "Txt_" + FString::FromInt(i);
-            UTextBlock* teamTb = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this->ScoreWidget, *teamVariableName);
-            if (teamTb != nullptr) teamTb->SetText(FText::FromString(score.Team));
-
-            FString scoreVariableName = "Team_" + FString::FromInt(i);
-            UTextBlock* scoreTb = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this->ScoreWidget, *scoreVariableName);
-            if (scoreTb != nullptr ) scoreTb->SetText(FText::FromString(FString::FromInt(score.Score)));
-
-            ++i;
+            if (score.Team == this->Team)
+            {
+                SetRanking(rank);
+                break;
+            }
+            ++rank;
         }
     }
 }

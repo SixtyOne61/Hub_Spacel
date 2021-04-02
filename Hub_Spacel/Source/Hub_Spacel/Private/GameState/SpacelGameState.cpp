@@ -88,13 +88,17 @@ void ASpacelGameState::RegisterTeam()
         if (ASpacelPlayerState* spacelPlayerState = Cast<ASpacelPlayerState>(playerState))
         {
             FString const& teamName = spacelPlayerState->Team;
+            bool isNewTeam { true };
             for (FScore& score : this->R_Scores)
             {
-                if (score.Team == teamName) break;
+                if (score.Team == teamName) isNewTeam = false;
             }
 
-            // register team for scoring
-            this->R_Scores.Add(FScore { teamName , 0});
+            if (isNewTeam)
+            {
+                // register team for scoring
+                this->R_Scores.Add(FScore{ teamName , 0 });
+            }
         }
     }
 }

@@ -53,6 +53,7 @@ class HUB_SPACEL_API ASpacelGameState : public AGameStateBase
 	GENERATED_BODY()
 
 	friend class USpacelWidget;
+	friend class UScoreUserWidget;
 
 public:
 	UFUNCTION()
