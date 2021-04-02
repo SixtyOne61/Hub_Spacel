@@ -3,29 +3,18 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
+#include "World/BillboardActor.h"
 #include "TargetActor.generated.h"
 
 UCLASS()
-class HUB_SPACEL_API ATargetActor : public AActor
+class HUB_SPACEL_API ATargetActor : public ABillboardActor
 {
 	GENERATED_BODY()
 	
-public:	
-	// Sets default values for this actor's properties
-	ATargetActor();
-
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
 	void showTarget(bool _show);
-
-protected:
-	class UWidgetComponent* TargetWidgetComponent { nullptr };
-
 };

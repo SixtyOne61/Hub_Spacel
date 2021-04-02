@@ -17,6 +17,7 @@
 #include "DataAsset/StaticMeshDataAsset.h"
 #include "DataAsset/SetupAttributeDataAsset.h"
 #include "DataAsset/PlayerDataAsset.h"
+#include "DataAsset/TeamColorDataAsset.h"
 #include "Player/SpacelPlayerState.h"
 #include "Player/TargetActor.h"
 #include "Player/FireComponent.h"
@@ -25,6 +26,7 @@
 #include "Player/GamePlayerController.h"
 #include "Player/RepairComponent.h"
 #include "Player/LocalPlayerActionComponent.h"
+#include "Player/PlayerNameActor.h"
 #include "GameState/SpacelGameState.h"
 #include "Hub_SpacelGameInstance.h"
 #include "Util/Tag.h"
@@ -78,8 +80,12 @@ AShipPawn::AShipPawn()
     if (!ensure(TargetComponent != nullptr)) return;
     TargetComponent->SetupAttachment(RootComponent);
 
+    PlayerNameComponent = CreateDefaultSubobject<UChildActorComponent>(TEXT("PlayerName_00"));
+    if (!ensure(PlayerNameComponent != nullptr)) return;
+    PlayerNameComponent->SetupAttachment(RootComponent);
+
     SpeedLinesComponent = CreateDefaultSubobject<UPostProcessComponent>(TEXT("SpeedLines_00"));
-    if (!ensure(TargetComponent != nullptr)) return;
+    if (!ensure(SpeedLinesComponent != nullptr)) return;
 
     ShieldComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Shield_00"));
     if (!ensure(ShieldComponent != nullptr)) return;
@@ -114,12 +120,34 @@ void AShipPawn::RPCNetMulticastStartGame_Implementation(FName const& _team)
 {
     if(this->GetNetMode() == ENetMode::NM_DedicatedServer || this->IsLocallyControlled()) return;
 
-    // check is we are same team
-    if (!_team.IsEqual(this->Team))
+    // find local player
+    FString localTeam {};
+    if (APlayerController const* playerController = UGameplayStatics::GetPlayerController(this->GetWorld(), 0))
+    {
+        if (ASpacelPlayerState const* playerState = playerController->GetPlayerState<ASpacelPlayerState>())
+        {
+            localTeam = playerState->Team;
+        }
+    }
+
+    // check if we are same team as local player
+    if (!_team.IsEqual(*localTeam))
     {
         if (!ensure(this->TargetComponent != nullptr)) return;
         this->TargetComponent->SetChildActorClass(this->TargetClass);
         this->TargetComponent->CreateChildActor();
+    }
+
+    if (!ensure(this->PlayerNameComponent != nullptr)) return;
+    if (APlayerNameActor* playerNameActor = Cast<APlayerNameActor>(this->PlayerNameComponent->GetChildActor()))
+    {
+        if (this->TeamColorDataAsset != nullptr)
+        {
+            if (APlayerState const* playerState = this->GetPlayerState())
+            {
+                playerNameActor->setPlayerName(playerState->GetPlayerName(), this->TeamColorDataAsset->GetColor<FSlateColor>(_team.ToString()));
+            }
+        }
     }
 }
 
@@ -160,6 +188,10 @@ void AShipPawn::BeginPlay()
         {
             if (!ensure(this->DriverMeshComponent != nullptr)) return;
             this->DriverMeshComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+
+            if (!ensure(this->PlayerNameComponent != nullptr)) return;
+            this->PlayerNameComponent->SetChildActorClass(this->PlayerNameClass);
+            this->PlayerNameComponent->CreateChildActor();
         }
         else
         {

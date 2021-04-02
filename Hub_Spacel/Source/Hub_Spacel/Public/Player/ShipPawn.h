@@ -168,6 +168,9 @@ public:
     UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
     class UPlayerDataAsset* PlayerDataAsset { nullptr };
 
+    UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
+    class UTeamColorDataAsset* TeamColorDataAsset { nullptr };
+
     /* module setup by server replicated to client, static mesh instance don't support replication */
     UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)
     class UModuleComponent* ModuleComponent { nullptr };
@@ -188,6 +191,12 @@ public:
 
     UPROPERTY(Category = "ChildActor", EditAnywhere, BlueprintReadWrite)
     TSubclassOf<class ATargetActor> TargetClass { nullptr };
+
+    UPROPERTY(Category = "ChildActor", EditAnywhere, BlueprintReadWrite)
+    class UChildActorComponent* PlayerNameComponent{ nullptr };
+
+    UPROPERTY(Category = "ChildActor", EditAnywhere, BlueprintReadWrite)
+    TSubclassOf<class APlayerNameActor> PlayerNameClass { nullptr };
 
     UPROPERTY(Category = "Component", EditAnywhere, BlueprintReadWrite)
     class UWidgetInteractionComponent* WidgetTargetComponent { nullptr };
