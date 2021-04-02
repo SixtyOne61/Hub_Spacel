@@ -235,6 +235,8 @@ protected:
 
     FName m_lastTeamEmp {};
 
+    FTransform m_startTransform {};
+
 private:
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
     FOnUpdateMatiere OnUpdateMatiereDelegate {};

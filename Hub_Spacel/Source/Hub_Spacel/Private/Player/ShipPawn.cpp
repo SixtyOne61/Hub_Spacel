@@ -104,6 +104,8 @@ void AShipPawn::OnStartGame()
         customCollisionComponent->RegisterComponent();
     }
 
+    m_startTransform = this->GetActorTransform();
+
     RPCClientStartGame(this->Team);
     RPCNetMulticastStartGame(this->Team);
 }
@@ -431,6 +433,9 @@ void AShipPawn::Restarted()
             _obj->restarted();
         }
     };
+
+    // replace actor to spawn
+    this->SetActorTransform(m_startTransform);
 
     lb(this->GetController<AGamePlayerController>());
     lb(this->ModuleComponent);
