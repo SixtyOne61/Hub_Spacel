@@ -105,6 +105,20 @@ void AShipPawn::OnStartGame()
     }
 
     RPCClientStartGame(this->Team);
+    RPCNetMulticastStartGame(this->Team);
+}
+
+void AShipPawn::RPCNetMulticastStartGame_Implementation(FName const& _team)
+{
+    if(this->GetNetMode() == ENetMode::NM_DedicatedServer || this->IsLocallyControlled()) return;
+
+    // check is we are same team
+    if (!_team.IsEqual(this->Team))
+    {
+        if (!ensure(this->TargetComponent != nullptr)) return;
+        this->TargetComponent->SetChildActorClass(this->TargetClass);
+        this->TargetComponent->CreateChildActor();
+    }
 }
 
 void AShipPawn::RPCClientStartGame_Implementation(FName const& _team)
@@ -142,10 +156,6 @@ void AShipPawn::BeginPlay()
     {
         if (!this->IsLocallyControlled())
         {
-            if (!ensure(this->TargetComponent != nullptr)) return;
-            this->TargetComponent->SetChildActorClass(this->TargetClass);
-            this->TargetComponent->CreateChildActor();
-
             if (!ensure(this->DriverMeshComponent != nullptr)) return;
             this->DriverMeshComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
         }

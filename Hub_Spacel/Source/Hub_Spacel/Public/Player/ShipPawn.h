@@ -122,6 +122,9 @@ private:
     UFUNCTION(Reliable, NetMulticast)
     void RPCNetMulticastEnterHidding(int32 _playerId, bool _enter);
 
+    UFUNCTION(Reliable, NetMulticast)
+    void RPCNetMulticastStartGame(FName const& _team);
+
     UFUNCTION(UnReliable, Client)
     void RPCClientPlayCameraShake();
 
