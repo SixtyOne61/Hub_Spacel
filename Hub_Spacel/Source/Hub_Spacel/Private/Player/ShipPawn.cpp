@@ -118,6 +118,15 @@ void AShipPawn::OnStartGame()
 
 void AShipPawn::RPCNetMulticastStartGame_Implementation(FName const& _team)
 {
+    if (this->ShieldComponent != nullptr)
+    {
+        if (this->TeamColorDataAsset != nullptr)
+        {
+            FColor color = this->TeamColorDataAsset->GetColor<FColor>(_team.ToString());
+            this->ShieldComponent->SetVectorParameterValueOnMaterials("Color", FVector{ color.ReinterpretAsLinear() });
+        }
+    }
+
     if(this->GetNetMode() == ENetMode::NM_DedicatedServer || this->IsLocallyControlled()) return;
 
     // find local player
