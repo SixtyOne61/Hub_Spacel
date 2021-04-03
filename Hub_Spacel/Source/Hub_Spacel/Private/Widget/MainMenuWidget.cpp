@@ -9,6 +9,8 @@
 #include "JsonUtilities.h"
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
+#include "Components/Border.h"
+#include "Components/EditableText.h"
 #include "Hub_SpacelGameInstance.h"
 #include "Util/SimplyUI.h"
 #include "Util/SimplyHttpRequest.h"
@@ -46,6 +48,12 @@ void UMainMenuWidget::NativeConstruct()
     LossesTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Losses"));
     PingTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Ping"));
     MatchmakingEventTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_MatchmakingEvent"));
+    BorderName = SimplyUI::initSafetyFromName<UUserWidget, UBorder>(this, TEXT("Border_Name"));
+    PlayerName = SimplyUI::initSafetyFromName<UUserWidget, UEditableText>(this, TEXT("EditableText_Name"));
+    if (PlayerName)
+    {
+        PlayerName->OnTextChanged.AddDynamic(this, &UMainMenuWidget::OnPlayerNameChange);
+    }
 
     UWorld* world{ this->GetWorld() };
     if (!ensure(world != nullptr)) return;
@@ -204,7 +212,7 @@ void UMainMenuWidget::onGetPlayerDataResponseReceived(FHttpRequestPtr _request, 
     SimplyUI::setVisibility({ESlateVisibility::Hidden}, 
         std::make_tuple(this->WebBrowser));
     SimplyUI::setVisibility({ ESlateVisibility::Visible },
-        std::make_tuple(this->MatchmakingButton, this->WinsTextBlock, this->LossesTextBlock, this->PingTextBlock, this->MatchmakingEventTextBlock));
+        std::make_tuple(this->MatchmakingButton, this->WinsTextBlock, this->LossesTextBlock, this->PingTextBlock, this->MatchmakingEventTextBlock, this->BorderName));
 }
 
 void UMainMenuWidget::OnMatchmakingButtonClicked()
@@ -458,4 +466,12 @@ void UMainMenuWidget::setMatchkingTextBlock(TOptional<FText>&& _button, TOptiona
             this->MatchmakingEventTextBlock->SetText(_event.GetValue());
         }
     }
+}
+
+void UMainMenuWidget::OnPlayerNameChange(FText const& _text)
+{
+    UHub_SpacelGameInstance* spacelGameInstance = Cast<UHub_SpacelGameInstance>(this->GetGameInstance());
+    if (!ensure(spacelGameInstance != nullptr)) return;
+    // set player name
+    spacelGameInstance->CustomPlayerName = _text.ToString();
 }

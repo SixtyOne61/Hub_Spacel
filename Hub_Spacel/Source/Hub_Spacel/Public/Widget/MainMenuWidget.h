@@ -43,6 +43,9 @@ private:
 
 	void setMatchkingTextBlock(TOptional<FText> && _button, TOptional<FText> && _event);
 
+	UFUNCTION()
+	void OnPlayerNameChange(FText const& _text);
+
 public:
 	UPROPERTY()
 	FTimerHandle SetAveragePlayerLatencyHandle {};
@@ -82,6 +85,12 @@ private:
 
 	UPROPERTY()
 	class UTextBlock* MatchmakingEventTextBlock { nullptr };
+
+	UPROPERTY()
+	class UBorder* BorderName { nullptr };
+
+	UPROPERTY()
+	class UEditableText* PlayerName { nullptr };
 
 	UPROPERTY()
 	float AveragePlayerLatency {};

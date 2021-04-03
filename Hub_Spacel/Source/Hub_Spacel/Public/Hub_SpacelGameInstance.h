@@ -64,6 +64,9 @@ public:
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
     FOnTryLock OnTryLockDelegate {};
 
+    UPROPERTY()
+    FString CustomPlayerName { "Not set" };
+
 private:
     class FHttpModule* HttpModule { nullptr };
 

@@ -63,6 +63,11 @@ void UAllyWidget::UpdateWatcher()
             updatePercent(this->SupportProgressBar, shipPawn->getPercentSupport());
             disconnect = ESlateVisibility::Hidden;
         }
+
+        if (this->NameTextBlock != nullptr)
+        {
+            this->NameTextBlock->SetText(FText::FromString(m_watcher->GetPlayerName()));
+        }
     }
 
     if (this->DisconnectImage != nullptr)

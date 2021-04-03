@@ -116,6 +116,9 @@ private:
     UFUNCTION()
     void OnPlayerEnterFog(int32 _playerId, bool _enter);
 
+    UFUNCTION(Reliable, Server)
+    void RPCServerSetPlayerName(FString const& _playerName);
+
     UFUNCTION(Reliable, NetMulticast)
     void RPCNetMulticastEnterFog(int32 _playerId, bool _enter);
 

@@ -214,7 +214,18 @@ void AShipPawn::BeginPlay()
             {
                 spacelGameState->OnLockPrepareDelegate.AddDynamic(this, &AShipPawn::OnLockPrepare);
             }
+            UHub_SpacelGameInstance* spacelGameInstance = Cast<UHub_SpacelGameInstance>(this->GetGameInstance());
+            if (!ensure(spacelGameInstance != nullptr)) return;
+            RPCServerSetPlayerName(spacelGameInstance->CustomPlayerName);
         }
+    }
+}
+
+void AShipPawn::RPCServerSetPlayerName_Implementation(FString const& _playerName)
+{
+    if (ASpacelPlayerState* spacelPlayerState = GetPlayerState<ASpacelPlayerState>())
+    {
+        spacelPlayerState->SetPlayerName(_playerName);
     }
 }
 
