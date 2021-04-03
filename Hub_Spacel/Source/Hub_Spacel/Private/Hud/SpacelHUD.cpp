@@ -45,5 +45,7 @@ void ASpacelHUD::StartGame()
     if (!ensure(playerController != nullptr)) return;
 
     playerController->bShowMouseCursor = false;
-    playerController->SetInputMode(FInputModeGameAndUI());
+    FInputModeGameAndUI mode{};
+    mode.SetLockMouseToViewportBehavior(EMouseLockMode::LockAlways);
+    playerController->SetInputMode(mode);
 }
