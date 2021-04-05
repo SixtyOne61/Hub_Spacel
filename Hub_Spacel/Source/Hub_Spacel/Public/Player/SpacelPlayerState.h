@@ -44,6 +44,7 @@ private:
 	
 public:
     static constexpr uint8 MaxSkillPoint { 4 };
+    static constexpr uint8 MaxSkillPointType { 3 };
 
     /* event */
 

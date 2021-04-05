@@ -22,11 +22,6 @@ void UPreparePhaseWidget::NativeConstruct()
 
     TArray<FName> skillName { TEXT("SelectorAttack"), TEXT("SelectorProtection"), TEXT("SelectorSupport") };
     SimplyUI::initArray(this, SelectorSkillWidget, skillName);
-    for (USelectorSkillWidget* widget : SelectorSkillWidget)
-    {
-        if(widget == nullptr) continue;
-        widget->OnClickLevelDelegate.AddDynamic(this, &UPreparePhaseWidget::OnClickLevel);
-    }
 
     TArray<FName> playerCardName { TEXT("Ally1"), TEXT("Ally2") };
     SimplyUI::initArray(this, PlayerCardWidget, playerCardName);
@@ -176,40 +171,5 @@ void UPreparePhaseWidget::SetupOwningTeam()
     if (this->Colors != nullptr)
     {
         this->SetupOutline(this->Colors->GetColor<FSlateColor>(owningPlayerTeam));
-    }
-}
-
-void UPreparePhaseWidget::OnClickLevel(ESkillType _type, uint8 _level)
-{
-    if(m_isLock) return;
-
-    ASpacelPlayerState* owningPlayerState{ Cast<ASpacelPlayerState>(this->GetOwningPlayerState()) };
-    if (owningPlayerState == nullptr) return;
-
-    uint8 remainingSkillPoint = owningPlayerState->getRemainingSkillPoint();
-    uint8 currentSkillPoint = owningPlayerState->getSkillPoint(_type);
-    if(currentSkillPoint == _level) return;
-
-    if (currentSkillPoint > _level)
-    {
-        owningPlayerState->setRemainingSkillPoint(remainingSkillPoint + currentSkillPoint - _level);
-    }
-
-    owningPlayerState->RPCSetSkillPoint(_type, _level);
-    if (remainingSkillPoint < _level)
-    {
-        // reset other skill type
-        for (USelectorSkillWidget* skill : this->SelectorSkillWidget)
-        {
-            if(skill == nullptr || skill->SkillType == _type) continue;
-            skill->reset();
-            owningPlayerState->RPCSetSkillPoint(skill->SkillType, 0);
-        }
-
-        owningPlayerState->setRemainingSkillPoint(ASpacelPlayerState::MaxSkillPoint - _level);
-    }
-    else
-    {
-        owningPlayerState->setRemainingSkillPoint(remainingSkillPoint - _level);
     }
 }

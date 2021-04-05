@@ -46,9 +46,6 @@ private:
 	void SetupOwningTeam();
 
 	UFUNCTION()
-	void OnClickLevel(ESkillType _type, uint8 _level);
-
-	UFUNCTION()
 	void RegisterEvent();
 
 	void updatePlayerInfo();
