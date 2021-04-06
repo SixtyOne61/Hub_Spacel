@@ -139,17 +139,19 @@ void USpacelWidget::StartGame()
     {
         if(shipPawn->SkillComponent == nullptr) return;
         TArray<TUniquePtr<SkillCountDown>> const& skills = shipPawn->SkillComponent->getSkills();
+        uint8 id {1};
         for (auto const& skillPtr : skills)
         {
             FSkill const& skill = skillPtr.Get()->getParam();
             FString name = "Skill";
             name.Append(FString::FromInt((int)skill.Skill));
             USkillWidget* skillWidget = CreateWidget<USkillWidget, UHorizontalBox>(this->SkillBarHorizontalBox, this->SkillWidgetClass, *name);
-            skillWidget->SetSkill(skill.BackgroundColorBtn, skill.IconeBtn);
+            skillWidget->SetSkill(skill.BackgroundColorBtn, skill.IconeBtn, id);
             this->SkillBarHorizontalBox->AddChildToHorizontalBox(skillWidget);
 
             UProgressBar * progress = SimplyUI::initSafetyFromName<UUserWidget, UProgressBar>(skillWidget, TEXT("ProgressBar_Skill"));
             skillPtr->addProgressBar(progress);
+            ++id;
         }
     }
 }
