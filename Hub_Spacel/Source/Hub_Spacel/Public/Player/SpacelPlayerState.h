@@ -30,7 +30,7 @@ public:
     UFUNCTION(Reliable, Server)
     void RPCSetSkillPoint(ESkillType const& _type, uint8 _value);
 
-    bool IsIncreaseFireRate() const { return Attack > 0; }
+    bool IsIncreaseFireRate() const { return R_Attack > 0; }
 
     UFUNCTION()
     void SetTeam(FString const& _team);
@@ -60,16 +60,16 @@ public:
     FString MatchmakingPlayerId {};
 
     UPROPERTY(Replicated, BlueprintReadWrite)
-    FString Team { "Team 1" };
+    FString R_Team { "Team 1" };
 
     UPROPERTY(Replicated)
-    uint8 Attack {};
+    uint8 R_Attack {};
 
     UPROPERTY(Replicated)
-    uint8 Protection {};
+    uint8 R_Protection {};
 
     UPROPERTY(Replicated)
-    uint8 Support {};
+    uint8 R_Support {};
 
     FTransform PlayerStartTransform {};
 

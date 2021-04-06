@@ -166,7 +166,7 @@ bool UCustomCollisionComponent::sweepForInstancedStaticMesh(UInstancedStaticMesh
 				{
 					if (ASpacelPlayerState const* spacelPlayerState = m_shipPawnOwner.Get()->GetPlayerState<ASpacelPlayerState>())
 					{
-						m_matiereManager.Get()->spawnMatiere(worldTransform.GetLocation(), spacelPlayerState->Team);
+						m_matiereManager.Get()->spawnMatiere(worldTransform.GetLocation(), spacelPlayerState->R_Team);
 					}
 				}
 			}
@@ -256,7 +256,7 @@ void UCustomCollisionComponent::hitMatiere(FVector const& _ownerLocation, FName 
 		ASpacelPlayerState const* spacelPlayerState{ m_shipPawnOwner.Get()->GetPlayerState<ASpacelPlayerState>() };
 		if (spacelPlayerState == nullptr) return;
 
-		FString const& team = spacelPlayerState->Team;
+		FString const& team = spacelPlayerState->R_Team;
 		hits.RemoveAll([&addMatiere, &team](FHitResult const& _item)
 			{
 				if (_item.Actor.IsValid() && _item.Actor.Get()->ActorHasTag(Tags::Matiere))
@@ -304,7 +304,7 @@ void UCustomCollisionComponent::hit(FString const& _team, class UPrimitiveCompon
 			{
 				if (ASpacelPlayerState const* spacelPlayerState = m_shipPawnOwner.Get()->GetPlayerState<ASpacelPlayerState>())
 				{
-					m_matiereManager.Get()->spawnMatiere(worldTransform.GetLocation(), spacelPlayerState->Team);
+					m_matiereManager.Get()->spawnMatiere(worldTransform.GetLocation(), spacelPlayerState->R_Team);
 				}
 			}
 

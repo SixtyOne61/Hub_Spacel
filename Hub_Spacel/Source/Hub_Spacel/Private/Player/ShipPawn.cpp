@@ -135,7 +135,7 @@ void AShipPawn::RPCNetMulticastStartGame_Implementation(FName const& _team)
     {
         if (ASpacelPlayerState const* playerState = playerController->GetPlayerState<ASpacelPlayerState>())
         {
-            localTeam = playerState->Team;
+            localTeam = playerState->R_Team;
         }
     }
 
@@ -324,7 +324,7 @@ void AShipPawn::giveMatiereToAlly(uint8 _id)
 
     if (ASpacelPlayerState* localSpacelPlayerState = GetPlayerState<ASpacelPlayerState>())
     {
-        FString const& localTeam = localSpacelPlayerState->Team;
+        FString const& localTeam = localSpacelPlayerState->R_Team;
 
         if (AGameStateBase* gameStateBase = GetWorld()->GetGameState())
         {
@@ -336,7 +336,7 @@ void AShipPawn::giveMatiereToAlly(uint8 _id)
                 {
                     if(localSpacelPlayerState->PlayerId == playerState->PlayerId) continue;
 
-                    if (spacelPlayerState->Team == localTeam)
+                    if (spacelPlayerState->R_Team == localTeam)
                     {
                         if (i == _id)
                         {
@@ -423,7 +423,7 @@ void AShipPawn::OnRep_PlayerState()
     ASpacelPlayerState* spacelPlayerState = Cast<ASpacelPlayerState>(this->GetPlayerState());
     if (spacelPlayerState != nullptr)
     {
-        FString teamName{ spacelPlayerState->Team };
+        FString teamName{ spacelPlayerState->R_Team };
         if (teamName.Len() > 0)
         {
             // TO DO : Change color for teammate and ennemy team and our pawn

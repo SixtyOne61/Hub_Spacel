@@ -122,17 +122,17 @@ void UModuleComponent::OnStartGame()
         }
         else
         {
-            lb_readXml(spacelPlayerState->Attack, this->WeaponDataAsset, this->RU_AttackLocations, "Location");
+            lb_readXml(spacelPlayerState->R_Attack, this->WeaponDataAsset, this->RU_AttackLocations, "Location");
             buildShip(this->WeaponMeshComponent, this->WeaponDataAsset, this->RU_AttackLocations);
 
-            lb_readXml(spacelPlayerState->Protection, this->ProtectionDataAsset, this->RU_ProtectionLocations, "Location");
+            lb_readXml(spacelPlayerState->R_Protection, this->ProtectionDataAsset, this->RU_ProtectionLocations, "Location");
             buildShip(this->ProtectionMeshComponent, this->ProtectionDataAsset, this->RU_ProtectionLocations);
 
-            lb_readXml(spacelPlayerState->Support, this->SupportDataAsset, this->RU_SupportLocations, "Location");
+            lb_readXml(spacelPlayerState->R_Support, this->SupportDataAsset, this->RU_SupportLocations, "Location");
             buildShip(this->SupportMeshComponent, this->SupportDataAsset, this->RU_SupportLocations);
             setLocationExhaustFx();
 
-            lb_readXml(spacelPlayerState->Attack, this->WeaponDataAsset, R_MissileLocations, "Missile");
+            lb_readXml(spacelPlayerState->R_Attack, this->WeaponDataAsset, R_MissileLocations, "Missile");
             if (this->MissileMeshComponent != nullptr && this->R_MissileLocations.Num() != 0)
             {
                 this->MissileMeshComponent->SetRelativeLocation(this->R_MissileLocations[0]);

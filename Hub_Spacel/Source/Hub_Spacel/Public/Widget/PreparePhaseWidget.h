@@ -50,9 +50,15 @@ private:
 
 	void updatePlayerInfo();
 
+	UFUNCTION()
+	void UpdateBonus(ESkillType _type, uint8 _level);
+
 public:
 	UPROPERTY(EditAnywhere)
 	class UTeamColorDataAsset* Colors { nullptr };
+
+	UPROPERTY(EditAnywhere)
+	class UTreeSkillDescDataAsset* TreeSkillDesc { nullptr };
 
 private:
 	UPROPERTY()
@@ -60,6 +66,9 @@ private:
 
 	UPROPERTY()
 	class UTextBlock* TimeTextBlock { nullptr };
+
+	UPROPERTY()
+	class UTextBlock* BonusTextBlock { nullptr };
 
 	UPROPERTY()
 	TArray<class USelectorSkillWidget*> SelectorSkillWidget { };

@@ -109,7 +109,7 @@ bool UTargetUserWidget::hideAlly()
     ASpacelPlayerState const* spacelOwnerPlayerState { ownerPawn->GetPlayerState<ASpacelPlayerState>() };
     if (spacelOwnerPlayerState == nullptr) return false;
 
-    if (spacelLocalPlayerState->Team == spacelOwnerPlayerState->Team)
+    if (spacelLocalPlayerState->R_Team == spacelOwnerPlayerState->R_Team)
     {
         // hide widget
         this->SetVisibility(ESlateVisibility::Hidden);

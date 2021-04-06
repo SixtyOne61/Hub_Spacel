@@ -124,4 +124,6 @@ void USelectorSkillWidget::updateBorderColor()
     {
         this->PointText->SetText(FText::FromString(FString::FromInt(m_currentLevel)));
     }
+
+    this->OnUpdateSkillDelegate.Broadcast(this->SkillType, m_currentLevel);
 }

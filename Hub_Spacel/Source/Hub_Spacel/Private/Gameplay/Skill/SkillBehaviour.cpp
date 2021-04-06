@@ -32,14 +32,14 @@ bool giveMatiere(AShipPawn* _shipPawn, uint8 _id)
 {
     if (ASpacelPlayerState* localSpacelPlayerState = _shipPawn->GetPlayerState<ASpacelPlayerState>())
     {
-        FString const& localTeam = localSpacelPlayerState->Team;
+        FString const& localTeam = localSpacelPlayerState->R_Team;
         TArray<APlayerState*> const& playerStates = _shipPawn->GetWorld()->GetGameState()->PlayerArray;
         uint8 i = 0;
         for (APlayerState const* playerState : playerStates)
         {
             if (ASpacelPlayerState const* spacelPlayerState = Cast<ASpacelPlayerState>(playerState))
             {
-                if (spacelPlayerState->Team == localTeam)
+                if (spacelPlayerState->R_Team == localTeam)
                 {
                     if (i == _id)
                     {

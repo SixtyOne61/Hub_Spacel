@@ -7,6 +7,8 @@
 #include "Enum/SpacelEnum.h"
 #include "SelectorSkillWidget.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnUpdateSkill, ESkillType, _type, uint8, _level);
+
 /**
  * 
  */
@@ -71,6 +73,9 @@ private:
 
 	UPROPERTY()
 	class UTextBlock* PointText { nullptr };
+
+	UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
+	FOnUpdateSkill OnUpdateSkillDelegate {};
 
 	bool m_isLock {false};
 	uint8 m_currentLevel {0};

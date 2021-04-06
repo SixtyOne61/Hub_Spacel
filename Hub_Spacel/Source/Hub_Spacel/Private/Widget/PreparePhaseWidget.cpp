@@ -11,6 +11,7 @@
 #include "Widget/PlayerCardWidget.h"
 #include "Widget/SelectorSKillWidget.h"
 #include "DataAsset/TeamColorDataAsset.h"
+#include "DataAsset/TreeSkillDescDataAsset.h"
 
 void UPreparePhaseWidget::NativeConstruct()
 {
@@ -19,9 +20,14 @@ void UPreparePhaseWidget::NativeConstruct()
 
     RemainingSkillPointTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_RemainingSkillPoint"));
     TimeTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Time"));
+    BonusTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("BonusList_Txt"));
 
     TArray<FName> skillName { TEXT("SelectorAttack"), TEXT("SelectorProtection"), TEXT("SelectorSupport") };
     SimplyUI::initArray(this, SelectorSkillWidget, skillName);
+    for (USelectorSkillWidget* skillWidget : SelectorSkillWidget)
+    {
+        skillWidget->OnUpdateSkillDelegate.AddDynamic(this, &UPreparePhaseWidget::UpdateBonus);
+    }
 
     TArray<FName> playerCardName { TEXT("Ally1"), TEXT("Ally2") };
     SimplyUI::initArray(this, PlayerCardWidget, playerCardName);
@@ -97,7 +103,7 @@ void UPreparePhaseWidget::updatePlayerInfo()
 
     ASpacelPlayerState* owningPlayerState{ Cast<ASpacelPlayerState>(this->GetOwningPlayerState()) };
     if (owningPlayerState == nullptr) return;
-    FString owningPlayerTeam{ owningPlayerState->Team };
+    FString owningPlayerTeam{ owningPlayerState->R_Team };
 
     int i {0};
     for (APlayerState* playerState : playerStates)
@@ -106,7 +112,7 @@ void UPreparePhaseWidget::updatePlayerInfo()
         {
             if(spacelPlayerState->GetUniqueID() == owningPlayerState->GetUniqueID()) continue;
 
-            if (spacelPlayerState->Team.Equals(owningPlayerTeam)
+            if (spacelPlayerState->R_Team.Equals(owningPlayerTeam)
                 && this->PlayerCardWidget[i] != nullptr)
             {
                 this->PlayerCardWidget[i]->Setup(spacelPlayerState);
@@ -167,9 +173,40 @@ void UPreparePhaseWidget::SetupOwningTeam()
         return;
     }
 
-    FString owningPlayerTeam{ owningPlayerState->Team };
+    FString owningPlayerTeam{ owningPlayerState->R_Team };
     if (this->Colors != nullptr)
     {
         this->SetupOutline(this->Colors->GetColor<FSlateColor>(owningPlayerTeam));
+    }
+}
+
+void UPreparePhaseWidget::UpdateBonus(ESkillType _type, uint8 _level)
+{
+    if (this->TreeSkillDesc != nullptr)
+    {
+        ASpacelPlayerState* owningPlayerState = Cast<ASpacelPlayerState>(this->GetOwningPlayerState());
+        if (owningPlayerState == nullptr) return;
+
+        FString descStr {};
+        auto lb = [&](ESkillType _genType)
+        {
+            uint8 level = _genType == _type ? _level : owningPlayerState->getSkillPoint(_genType);
+            FDesc const& desc = this->TreeSkillDesc->getDesc(_genType);
+
+            for (int i = 0; i < level; ++i)
+            {
+                descStr.Append(desc.DescByLevel[i]);
+                descStr.Append("\n");
+            }
+        };
+
+        lb(ESkillType::Attack);
+        lb(ESkillType::Protection);
+        lb(ESkillType::Support);
+
+        if (this->BonusTextBlock != nullptr)
+        {
+            this->BonusTextBlock->SetText(FText::FromString(descStr));
+        }
     }
 }

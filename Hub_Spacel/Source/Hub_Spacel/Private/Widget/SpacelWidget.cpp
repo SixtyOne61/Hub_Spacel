@@ -99,7 +99,7 @@ void USpacelWidget::StartGame()
 
     ASpacelPlayerState* owningPlayerState{ Cast<ASpacelPlayerState>(this->GetOwningPlayerState()) };
     if (owningPlayerState == nullptr) return;
-    FString owningPlayerTeam{ owningPlayerState->Team };
+    FString owningPlayerTeam{ owningPlayerState->R_Team };
 
     Team = owningPlayerTeam;
 
@@ -122,7 +122,7 @@ void USpacelWidget::StartGame()
         {
             if (spacelPlayerState->GetUniqueID() == owningPlayerState->GetUniqueID()) continue;
 
-            if (spacelPlayerState->Team.Equals(owningPlayerTeam)
+            if (spacelPlayerState->R_Team.Equals(owningPlayerTeam)
                 && this->AllyWidgets[i] != nullptr)
             {
                 this->AllyWidgets[i]->setWatcher(spacelPlayerState);

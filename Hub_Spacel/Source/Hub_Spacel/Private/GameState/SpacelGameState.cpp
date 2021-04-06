@@ -87,7 +87,7 @@ void ASpacelGameState::RegisterTeam()
     {
         if (ASpacelPlayerState* spacelPlayerState = Cast<ASpacelPlayerState>(playerState))
         {
-            FString const& teamName = spacelPlayerState->Team;
+            FString const& teamName = spacelPlayerState->R_Team;
             bool isNewTeam { true };
             for (FScore& score : this->R_Scores)
             {
