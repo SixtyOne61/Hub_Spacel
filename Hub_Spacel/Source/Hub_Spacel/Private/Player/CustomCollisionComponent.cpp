@@ -7,6 +7,7 @@
 #include "Player/SpacelPlayerState.h"
 #include "CollisionQueryParams.h"
 #include "Gameplay/DestroyActor.h"
+#include "Gameplay/Bullet/ProjectileBase.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "World/MatiereManager.h"
 #include "Kismet/GameplayStatics.h"
@@ -278,7 +279,7 @@ void UCustomCollisionComponent::hitMatiere(FVector const& _ownerLocation, FName 
 	}
 }
 
-void UCustomCollisionComponent::hit(FString const& _team, class UPrimitiveComponent* _comp, int32 _index)
+void UCustomCollisionComponent::hit(FString const& _team, int32 _playerId, class UPrimitiveComponent* _comp, int32 _index)
 {
 	if(m_shipPawnOwner.Get() == nullptr) return;
 	if(m_shipPawnOwner.Get()->ModuleComponent == nullptr) return;
@@ -324,7 +325,7 @@ void UCustomCollisionComponent::hit(FString const& _team, class UPrimitiveCompon
 		{
 			if (*_team != m_shipPawnOwner.Get()->Team)
 			{
-				spacelGameState->AddScore(_team, _type);
+				spacelGameState->AddScore(_team, _playerId, _type);
 			}
 		}
 	};
@@ -352,15 +353,21 @@ void UCustomCollisionComponent::addScore(TArray<FHitResult> const& _hits, EScore
 	{
 		if (m_shipPawnOwner.IsValid() && m_shipPawnOwner->hasEffect(EEffect::Emp))
 		{
-			spacelGameState->AddScore(m_shipPawnOwner->m_lastTeamEmp.ToString(), EScoreType::Emp);
+			spacelGameState->AddScore(m_shipPawnOwner->m_lastTeamEmp.ToString(), m_shipPawnOwner->m_lastPlayerIdEmp, EScoreType::Emp);
 		}
 		else
 		{
-			TSet<FString> teams;
+			TSet<TTuple<int32, FString>> playerInfos;
 			for (FHitResult const& hit : _hits)
 			{
 				if (hit.GetActor() != nullptr)
 				{
+					TTuple<int32, FString> playerInfo;
+					if (AProjectileBase* projectileBase = Cast<AProjectileBase>(hit.GetActor()))
+					{
+						playerInfo.Key = projectileBase->R_PlayerIdOwner;
+					}
+
 					for (FName const& tag : hit.GetActor()->Tags)
 					{
 						FString stag = tag.ToString();
@@ -372,17 +379,19 @@ void UCustomCollisionComponent::addScore(TArray<FHitResult> const& _hits, EScore
 							{
 								if (*out[1] != m_shipPawnOwner.Get()->Team)
 								{
-									teams.Add(out[1]);
+									playerInfo.Value = out[1];
 								}
 							}
 						}
 					}
+
+					playerInfos.Add(playerInfo);
 				}
 			}
 
-			for (FString const& team : teams)
+			for (TTuple<int32, FString> const& playerInfo : playerInfos)
 			{
-				spacelGameState->AddScore(team, _type);
+				spacelGameState->AddScore(playerInfo.Value, playerInfo.Key, _type);
 			}
 		}
 	}

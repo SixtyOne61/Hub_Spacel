@@ -23,7 +23,7 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	//
-	void hit(FString const& _team, class UPrimitiveComponent* _comp, int32 _index);
+	void hit(FString const& _team, int32 _playerId, class UPrimitiveComponent* _comp, int32 _index);
 
 private:
 	/* return true if we find something and fill param */

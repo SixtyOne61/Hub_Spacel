@@ -3,6 +3,7 @@
 
 #include "SpacelGameState.h"
 #include "Player/SpacelPlayerState.h"
+#include "Player/ShipPawn.h"
 #include "Net/UnrealNetwork.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerStart.h"
@@ -44,9 +45,10 @@ FString ASpacelGameState::GetBestTeam() const
     return teamName;
 }
 
-void ASpacelGameState::AddScore(FString const& _team, EScoreType _type)
+void ASpacelGameState::AddScore(FString const& _team, int32 _playerId, EScoreType _type)
 {
-    for (FScore & score : this->R_Scores)
+    uint16 scoreValue = 0;
+    for (FScore& score : this->R_Scores)
     {
         if (score.Team == _team)
         {
@@ -54,28 +56,47 @@ void ASpacelGameState::AddScore(FString const& _team, EScoreType _type)
             {
             case EScoreType::Hit:
                 score.Score += 5;
+                scoreValue = 5;
                 break;
 
             case EScoreType::Kill:
                 score.Score += 300;
+                scoreValue = 300;
                 break;
 
             case EScoreType::Tank:
                 score.Score += 10;
+                scoreValue = 10;
                 break;
 
             case EScoreType::Emp:
                 score.Score += 30;
+                scoreValue = 30;
+            }
+        }
+    }
+
+    // send feedback to player
+    for (APlayerState* playerState : this->PlayerArray)
+    {
+        if (playerState != nullptr)
+        {
+            if (playerState->PlayerId == _playerId)
+            {
+                if (AShipPawn* shipPawn = playerState->GetPawn<AShipPawn>())
+                {
+                    shipPawn->RPCClientFeedbackScore(_type, scoreValue);
+                }
             }
         }
     }
 }
 
-void ASpacelGameState::AddScore(FString const& _team, EScoreType _type, int32 _nb)
+void ASpacelGameState::AddScore(FString const& _team, int32 _playerId, EScoreType _type, int32 _nb)
 {
     for (int i = 0; i < _nb; ++i)
     {
-        AddScore(_team, _type);
+        AddScore(_team, _playerId, _type);
     }
 }
 

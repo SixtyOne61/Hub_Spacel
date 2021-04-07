@@ -32,6 +32,9 @@ public:
 	UPROPERTY(Replicated)
 	FName R_Team {};
 
+	UPROPERTY(Replicated)
+	int32 R_PlayerIdOwner {};
+
 protected:
 	UPROPERTY(EditAnywhere)
 	class UNiagaraSystem* FireFx{ nullptr };

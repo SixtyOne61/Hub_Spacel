@@ -67,8 +67,8 @@ public:
 
 	FString GetBestTeam() const;
 
-	void AddScore(FString const& _team, EScoreType _type);
-	void AddScore(FString const& _team, EScoreType _type, int32 _nb);
+	void AddScore(FString const& _team, int32 _playerId, EScoreType _type);
+	void AddScore(FString const& _team, int32 _playerId, EScoreType _type, int32 _nb);
 
 	UFUNCTION()
 	void RegisterTeam();

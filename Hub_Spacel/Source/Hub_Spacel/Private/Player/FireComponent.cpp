@@ -129,4 +129,13 @@ void UFireComponent::setupProjectile(AActor* _projectile) const
 
     FString tag = "Team:" + m_shipPawnOwner.Get()->Team.ToString();
     _projectile->Tags.Add(*tag);
+
+
+    if (ASpacelPlayerState* spacelPlayerState = m_shipPawnOwner.Get()->GetPlayerState<ASpacelPlayerState>())
+    {
+        if (AProjectileBase* projectileBase = Cast<AProjectileBase>(_projectile))
+        {
+            projectileBase->R_PlayerIdOwner = spacelPlayerState->PlayerId;
+        }
+    }
 }

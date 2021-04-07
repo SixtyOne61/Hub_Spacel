@@ -36,7 +36,7 @@ bool AProjectileBase::OnHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, 
         AShipPawn* shipPawn{ Cast<AShipPawn>(_otherActor) };
         if (shipPawn != nullptr)
         {
-            shipPawn->hit(getLocalTeam(), _otherComp, _hit.Item);
+            shipPawn->hit(getLocalTeam(), R_PlayerIdOwner, _otherComp, _hit.Item);
         }
     }
 
@@ -52,4 +52,5 @@ void AProjectileBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
     DOREPLIFETIME(AProjectileBase, R_Team);
+    DOREPLIFETIME(AProjectileBase, R_PlayerIdOwner);
 }

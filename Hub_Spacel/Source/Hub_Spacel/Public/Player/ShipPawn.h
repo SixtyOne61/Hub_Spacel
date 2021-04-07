@@ -19,6 +19,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnShowScore, bool, _show);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLocalTeamUpdate, FString const&, _team);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAddEffect, EEffect, _type);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRemoveEffect, EEffect, _type);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnFeedbackScore, EScoreType, _type, int32, _value);
 
 UCLASS()
 class HUB_SPACEL_API AShipPawn : public APawn
@@ -46,7 +47,7 @@ public:
     /* set collision profile name */
     void setCollisionProfile(FString _team);
 
-    void hit(FString const& _team, class UPrimitiveComponent* _comp, int32 _index);
+    void hit(FString const& _team, int32 _playerId, class UPrimitiveComponent* _comp, int32 _index);
 
     void setLocationExhaustFx(TArray<FVector> const& _loc);
 
@@ -65,8 +66,11 @@ public:
 
     void launchMissile();
     void emp();
-    void emp(uint32 _duration, FName const& _team);
+    void emp(uint32 _duration, FName const& _team, int32 _playerId);
     void giveMatiereToAlly(uint8 _id);
+
+    UFUNCTION(UnReliable, Client)
+    void RPCClientFeedbackScore(EScoreType _type, int16 _value);
 
 private:
     void lookAt(FVector const& _loc, FVector const& _dir, FVector const& _hitLoc);
@@ -222,6 +226,9 @@ public:
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
     FOnRepairSupport OnRepairSupportDelegate {};
 
+    UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
+    FOnFeedbackScore OnFeedbackScoreDelegate {};
+
 protected:
     /* current percent speed value 0.0f - 1.0f */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = "OnRep_PercentSpeed")
@@ -246,6 +253,7 @@ protected:
     int32 R_Effect { 0 };
 
     FName m_lastTeamEmp {};
+    int32 m_lastPlayerIdEmp {};
 
     FTransform m_startTransform {};
 

@@ -306,13 +306,17 @@ void AShipPawn::emp()
         if(this->SkillComponent == nullptr) return;
         if(this->SkillComponent->SkillDataAsset == nullptr) return;
         uint32 duration = this->SkillComponent->SkillDataAsset->getSKill(ESkill::SpecialSupport).FlatDuration;
-        target->emp(duration, this->Team);
+        if (ASpacelPlayerState* playerState = this->GetPlayerState<ASpacelPlayerState>())
+        {
+            target->emp(duration, this->Team, playerState->PlayerId);
+        }
     }
 }
 
-void AShipPawn::emp(uint32 _duration, FName const& _team)
+void AShipPawn::emp(uint32 _duration, FName const& _team, int32 _playerId)
 {
     m_lastTeamEmp = _team;
+    m_lastPlayerIdEmp = _playerId;
     addEffect(EEffect::Emp);
     FTimerHandle handle;
     this->GetWorldTimerManager().SetTimer(handle, this, &AShipPawn::CleanEmp, _duration, false);
@@ -569,12 +573,12 @@ void AShipPawn::OnRep_PercentSpeed()
     }
 }
 
-void AShipPawn::hit(FString const& _team, class UPrimitiveComponent* _comp, int32 _index)
+void AShipPawn::hit(FString const& _team, int32 _playerId, class UPrimitiveComponent* _comp, int32 _index)
 {
     UCustomCollisionComponent* customCollisionComponent { Cast<UCustomCollisionComponent>(this->GetComponentByClass(UCustomCollisionComponent::StaticClass())) };
     if (customCollisionComponent != nullptr)
     {
-        customCollisionComponent->hit(_team, _comp, _index);
+        customCollisionComponent->hit(_team, _playerId, _comp, _index);
     }
 }
 
@@ -636,7 +640,8 @@ bool AShipPawn::canTank(int32 _val)
     {
         if (ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld())))
         {
-            spacelGameState->AddScore(this->Team.ToString(), EScoreType::Tank, _val);
+            if(ASpacelPlayerState const* playerState = this->GetPlayerState<ASpacelPlayerState>())
+            spacelGameState->AddScore(this->Team.ToString(), playerState->PlayerId, EScoreType::Tank, _val);
         }
     };
 
@@ -790,6 +795,7 @@ void AShipPawn::behaviourRemoveEffect(EEffect _type)
     else if (_type == EEffect::Emp)
     {
         m_lastTeamEmp = FName();
+        m_lastPlayerIdEmp = {};
     }
     else if (_type == EEffect::MetaFormSupport)
     {
@@ -808,6 +814,11 @@ void AShipPawn::behaviourRemoveEffect(EEffect _type)
 bool AShipPawn::hasEffect(EEffect _type)
 {
     return (this->R_Effect & TOFLAG(_type));
+}
+
+void AShipPawn::RPCClientFeedbackScore_Implementation(EScoreType _type, int16 _value)
+{
+    OnFeedbackScoreDelegate.Broadcast(_type, _value);
 }
 
 void AShipPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetimeProps) const
