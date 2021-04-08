@@ -78,7 +78,7 @@ void USelectorSkillWidget::OnMinus()
     onLevel(-1);
 }
 
-void USelectorSkillWidget::onLevel(uint8 _delta)
+void USelectorSkillWidget::onLevel(int8 _delta)
 {
     ASpacelPlayerState* owningPlayerState = Cast<ASpacelPlayerState>(this->GetOwningPlayerState());
     if (owningPlayerState == nullptr) return;

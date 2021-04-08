@@ -35,7 +35,7 @@ private:
 	UFUNCTION()
 	void OnMinus();
 
-	void onLevel(uint8 _delta);
+	void onLevel(int8 _delta);
 	inline void setLock(bool _isLock) { m_isLock = _isLock; }
 	void updateBorderColor();
 
