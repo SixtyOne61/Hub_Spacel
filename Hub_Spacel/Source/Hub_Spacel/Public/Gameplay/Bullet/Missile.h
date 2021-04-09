@@ -32,28 +32,23 @@ protected:
 	void Tick(float _deltaTime) override;
 	bool OnHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit) override;
 
-private:
 	UFUNCTION()
-	void OnRep_Cube();
+	void OnComponentHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit);
 
-	void updateLocations();
-
+private:
 	UFUNCTION()
 	void FlyToTarget();
 
 	UFUNCTION()
 	void Seek();
 
-public:
-	UPROPERTY(VisibleAnywhere, Category = "Default")
-	class UInstancedStaticMeshComponent* Cubes { nullptr };
+protected:
+	UPROPERTY(EditAnywhere, Category = "Collision")
+	class USphereComponent* ProjectileCollisionComponent{ nullptr };
 
 private:
 	UPROPERTY()
 	class AActor* Target { nullptr };
-
-	UPROPERTY(ReplicatedUsing = "OnRep_Cube")
-	TArray<FVector> RU_CubeLocations{};
 
 	bool m_isSeekPlayer { false };
 };
