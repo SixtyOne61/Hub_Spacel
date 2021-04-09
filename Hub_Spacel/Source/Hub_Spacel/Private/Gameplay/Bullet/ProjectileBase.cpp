@@ -33,8 +33,7 @@ bool AProjectileBase::OnHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, 
 
     if (_otherActor->ActorHasTag(Tags::Player))
     {
-        AShipPawn* shipPawn{ Cast<AShipPawn>(_otherActor) };
-        if (shipPawn != nullptr)
+        if (AShipPawn* shipPawn = Cast<AShipPawn>(_otherActor))
         {
             shipPawn->hit(getLocalTeam(), R_PlayerIdOwner, _otherComp, _hit.Item);
         }

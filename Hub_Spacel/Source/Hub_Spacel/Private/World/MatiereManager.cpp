@@ -21,6 +21,7 @@ int32 getId(FString const& _team)
 		}
 	}
 
+	ensure(false);
 	return -1;
 }
 

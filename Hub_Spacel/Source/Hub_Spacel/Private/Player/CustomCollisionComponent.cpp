@@ -45,7 +45,9 @@ bool UCustomCollisionComponent::sweepByProfile(TArray<FHitResult>& _outHit, FVec
 
 	// for box we need to have a stard != end
 	static const FVector epsilon{ 0.001f, 0.001f, 0.001f };
-	return world->SweepMultiByProfile(_outHit, _worldLocation, _worldLocation + epsilon, FQuat::Identity, _profile, _shape);
+
+	world->SweepMultiByProfile(_outHit, _worldLocation, _worldLocation + epsilon, FQuat::Identity, _profile, _shape);
+	return _outHit.Num() != 0;
 }
 
 bool UCustomCollisionComponent::sweepByProfile(TArray<FHitResult> & _outHit, FVector const& _worldLocation, FName const& _profile, FCollisionShape const& _shape, TArray<FName> const& _ignoreTags, bool _drawDebug /*= false*/) const

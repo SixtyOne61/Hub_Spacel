@@ -478,6 +478,9 @@ void AShipPawn::kill()
         setCollisionProfile("NoCollision");
 
         addEffect(EEffect::Killed);
+
+        // replace actor to spawn
+        this->SetActorTransform(m_startTransform);
     }
 }
 
@@ -490,9 +493,6 @@ void AShipPawn::Restarted()
             _obj->restarted();
         }
     };
-
-    // replace actor to spawn
-    this->SetActorTransform(m_startTransform);
 
     lb(this->GetController<AGamePlayerController>());
     lb(this->ModuleComponent);
