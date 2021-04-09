@@ -112,6 +112,17 @@ void AGamePlayerController::Tick(float _deltaTime)
             if (this->GetHitResultUnderCursor(ECollisionChannel::ECC_MAX, false, hit, shipPawn))
             {
                 hitLoc = hit.Location;
+                if (AShipPawn const* hitPawn = Cast<AShipPawn>(hit.Actor))
+                {
+                    // c'est julie qui a voulu le nom
+                    if (ASpacelPlayerState const* yolo = hitPawn->GetPlayerState<ASpacelPlayerState>())
+                    {
+                        if (yolo->R_Team == shipPawn->Team.ToString())
+                        {
+                            hitLoc = FVector::ZeroVector;
+                        }
+                    }
+                }
             }
 
             this->RPCServerUpdateMouseLocation(mouseWorldLocation, mouseWorldDirection, hitLoc);
