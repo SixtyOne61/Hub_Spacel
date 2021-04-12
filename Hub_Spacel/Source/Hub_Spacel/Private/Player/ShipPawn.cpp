@@ -683,6 +683,11 @@ void AShipPawn::RPCNetMulticastEnterHidding_Implementation(int32 _playerId, bool
     else
     {
         this->RootComponent->SetVisibility(true, true);
+        if (this->BaseShipMeshComponent != nullptr)
+        {
+            this->BaseShipMeshComponent->SetVisibility(false);
+        }
+
         if (!hasEffect(EEffect::Shield))
         {
             this->ShieldComponent->SetVisibility(false);
