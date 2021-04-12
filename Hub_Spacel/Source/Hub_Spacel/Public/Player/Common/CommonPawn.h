@@ -4,16 +4,18 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
-#include "ATutoPawn.generated.h"
+#include "CommonPawn.generated.h"
 
 UCLASS()
-class HUB_SPACEL_API AATutoPawn : public APawn
+class HUB_SPACEL_API ACommonPawn : public APawn
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this pawn's properties
-	AATutoPawn();
+	ACommonPawn();
+
+	void lookAt(FVector const& _loc, FVector const& _dir, FVector const& _hitLoc);
 
 protected:
 	// Called when the game starts or when spawned
@@ -23,7 +25,6 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
+protected:
+	FVector TargetLocation{ FVector::ZeroVector };
 };

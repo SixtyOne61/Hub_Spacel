@@ -1,10 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "ATutoPawn.h"
+#include "TutoPawn.h"
 
 // Sets default values
-AATutoPawn::AATutoPawn()
+ATutoPawn::ATutoPawn()
 {
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -12,21 +12,21 @@ AATutoPawn::AATutoPawn()
 }
 
 // Called when the game starts or when spawned
-void AATutoPawn::BeginPlay()
+void ATutoPawn::BeginPlay()
 {
 	Super::BeginPlay();
 	
 }
 
 // Called every frame
-void AATutoPawn::Tick(float DeltaTime)
+void ATutoPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
 }
 
 // Called to bind functionality to input
-void AATutoPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+void ATutoPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 

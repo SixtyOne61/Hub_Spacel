@@ -379,16 +379,6 @@ void AShipPawn::Tick(float _deltaTime)
     }
 }
 
-void AShipPawn::lookAt(FVector const& _loc, FVector const& _dir, FVector const& _hitLoc)
-{
-    FVector farpoint = _loc + _dir * 3000;
-    FVector bigFar = _loc + _dir * 100000;
-    this->TargetLocation = _hitLoc.IsNearlyZero() ? bigFar : _hitLoc;
-
-    FRotator rotation = SimplyMath::MyLookRotation(bigFar, this->GetActorUpVector(), this->GetActorLocation());
-    this->SetActorRotation(rotation);
-}
-
 void AShipPawn::serverMove(float _deltaTime)
 {
     if (!ensure(this->DriverMeshComponent != nullptr)) return;

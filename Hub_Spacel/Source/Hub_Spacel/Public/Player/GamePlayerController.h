@@ -3,16 +3,16 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/PlayerController.h"
 #include "Util/EmptyStruct.h"
 #include "Util/DelayValue.h"
+#include "Player/Common/CommonPlayerController.h"
 #include "GamePlayerController.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class HUB_SPACEL_API AGamePlayerController : public APlayerController
+class HUB_SPACEL_API AGamePlayerController : public ACommonPlayerController
 {
 	GENERATED_BODY()
 	
@@ -71,17 +71,18 @@ private:
 	void RPCServerStartGame();
 
 	/* input callback */
-	void forward(float _value);
-	void horizontalStraf(float _value);
-	void verticalStraf(float _value);
-	void flightAttitude(float _value);
-	void fireOn();
-	void fireOff();
-	void returnToMainMenu();
-	void lock();
+	void forward(float _value) override;
+	void horizontalStraf(float _value) override;
+	void verticalStraf(float _value) override;
+	void flightAttitude(float _value) override;
+	void fireOn() override;
+	void fireOff() override;
+	void returnToMainMenu() override;
+	void lock() override;
+	void skill(float _slot) override;
+
 	void showScore();
 	void hideScore();
-	void skill(float _slot);
 
 	/* from event */
 	UFUNCTION()
@@ -89,8 +90,6 @@ private:
 
 	void kill();
 	void restarted();
-
-	bool GetHitResultUnderCursor(ECollisionChannel TraceChannel, bool bTraceComplex, FHitResult& HitResult, AActor* _ignoreActor);
 
 	UFUNCTION()
 	void OnAddEffect(EEffect _effect);

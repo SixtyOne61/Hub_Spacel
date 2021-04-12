@@ -3,29 +3,30 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/PlayerController.h"
+#include "Player/Common/CommonPlayerController.h"
 #include "TutoGamePlayerController.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class HUB_SPACEL_API ATutoGamePlayerController : public APlayerController
+class HUB_SPACEL_API ATutoGamePlayerController : public ACommonPlayerController
 {
 	GENERATED_BODY()
 	
 public:
 	/* override */
-	void SetupInputComponent() override;
+	void Tick(float _deltaTime) override;
 
+protected:
 	/* input callback */
-	void forward(float _value);
-	void horizontalStraf(float _value);
-	void verticalStraf(float _value);
-	void flightAttitude(float _value);
-	void fireOn();
-	void fireOff();
-	void returnToMainMenu();
-	void lock();
-	void skill(float _slot);
+	void forward(float _value) override;
+	void horizontalStraf(float _value) override;
+	void verticalStraf(float _value) override;
+	void flightAttitude(float _value) override;
+	void fireOn() override;
+	void fireOff() override;
+	void returnToMainMenu() override;
+	void lock() override;
+	void skill(float _slot) override;
 };

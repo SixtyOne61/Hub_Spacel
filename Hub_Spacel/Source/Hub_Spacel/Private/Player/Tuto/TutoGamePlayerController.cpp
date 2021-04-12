@@ -2,26 +2,27 @@
 
 
 #include "TutoGamePlayerController.h"
+#include "Player/Tuto/TutoPawn.h"
 
-void ATutoGamePlayerController::SetupInputComponent()
+void ATutoGamePlayerController::Tick(float _deltaTime)
 {
-    Super::SetupInputComponent();
+    Super::Tick(_deltaTime);
 
-    this->InputComponent->BindAxis("Forward", this, &ATutoGamePlayerController::forward);
-    this->InputComponent->BindAxis("HorizontalStraf", this, &ATutoGamePlayerController::horizontalStraf);
-    this->InputComponent->BindAxis("VerticalStraf", this, &ATutoGamePlayerController::verticalStraf);
-    this->InputComponent->BindAxis("FlightAttitude", this, &ATutoGamePlayerController::flightAttitude);
-    this->InputComponent->BindAxis("Skill", this, &ATutoGamePlayerController::skill);
+    FVector hitLoc{ FVector::ZeroVector };
+    FVector mouseWorldLocation{}, mouseWorldDirection{};
+    TWeakObjectPtr<AActor> hit{};
+    bool hasDeproj{}, hasHit{};
+    hitResultUnderCursor(hasDeproj, hasHit, hitLoc, mouseWorldLocation, mouseWorldDirection, hit);
 
-    this->InputComponent->BindAction("Fire", IE_Pressed, this, &ATutoGamePlayerController::fireOn);
-    this->InputComponent->BindAction("Fire", IE_Released, this, &ATutoGamePlayerController::fireOff);
-    this->InputComponent->BindAction("ReturnToMainMenu", IE_Pressed, this, &ATutoGamePlayerController::returnToMainMenu);
-    this->InputComponent->BindAction("Lock", IE_Pressed, this, &ATutoGamePlayerController::lock);
+    if (hasDeproj)
+    {
+        updateMouseLocation<ATutoPawn>(mouseWorldLocation, mouseWorldDirection, hitLoc);
+    }
 }
 
 void ATutoGamePlayerController::forward(float _value)
 {
-
+    ensure(false);
 }
 
 void ATutoGamePlayerController::horizontalStraf(float _value)

@@ -16,16 +16,6 @@ void AGamePlayerController::SetupInputComponent()
 {
     Super::SetupInputComponent();
 
-    this->InputComponent->BindAxis("Forward", this, &AGamePlayerController::forward);
-    this->InputComponent->BindAxis("HorizontalStraf", this, &AGamePlayerController::horizontalStraf);
-    this->InputComponent->BindAxis("VerticalStraf", this, &AGamePlayerController::verticalStraf);
-    this->InputComponent->BindAxis("FlightAttitude", this, &AGamePlayerController::flightAttitude);
-    this->InputComponent->BindAxis("Skill", this, &AGamePlayerController::skill);
-
-    this->InputComponent->BindAction("Fire", IE_Pressed, this, &AGamePlayerController::fireOn);
-    this->InputComponent->BindAction("Fire", IE_Released, this, &AGamePlayerController::fireOff);
-    this->InputComponent->BindAction("ReturnToMainMenu", IE_Pressed, this, &AGamePlayerController::returnToMainMenu);
-    this->InputComponent->BindAction("Lock", IE_Pressed, this, &AGamePlayerController::lock);
     this->InputComponent->BindAction("Score", IE_Pressed, this, &AGamePlayerController::showScore);
     this->InputComponent->BindAction("Score", IE_Released, this, &AGamePlayerController::hideScore);
 }
@@ -71,29 +61,6 @@ void AGamePlayerController::RPCServerPossess_Implementation()
     this->Possess(this->LinkPawn);
 }
 
-bool AGamePlayerController::GetHitResultUnderCursor(ECollisionChannel TraceChannel, bool bTraceComplex, FHitResult& HitResult, AActor* _ignoreActor)
-{
-    ULocalPlayer* LocalPlayer = Cast<ULocalPlayer>(Player);
-    bool bHit = false;
-    if (LocalPlayer && LocalPlayer->ViewportClient)
-    {
-        FVector2D MousePosition;
-        if (LocalPlayer->ViewportClient->GetMousePosition(MousePosition))
-        {
-            FCollisionQueryParams CollisionQueryParams(SCENE_QUERY_STAT(ClickableTrace), bTraceComplex);
-            CollisionQueryParams.AddIgnoredActor(_ignoreActor);
-            bHit = GetHitResultAtScreenPosition(MousePosition, TraceChannel, CollisionQueryParams, HitResult);
-        }
-    }
-
-    if (!bHit)	//If there was no hit we reset the results. This is redundant but helps Blueprint users
-    {
-        HitResult = FHitResult();
-    }
-
-    return bHit;
-}
-
 void AGamePlayerController::Tick(float _deltaTime)
 {
     Super::Tick(_deltaTime);
@@ -103,16 +70,18 @@ void AGamePlayerController::Tick(float _deltaTime)
     AShipPawn* shipPawn { Cast<AShipPawn>(this->GetPawn()) };
     if (this->IsLocalController())
     {
+        FVector hitLoc{ FVector::ZeroVector };
         FVector mouseWorldLocation{}, mouseWorldDirection{};
-        if (this->DeprojectMousePositionToWorld(mouseWorldLocation, mouseWorldDirection))
-        {
-            FVector hitLoc { FVector::ZeroVector };
+        TWeakObjectPtr<AActor> hit {};
+        bool hasDeproj {}, hasHit {};
+        hitResultUnderCursor(hasDeproj, hasHit, hitLoc, mouseWorldLocation, mouseWorldDirection, hit);
 
-            FHitResult hit;
-            if (this->GetHitResultUnderCursor(ECollisionChannel::ECC_MAX, false, hit, shipPawn))
+        if (hasDeproj)
+        {
+            this->RPCServerUpdateMouseLocation(mouseWorldLocation, mouseWorldDirection, hitLoc);
+            if (hasHit)
             {
-                hitLoc = hit.Location;
-                if (AShipPawn const* hitPawn = Cast<AShipPawn>(hit.Actor))
+                if (AShipPawn const* hitPawn = Cast<AShipPawn>(hit))
                 {
                     // c'est julie qui a voulu le nom
                     if (ASpacelPlayerState const* yolo = hitPawn->GetPlayerState<ASpacelPlayerState>())
@@ -124,8 +93,6 @@ void AGamePlayerController::Tick(float _deltaTime)
                     }
                 }
             }
-
-            this->RPCServerUpdateMouseLocation(mouseWorldLocation, mouseWorldDirection, hitLoc);
         }
     }
     else if (this->GetNetMode() == ENetMode::NM_DedicatedServer && shipPawn != nullptr)
@@ -139,10 +106,9 @@ void AGamePlayerController::Tick(float _deltaTime)
 
 void AGamePlayerController::RPCServerUpdateMouseLocation_Implementation(FVector const& _loc, FVector const& _dir, FVector const& _hitLoc)
 {
-    AShipPawn* shipPawn = Cast<AShipPawn>(this->GetPawn());
-    if (isAvailable() && shipPawn != nullptr)
+    if (isAvailable())
     {
-        shipPawn->lookAt(_loc, _dir, _hitLoc);
+        updateMouseLocation<AShipPawn>(_loc, _dir, _hitLoc);
     }
 }
 

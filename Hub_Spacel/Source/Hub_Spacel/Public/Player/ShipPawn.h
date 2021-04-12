@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Pawn.h"
+#include "Player/Common/CommonPawn.h"
 #include "Util/EnumUtil.h"
 #include "Enum/SpacelEnum.h"
 #include <functional>
@@ -22,7 +22,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRemoveEffect, EEffect, _type);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnFeedbackScore, EScoreType, _type, int32, _value);
 
 UCLASS()
-class HUB_SPACEL_API AShipPawn : public APawn
+class HUB_SPACEL_API AShipPawn : public ACommonPawn
 {
 	GENERATED_BODY()
 
@@ -73,8 +73,6 @@ public:
     void RPCClientFeedbackScore(EScoreType _type, int16 _value);
 
 private:
-    void lookAt(FVector const& _loc, FVector const& _dir, FVector const& _hitLoc);
-
     /* move ship server, only from server */
     void serverMove(float _deltaTime);
 
@@ -238,7 +236,6 @@ protected:
     float PercentHorizontalStraf { 0.0f };
     float PercentVerticalStraf { 0.0f };
     float PercentFlightAttitude { 0.0f };
-    FVector TargetLocation { FVector::ZeroVector };
 
     UPROPERTY(ReplicatedUsing = "OnRep_Matiere")
     int32 RU_Matiere { 0 };
