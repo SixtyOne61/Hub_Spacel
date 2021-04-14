@@ -26,7 +26,6 @@ protected:
 	void flightAttitude(float _value) override;
 	void fireOn() override;
 	void fireOff() override;
-	void returnToMainMenu() override;
 	void lock() override;
 	void skill(float _slot) override;
 };

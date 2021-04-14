@@ -2,6 +2,7 @@
 
 
 #include "CommonPlayerController.h"
+#include "Kismet/GameplayStatics.h"
 
 void ACommonPlayerController::SetupInputComponent()
 {
@@ -63,4 +64,10 @@ bool ACommonPlayerController::getHitResultUnderCursor(ECollisionChannel TraceCha
     }
 
     return bHit;
+}
+
+void ACommonPlayerController::returnToMainMenu()
+{
+    FString levelName{ "MainMenu" };
+    UGameplayStatics::OpenLevel(this->GetWorld(), FName(*levelName), false, "");
 }

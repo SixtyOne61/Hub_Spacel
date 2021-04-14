@@ -2,12 +2,20 @@
 
 
 #include "TutoPawn.h"
+#include "Player/LocalPlayerActionComponent.h"
+#include "Player/FireComponent.h"
+#include "Player/ModuleComponent.h"
+#include "Player/CustomCollisionComponent.h"
+#include "Player/RepairComponent.h"
+#include "Components/WidgetInteractionComponent.h"
+#include "Components/StaticMeshComponent.h"
+#include "Gameplay/SkillComponent.h"
+#include "DataAsset/TeamColorDataAsset.h"
 
 // Sets default values
 ATutoPawn::ATutoPawn()
+	: Super()
 {
- 	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
 
 }
 
@@ -15,20 +23,47 @@ ATutoPawn::ATutoPawn()
 void ATutoPawn::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	activateComponent(this->FireComponent);
+	activateComponent(this->RepairComponent);
+	activateComponent(this->SkillComponent);
+
+    this->WidgetTargetComponent = Cast<UWidgetInteractionComponent>(this->GetComponentByClass(UWidgetInteractionComponent::StaticClass()));
+
+    // add speed line component
+    if (ULocalPlayerActionComponent* localPlayerActionComponent = NewObject<ULocalPlayerActionComponent>(this, "LocalPlayerAction_00"))
+    {
+        localPlayerActionComponent->RegisterComponent();
+    }
+
+    // remove collision for local player (for disable hit with cursor for target)
+    setCollisionProfile("NoOverlapTeam");
+    this->DriverMeshComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+
+    activateComponent(this->SkillComponent);
+
+    // add custom collision component
+    if (UCustomCollisionComponent* customCollisionComponent = NewObject<UCustomCollisionComponent>(this, "CustomCollision_00"))
+    {
+        customCollisionComponent->RegisterComponent();
+    }
+
+    if (this->ShieldComponent != nullptr)
+    {
+        if (this->TeamColorDataAsset != nullptr)
+        {
+            FColor color = this->TeamColorDataAsset->GetColor<FColor>("Team 1");
+            this->ShieldComponent->SetVectorParameterValueOnMaterials("Color", FVector{ color.ReinterpretAsLinear() });
+        }
+    }
+
+    this->ModuleComponent->OnStartGame();
 }
 
 // Called every frame
-void ATutoPawn::Tick(float DeltaTime)
+void ATutoPawn::Tick(float _deltaTime)
 {
-	Super::Tick(DeltaTime);
+	Super::Tick(_deltaTime);
 
+	moveShip(_deltaTime);
 }
-
-// Called to bind functionality to input
-void ATutoPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-}
-

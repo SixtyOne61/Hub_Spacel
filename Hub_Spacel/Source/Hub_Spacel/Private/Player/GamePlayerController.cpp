@@ -97,10 +97,7 @@ void AGamePlayerController::Tick(float _deltaTime)
     }
     else if (this->GetNetMode() == ENetMode::NM_DedicatedServer && shipPawn != nullptr)
     {
-        shipPawn->RU_PercentSpeed = m_data.m_forward.addValue(m_data.m_lastForwardInput, _deltaTime);
-        shipPawn->PercentHorizontalStraf = m_data.m_horizontalStraf.addValue(m_data.m_lastHorizontalStrafInput, _deltaTime);
-        shipPawn->PercentVerticalStraf = m_data.m_verticalStraf.addValue(m_data.m_lastVerticalStrafInput, _deltaTime);
-        shipPawn->PercentFlightAttitude = m_data.m_flightAttitude.addValue(m_data.m_lastFlightAttitudeInput, _deltaTime);
+        updatePawnData<AShipPawn>(_deltaTime);
     }
 }
 
@@ -234,12 +231,6 @@ void AGamePlayerController::skill(float _slot)
 
     // behaviour of each skill is disable on client
     shipPawn->useSkill(_slot - 1.0f);
-}
-
-void AGamePlayerController::returnToMainMenu()
-{
-    FString levelName{ "MainMenu" };
-    UGameplayStatics::OpenLevel(this->GetWorld(), FName(*levelName), false, "");
 }
 
 void AGamePlayerController::lock()

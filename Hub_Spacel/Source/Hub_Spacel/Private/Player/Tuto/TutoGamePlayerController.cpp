@@ -18,26 +18,28 @@ void ATutoGamePlayerController::Tick(float _deltaTime)
     {
         updateMouseLocation<ATutoPawn>(mouseWorldLocation, mouseWorldDirection, hitLoc);
     }
+
+    updatePawnData<ATutoPawn>(_deltaTime);
 }
 
 void ATutoGamePlayerController::forward(float _value)
 {
-    ensure(false);
+    m_data.m_lastForwardInput = _value;
 }
 
 void ATutoGamePlayerController::horizontalStraf(float _value)
 {
-
+    m_data.m_lastHorizontalStrafInput = _value;
 }
 
 void ATutoGamePlayerController::verticalStraf(float _value)
 {
-
+    m_data.m_lastVerticalStrafInput = _value;
 }
 
 void ATutoGamePlayerController::flightAttitude(float _value)
 {
-
+    m_data.m_lastFlightAttitudeInput = _value;
 }
 
 void ATutoGamePlayerController::fireOn()
@@ -46,11 +48,6 @@ void ATutoGamePlayerController::fireOn()
 }
 
 void ATutoGamePlayerController::fireOff()
-{
-
-}
-
-void ATutoGamePlayerController::returnToMainMenu()
 {
 
 }

@@ -14,7 +14,9 @@ class HUB_SPACEL_API UModuleComponent : public USceneComponent
 {
 	GENERATED_BODY()
 
+    friend class ACommonPawn;
     friend class AShipPawn;
+    friend class ATutoPawn;
     friend class UCustomCollisionComponent;
     friend class URepairComponent;
 

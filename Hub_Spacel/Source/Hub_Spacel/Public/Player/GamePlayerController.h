@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "Util/EmptyStruct.h"
-#include "Util/DelayValue.h"
 #include "Player/Common/CommonPlayerController.h"
 #include "GamePlayerController.generated.h"
 
@@ -17,26 +16,6 @@ class HUB_SPACEL_API AGamePlayerController : public ACommonPlayerController
 	GENERATED_BODY()
 	
 	friend class AShipPawn;
-
-	struct TData
-	{
-		DelayValue m_forward {};
-		float m_lastForwardInput {};
-		DelayValue m_horizontalStraf {};
-		float m_lastHorizontalStrafInput {};
-		DelayValue m_verticalStraf {};
-		float m_lastVerticalStrafInput {};
-		DelayValue m_flightAttitude {};
-		float m_lastFlightAttitudeInput {};
-
-		inline void reset()
-		{
-			m_forward.reset();
-			m_horizontalStraf.reset();
-			m_verticalStraf.reset();
-			m_flightAttitude.reset();
-		}
-	};
 
 public:
 	/* override */
@@ -77,7 +56,6 @@ private:
 	void flightAttitude(float _value) override;
 	void fireOn() override;
 	void fireOff() override;
-	void returnToMainMenu() override;
 	void lock() override;
 	void skill(float _slot) override;
 
@@ -109,6 +87,4 @@ protected:
 private:
 	UPROPERTY(Replicated)
 	bool R_EnableInput { false };
-
-	TData m_data {};
 };
