@@ -47,6 +47,12 @@ namespace SimplyMath
         }
     }
 
+    template<class T>
+    T SinLerp(T const& _a, T const& _b, float _alpha)
+    {
+        return (_a + _b) * FMath::Sin((PI/2) * _alpha);
+    }
+
     template<typename T,
         std::enable_if_t<std::is_arithmetic<T>::value, bool> = true>
     inline bool IsSignDiff(T _a, T _b)

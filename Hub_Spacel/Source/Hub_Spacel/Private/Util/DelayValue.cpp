@@ -43,11 +43,12 @@ float DelayValue::addValue(float _value, float _deltaTime)
     if (m_up)
     {
         m_value = FMath::Lerp(m_start, m_goal, delta);
-        //UE_LOG(LogTemp, Warning, TEXT("up  delta %f value %f valuetime %f"), delta, m_value, m_valueTime);
+        //m_value = SimplyMath::SinLerp(m_start, m_goal, delta);
     }
     else
     {
         m_value = FMath::Lerp(m_goal, m_start, delta);
+        //m_value = SimplyMath::SinLerp(m_goal, m_start, delta);
     }
 
     return m_value;

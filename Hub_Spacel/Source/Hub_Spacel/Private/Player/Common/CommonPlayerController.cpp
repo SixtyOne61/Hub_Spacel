@@ -10,7 +10,6 @@ void ACommonPlayerController::SetupInputComponent()
 
     this->InputComponent->BindAxis("Forward", this, &ACommonPlayerController::forward);
     this->InputComponent->BindAxis("HorizontalStraf", this, &ACommonPlayerController::horizontalStraf);
-    this->InputComponent->BindAxis("VerticalStraf", this, &ACommonPlayerController::verticalStraf);
     this->InputComponent->BindAxis("FlightAttitude", this, &ACommonPlayerController::flightAttitude);
     this->InputComponent->BindAxis("Skill", this, &ACommonPlayerController::skill);
     
