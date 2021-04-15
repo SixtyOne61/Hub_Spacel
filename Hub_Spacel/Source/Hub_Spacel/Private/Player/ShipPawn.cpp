@@ -636,20 +636,14 @@ void AShipPawn::BackToGame()
     removeEffect(EEffect::BackToGame);
 }
 
-void AShipPawn::addEffect(EEffect _type)
+void AShipPawn::addEffectSuccess(EEffect _type)
 {
-    if (!hasEffect(_type))
-    {
-        this->R_Effect |= TOFLAG(_type);
-
-        behaviourAddEffect(_type);
-        RPCClientAddEffect(_type);
-    }
+    behaviourAddEffect(_type);
+    RPCClientAddEffect(_type);
 }
 
-void AShipPawn::removeEffect(EEffect _type)
+void AShipPawn::removeEffectSuccess(EEffect _type)
 {
-    this->R_Effect &= ~TOFLAG(_type);
     behaviourRemoveEffect(_type);
     RPCClientRemoveEffect(_type);
 }

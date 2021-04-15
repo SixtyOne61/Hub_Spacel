@@ -67,37 +67,39 @@ void AGamePlayerController::Tick(float _deltaTime)
 
     if (!isAvailable()) return;
 
-    AShipPawn* shipPawn { Cast<AShipPawn>(this->GetPawn()) };
-    if (this->IsLocalController())
+    if (AShipPawn* shipPawn = Cast<AShipPawn>(this->GetPawn()))
     {
-        FVector hitLoc{ FVector::ZeroVector };
-        FVector mouseWorldLocation{}, mouseWorldDirection{};
-        TWeakObjectPtr<AActor> hit {};
-        bool hasDeproj {}, hasHit {};
-        hitResultUnderCursor(hasDeproj, hasHit, hitLoc, mouseWorldLocation, mouseWorldDirection, hit);
-
-        if (hasDeproj)
+        if (this->IsLocalController())
         {
-            this->RPCServerUpdateMouseLocation(mouseWorldLocation, mouseWorldDirection, hitLoc);
-            if (hasHit)
+            FVector hitLoc{ FVector::ZeroVector };
+            FVector mouseWorldLocation{}, mouseWorldDirection{};
+            TWeakObjectPtr<AActor> hit{};
+            bool hasDeproj{}, hasHit{};
+            hitResultUnderCursor(hasDeproj, hasHit, hitLoc, mouseWorldLocation, mouseWorldDirection, hit);
+
+            if (hasDeproj)
             {
-                if (AShipPawn const* hitPawn = Cast<AShipPawn>(hit))
+                this->RPCServerUpdateMouseLocation(mouseWorldLocation, mouseWorldDirection, hitLoc);
+                if (hasHit)
                 {
-                    // c'est julie qui a voulu le nom
-                    if (ASpacelPlayerState const* yolo = hitPawn->GetPlayerState<ASpacelPlayerState>())
+                    if (AShipPawn const* hitPawn = Cast<AShipPawn>(hit))
                     {
-                        if (yolo->R_Team == shipPawn->Team.ToString())
+                        // c'est julie qui a voulu le nom
+                        if (ASpacelPlayerState const* yolo = hitPawn->GetPlayerState<ASpacelPlayerState>())
                         {
-                            hitLoc = FVector::ZeroVector;
+                            if (yolo->R_Team == shipPawn->Team.ToString())
+                            {
+                                hitLoc = FVector::ZeroVector;
+                            }
                         }
                     }
                 }
             }
         }
-    }
-    else if (this->GetNetMode() == ENetMode::NM_DedicatedServer && shipPawn != nullptr)
-    {
-        updatePawnData<AShipPawn>(_deltaTime);
+        else if (this->GetNetMode() == ENetMode::NM_DedicatedServer && shipPawn != nullptr)
+        {
+            updatePawnData<AShipPawn>(_deltaTime);
+        }
     }
 }
 
