@@ -335,20 +335,35 @@ void UCustomCollisionComponent::hit(FString const& _team, int32 _playerId, class
 
 	if (uniqueId == get()->ModuleComponent->ProtectionMeshComponent->GetUniqueID())
 	{
-		lb_removeInstance(get()->ModuleComponent->ProtectionMeshComponent, get()->ModuleComponent->RU_ProtectionLocations, get()->ModuleComponent->R_RemovedProtectionLocations);
-		lb_addScore(EScoreType::Hit);
+		if (get<AShipPawn>() != nullptr)
+		{
+			if (!get<AShipPawn>()->canTank(1))
+			{
+				lb_removeInstance(get()->ModuleComponent->ProtectionMeshComponent, get()->ModuleComponent->RU_ProtectionLocations, get()->ModuleComponent->R_RemovedProtectionLocations);
+				lb_addScore(EScoreType::Hit);
+			}
+		}
 	}
 	else if (uniqueId == get()->ModuleComponent->SupportMeshComponent->GetUniqueID())
 	{
-		lb_removeInstance(get()->ModuleComponent->SupportMeshComponent, get()->ModuleComponent->RU_SupportLocations, get()->ModuleComponent->R_RemovedSupportLocations);
-		lb_addScore(EScoreType::Hit);
+		if (get<AShipPawn>() != nullptr)
+		{
+			if (!get<AShipPawn>()->canTank(1))
+			{
+				lb_removeInstance(get()->ModuleComponent->SupportMeshComponent, get()->ModuleComponent->RU_SupportLocations, get()->ModuleComponent->R_RemovedSupportLocations);
+				lb_addScore(EScoreType::Hit);
+			}
+		}
 	}
 	else if (uniqueId == get()->DriverMeshComponent->GetUniqueID())
 	{
 		if (get<AShipPawn>() != nullptr)
 		{
-			get<AShipPawn>()->kill();
-			lb_addScore(EScoreType::Kill);
+			if (!get<AShipPawn>()->canTank(1))
+			{
+				get<AShipPawn>()->kill();
+				lb_addScore(EScoreType::Kill);
+			}
 		}
 	}
 }

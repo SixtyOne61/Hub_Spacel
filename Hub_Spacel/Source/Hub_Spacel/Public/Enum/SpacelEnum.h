@@ -84,6 +84,7 @@ enum class EEffect : uint8
     MetaFormAttack UMETA(DisplayName = "MetaFormAttack"),
     MetaFormProtection UMETA(DisplayName = "MetaFormProtection"),
     MetaFormSupport UMETA(DisplayName = "MetaFormSupport"),
+    Respawned UMETA(DisplayName = "Respawned"),
 };
 
 UENUM(BlueprintType)

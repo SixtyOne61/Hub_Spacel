@@ -148,8 +148,11 @@ void ACommonPawn::addEffect(EEffect _type)
 
 void ACommonPawn::removeEffect(EEffect _type)
 {
-    this->R_Effect &= ~TOFLAG(_type);
-    removeEffectSuccess(_type);
+    if (hasEffect(_type))
+    {
+        this->R_Effect &= ~TOFLAG(_type);
+        removeEffectSuccess(_type);
+    }
 }
 
 void ACommonPawn::OnRep_PercentSpeed()

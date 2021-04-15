@@ -226,7 +226,6 @@ void AShipPawn::RPCServerTargetPlayer_Implementation(int32 _playerId, bool _lock
     }
     else
     {
-        this->FireComponent->m_target = nullptr;
         removeEffect(EEffect::TargetLock);
     }
 }
@@ -378,6 +377,8 @@ void AShipPawn::kill()
         setCollisionProfile("NoCollision");
 
         addEffect(EEffect::Killed);
+        removeEffect(EEffect::Emp);
+        removeEffect(EEffect::BackToGame);
 
         // replace actor to spawn
         this->SetActorTransform(m_startTransform);
@@ -401,6 +402,13 @@ void AShipPawn::Restarted()
     setCollisionProfile(this->Team.ToString());
 
     removeEffect(EEffect::Killed);
+    addEffect(EEffect::Respawned);
+
+    FTimerDelegate timerCallback;
+    timerCallback.BindLambda([&]() { removeEffect(EEffect::Respawned); });
+
+    FTimerHandle handle;
+    this->GetWorldTimerManager().SetTimer(handle, timerCallback, 1.0f, false);
 }
 
 void AShipPawn::OnPlayerEnterFog(int32 _playerId, bool _enter)
@@ -415,7 +423,6 @@ void AShipPawn::OnPlayerEnterFog(int32 _playerId, bool _enter)
                 if (playerState->PlayerId == _playerId)
                 {
                     // remove target
-                    this->FireComponent->m_target = nullptr;
                     removeEffect(EEffect::TargetLock);
                 }
             }
@@ -525,6 +532,10 @@ bool AShipPawn::canTank(int32 _val)
     if (hasEffect(EEffect::MetaFormProtection))
     {
         lb_addScore(_val);
+        return true;
+    }
+    else if (hasEffect(EEffect::Respawned))
+    {
         return true;
     }
     else
@@ -684,6 +695,10 @@ void AShipPawn::behaviourRemoveEffect(EEffect _type)
                 spacelGameState->OnPlayerEnterFogDelegate.Broadcast(playerState->PlayerId, false);
             }
         }
+    }
+    else if (_type == EEffect::TargetLock)
+    {
+        this->FireComponent->m_target = nullptr;
     }
 }
 
