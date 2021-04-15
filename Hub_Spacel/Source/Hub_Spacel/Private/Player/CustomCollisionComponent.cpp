@@ -130,7 +130,7 @@ bool UCustomCollisionComponent::sweepForInstancedStaticMesh(UInstancedStaticMesh
 			&& _mesh->GetInstanceTransform(index, worldTransform, true)
 			&& sweepByProfile(hits, worldTransform.GetLocation(), _profile, shape, {Tags::Matiere, Tags::Fog, _teamTag, Tags::WorldManager }))
 		{
-			if (m_shipPawnOwner->canTank(hits.Num()))
+			if (get<AShipPawn>()!= nullptr && get<AShipPawn>()->canTank(hits.Num()))
 			{
 				// clean actor hit
 				dispatch(hits);
@@ -143,7 +143,7 @@ bool UCustomCollisionComponent::sweepForInstancedStaticMesh(UInstancedStaticMesh
 			if (m_matiereManager.IsValid())
 			{
 				bool needSpawnMatiere = true;
-				if (!m_shipPawnOwner->hasEffect(EEffect::Emp))
+				if (!get()->hasEffect(EEffect::Emp))
 				{
 					needSpawnMatiere = false;
 					// check if we have team player in hits
@@ -167,7 +167,7 @@ bool UCustomCollisionComponent::sweepForInstancedStaticMesh(UInstancedStaticMesh
 
 				if (needSpawnMatiere)
 				{
-					if (ASpacelPlayerState const* spacelPlayerState = m_shipPawnOwner.Get()->GetPlayerState<ASpacelPlayerState>())
+					if (ASpacelPlayerState const* spacelPlayerState = get()->GetPlayerState<ASpacelPlayerState>())
 					{
 						m_matiereManager.Get()->spawnMatiere(worldTransform.GetLocation(), spacelPlayerState->R_Team);
 					}
@@ -199,18 +199,18 @@ void UCustomCollisionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if (!m_shipPawnOwner.IsValid() && !initShipPawnOwner()) return;
-	if (m_shipPawnOwner.Get()->DriverMeshComponent == nullptr) return;
-	if (m_shipPawnOwner.Get()->hasEffect(EEffect::Killed)) return;
+	if (get() == nullptr && !initShipPawnOwner()) return;
+	if (get()->DriverMeshComponent == nullptr) return;
+	if (get()->hasEffect(EEffect::Killed)) return;
 
-	FName const& profileCollision = m_shipPawnOwner.Get()->DriverMeshComponent->GetCollisionProfileName();
+	FName const& profileCollision = get()->DriverMeshComponent->GetCollisionProfileName();
 
 	UWorld* world{ this->GetWorld() };
 	if (!ensure(world != nullptr)) return;
 
 	/* check if ship hit something */
 
-	FVector const& ownerLocation { m_shipPawnOwner.Get()->GetActorLocation() };
+	FVector const& ownerLocation { get()->GetActorLocation() };
 
 	// add matiere if we hit it
 	hitMatiere(ownerLocation, profileCollision);
@@ -218,31 +218,32 @@ void UCustomCollisionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 	TArray<FHitResult> hits;
 	if (sweepByProfile(hits, ownerLocation, profileCollision, { FCollisionShape::MakeBox({400, 350, 200}) }))
 	{
-		FVector const& scale = m_shipPawnOwner.Get()->GetTransform().GetScale3D();
-		FString tagTeam = "Team:" + m_shipPawnOwner.Get()->Team.ToString();
+		FVector const& scale = get()->GetTransform().GetScale3D();
+		if(get<AShipPawn>() == nullptr) return;
+		FString tagTeam = "Team:" + get()->Team.ToString();
 
-		FName prot = m_shipPawnOwner.Get()->ModuleComponent->ProtectionMeshComponent->GetCollisionProfileName();
+		FName prot = get()->ModuleComponent->ProtectionMeshComponent->GetCollisionProfileName();
 		// for each module, we need to check each instance
-		if (sweepForInstancedStaticMesh(m_shipPawnOwner.Get()->ModuleComponent->ProtectionMeshComponent, m_shipPawnOwner.Get()->ModuleComponent->RU_ProtectionLocations, m_shipPawnOwner.Get()->ModuleComponent->R_RemovedProtectionLocations, scale, profileCollision, *tagTeam))
+		if (sweepForInstancedStaticMesh(get()->ModuleComponent->ProtectionMeshComponent, get()->ModuleComponent->RU_ProtectionLocations, get()->ModuleComponent->R_RemovedProtectionLocations, scale, profileCollision, *tagTeam))
 		{
-			m_shipPawnOwner.Get()->OnHitProtectionDelegate.Broadcast();
-			m_shipPawnOwner.Get()->RPCClientPlayCameraShake();
+			get<AShipPawn>()->OnHitProtectionDelegate.Broadcast();
+			get<AShipPawn>()->RPCClientPlayCameraShake();
 		}
-		if (sweepForInstancedStaticMesh(m_shipPawnOwner.Get()->ModuleComponent->SupportMeshComponent, m_shipPawnOwner.Get()->ModuleComponent->RU_SupportLocations, m_shipPawnOwner.Get()->ModuleComponent->R_RemovedSupportLocations, scale, profileCollision, *tagTeam))
+		if (sweepForInstancedStaticMesh(get()->ModuleComponent->SupportMeshComponent, get()->ModuleComponent->RU_SupportLocations, get()->ModuleComponent->R_RemovedSupportLocations, scale, profileCollision, *tagTeam))
 		{
-			m_shipPawnOwner.Get()->OnHitSupportDelegate.Broadcast();
-			m_shipPawnOwner.Get()->RPCClientPlayCameraShake();
+			get<AShipPawn>()->OnHitSupportDelegate.Broadcast();
+			get<AShipPawn>()->RPCClientPlayCameraShake();
 		}
 
 		// end check red zone
-		FCollisionShape redZoneShape = createCollisionShapeWithLocalBounds<UStaticMeshComponent>(m_shipPawnOwner.Get()->DriverMeshComponent, scale);
-		FVector const& redZoneLocation = m_shipPawnOwner.Get()->DriverMeshComponent->GetComponentLocation();
+		FCollisionShape redZoneShape = createCollisionShapeWithLocalBounds<UStaticMeshComponent>(get()->DriverMeshComponent, scale);
+		FVector const& redZoneLocation = get()->DriverMeshComponent->GetComponentLocation();
 		if (sweepByProfile(hits, redZoneLocation, profileCollision, redZoneShape, { Tags::Matiere, Tags::Fog, *tagTeam, Tags::WorldManager }))
 		{
 			dispatch(hits);
-			if (!m_shipPawnOwner->canTank(hits.Num()))
+			if (!get<AShipPawn>()->canTank(hits.Num()))
 			{
-				m_shipPawnOwner.Get()->kill();
+				get<AShipPawn>()->kill();
 				addScore(hits, EScoreType::Kill);
 				return; // break flow
 			}
@@ -256,7 +257,7 @@ void UCustomCollisionComponent::hitMatiere(FVector const& _ownerLocation, FName 
 	if (sweepByProfile(hits, _ownerLocation, _profileCollision, { FCollisionShape::MakeBox({800, 800, 800}) }))
 	{
 		int addMatiere{};
-		ASpacelPlayerState const* spacelPlayerState{ m_shipPawnOwner.Get()->GetPlayerState<ASpacelPlayerState>() };
+		ASpacelPlayerState const* spacelPlayerState = get()->GetPlayerState<ASpacelPlayerState>();
 		if (spacelPlayerState == nullptr) return;
 
 		FString const& team = spacelPlayerState->R_Team;
@@ -274,20 +275,20 @@ void UCustomCollisionComponent::hitMatiere(FVector const& _ownerLocation, FName 
 			});
 
 		// make event for add matiere like updateMatiere for decrease or increase matiere
-		if (m_shipPawnOwner.IsValid() && addMatiere != int{})
+		if (get<AShipPawn>() != nullptr && addMatiere != int{})
 		{
-			m_shipPawnOwner.Get()->OnUpdateMatiereDelegate.Broadcast(addMatiere);
+			get<AShipPawn>()->OnUpdateMatiereDelegate.Broadcast(addMatiere);
 		}
 	}
 }
 
 void UCustomCollisionComponent::hit(FString const& _team, int32 _playerId, class UPrimitiveComponent* _comp, int32 _index)
 {
-	if(m_shipPawnOwner.Get() == nullptr) return;
-	if(m_shipPawnOwner.Get()->ModuleComponent == nullptr) return;
-	if(m_shipPawnOwner.Get()->ModuleComponent->ProtectionMeshComponent == nullptr) return;
-	if(m_shipPawnOwner.Get()->ModuleComponent->SupportMeshComponent == nullptr) return;
-	if(m_shipPawnOwner.Get()->DriverMeshComponent == nullptr) return;
+	if(get() == nullptr) return;
+	if(get()->ModuleComponent == nullptr) return;
+	if(get()->ModuleComponent->ProtectionMeshComponent == nullptr) return;
+	if(get()->ModuleComponent->SupportMeshComponent == nullptr) return;
+	if(get()->DriverMeshComponent == nullptr) return;
 
 	uint32 uniqueId { _comp->GetUniqueID() };
 
@@ -305,7 +306,7 @@ void UCustomCollisionComponent::hit(FString const& _team, int32 _playerId, class
 		{
 			if (m_matiereManager.IsValid())
 			{
-				if (ASpacelPlayerState const* spacelPlayerState = m_shipPawnOwner.Get()->GetPlayerState<ASpacelPlayerState>())
+				if (ASpacelPlayerState const* spacelPlayerState = get()->GetPlayerState<ASpacelPlayerState>())
 				{
 					m_matiereManager.Get()->spawnMatiere(worldTransform.GetLocation(), spacelPlayerState->R_Team);
 				}
@@ -325,27 +326,30 @@ void UCustomCollisionComponent::hit(FString const& _team, int32 _playerId, class
 	{
 		if (ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld())))
 		{
-			if (*_team != m_shipPawnOwner.Get()->Team)
+			if (*_team != get()->Team)
 			{
 				spacelGameState->AddScore(_team, _playerId, _type);
 			}
 		}
 	};
 
-	if (uniqueId == m_shipPawnOwner.Get()->ModuleComponent->ProtectionMeshComponent->GetUniqueID())
+	if (uniqueId == get()->ModuleComponent->ProtectionMeshComponent->GetUniqueID())
 	{
-		lb_removeInstance(m_shipPawnOwner.Get()->ModuleComponent->ProtectionMeshComponent, m_shipPawnOwner.Get()->ModuleComponent->RU_ProtectionLocations, m_shipPawnOwner.Get()->ModuleComponent->R_RemovedProtectionLocations);
+		lb_removeInstance(get()->ModuleComponent->ProtectionMeshComponent, get()->ModuleComponent->RU_ProtectionLocations, get()->ModuleComponent->R_RemovedProtectionLocations);
 		lb_addScore(EScoreType::Hit);
 	}
-	else if (uniqueId == m_shipPawnOwner.Get()->ModuleComponent->SupportMeshComponent->GetUniqueID())
+	else if (uniqueId == get()->ModuleComponent->SupportMeshComponent->GetUniqueID())
 	{
-		lb_removeInstance(m_shipPawnOwner.Get()->ModuleComponent->SupportMeshComponent, m_shipPawnOwner.Get()->ModuleComponent->RU_SupportLocations, m_shipPawnOwner.Get()->ModuleComponent->R_RemovedSupportLocations);
+		lb_removeInstance(get()->ModuleComponent->SupportMeshComponent, get()->ModuleComponent->RU_SupportLocations, get()->ModuleComponent->R_RemovedSupportLocations);
 		lb_addScore(EScoreType::Hit);
 	}
-	else if (uniqueId == m_shipPawnOwner.Get()->DriverMeshComponent->GetUniqueID())
+	else if (uniqueId == get()->DriverMeshComponent->GetUniqueID())
 	{
-		m_shipPawnOwner.Get()->kill();
-		lb_addScore(EScoreType::Kill);
+		if (get<AShipPawn>() != nullptr)
+		{
+			get<AShipPawn>()->kill();
+			lb_addScore(EScoreType::Kill);
+		}
 	}
 }
 
@@ -353,9 +357,9 @@ void UCustomCollisionComponent::addScore(TArray<FHitResult> const& _hits, EScore
 {
 	if (ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld())))
 	{
-		if (m_shipPawnOwner.IsValid() && m_shipPawnOwner->hasEffect(EEffect::Emp))
+		if (get<AShipPawn>() != nullptr && get<AShipPawn>()->hasEffect(EEffect::Emp))
 		{
-			spacelGameState->AddScore(m_shipPawnOwner->m_lastTeamEmp.ToString(), m_shipPawnOwner->m_lastPlayerIdEmp, EScoreType::Emp);
+			spacelGameState->AddScore(get<AShipPawn>()->m_lastTeamEmp.ToString(), get<AShipPawn>()->m_lastPlayerIdEmp, EScoreType::Emp);
 		}
 		else
 		{
@@ -379,7 +383,7 @@ void UCustomCollisionComponent::addScore(TArray<FHitResult> const& _hits, EScore
 							stag.ParseIntoArray(out, TEXT(":"), true);
 							if (out.Num() == 2)
 							{
-								if (*out[1] != m_shipPawnOwner.Get()->Team)
+								if (*out[1] != get()->Team)
 								{
 									playerInfo.Value = out[1];
 								}

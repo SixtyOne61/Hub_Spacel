@@ -2,13 +2,14 @@
 
 
 #include "Gameplay/Skill/SkillBehaviour.h"
+#include "Player/Common/CommonPawn.h"
 #include "Player/ShipPawn.h"
 #include "GameState/SpacelGameState.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerState.h"
 #include "Player/SpacelPlayerState.h"
 
-SkillBehaviour::SkillBehaviour(AShipPawn* _pawn, ENetMode _netMode)
+SkillBehaviour::SkillBehaviour(ACommonPawn* _pawn, ENetMode _netMode)
     : m_pawn(_pawn)
     , m_netMode(_netMode)
 {
@@ -16,15 +17,15 @@ SkillBehaviour::SkillBehaviour(AShipPawn* _pawn, ENetMode _netMode)
 
 bool SkillRepairProtection::onStart()
 {
-    if(m_pawn == nullptr) return false;
-    m_pawn->OnRepairProtectionDelegate.Broadcast();
+    if(get<AShipPawn>()) return false;
+    get<AShipPawn>()->OnRepairProtectionDelegate.Broadcast();
     return true;
 }
 
 bool SkillRepairSupport::onStart()
 {
-    if (m_pawn == nullptr) return false;
-    m_pawn->OnRepairSupportDelegate.Broadcast();
+    if (get<AShipPawn>() == nullptr) return false;
+    get<AShipPawn>()->OnRepairSupportDelegate.Broadcast();
     return true;
 }
 
@@ -55,29 +56,29 @@ bool giveMatiere(AShipPawn* _shipPawn, uint8 _id)
 
 bool SkillGiveAlly1::onStart()
 {
-    if (m_pawn == nullptr) return false;
-    m_pawn->giveMatiereToAlly(0);
+    if (get<AShipPawn>() == nullptr) return false;
+    get<AShipPawn>()->giveMatiereToAlly(0);
     return true;
 }
 
 bool SkillGiveAlly2::onStart()
 {
-    if (m_pawn == nullptr) return false;
-    m_pawn->giveMatiereToAlly(1);
+    if (get<AShipPawn>() == nullptr) return false;
+    get<AShipPawn>()->giveMatiereToAlly(1);
     return true;
 }
 
 bool SkillEscapeMode::onStart()
 {
-    if (m_pawn == nullptr) return false;
-    m_pawn->addEffect(EEffect::EscapeMode);
+    if (get() == nullptr) return false;
+    get()->addEffect(EEffect::EscapeMode);
     return true;
 }
 
 void SkillEscapeMode::onEnd()
 {
-    if (m_pawn == nullptr) return;
-    m_pawn->removeEffect(EEffect::EscapeMode);
+    if (get() == nullptr) return;
+    get()->removeEffect(EEffect::EscapeMode);
 }
 
 void SkillEscapeMode::onEndCountDown()
@@ -86,16 +87,18 @@ void SkillEscapeMode::onEndCountDown()
 
 bool SkillSpecialAttack::onStart()
 {
-    if (m_pawn == nullptr || !m_pawn->hasEffect(EEffect::TargetLock)) return false;
+    if (get<AShipPawn>() == nullptr || !get<AShipPawn>()->hasEffect(EEffect::TargetLock)) return false;
 
-    m_pawn->launchMissile();
+    get<AShipPawn>()->launchMissile();
     return true;
 }
 
 void SkillSpecialProtection::fillPlayer(FName const& _team, TArray<AShipPawn*>& _pawns) const
 {
+    if(get() == nullptr) return;
+
     _pawns.Empty();
-    if (AGameStateBase* gameState = UGameplayStatics::GetGameState(m_pawn->GetWorld()))
+    if (AGameStateBase* gameState = UGameplayStatics::GetGameState(get()->GetWorld()))
     {
         for (APlayerState const* playerState : gameState->PlayerArray)
         {
@@ -115,9 +118,9 @@ void SkillSpecialProtection::fillPlayer(FName const& _team, TArray<AShipPawn*>& 
 
 bool SkillSpecialProtection::onStart()
 {
-    if (m_pawn == nullptr) return false;
+    if (get() == nullptr) return false;
 
-    FName team = m_pawn->Team;
+    FName team = get()->Team;
     TArray<AShipPawn*> pawns;
     fillPlayer(team, pawns);
 
@@ -130,9 +133,9 @@ bool SkillSpecialProtection::onStart()
 
 void SkillSpecialProtection::onEnd()
 {
-    if (m_pawn == nullptr) return;
+    if (get() == nullptr) return;
 
-    FName team = m_pawn->Team;
+    FName team = get()->Team;
     TArray<AShipPawn*> pawns;
     fillPlayer(team, pawns);
 
@@ -144,61 +147,61 @@ void SkillSpecialProtection::onEnd()
 
 bool SkillSpecialSupport::onStart()
 {
-    if (m_pawn == nullptr || !m_pawn->hasEffect(EEffect::TargetLock)) return false;
+    if (get<AShipPawn>() == nullptr || !get<AShipPawn>()->hasEffect(EEffect::TargetLock)) return false;
 
-    m_pawn->emp();
+    get<AShipPawn>()->emp();
     return true;
 }
 
 bool SkillMetaFormAttack::onStart()
 {
-    if (m_pawn == nullptr) return false;
+    if (get() == nullptr) return false;
 
-    m_pawn->addEffect(EEffect::MetaFormAttack);
+    get()->addEffect(EEffect::MetaFormAttack);
     return true;
 }
 
 void SkillMetaFormAttack::onEnd()
 {
-    if (m_pawn != nullptr)
+    if (get() != nullptr)
     {
-        m_pawn->removeEffect(EEffect::MetaFormAttack);
+        get()->removeEffect(EEffect::MetaFormAttack);
     }
 }
 
 bool SkillMetaFormProtection::onStart()
 {
-    if (m_pawn == nullptr) return false;
+    if (get() == nullptr) return false;
 
-    m_pawn->addEffect(EEffect::MetaFormProtection);
+    get()->addEffect(EEffect::MetaFormProtection);
     return true;
 }
 
 void SkillMetaFormProtection::onEnd()
 {
-    if (m_pawn != nullptr)
+    if (get() != nullptr)
     {
-        m_pawn->removeEffect(EEffect::MetaFormProtection);
+        get()->removeEffect(EEffect::MetaFormProtection);
     }
 }
 
 bool SkillMetaFormSupport::onStart()
 {
-    if (m_pawn == nullptr) return false;
+    if (get() == nullptr) return false;
 
-    m_pawn->addEffect(EEffect::MetaFormSupport);
+    get()->addEffect(EEffect::MetaFormSupport);
     return true;
 }
 
 void SkillMetaFormSupport::onEnd()
 {
-    if (m_pawn != nullptr)
+    if (get() != nullptr)
     {
-        m_pawn->removeEffect(EEffect::MetaFormSupport);
+        get()->removeEffect(EEffect::MetaFormSupport);
     }
 }
 
-TUniquePtr<SkillBehaviour> SkillFactory::create(ESkill _skill, class AShipPawn* _pawn, ENetMode _netMode)
+TUniquePtr<SkillBehaviour> SkillFactory::create(ESkill _skill, class ACommonPawn* _pawn, ENetMode _netMode)
 {
     switch (_skill)
     {

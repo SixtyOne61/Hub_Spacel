@@ -22,7 +22,7 @@ SkillCountDown::SkillCountDown(SkillCountDown const& _cpy)
                     std::bind(&SkillCountDown::onCountDown, this) });
 }
 
-SkillCountDown::SkillCountDown(FSkill _skill, class AShipPawn* _pawn, ENetMode _netMode)
+SkillCountDown::SkillCountDown(FSkill _skill, class ACommonPawn* _pawn, ENetMode _netMode)
     : m_netMode(_netMode)
     , m_param(_skill)
     , m_pawn(_pawn)

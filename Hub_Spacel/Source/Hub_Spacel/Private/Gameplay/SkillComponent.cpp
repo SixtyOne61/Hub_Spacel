@@ -18,17 +18,17 @@ void USkillComponent::setupSkill()
     ENetMode mode = this->GetNetMode();
 
     // order is important
-    m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::RepairProtection), m_shipPawnOwner.Get(), mode));
-    m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::RepairSupport), m_shipPawnOwner.Get(), mode));
-    m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::EscapeMode), m_shipPawnOwner.Get(), mode));
+    m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::RepairProtection), get(), mode));
+    m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::RepairSupport), get(), mode));
+    m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::EscapeMode), get(), mode));
 
-    if (ASpacelPlayerState* spacelPlayerState = Cast<ASpacelPlayerState>(m_shipPawnOwner.Get()->GetPlayerState()))
+    if (ASpacelPlayerState* spacelPlayerState = Cast<ASpacelPlayerState>(get()->GetPlayerState()))
     {
         auto lb = [&](ESkillType _skilltype, ESkill _skill, uint8 _level)
         {
             if (spacelPlayerState->getSkillPoint(_skilltype) >= _level)
             {
-                m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(_skill), m_shipPawnOwner.Get(), mode));
+                m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(_skill), get(), mode));
             }
         };
         
@@ -43,8 +43,8 @@ void USkillComponent::setupSkill()
         lb(ESkillType::Support, ESkill::MetaFormSupport, levelMetaForm);
     }
 
-    m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::GiveAlly1), m_shipPawnOwner.Get(), mode));
-    m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::GiveAlly2), m_shipPawnOwner.Get(), mode));
+    m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::GiveAlly1), get(), mode));
+    m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::GiveAlly2), get(), mode));
 }
 
 void USkillComponent::TickComponent(float _deltaTime, ELevelTick _tickType, FActorComponentTickFunction* _thisTickFunction)
@@ -61,5 +61,5 @@ void USkillComponent::useSkill(float _slot)
 {
     if(_slot >= m_skills.Num()) return;
 
-    m_skills[(int32)_slot].Get()->use(m_shipPawnOwner.Get()->GetWorld());
+    m_skills[(int32)_slot].Get()->use(get()->GetWorld());
 }

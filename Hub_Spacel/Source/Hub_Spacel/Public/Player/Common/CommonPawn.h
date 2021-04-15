@@ -13,6 +13,8 @@ class HUB_SPACEL_API ACommonPawn : public APawn
 	GENERATED_BODY()
 
 	friend class ACommonPlayerController;
+    friend class ULocalPlayerActionComponent;
+    friend class UFireComponent;
 
 public:
 	// Sets default values for this pawn's properties
@@ -22,6 +24,10 @@ public:
 
     // effect part
     bool hasEffect(EEffect _type);
+    void addEffect(EEffect _type);
+    virtual void addEffectSuccess(EEffect _type) {};
+    void removeEffect(EEffect _type);
+    virtual void removeEffectSuccess(EEffect _type) {};
 
     /* set collision profile name */
     void setCollisionProfile(FString _team);
@@ -43,6 +49,9 @@ protected:
     }
 
 public:
+    UPROPERTY()
+    FName Team {};
+
     UPROPERTY(Category = "Ship", VisibleAnywhere, BlueprintReadOnly)
     class UStaticMeshComponent* DriverMeshComponent{ nullptr };
 

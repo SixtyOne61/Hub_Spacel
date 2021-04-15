@@ -12,15 +12,20 @@
 class HUB_SPACEL_API SkillBehaviour
 {
 public:
-	SkillBehaviour(class AShipPawn* _pawn, ENetMode _netMode);
+	SkillBehaviour(class ACommonPawn* _pawn, ENetMode _netMode);
 	virtual ~SkillBehaviour() {}
 
 	virtual bool onStart() { return true; }
 	virtual void onEnd() = 0;
 	virtual void onEndCountDown() = 0;
 
+	template<class T>
+	inline T* get() { return Cast<T>(m_pawn); }
+
+	inline ACommonPawn* get() const { return m_pawn; }
+
 protected:
-	class AShipPawn* m_pawn { nullptr };
+	class ACommonPawn* m_pawn { nullptr };
 	ENetMode m_netMode {};
 };
 
@@ -151,5 +156,5 @@ public:
 class HUB_SPACEL_API SkillFactory
 {
 public:
-	static TUniquePtr<SkillBehaviour> create(ESkill _skill, class AShipPawn* _pawn, ENetMode _netMode);
+	static TUniquePtr<SkillBehaviour> create(ESkill _skill, class ACommonPawn* _pawn, ENetMode _netMode);
 };

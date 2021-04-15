@@ -6,7 +6,6 @@
 #include "Components/ActorComponent.h"
 #include "PlayerActorComponent.generated.h"
 
-
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class HUB_SPACEL_API UPlayerActorComponent : public UActorComponent
 {
@@ -18,6 +17,15 @@ protected:
 
 	bool initShipPawnOwner();
 
-protected:
-	TWeakObjectPtr<class AShipPawn> m_shipPawnOwner{};
+	template<class T>
+	inline T* get() { return Cast<T>(get()); }
+
+	template<class T>
+	inline T* get() const { return Cast<T>(get()); }
+
+	inline class ACommonPawn* get() { return m_shipPawnOwner.Get(); }
+	inline class ACommonPawn* get() const { return m_shipPawnOwner.Get(); }
+
+private:
+	TWeakObjectPtr<class ACommonPawn> m_shipPawnOwner{};
 };

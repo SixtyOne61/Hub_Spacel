@@ -16,19 +16,25 @@ void URepairComponent::BeginPlay()
     Super::BeginPlay();
 
     if (this->GetNetMode() != ENetMode::NM_DedicatedServer) return;
-    if (!m_shipPawnOwner.IsValid() && !initShipPawnOwner()) return;
+    if (get() == nullptr && !initShipPawnOwner()) return;
 
-    m_shipPawnOwner.Get()->OnUpdateMatiereDelegate.AddDynamic(this, &URepairComponent::OnUpdateMatiere);
-    m_shipPawnOwner.Get()->OnHitProtectionDelegate.AddDynamic(this, &URepairComponent::OnHitProtection);
-    m_shipPawnOwner.Get()->OnHitSupportDelegate.AddDynamic(this, &URepairComponent::OnHitSupport);
-    m_shipPawnOwner.Get()->OnRepairProtectionDelegate.AddDynamic(this, &URepairComponent::OnRepairProtection);
-    m_shipPawnOwner.Get()->OnRepairSupportDelegate.AddDynamic(this, &URepairComponent::OnRepairSupport);
+    if (AShipPawn* pawn = get<AShipPawn>())
+    {
+        pawn->OnUpdateMatiereDelegate.AddDynamic(this, &URepairComponent::OnUpdateMatiere);
+        pawn->OnHitProtectionDelegate.AddDynamic(this, &URepairComponent::OnHitProtection);
+        pawn->OnHitSupportDelegate.AddDynamic(this, &URepairComponent::OnHitSupport);
+        pawn->OnRepairProtectionDelegate.AddDynamic(this, &URepairComponent::OnRepairProtection);
+        pawn->OnRepairSupportDelegate.AddDynamic(this, &URepairComponent::OnRepairSupport);
+    }
 }
 
 void URepairComponent::OnUpdateMatiere(int _value)
 {
-    m_shipPawnOwner.Get()->RU_Matiere += _value;
-    m_shipPawnOwner.Get()->OnRep_Matiere();
+    if (get<AShipPawn>() != nullptr)
+    {
+        get<AShipPawn>()->RU_Matiere += _value;
+        get<AShipPawn>()->OnRep_Matiere();
+    }
 }
 
 void URepairComponent::OnHitProtection()
@@ -64,8 +70,8 @@ void URepairComponent::OnRepairProtection()
 
 void URepairComponent::RepairProtection()
 {
-    repair(m_shipPawnOwner.Get()->ModuleComponent->R_RemovedProtectionLocations, m_shipPawnOwner.Get()->ModuleComponent->RU_ProtectionLocations,
-        std::bind(&UModuleComponent::OnRep_Protection, m_shipPawnOwner.Get()->ModuleComponent), this->RepairProtectionHandle);
+    repair(get()->ModuleComponent->R_RemovedProtectionLocations, get()->ModuleComponent->RU_ProtectionLocations,
+        std::bind(&UModuleComponent::OnRep_Protection, get()->ModuleComponent), this->RepairProtectionHandle);
 }
 
 void URepairComponent::OnRepairSupport()
@@ -76,8 +82,8 @@ void URepairComponent::OnRepairSupport()
 
 void URepairComponent::RepairSupport()
 {
-    repair(m_shipPawnOwner.Get()->ModuleComponent->R_RemovedSupportLocations, m_shipPawnOwner.Get()->ModuleComponent->RU_SupportLocations,
-        std::bind(&UModuleComponent::OnRep_Support, m_shipPawnOwner.Get()->ModuleComponent), this->RepairSupportHandle);
+    repair(get()->ModuleComponent->R_RemovedSupportLocations, get()->ModuleComponent->RU_SupportLocations,
+        std::bind(&UModuleComponent::OnRep_Support, get()->ModuleComponent), this->RepairSupportHandle);
 }
 
 void URepairComponent::repair(TArray<FVector>& _removedLocations, TArray<FVector>& _locations, std::function<void(void)> _onRep, FTimerHandle & _handle)
@@ -92,7 +98,7 @@ void URepairComponent::repair(TArray<FVector>& _removedLocations, TArray<FVector
 
     if (_removedLocations.Num() != 0)
     {
-        if (m_shipPawnOwner.Get()->RU_Matiere > 0)
+        if (get<AShipPawn>() != nullptr && get<AShipPawn>()->RU_Matiere > 0)
         {
             _locations.Add(_removedLocations[0]);
             _removedLocations.RemoveAt(0);

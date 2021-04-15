@@ -29,12 +29,12 @@ void UFireComponent::TickComponent(float _deltaTime, ELevelTick _tickType, FActo
 
     if (this->GetNetMode() != ENetMode::NM_DedicatedServer) return;
 
-	if (!m_shipPawnOwner.IsValid() && !initShipPawnOwner()) return;
+	if (get() == nullptr && !initShipPawnOwner()) return;
 
-	if (!ensure(m_shipPawnOwner.Get()->PlayerDataAsset != nullptr)) return;
-	if (!ensure(m_shipPawnOwner.Get()->PlayerDataAsset->BulletClass != nullptr)) return;
-	if (!ensure(m_shipPawnOwner.Get()->ModuleComponent != nullptr)) return;
-    if (!ensure(m_shipPawnOwner.Get()->ModuleComponent->WeaponMeshComponent != nullptr)) return;
+	if (!ensure(get()->PlayerDataAsset != nullptr)) return;
+	if (!ensure(get()->PlayerDataAsset->BulletClass != nullptr)) return;
+	if (!ensure(get()->ModuleComponent != nullptr)) return;
+    if (!ensure(get()->ModuleComponent->WeaponMeshComponent != nullptr)) return;
 
 	UWorld* world { this->GetWorld() };
 	if (!ensure(world != nullptr)) return;
@@ -43,30 +43,30 @@ void UFireComponent::TickComponent(float _deltaTime, ELevelTick _tickType, FActo
     if (m_isFire.hasValue() && m_isFire.value() && m_fireCountDown <= 0.0f)
     {
         FTransform transform{};
-        m_shipPawnOwner.Get()->ModuleComponent->WeaponMeshComponent->GetInstanceTransform(m_fireIndex, transform, true);
+        get()->ModuleComponent->WeaponMeshComponent->GetInstanceTransform(m_fireIndex, transform, true);
         // reset scale
         transform.SetScale3D({ 1.0f, 1.0f, 1.0f });
 
         ++m_fireIndex;
-        if (m_fireIndex >= m_shipPawnOwner.Get()->ModuleComponent->WeaponMeshComponent->GetInstanceCount())
+        if (m_fireIndex >= get()->ModuleComponent->WeaponMeshComponent->GetInstanceCount())
         {
             m_fireIndex = 0;
         }
 
-        FVector bulletDir = UKismetMathLibrary::FindLookAtRotation(transform.GetLocation(), m_shipPawnOwner.Get()->TargetLocation).Vector();
+        FVector bulletDir = UKismetMathLibrary::FindLookAtRotation(transform.GetLocation(), get()->TargetLocation).Vector();
         bulletDir.Normalize();
         transform.SetRotation(bulletDir.ToOrientationQuat());
         spawnBullet(transform);
 
         // reset count down
-        if (ASpacelPlayerState* spacelPlayerState = m_shipPawnOwner.Get()->GetPlayerState<ASpacelPlayerState>())
+        if (ASpacelPlayerState* spacelPlayerState = get()->GetPlayerState<ASpacelPlayerState>())
         {
-            float coef = spacelPlayerState->IsIncreaseFireRate() ? m_shipPawnOwner.Get()->PlayerDataAsset->ReduceTimeBetweenFireWithLevel : 1.0f;
-            if (m_shipPawnOwner->hasEffect(EEffect::MetaFormAttack))
+            float coef = spacelPlayerState->IsIncreaseFireRate() ? get()->PlayerDataAsset->ReduceTimeBetweenFireWithLevel : 1.0f;
+            if (get()->hasEffect(EEffect::MetaFormAttack))
             {
-                coef = m_shipPawnOwner.Get()->PlayerDataAsset->ReduceTimeBetweenFireWithMetaForm;
+                coef = get()->PlayerDataAsset->ReduceTimeBetweenFireWithMetaForm;
             }
-            m_fireCountDown = m_shipPawnOwner.Get()->PlayerDataAsset->TimeBetweenFire * coef;
+            m_fireCountDown = get()->PlayerDataAsset->TimeBetweenFire * coef;
         }
         else
         {
@@ -84,11 +84,11 @@ void UFireComponent::TickComponent(float _deltaTime, ELevelTick _tickType, FActo
 
 void UFireComponent::spawnBullet(FTransform const& _transform) const
 {
-    AActor* actor = Cast<AActor>(UGameplayStatics::BeginDeferredActorSpawnFromClass(this->GetWorld(), m_shipPawnOwner.Get()->PlayerDataAsset->BulletClass, _transform));
+    AActor* actor = Cast<AActor>(UGameplayStatics::BeginDeferredActorSpawnFromClass(this->GetWorld(), get()->PlayerDataAsset->BulletClass, _transform));
     if (AProjectileBase* laser = Cast<AProjectileBase>(actor))
     {
         // init bullet
-        laser->R_Team = m_shipPawnOwner.Get()->Team;
+        laser->R_Team = get()->Team;
         UGameplayStatics::FinishSpawningActor(laser, _transform);
         setupProjectile(laser);
     }
@@ -96,12 +96,16 @@ void UFireComponent::spawnBullet(FTransform const& _transform) const
 
 void UFireComponent::launchMissile(FTransform const _transform) const
 {
-    AActor* actor = Cast<AActor>(UGameplayStatics::BeginDeferredActorSpawnFromClass(this->GetWorld(), m_shipPawnOwner.Get()->PlayerDataAsset->MissileClass, _transform));
+    AActor* actor = Cast<AActor>(UGameplayStatics::BeginDeferredActorSpawnFromClass(this->GetWorld(), get()->PlayerDataAsset->MissileClass, _transform));
     if (AMissile* missile = Cast<AMissile>(actor))
     {
         missile->Target = m_target;
-        missile->R_Team = m_shipPawnOwner.Get()->Team;
-        m_shipPawnOwner->OnAddEffectDelegate.AddDynamic(missile, &AMissile::OnTargetEffect);
+        missile->R_Team = get()->Team;
+        if (get<AShipPawn>() != nullptr)
+        {
+            get<AShipPawn>()->OnAddEffectDelegate.AddDynamic(missile, &AMissile::OnTargetEffect);
+        }
+
         UGameplayStatics::FinishSpawningActor(missile, _transform);
         setupProjectile(missile);
     }
@@ -115,7 +119,7 @@ void UFireComponent::setupProjectile(AActor* _projectile) const
         comp->SetVelocityInLocalSpace(dir * comp->InitialSpeed);
     }
 
-    FString profile = "P" + m_shipPawnOwner.Get()->Team.ToString();
+    FString profile = "P" + get()->Team.ToString();
     profile = profile.Replace(TEXT(" "), TEXT(""));
     if (USphereComponent* comp = Cast<USphereComponent>(_projectile->GetComponentByClass(USphereComponent::StaticClass())))
     {
@@ -127,11 +131,11 @@ void UFireComponent::setupProjectile(AActor* _projectile) const
         comp->SetCollisionProfileName(*profile);
     }
 
-    FString tag = "Team:" + m_shipPawnOwner.Get()->Team.ToString();
+    FString tag = "Team:" + get()->Team.ToString();
     _projectile->Tags.Add(*tag);
 
 
-    if (ASpacelPlayerState* spacelPlayerState = m_shipPawnOwner.Get()->GetPlayerState<ASpacelPlayerState>())
+    if (ASpacelPlayerState* spacelPlayerState = get()->GetPlayerState<ASpacelPlayerState>())
     {
         if (AProjectileBase* projectileBase = Cast<AProjectileBase>(_projectile))
         {

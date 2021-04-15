@@ -15,7 +15,7 @@ class HUB_SPACEL_API SkillCountDown
 {
 public:
 	SkillCountDown(const SkillCountDown &);
-	SkillCountDown(FSkill _skill, class AShipPawn* _pawn, ENetMode _netMode);
+	SkillCountDown(FSkill _skill, class ACommonPawn* _pawn, ENetMode _netMode);
 	~SkillCountDown();
 
 	void use(class UWorld* _context);
@@ -33,7 +33,7 @@ private:
 	ENetMode m_netMode {};
 	FSkill m_param {};
 	EnumUtil::EnumCallback<ECountDown> m_state { };
-	class AShipPawn* m_pawn { nullptr };
+	class ACommonPawn* m_pawn { nullptr };
 	class UProgressBar* m_progressBar { nullptr };
 	float m_currentTime{ 0.0f };
 

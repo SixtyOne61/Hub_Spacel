@@ -2,7 +2,7 @@
 
 
 #include "PlayerActorComponent.h"
-#include "Player/ShipPawn.h"
+#include "Player/Common/CommonPawn.h"
 
 // Called when the game starts
 void UPlayerActorComponent::BeginPlay()
@@ -15,7 +15,7 @@ void UPlayerActorComponent::BeginPlay()
 
 bool UPlayerActorComponent::initShipPawnOwner()
 {
-	m_shipPawnOwner = MakeWeakObjectPtr(Cast<AShipPawn>(this->GetOwner()));
+	m_shipPawnOwner = MakeWeakObjectPtr(Cast<ACommonPawn>(this->GetOwner()));
 
 	return m_shipPawnOwner.IsValid();
 }

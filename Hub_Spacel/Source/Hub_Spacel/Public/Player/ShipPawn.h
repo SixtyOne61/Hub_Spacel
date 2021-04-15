@@ -51,8 +51,8 @@ public:
     void lockTarget(int32 _playerId, bool _lock);
 
     /* server side */
-    void addEffect(EEffect _type);
-    void removeEffect(EEffect _type);
+    void addEffectSuccess(EEffect _type) override;
+    void removeEffectSuccess(EEffect _type) override;
     void behaviourAddEffect(EEffect _type);
     void behaviourRemoveEffect(EEffect _type);
 
@@ -134,9 +134,6 @@ private:
     void BackToGame();
 
 public:
-    UPROPERTY()
-    FName Team {};
-
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
     FOnRepairProtection OnRepairProtectionDelegate {};
 
