@@ -29,6 +29,9 @@ private:
 	void setupSkill();
 	void useSkill(float _slot);
 
+	UFUNCTION(Reliable, Server)
+	void RPCServerUseSkill(ESkill _skill);
+
 public:
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
 	class USkillDataAsset* SkillDataAsset{ nullptr };

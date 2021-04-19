@@ -23,8 +23,10 @@
 #include "DataAsset/TeamColorDataAsset.h"
 #include "Widget/AllyWidget.h"
 #include "Widget/SkillWidget.h"
+#include "Widget/SkillProgressWidget.h"
 #include "Widget/EffectWidget.h"
 #include "Widget/ScoreUserWidget.h"
+#include "Widget/UseMatiereWidget.h"
 #include "Factory/SpacelFactory.h"
 #include "Styling/SlateColor.h"
 
@@ -40,6 +42,7 @@ void USpacelWidget::NativeConstruct()
     ScoreWidget = SimplyUI::initSafetyFromName<UUserWidget, UScoreUserWidget>(this, TEXT("WBP_Score"));
     SkillBarHorizontalBox = SimplyUI::initSafetyFromName<UUserWidget, UHorizontalBox>(this, TEXT("SkillBar"));
     EffectBarHorizontalBox = SimplyUI::initSafetyFromName<UUserWidget, UHorizontalBox>(this, TEXT("EffectBar"));
+    UseMatiereWidget = SimplyUI::initSafetyFromName<UUserWidget, UUseMatiereWidget>(this, TEXT("WBP_UseMatiere"));
 
     TArray<FName> allyNames { TEXT("Widget_Ally1"), TEXT("Widget_Ally2") };
     SimplyUI::initArray(this, AllyWidgets, allyNames);
@@ -68,6 +71,7 @@ void USpacelWidget::NativeConstruct()
         shipPawn->OnShowScoreDelegate.AddDynamic(this, &USpacelWidget::OnShowScore);
         shipPawn->OnAddEffectDelegate.AddDynamic(this, &USpacelWidget::OnAddEffect);
         shipPawn->OnRemoveEffectDelegate.AddDynamic(this, &USpacelWidget::OnRemoveEffect);
+        shipPawn->OnUseMatiereDelegate.AddDynamic(this, &USpacelWidget::OnUseMatiere);
     }
 }
 
@@ -134,7 +138,6 @@ void USpacelWidget::StartGame()
 
     // create skill bar
     if (this->SkillBarHorizontalBox == nullptr) return;
-    if (this->SkillWidgetClass == nullptr) return;
     if (AShipPawn* shipPawn = this->GetOwningPlayerPawn<AShipPawn>())
     {
         if(shipPawn->SkillComponent == nullptr) return;
@@ -143,14 +146,17 @@ void USpacelWidget::StartGame()
         for (auto const& skillPtr : skills)
         {
             FSkill const& skill = skillPtr.Get()->getParam();
+            if(skill.SkillWidgetClass == nullptr) return;
             FString name = "Skill";
             name.Append(FString::FromInt((int)skill.Skill));
-            USkillWidget* skillWidget = CreateWidget<USkillWidget, UHorizontalBox>(this->SkillBarHorizontalBox, this->SkillWidgetClass, *name);
+            USkillWidget* skillWidget = CreateWidget<USkillWidget, UHorizontalBox>(this->SkillBarHorizontalBox, skill.SkillWidgetClass, *name);
             skillWidget->SetSkill(skill.BackgroundColorBtn, skill.IconeBtn, id);
             this->SkillBarHorizontalBox->AddChildToHorizontalBox(skillWidget);
 
-            UProgressBar * progress = SimplyUI::initSafetyFromName<UUserWidget, UProgressBar>(skillWidget, TEXT("ProgressBar_Skill"));
-            skillPtr->addProgressBar(progress);
+            if (UProgressBar* progress = SimplyUI::initUnSafeFromName<UUserWidget, UProgressBar>(skillWidget, TEXT("ProgressBar_Skill")))
+            {
+                skillPtr->addProgressBar(progress);
+            }
             ++id;
         }
     }
@@ -306,6 +312,21 @@ void USpacelWidget::OnRemoveEffect(EEffect _type)
                 this->EffectBarHorizontalBox->RemoveChild(widget);
                 break;
             }
+        }
+    }
+}
+
+void USpacelWidget::OnUseMatiere()
+{
+    if (this->UseMatiereWidget != nullptr)
+    {
+        if (this->UseMatiereWidget->IsVisible())
+        {
+            this->UseMatiereWidget->SetVisibility(ESlateVisibility::Hidden);
+        }
+        else
+        {
+            this->UseMatiereWidget->SetVisibility(ESlateVisibility::Visible);
         }
     }
 }

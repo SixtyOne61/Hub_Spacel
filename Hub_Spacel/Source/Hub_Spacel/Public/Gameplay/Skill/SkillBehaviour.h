@@ -29,6 +29,17 @@ protected:
 	ENetMode m_netMode {};
 };
 
+class HUB_SPACEL_API SkillUseMatiere : public SkillBehaviour
+{
+	using SkillBehaviour::SkillBehaviour;
+public:
+	virtual ~SkillUseMatiere() {}
+
+	bool onStart() override;
+	void onEnd() override {};
+	void onEndCountDown() override {};
+};
+
 class HUB_SPACEL_API SkillRepairProtection : public SkillBehaviour
 {
 	using SkillBehaviour::SkillBehaviour;

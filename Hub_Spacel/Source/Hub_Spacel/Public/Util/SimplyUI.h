@@ -50,10 +50,16 @@ namespace SimplyUI
     static inline U* initSafetyFromName(T* _owner, const FName& _name)
     {
         U* obj = (U*)_owner->GetWidgetFromName(_name);
-        if (!ensure(obj != nullptr)) return nullptr;
+        ensure(obj != nullptr);
         return obj;
     }
 
+    template<class T, class U>
+    static inline U* initUnSafeFromName(T* _owner, const FName& _name)
+    {
+        U* obj = (U*)_owner->GetWidgetFromName(_name);
+        return obj;
+    }
 
     template<class U, class T>
     void initArray(U* _owner, TArray<T*>& _out, TArray<FName> const& _names)

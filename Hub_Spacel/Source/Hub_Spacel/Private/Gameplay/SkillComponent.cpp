@@ -4,6 +4,7 @@
 #include "SkillComponent.h"
 #include "Player/SpacelPlayerState.h"
 #include "Player/ShipPawn.h"
+#include "Kismet/GameplayStatics.h"
 
 USkillComponent::USkillComponent()
     : UPlayerActorComponent()
@@ -18,8 +19,7 @@ void USkillComponent::setupSkill()
     ENetMode mode = this->GetNetMode();
 
     // order is important
-    m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::RepairProtection), get(), mode));
-    m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::RepairSupport), get(), mode));
+    m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::UseMatiere), get(), mode));
     m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::EscapeMode), get(), mode));
 
     if (ASpacelPlayerState* spacelPlayerState = Cast<ASpacelPlayerState>(get()->GetPlayerState()))
@@ -42,18 +42,51 @@ void USkillComponent::setupSkill()
         lb(ESkillType::Protection, ESkill::MetaFormProtection, levelMetaForm);
         lb(ESkillType::Support, ESkill::MetaFormSupport, levelMetaForm);
     }
+}
 
-    m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::GiveAlly1), get(), mode));
-    m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::GiveAlly2), get(), mode));
+void USkillComponent::RPCServerUseSkill_Implementation(ESkill _skill)
+{
+    for (auto& skill : m_skills)
+    {
+        if (skill.IsValid())
+        {
+            if (skill.Get()->getParam().Skill == _skill)
+            {
+                skill.Get()->use(get()->GetWorld());
+            }
+        }
+    }
 }
 
 void USkillComponent::TickComponent(float _deltaTime, ELevelTick _tickType, FActorComponentTickFunction* _thisTickFunction)
 {
     Super::TickComponent(_deltaTime, _tickType, _thisTickFunction);
 
-    for (auto & skill : m_skills)
+    if (get() != nullptr)
     {
-        skill.Get()->tick(_deltaTime);
+        for (auto& skill : m_skills)
+        {
+            if (skill.IsValid())
+            {
+                // client side
+                if (APlayerController* controller = UGameplayStatics::GetPlayerController(get()->GetWorld(), 0))
+                {
+                    bool keyDown = controller->IsInputKeyDown(skill.Get()->getParam().Key);
+                    bool& inputState = skill.Get()->inputeState();
+                    if (keyDown && !inputState)
+                    {
+                        inputState = true;
+                        RPCServerUseSkill(skill.Get()->getParam().Skill);
+                    }
+                    else if (!keyDown && inputState)
+                    {
+                        inputState = false;
+                    }
+                }
+
+                skill.Get()->tick(_deltaTime);
+            }
+        }
     }
 }
 
@@ -61,5 +94,8 @@ void USkillComponent::useSkill(float _slot)
 {
     if(_slot >= m_skills.Num()) return;
 
-    m_skills[(int32)_slot].Get()->use(get()->GetWorld());
+    if (get() != nullptr)
+    {
+        m_skills[(int32)_slot].Get()->use(get()->GetWorld());
+    }
 }

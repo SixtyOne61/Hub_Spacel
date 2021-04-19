@@ -69,6 +69,9 @@ private:
 	UFUNCTION()
 	void OnRemoveEffect(EEffect _type);
 
+	UFUNCTION()
+	void OnUseMatiere();
+
 	template<class T>
 	void setVisibility(T* _widget, bool _show)
 	{
@@ -92,9 +95,6 @@ protected:
 	class UTeamColorDataAsset* TeamColorDataAsset{ nullptr };
 
 private:
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<class USkillWidget> SkillWidgetClass { nullptr };
-
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class UEffectWidget> EffectWidgetClass { nullptr };
 
@@ -124,6 +124,9 @@ private:
 
 	UPROPERTY()
 	class UScoreUserWidget* ScoreWidget { nullptr };
+
+	UPROPERTY()
+	class UUseMatiereWidget* UseMatiereWidget { nullptr };
 
 	FString Team {};
 };

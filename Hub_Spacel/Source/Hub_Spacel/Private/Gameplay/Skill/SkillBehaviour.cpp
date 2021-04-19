@@ -15,9 +15,16 @@ SkillBehaviour::SkillBehaviour(ACommonPawn* _pawn, ENetMode _netMode)
 {
 }
 
+bool SkillUseMatiere::onStart()
+{
+    if(get<AShipPawn>() == nullptr) return false;
+    get<AShipPawn>()->RPCClientUseMatiere();
+    return true;
+}
+
 bool SkillRepairProtection::onStart()
 {
-    if(get<AShipPawn>()) return false;
+    if(get<AShipPawn>() == nullptr) return false;
     get<AShipPawn>()->OnRepairProtectionDelegate.Broadcast();
     return true;
 }
@@ -216,6 +223,7 @@ TUniquePtr<SkillBehaviour> SkillFactory::create(ESkill _skill, class ACommonPawn
         case ESkill::MetaFormAttack: return MakeUnique<SkillMetaFormAttack>(_pawn, _netMode);
         case ESkill::MetaFormProtection: return MakeUnique<SkillMetaFormProtection>(_pawn, _netMode);
         case ESkill::MetaFormSupport: return MakeUnique<SkillMetaFormSupport>(_pawn, _netMode);
+        case ESkill::UseMatiere: return MakeUnique<SkillUseMatiere>(_pawn, _netMode);
     }
 
     return nullptr;

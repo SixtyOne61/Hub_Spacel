@@ -55,6 +55,7 @@ enum class ESkill : uint8
     MetaFormAttack UMETA(DisplayName = "MetaFormAttack"),
     MetaFormProtection UMETA(DisplayName = "MetaFormProtection"),
     MetaFormSupport UMETA(DisplayName = "MetaFormSupport"),
+    UseMatiere UMETA(DisplayName = "UseMatiere"),
 };
 
 UENUM(BlueprintType, meta = (Bitflags, UseEnumValuesAsMaskValuesInEditor = "true"))

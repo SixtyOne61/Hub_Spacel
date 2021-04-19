@@ -14,6 +14,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHitProtection);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHitSupport);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnRepairProtection);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnRepairSupport);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnUseMatiere);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnShowScore, bool, _show);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLocalTeamUpdate, FString const&, _team);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAddEffect, EEffect, _type);
@@ -63,6 +64,9 @@ public:
 
     UFUNCTION(UnReliable, Client)
     void RPCClientFeedbackScore(EScoreType _type, int16 _value);
+
+    UFUNCTION(UnReliable, Client)
+    void RPCClientUseMatiere();
 
 private:
     void OnRep_PlayerState() override;
@@ -139,6 +143,9 @@ public:
 
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
     FOnRepairSupport OnRepairSupportDelegate {};
+
+    UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
+    FOnUseMatiere OnUseMatiereDelegate {};
 
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
     FOnFeedbackScore OnFeedbackScoreDelegate {};

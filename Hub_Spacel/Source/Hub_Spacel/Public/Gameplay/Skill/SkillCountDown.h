@@ -23,6 +23,8 @@ public:
 	inline FSkill const& getParam() const { return m_param; }
 	void addProgressBar(class UProgressBar* _progressBar);
 
+	bool& inputeState() { return m_isDown; }
+
 private:
 	void onAvailable();
 	void onIng();
@@ -38,4 +40,6 @@ private:
 	float m_currentTime{ 0.0f };
 
 	TUniquePtr<class SkillBehaviour> m_behaviour {};
+
+	bool m_isDown { false };
 };
