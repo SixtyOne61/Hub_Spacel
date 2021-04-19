@@ -27,14 +27,19 @@ void USkillComponent::setupSkill()
 
     if (ASpacelPlayerState* spacelPlayerState = Cast<ASpacelPlayerState>(get()->GetPlayerState()))
     {
+        // last in first out so 3 - 4
+        TArray<FKey> defaultKeyboard{ FKey("Apostrophe"), FKey("Quote") };
+
         auto lb = [&](ESkillType _skilltype, ESkill _skill, uint8 _level)
         {
             if (spacelPlayerState->getSkillPoint(_skilltype) >= _level)
             {
-                m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(_skill), get(), mode, callback));
+                FSkill skill = this->SkillDataAsset->getSKill(_skill);
+                skill.Key = defaultKeyboard.Pop();
+                m_skills.Add(MakeUnique<SkillCountDown>(skill, get(), mode, callback));
             }
         };
-        
+
         uint8 levelSpecial = this->SkillDataAsset->LevelSpecial;
         lb(ESkillType::Attack, ESkill::SpecialAttack, levelSpecial);
         lb(ESkillType::Protection, ESkill::SpecialProtection, levelSpecial);

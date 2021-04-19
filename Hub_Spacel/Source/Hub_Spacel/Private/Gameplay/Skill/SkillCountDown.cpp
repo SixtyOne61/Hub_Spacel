@@ -98,14 +98,19 @@ void SkillCountDown::onIng()
 {
     m_currentTime = 0.0f;
     updatePercent(m_progressBar, 0.0f);
-    if (m_netMode == ENetMode::NM_DedicatedServer
-        && (!m_behaviour.IsValid() || !m_behaviour.Get()->onStart()))
+    if (m_netMode == ENetMode::NM_DedicatedServer)
     {
-        if (m_callbackSucced != nullptr)
+        if (m_behaviour.IsValid() && m_behaviour.Get()->onStart())
         {
-            m_callbackSucced(m_param.Skill);
+            if (m_callbackSucced != nullptr)
+            {
+                m_callbackSucced(m_param.Skill);
+            }
         }
-        m_state = ECountDown::Available;
+        else
+        {
+            m_state = ECountDown::Available;
+        }
     }
 }
 
