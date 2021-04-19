@@ -154,20 +154,6 @@ void AGamePlayerController::RPCServerFire_Implementation(bool _is)
     }
 }
 
-void AGamePlayerController::RPCServerSkill_Implementation(float _slot)
-{
-    if (isAvailable())
-    {
-        AShipPawn* shipPawn = Cast<AShipPawn>(this->GetPawn());
-        if (shipPawn == nullptr)
-        {
-            return;
-        }
-
-        shipPawn->useSkill(_slot);
-    }
-}
-
 void AGamePlayerController::forward(float _value)
 {
     if (isAvailable())
@@ -214,25 +200,6 @@ void AGamePlayerController::fireOff()
     {
         this->RPCServerFire(false);
     }
-}
-
-void AGamePlayerController::skill(float _slot)
-{
-    if (!isAvailable() || _slot == 0.0f)
-    {
-        return;
-    }
-    this->RPCServerSkill(_slot - 1.0f);
-
-    // for local feedback (count down etc)
-    AShipPawn* shipPawn = Cast<AShipPawn>(this->GetPawn());
-    if (shipPawn == nullptr)
-    {
-        return;
-    }
-
-    // behaviour of each skill is disable on client
-    shipPawn->useSkill(_slot - 1.0f);
 }
 
 void AGamePlayerController::lock()

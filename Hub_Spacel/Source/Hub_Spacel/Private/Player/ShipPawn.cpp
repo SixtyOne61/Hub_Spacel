@@ -510,14 +510,6 @@ float AShipPawn::getPercentSupport() const
     return this->ModuleComponent->getPercentSupport();
 }
 
-void AShipPawn::useSkill(float _slot)
-{
-    if (this->SkillComponent != nullptr)
-    {
-        this->SkillComponent->useSkill(_slot);
-    }
-}
-
 bool AShipPawn::canTank(int32 _val)
 {
     auto lb_addScore = [&](int32 _val)

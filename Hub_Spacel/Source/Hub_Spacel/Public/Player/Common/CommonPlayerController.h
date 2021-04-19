@@ -61,7 +61,6 @@ protected:
 	virtual void fireOff() {};
 	virtual void returnToMainMenu();
 	virtual void lock() {};
-	virtual void skill(float _slot) {};
 };
 
 template<class T>

@@ -125,7 +125,6 @@ private:
     UFUNCTION(Reliable, Client)
     void RPCClientRemoveEffect(EEffect _effect);
 
-    void useSkill(float _slot);
     bool canTank(int32 _val);
 
     UFUNCTION()

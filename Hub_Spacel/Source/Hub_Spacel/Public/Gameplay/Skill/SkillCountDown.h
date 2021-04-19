@@ -7,6 +7,7 @@
 #include "Enum/SpacelEnum.h"
 #include "Util/EnumUtil.h"
 #include "Engine/EngineBaseTypes.h"
+#include <functional>
 
 /**
  * 
@@ -15,7 +16,7 @@ class HUB_SPACEL_API SkillCountDown
 {
 public:
 	SkillCountDown(const SkillCountDown &);
-	SkillCountDown(FSkill _skill, class ACommonPawn* _pawn, ENetMode _netMode);
+	SkillCountDown(FSkill _skill, class ACommonPawn* _pawn, ENetMode _netMode, std::function<void(ESkill)> _callbackSucced);
 	~SkillCountDown();
 
 	void use(class UWorld* _context);
@@ -42,4 +43,5 @@ private:
 	TUniquePtr<class SkillBehaviour> m_behaviour {};
 
 	bool m_isDown { false };
+	std::function<void(ESkill)> m_callbackSucced {};
 };

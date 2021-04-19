@@ -11,7 +11,6 @@ void ACommonPlayerController::SetupInputComponent()
     this->InputComponent->BindAxis("Forward", this, &ACommonPlayerController::forward);
     this->InputComponent->BindAxis("HorizontalStraf", this, &ACommonPlayerController::horizontalStraf);
     this->InputComponent->BindAxis("FlightAttitude", this, &ACommonPlayerController::flightAttitude);
-    this->InputComponent->BindAxis("Skill", this, &ACommonPlayerController::skill);
     
     this->InputComponent->BindAction("Fire", IE_Pressed, this, &ACommonPlayerController::fireOn);
     this->InputComponent->BindAction("Fire", IE_Released, this, &ACommonPlayerController::fireOff);

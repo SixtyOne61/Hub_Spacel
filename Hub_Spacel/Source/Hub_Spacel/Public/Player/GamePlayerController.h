@@ -44,9 +44,6 @@ private:
 	void RPCServerFire(bool _is);
 
 	UFUNCTION(Reliable, Server)
-	void RPCServerSkill(float _slot);
-
-	UFUNCTION(Reliable, Server)
 	void RPCServerStartGame();
 
 	/* input callback */
@@ -57,7 +54,6 @@ private:
 	void fireOn() override;
 	void fireOff() override;
 	void lock() override;
-	void skill(float _slot) override;
 
 	void showScore();
 	void hideScore();

@@ -5,6 +5,7 @@
 #include "Player/SpacelPlayerState.h"
 #include "Player/ShipPawn.h"
 #include "Kismet/GameplayStatics.h"
+#include <functional>
 
 USkillComponent::USkillComponent()
     : UPlayerActorComponent()
@@ -18,9 +19,11 @@ void USkillComponent::setupSkill()
 
     ENetMode mode = this->GetNetMode();
 
-    // order is important
-    m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::UseMatiere), get(), mode));
-    m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::EscapeMode), get(), mode));
+    auto callback = std::bind(&USkillComponent::RPCClientSucced, this, std::placeholders::_1);
+
+        // order is important
+    m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::UseMatiere), get(), mode, callback));
+    m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::EscapeMode), get(), mode, callback));
 
     if (ASpacelPlayerState* spacelPlayerState = Cast<ASpacelPlayerState>(get()->GetPlayerState()))
     {
@@ -28,7 +31,7 @@ void USkillComponent::setupSkill()
         {
             if (spacelPlayerState->getSkillPoint(_skilltype) >= _level)
             {
-                m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(_skill), get(), mode));
+                m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(_skill), get(), mode, callback));
             }
         };
         
@@ -52,6 +55,21 @@ void USkillComponent::RPCServerUseSkill_Implementation(ESkill _skill)
         {
             if (skill.Get()->getParam().Skill == _skill)
             {
+                skill.Get()->use(get()->GetWorld());
+            }
+        }
+    }
+}
+
+void USkillComponent::RPCClientSucced_Implementation(ESkill _skill)
+{
+    for (auto& skill : m_skills)
+    {
+        if (skill.IsValid())
+        {
+            if (skill.Get()->getParam().Skill == _skill)
+            {
+                // no behaviour will be triggered, only UI
                 skill.Get()->use(get()->GetWorld());
             }
         }
@@ -90,12 +108,3 @@ void USkillComponent::TickComponent(float _deltaTime, ELevelTick _tickType, FAct
     }
 }
 
-void USkillComponent::useSkill(float _slot)
-{
-    if(_slot >= m_skills.Num()) return;
-
-    if (get() != nullptr)
-    {
-        m_skills[(int32)_slot].Get()->use(get()->GetWorld());
-    }
-}
