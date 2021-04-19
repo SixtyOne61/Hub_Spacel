@@ -27,5 +27,4 @@ protected:
 	void fireOn() override;
 	void fireOff() override;
 	void lock() override;
-	void skill(float _slot) override;
 };

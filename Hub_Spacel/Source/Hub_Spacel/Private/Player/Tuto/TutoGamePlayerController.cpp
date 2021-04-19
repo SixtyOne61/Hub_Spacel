@@ -56,8 +56,3 @@ void ATutoGamePlayerController::lock()
 {
 
 }
-
-void ATutoGamePlayerController::skill(float _slot)
-{
-
-}
