@@ -65,6 +65,7 @@ public:
 
     void addMatiere(int32 _val);
     void farmAsteroide();
+    bool spawnNinePack();
 
 private:
     void OnRep_PlayerState() override;

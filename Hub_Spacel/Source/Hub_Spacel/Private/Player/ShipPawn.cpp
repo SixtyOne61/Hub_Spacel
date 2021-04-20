@@ -131,6 +131,12 @@ void AShipPawn::BeginPlay()
 
         FTimerHandle handle;
         this->GetWorldTimerManager().SetTimer(handle, this, &AShipPawn::LinkPawn, 1.0f, false);
+
+        if (this->PlayerDataAsset != nullptr)
+        {
+            // for give matiere on first farm
+            m_nbAsteroideFarm = this->PlayerDataAsset->NbAsteroideForMatiere;
+        }
     }
     else
     {
@@ -741,6 +747,28 @@ void AShipPawn::farmAsteroide()
             m_nbAsteroideFarm = 0;
         }
     }
+}
+
+bool AShipPawn::spawnNinePack()
+{
+    if (this->PlayerDataAsset != nullptr)
+    {
+        if (this->RU_Matiere >= this->PlayerDataAsset->NbMatiereForNinePack)
+        {
+            addMatiere(this->PlayerDataAsset->NbMatiereForNinePack * -1);
+            // spawn wall
+            TArray<UActorComponent*> const& actors = this->GetComponentsByTag(USceneComponent::StaticClass(), "NinePack");
+            if (actors.Num() > 0 && actors[0] != nullptr)
+            {
+                if (USceneComponent* comp = Cast<USceneComponent>(actors[0]))
+                {
+                    UGameplayStatics::BeginSpawningActorFromClass(GetWorld(), this->PlayerDataAsset->NinePackClass, comp->GetComponentTransform());
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
 }
 
 void AShipPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetimeProps) const

@@ -79,6 +79,12 @@ public:
     UPROPERTY(Category = "Skill", EditAnywhere, BlueprintReadWrite)
     int MaxGiveMatiere{};
 
+    UPROPERTY(Category = "Skill", EditAnywhere, BlueprintReadWrite)
+    int NbMatiereForNinePack{};
+
+    UPROPERTY(Category = "Skill", EditAnywhere, BlueprintReadWrite)
+    TSubclassOf<class AActor> NinePackClass { nullptr };
+
     UPROPERTY(Category = "Farm", EditAnywhere, BlueprintReadWrite)
     int NbAsteroideForMatiere{};
 };
