@@ -69,9 +69,6 @@ private:
 	UFUNCTION()
 	void OnRemoveEffect(EEffect _type);
 
-	UFUNCTION()
-	void OnUseMatiere();
-
 	template<class T>
 	void setVisibility(T* _widget, bool _show)
 	{
@@ -124,9 +121,6 @@ private:
 
 	UPROPERTY()
 	class UScoreUserWidget* ScoreWidget { nullptr };
-
-	UPROPERTY()
-	class UUseMatiereWidget* UseMatiereWidget { nullptr };
 
 	FString Team {};
 };

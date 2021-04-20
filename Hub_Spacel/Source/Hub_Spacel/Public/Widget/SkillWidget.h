@@ -16,5 +16,5 @@ class HUB_SPACEL_API USkillWidget : public UUserWidget
 	
 public:
 	UFUNCTION(BlueprintImplementableEvent)
-	void SetSkill(FSlateColor _color, UTexture2D* _texture, uint8 _id);
+	void SetSkillWithKey(FSlateColor _color, UTexture2D* _texture, FText const& _name);
 };

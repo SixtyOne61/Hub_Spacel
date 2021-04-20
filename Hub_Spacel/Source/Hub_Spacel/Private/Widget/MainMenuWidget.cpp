@@ -316,7 +316,7 @@ void UMainMenuWidget::SetAveragePlayerLatency()
     if (totalPlayerLatency > 0.0f && num != 0)
     {
         this->AveragePlayerLatency = totalPlayerLatency / num;
-        FString pingString { "Ping: " + FString::FromInt(FMath::RoundToInt(this->AveragePlayerLatency)) + "ms" };
+        FString pingString { FString::FromInt(FMath::RoundToInt(this->AveragePlayerLatency)) + " ms" };
         if (!ensure(this->PingTextBlock != nullptr)) return;
         this->PingTextBlock->SetText(FText::FromString(pingString));
     }

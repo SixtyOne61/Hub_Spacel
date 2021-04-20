@@ -585,11 +585,6 @@ void AShipPawn::RPCClientRemoveEffect_Implementation(EEffect _effect)
     OnRemoveEffectDelegate.Broadcast(_effect);
 }
 
-void AShipPawn::RPCClientUseMatiere_Implementation()
-{
-    OnUseMatiereDelegate.Broadcast();
-}
-
 void AShipPawn::behaviourAddEffect(EEffect _type)
 {
     if (_type == EEffect::Shield)
