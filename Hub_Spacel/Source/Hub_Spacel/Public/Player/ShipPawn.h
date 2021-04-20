@@ -10,10 +10,6 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUpdateMatiere, int, _value);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEndUpdateMatiere, int32, _value);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHitProtection);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHitSupport);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnRepairProtection);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnRepairSupport);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnShowScore, bool, _show);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLocalTeamUpdate, FString const&, _team);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAddEffect, EEffect, _type);
@@ -59,7 +55,10 @@ public:
     void launchMissile();
     void emp();
     void emp(uint32 _duration, FName const& _team, int32 _playerId);
-    void giveMatiereToAlly(uint8 _id);
+    bool giveMatiereToAlly(uint8 _id);
+
+    bool onRepairProtection();
+    bool onRepairSupport();
 
     UFUNCTION(UnReliable, Client)
     void RPCClientFeedbackScore(EScoreType _type, int16 _value);
@@ -134,12 +133,6 @@ private:
 
 public:
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
-    FOnRepairProtection OnRepairProtectionDelegate {};
-
-    UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
-    FOnRepairSupport OnRepairSupportDelegate {};
-
-    UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
     FOnFeedbackScore OnFeedbackScoreDelegate {};
 
 protected:
@@ -157,12 +150,6 @@ protected:
 private:
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
     FOnUpdateMatiere OnUpdateMatiereDelegate {};
-
-    UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
-    FOnHitProtection OnHitProtectionDelegate {};
-
-    UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
-    FOnHitSupport OnHitSupportDelegate {};
 
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
     FOnEndUpdateMatiere OnEndUpdateMatiereDelegate {};

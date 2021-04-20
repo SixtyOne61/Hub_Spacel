@@ -63,4 +63,19 @@ public:
 
     UPROPERTY(Category = "Fire", EditAnywhere, BlueprintReadWrite)
     float ReduceTimeBetweenFireWithMetaForm = 0.2f;
+
+    UPROPERTY(Category = "Skill", EditAnywhere, BlueprintReadWrite)
+    int ProtectionRatioMatiere {};
+
+    UPROPERTY(Category = "Skill", EditAnywhere, BlueprintReadWrite)
+    int ProtectionRatioEffect{};
+
+    UPROPERTY(Category = "Skill", EditAnywhere, BlueprintReadWrite)
+    int SupportRatioMatiere{};
+
+    UPROPERTY(Category = "Skill", EditAnywhere, BlueprintReadWrite)
+    int SupportRatioEffect{};
+
+    UPROPERTY(Category = "Skill", EditAnywhere, BlueprintReadWrite)
+    int MaxGiveMatiere{};
 };

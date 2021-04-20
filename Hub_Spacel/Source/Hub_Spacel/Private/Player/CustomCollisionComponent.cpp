@@ -226,12 +226,10 @@ void UCustomCollisionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 		// for each module, we need to check each instance
 		if (sweepForInstancedStaticMesh(get()->ModuleComponent->ProtectionMeshComponent, get()->ModuleComponent->RU_ProtectionLocations, get()->ModuleComponent->R_RemovedProtectionLocations, scale, profileCollision, *tagTeam))
 		{
-			get<AShipPawn>()->OnHitProtectionDelegate.Broadcast();
 			get<AShipPawn>()->RPCClientPlayCameraShake();
 		}
 		if (sweepForInstancedStaticMesh(get()->ModuleComponent->SupportMeshComponent, get()->ModuleComponent->RU_SupportLocations, get()->ModuleComponent->R_RemovedSupportLocations, scale, profileCollision, *tagTeam))
 		{
-			get<AShipPawn>()->OnHitSupportDelegate.Broadcast();
 			get<AShipPawn>()->RPCClientPlayCameraShake();
 		}
 

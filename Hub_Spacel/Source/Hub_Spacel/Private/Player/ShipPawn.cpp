@@ -262,9 +262,10 @@ void AShipPawn::emp(uint32 _duration, FName const& _team, int32 _playerId)
     this->GetWorldTimerManager().SetTimer(handle, this, &AShipPawn::CleanEmp, _duration, false);
 }
 
-void AShipPawn::giveMatiereToAlly(uint8 _id)
+bool AShipPawn::giveMatiereToAlly(uint8 _id)
 {
-    if(this->RU_Matiere <= 0) return;
+    if(this->RU_Matiere <= 0) return false;
+    if(this->PlayerDataAsset == nullptr) return false;
 
     if (ASpacelPlayerState* localSpacelPlayerState = GetPlayerState<ASpacelPlayerState>())
     {
@@ -286,10 +287,14 @@ void AShipPawn::giveMatiereToAlly(uint8 _id)
                         {
                             if (AShipPawn* allyPawn = spacelPlayerState->GetPawn<AShipPawn>())
                             {
-                                allyPawn->RU_Matiere += 1;
-                                this->RU_Matiere -= 1;
+                                int value = FMath::Min(this->PlayerDataAsset->MaxGiveMatiere, this->RU_Matiere);
+                                allyPawn->RU_Matiere += value;
+                                allyPawn->OnRep_Matiere();
+
+                                this->RU_Matiere -= value;
+                                this->OnRep_Matiere();
+                                return true;
                             }
-                            break;
                         }
                         ++i;
                     }
@@ -297,6 +302,8 @@ void AShipPawn::giveMatiereToAlly(uint8 _id)
             }
         }
     }
+
+    return false;
 }
 
 void AShipPawn::CleanEmp()
@@ -363,7 +370,6 @@ void AShipPawn::kill()
 
         lb(this->GetController<AGamePlayerController>());
         lb(this->ModuleComponent);
-        lb(this->RepairComponent);
 
         setFire(false);
 
@@ -382,6 +388,9 @@ void AShipPawn::kill()
 
         // replace actor to spawn
         this->SetActorTransform(m_startTransform);
+
+        this->RU_Matiere = 0;
+        OnRep_Matiere();
     }
 }
 
@@ -697,6 +706,24 @@ void AShipPawn::behaviourRemoveEffect(EEffect _type)
 void AShipPawn::RPCClientFeedbackScore_Implementation(EScoreType _type, int16 _value)
 {
     OnFeedbackScoreDelegate.Broadcast(_type, _value);
+}
+
+bool AShipPawn::onRepairProtection()
+{
+    if (this->RepairComponent != nullptr)
+    {
+        return this->RepairComponent->onRepairProtection();
+    }
+    return false;
+}
+
+bool AShipPawn::onRepairSupport()
+{
+    if (this->RepairComponent != nullptr)
+    {
+        return this->RepairComponent->onRepairSupport();
+    }
+    return false;
 }
 
 void AShipPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetimeProps) const

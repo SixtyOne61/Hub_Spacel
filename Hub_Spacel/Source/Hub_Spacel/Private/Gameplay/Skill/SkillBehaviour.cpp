@@ -18,54 +18,25 @@ SkillBehaviour::SkillBehaviour(ACommonPawn* _pawn, ENetMode _netMode)
 bool SkillRepairProtection::onStart()
 {
     if(get<AShipPawn>() == nullptr) return false;
-    get<AShipPawn>()->OnRepairProtectionDelegate.Broadcast();
-    return true;
+    return get<AShipPawn>()->onRepairProtection();
 }
 
 bool SkillRepairSupport::onStart()
 {
     if (get<AShipPawn>() == nullptr) return false;
-    get<AShipPawn>()->OnRepairSupportDelegate.Broadcast();
-    return true;
-}
-
-bool giveMatiere(AShipPawn* _shipPawn, uint8 _id)
-{
-    if (ASpacelPlayerState* localSpacelPlayerState = _shipPawn->GetPlayerState<ASpacelPlayerState>())
-    {
-        FString const& localTeam = localSpacelPlayerState->R_Team;
-        TArray<APlayerState*> const& playerStates = _shipPawn->GetWorld()->GetGameState()->PlayerArray;
-        uint8 i = 0;
-        for (APlayerState const* playerState : playerStates)
-        {
-            if (ASpacelPlayerState const* spacelPlayerState = Cast<ASpacelPlayerState>(playerState))
-            {
-                if (spacelPlayerState->R_Team == localTeam)
-                {
-                    if (i == _id)
-                    {
-                        
-                    }
-                    ++i;
-                }
-            }
-        }
-    }
-    return false;
+    return get<AShipPawn>()->onRepairSupport();
 }
 
 bool SkillGiveAlly1::onStart()
 {
     if (get<AShipPawn>() == nullptr) return false;
-    get<AShipPawn>()->giveMatiereToAlly(0);
-    return true;
+    return get<AShipPawn>()->giveMatiereToAlly(0);
 }
 
 bool SkillGiveAlly2::onStart()
 {
     if (get<AShipPawn>() == nullptr) return false;
-    get<AShipPawn>()->giveMatiereToAlly(1);
-    return true;
+    return get<AShipPawn>()->giveMatiereToAlly(1);
 }
 
 bool SkillEscapeMode::onStart()
