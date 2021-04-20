@@ -29,8 +29,7 @@ void URepairComponent::OnUpdateMatiere(int _value)
 {
     if (get<AShipPawn>() != nullptr)
     {
-        get<AShipPawn>()->RU_Matiere += _value;
-        get<AShipPawn>()->OnRep_Matiere();
+        get<AShipPawn>()->addMatiere(_value);
     }
 }
 

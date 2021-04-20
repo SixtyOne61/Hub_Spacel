@@ -19,6 +19,7 @@ AChunck::AChunck()
 	RootComponent = Voxels;
 
 	Tags.Add(Tags::BlockingActor);
+	Tags.Add(Tags::Asteroide);
 }
 
 void AChunck::init(int _chunckSize, int32 _cubeSize)

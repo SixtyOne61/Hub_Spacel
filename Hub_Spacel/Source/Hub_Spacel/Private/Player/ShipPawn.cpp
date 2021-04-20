@@ -288,11 +288,9 @@ bool AShipPawn::giveMatiereToAlly(uint8 _id)
                             if (AShipPawn* allyPawn = spacelPlayerState->GetPawn<AShipPawn>())
                             {
                                 int value = FMath::Min(this->PlayerDataAsset->MaxGiveMatiere, this->RU_Matiere);
-                                allyPawn->RU_Matiere += value;
-                                allyPawn->OnRep_Matiere();
+                                allyPawn->addMatiere(value);
 
-                                this->RU_Matiere -= value;
-                                this->OnRep_Matiere();
+                                addMatiere(value * -1);
                                 return true;
                             }
                         }
@@ -724,6 +722,25 @@ bool AShipPawn::onRepairSupport()
         return this->RepairComponent->onRepairSupport();
     }
     return false;
+}
+
+void AShipPawn::addMatiere(int32 _val)
+{
+    this->RU_Matiere += _val;
+    OnRep_Matiere();
+}
+
+void AShipPawn::farmAsteroide()
+{
+    if (this->PlayerDataAsset != nullptr)
+    {
+        m_nbAsteroideFarm++;
+        if (this->PlayerDataAsset->NbAsteroideForMatiere <= m_nbAsteroideFarm)
+        {
+            addMatiere(1);
+            m_nbAsteroideFarm = 0;
+        }
+    }
 }
 
 void AShipPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetimeProps) const

@@ -78,4 +78,7 @@ public:
 
     UPROPERTY(Category = "Skill", EditAnywhere, BlueprintReadWrite)
     int MaxGiveMatiere{};
+
+    UPROPERTY(Category = "Farm", EditAnywhere, BlueprintReadWrite)
+    int NbAsteroideForMatiere{};
 };

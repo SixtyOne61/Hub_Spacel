@@ -63,6 +63,9 @@ public:
     UFUNCTION(UnReliable, Client)
     void RPCClientFeedbackScore(EScoreType _type, int16 _value);
 
+    void addMatiere(int32 _val);
+    void farmAsteroide();
+
 private:
     void OnRep_PlayerState() override;
 
@@ -146,6 +149,9 @@ protected:
     int32 m_lastPlayerIdEmp {};
 
     FTransform m_startTransform {};
+
+    // use by server
+    int m_nbAsteroideFarm {0};
 
 private:
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")

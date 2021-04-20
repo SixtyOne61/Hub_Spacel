@@ -3,6 +3,8 @@
 
 #include "ProjectileBase.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "GameFramework/GameStateBase.h"
+#include "GameFramework/PlayerState.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Util/Tag.h"
 #include "Player/ShipPawn.h"
@@ -36,6 +38,25 @@ bool AProjectileBase::OnHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, 
         if (AShipPawn* shipPawn = Cast<AShipPawn>(_otherActor))
         {
             shipPawn->hit(getLocalTeam(), R_PlayerIdOwner, _otherComp, _hit.Item);
+        }
+    }
+
+    if (_otherActor->ActorHasTag(Tags::Asteroide))
+    {
+        if (GetWorld() != nullptr && GetWorld()->GetGameState() != nullptr)
+        {
+            TArray<APlayerState*> playerStates = GetWorld()->GetGameState()->PlayerArray;
+            for (APlayerState* playerState : playerStates)
+            {
+                if (playerState != nullptr && playerState->PlayerId == this->R_PlayerIdOwner)
+                {
+                    if (AShipPawn* pawn = playerState->GetPawn<AShipPawn>())
+                    {
+                        pawn->farmAsteroide();
+                        break;
+                    }
+                }
+            }
         }
     }
 
