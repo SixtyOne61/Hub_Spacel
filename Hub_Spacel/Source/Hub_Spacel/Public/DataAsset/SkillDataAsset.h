@@ -34,6 +34,9 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	FKey Key {};
+
+	UPROPERTY(EditAnywhere)
+	FName WidgetName {};
 };
 
 /**
