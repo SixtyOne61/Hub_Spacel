@@ -33,11 +33,12 @@ void USpacelWidget::NativeConstruct()
 {
     Super::NativeConstruct();
 
-    MatiereTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Matiere"));
     EventTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Event"));
     PingTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Ping"));
     ProtectionProgressBar = SimplyUI::initSafetyFromName<UUserWidget, UProgressBar>(this, TEXT("ProgressBar_Protection"));
     SupportProgressBar = SimplyUI::initSafetyFromName<UUserWidget, UProgressBar>(this, TEXT("ProgressBar_Support"));
+    ProtectionTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Protection"));
+    SupportTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Support"));
     ScoreWidget = SimplyUI::initSafetyFromName<UUserWidget, UScoreUserWidget>(this, TEXT("WBP_Score"));
     SkillBarHorizontalBox = SimplyUI::initSafetyFromName<UUserWidget, UHorizontalBox>(this, TEXT("SkillBar"));
     EffectBarHorizontalBox = SimplyUI::initSafetyFromName<UUserWidget, UHorizontalBox>(this, TEXT("EffectBar"));
@@ -242,19 +243,11 @@ void USpacelWidget::SetAverragePlayerLatency()
     }
 }
 
-void USpacelWidget::OnUpdateMatiere(int32 _value)
-{
-    if (this->MatiereTextBlock != nullptr)
-    {
-        this->MatiereTextBlock->SetText(FText::FromString(FString::FromInt(_value)));
-    }
-}
-
 void USpacelWidget::OnUpdateCountProtection(int32 _value, int32 _max)
 {
     if (_max > 0)
     {
-        updatePercent(this->ProtectionProgressBar, (float)_value / (float)_max);
+        UpdatePercent(this->ProtectionProgressBar, this->ProtectionTextBlock, _value, _max);
     }
 }
 
@@ -262,15 +255,7 @@ void USpacelWidget::OnUpdateCountSupport(int32 _value, int32 _max)
 {
     if (_max > 0)
     {
-        updatePercent(this->SupportProgressBar, (float)_value / (float)_max);
-    }
-}
-
-void USpacelWidget::updatePercent(UProgressBar* _progressBar, float _percent)
-{
-    if (_progressBar != nullptr)
-    {
-        _progressBar->SetPercent(_percent);
+        UpdatePercent(this->SupportProgressBar, this->SupportTextBlock, _value, _max);
     }
 }
 

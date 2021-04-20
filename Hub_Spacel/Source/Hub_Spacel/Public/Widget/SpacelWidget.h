@@ -36,7 +36,7 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Setup")
 	void SetRanking(uint8 _rank);
 
-private:
+protected:
 	UFUNCTION()
 	void StartGame();
 
@@ -49,7 +49,7 @@ private:
 	UFUNCTION()
 	void SetAverragePlayerLatency();
 
-	UFUNCTION()
+	UFUNCTION(BlueprintImplementableEvent)
 	void OnUpdateMatiere(int32 _value);
 
 	UFUNCTION()
@@ -58,7 +58,8 @@ private:
 	UFUNCTION()
 	void OnUpdateCountSupport(int32 _value, int32 _max);
 
-	void updatePercent(class UProgressBar* _progressBar, float _percent);
+	UFUNCTION(BlueprintImplementableEvent)
+	void UpdatePercent(class UProgressBar* _progressBar, class UTextBlock* _text, int32 _value, int32 _max);
 
 	UFUNCTION()
 	void OnShowScore(bool _show);
@@ -96,9 +97,6 @@ private:
 	TSubclassOf<class UEffectWidget> EffectWidgetClass { nullptr };
 
 	UPROPERTY()
-	class UTextBlock* MatiereTextBlock { nullptr };
-
-	UPROPERTY()
 	class UTextBlock* EventTextBlock { nullptr };
 
 	UPROPERTY()
@@ -108,7 +106,13 @@ private:
 	class UProgressBar* ProtectionProgressBar { nullptr };
 
 	UPROPERTY()
+	class UTextBlock* ProtectionTextBlock{ nullptr };
+
+	UPROPERTY()
 	class UProgressBar* SupportProgressBar { nullptr };
+
+	UPROPERTY()
+	class UTextBlock* SupportTextBlock { nullptr };
 
 	UPROPERTY()
 	class UHorizontalBox* SkillBarHorizontalBox { nullptr };
