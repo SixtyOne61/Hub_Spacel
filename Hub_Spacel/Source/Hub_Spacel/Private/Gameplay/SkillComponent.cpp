@@ -33,7 +33,7 @@ void USkillComponent::setupSkill()
     if (ASpacelPlayerState* spacelPlayerState = Cast<ASpacelPlayerState>(get()->GetPlayerState()))
     {
         // last in first out so 3 - 4
-        TArray<FKey> defaultKeyboard{ FKey("Apostrophe"), FKey("Quote") };
+        TArray<FKey> defaultKeyboard = this->DefaultKeyboard;
 
         auto lb = [&](ESkillType _skilltype, ESkill _skill, uint8 _level)
         {
