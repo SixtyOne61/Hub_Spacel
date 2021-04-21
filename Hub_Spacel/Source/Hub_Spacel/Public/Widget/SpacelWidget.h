@@ -61,6 +61,9 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void UpdatePercent(class UProgressBar* _progressBar, class UTextBlock* _text, int32 _value, int32 _max);
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void StartGameFx();
+
 	UFUNCTION()
 	void OnShowScore(bool _show);
 
@@ -72,6 +75,9 @@ protected:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnSendInfoPlayer(FString const& _text);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnRespawn();
 
 	template<class T>
 	void setVisibility(T* _widget, bool _show)

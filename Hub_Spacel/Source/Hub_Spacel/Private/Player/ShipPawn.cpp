@@ -55,6 +55,13 @@ void AShipPawn::OnStartGame()
 
     RPCClientStartGame(this->Team);
     RPCNetMulticastStartGame(this->Team);
+
+    addEffect(EEffect::Respawned);
+    FTimerDelegate timerCallback;
+    timerCallback.BindLambda([&]() { removeEffect(EEffect::Respawned); });
+
+    FTimerHandle handle;
+    this->GetWorldTimerManager().SetTimer(handle, timerCallback, 3.0f, false);
 }
 
 void AShipPawn::RPCNetMulticastStartGame_Implementation(FName const& _team)

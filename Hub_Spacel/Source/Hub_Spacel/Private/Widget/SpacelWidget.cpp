@@ -171,6 +171,8 @@ void USpacelWidget::StartGame()
             ++id;
         }
     }
+
+    StartGameFx();
 }
 
 void USpacelWidget::UpdateScore()
@@ -308,5 +310,10 @@ void USpacelWidget::OnRemoveEffect(EEffect _type)
                 break;
             }
         }
+    }
+
+    if (_type == EEffect::Killed)
+    {
+        OnRespawn();
     }
 }
