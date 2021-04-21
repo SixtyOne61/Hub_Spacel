@@ -34,6 +34,9 @@ private:
 	UFUNCTION(Reliable, Client)
 	void RPCClientSucced(ESkill _skill);
 
+	UFUNCTION(Reliable, Client)
+	void RPCClientFailed(ESkill _skill);
+
 public:
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
 	class USkillDataAsset* SkillDataAsset{ nullptr };

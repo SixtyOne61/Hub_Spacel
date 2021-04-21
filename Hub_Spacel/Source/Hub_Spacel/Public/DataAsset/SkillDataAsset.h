@@ -37,6 +37,9 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	FName WidgetName {};
+
+	UPROPERTY(EditAnywhere)
+	FString TextWhenFail {};
 };
 
 /**

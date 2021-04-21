@@ -70,6 +70,9 @@ protected:
 	UFUNCTION()
 	void OnRemoveEffect(EEffect _type);
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnSendInfoPlayer(FString const& _text);
+
 	template<class T>
 	void setVisibility(T* _widget, bool _show)
 	{

@@ -19,15 +19,16 @@ void USkillComponent::setupSkill()
 
     ENetMode mode = this->GetNetMode();
 
-    auto callback = std::bind(&USkillComponent::RPCClientSucced, this, std::placeholders::_1);
+    auto callbackSucced = std::bind(&USkillComponent::RPCClientSucced, this, std::placeholders::_1);
+    auto callbackFailed = std::bind(&USkillComponent::RPCClientFailed, this, std::placeholders::_1);
 
     // order is important
-    m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::EscapeMode), get(), mode, callback));
-    m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::RepairProtection), get(), mode, callback));
-    m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::RepairSupport), get(), mode, callback));
-    m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::GiveAlly1), get(), mode, callback));
-    m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::GiveAlly2), get(), mode, callback));
-    m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::NinePack), get(), mode, callback));
+    m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::EscapeMode), get(), mode, callbackSucced, callbackFailed));
+    m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::RepairProtection), get(), mode, callbackSucced, callbackFailed));
+    m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::RepairSupport), get(), mode, callbackSucced, callbackFailed));
+    m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::GiveAlly1), get(), mode, callbackSucced, callbackFailed));
+    m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::GiveAlly2), get(), mode, callbackSucced, callbackFailed));
+    m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::NinePack), get(), mode, callbackSucced, callbackFailed));
 
     if (ASpacelPlayerState* spacelPlayerState = Cast<ASpacelPlayerState>(get()->GetPlayerState()))
     {
@@ -40,7 +41,7 @@ void USkillComponent::setupSkill()
             {
                 FSkill skill = this->SkillDataAsset->getSKill(_skill);
                 skill.Key = defaultKeyboard.Pop();
-                m_skills.Add(MakeUnique<SkillCountDown>(skill, get(), mode, callback));
+                m_skills.Add(MakeUnique<SkillCountDown>(skill, get(), mode, callbackSucced, callbackFailed));
             }
         };
 
@@ -80,6 +81,24 @@ void USkillComponent::RPCClientSucced_Implementation(ESkill _skill)
             {
                 // no behaviour will be triggered, only UI
                 skill.Get()->use(get()->GetWorld());
+            }
+        }
+    }
+}
+
+void USkillComponent::RPCClientFailed_Implementation(ESkill _skill)
+{
+    for (auto& skill : m_skills)
+    {
+        if (skill.IsValid())
+        {
+            if (skill.Get()->getParam().Skill == _skill)
+            {
+                // send text failed to player
+                if (get() != nullptr)
+                {
+                    get()->OnSendInfoPlayerDelegate.Broadcast(skill.Get()->getParam().TextWhenFail);
+                }
             }
         }
     }

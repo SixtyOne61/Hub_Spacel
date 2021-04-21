@@ -20,14 +20,17 @@ SkillCountDown::SkillCountDown(SkillCountDown const& _cpy)
     m_state.init({ std::bind(&SkillCountDown::onAvailable, this),
                     std::bind(&SkillCountDown::onIng, this),
                     std::bind(&SkillCountDown::onCountDown, this) });
+
     m_callbackSucced = _cpy.m_callbackSucced;
+    m_callbackFailed = _cpy.m_callbackFailed;
 }
 
-SkillCountDown::SkillCountDown(FSkill _skill, class ACommonPawn* _pawn, ENetMode _netMode, std::function<void(ESkill)> _callbackSucced)
+SkillCountDown::SkillCountDown(FSkill _skill, class ACommonPawn* _pawn, ENetMode _netMode, std::function<void(ESkill)> _callbackSucced, std::function<void(ESkill)> _callbackFailed)
     : m_netMode(_netMode)
     , m_param(_skill)
     , m_pawn(_pawn)
     , m_callbackSucced(_callbackSucced)
+    , m_callbackFailed(_callbackFailed)
 {
     if (m_netMode == ENetMode::NM_DedicatedServer)
     {
@@ -110,6 +113,7 @@ void SkillCountDown::onIng()
         else
         {
             m_state = ECountDown::Available;
+            m_callbackFailed(m_param.Skill);
         }
     }
 }

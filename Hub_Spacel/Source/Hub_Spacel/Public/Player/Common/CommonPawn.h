@@ -7,6 +7,8 @@
 #include "Enum/SpacelEnum.h"
 #include "CommonPawn.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSendInfoPlayer, FString const&, _text);
+
 UCLASS()
 class HUB_SPACEL_API ACommonPawn : public APawn
 {
@@ -111,6 +113,9 @@ public:
 
     UPROPERTY(Category = "FX", EditAnywhere)
     class UMaterialInstance* MaterialSpeedLines{ nullptr };
+
+    UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
+    FOnSendInfoPlayer OnSendInfoPlayerDelegate {};
 
 protected:
     UPROPERTY()

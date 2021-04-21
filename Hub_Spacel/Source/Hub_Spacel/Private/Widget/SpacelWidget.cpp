@@ -70,6 +70,8 @@ void USpacelWidget::NativeConstruct()
         shipPawn->OnShowScoreDelegate.AddDynamic(this, &USpacelWidget::OnShowScore);
         shipPawn->OnAddEffectDelegate.AddDynamic(this, &USpacelWidget::OnAddEffect);
         shipPawn->OnRemoveEffectDelegate.AddDynamic(this, &USpacelWidget::OnRemoveEffect);
+
+        shipPawn->OnSendInfoPlayerDelegate.AddDynamic(this, &USpacelWidget::OnSendInfoPlayer);
     }
 }
 
