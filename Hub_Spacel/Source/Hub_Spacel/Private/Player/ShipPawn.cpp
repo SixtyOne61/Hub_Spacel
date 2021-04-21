@@ -762,7 +762,9 @@ bool AShipPawn::spawnNinePack()
             {
                 if (USceneComponent* comp = Cast<USceneComponent>(actors[0]))
                 {
-                    UGameplayStatics::BeginSpawningActorFromClass(GetWorld(), this->PlayerDataAsset->NinePackClass, comp->GetComponentTransform());
+                    FTransform const& tr = comp->GetComponentTransform();
+                    AActor* actor = Cast<AActor>(UGameplayStatics::BeginDeferredActorSpawnFromClass(GetWorld(), this->PlayerDataAsset->NinePackClass, tr));
+                    UGameplayStatics::FinishSpawningActor(actor, tr);
                     return true;
                 }
             }

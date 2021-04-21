@@ -3,11 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
+#include "Gameplay/DestroyActor.h"
 #include "NinePackActor.generated.h"
 
 UCLASS()
-class HUB_SPACEL_API ANinePackActor : public AActor
+class HUB_SPACEL_API ANinePackActor : public ADestroyActor
 {
 	GENERATED_BODY()
 	
@@ -17,10 +17,23 @@ public:
 
 protected:
 	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+	void BeginPlay() override;
+	void applyHit(TArray<int32>& _instance) override;
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+private:
+	UFUNCTION()
+	void OnRep_RemoveInstance();
 
+	UFUNCTION()
+	void OnComponentHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit);
+
+protected:
+	UPROPERTY(VisibleAnywhere, Category = "Component")
+	class UInstancedStaticMeshComponent* Voxels { nullptr };
+
+	UPROPERTY(ReplicatedUsing = "OnRep_RemoveInstance")
+	TArray<int32> RU_RemoveIndex{};
+
+	// only use on client
+	int m_countRemovedIndex{};
 };
