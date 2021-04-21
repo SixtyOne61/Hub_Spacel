@@ -178,6 +178,30 @@ void ACommonPawn::setCollisionProfile(FString _team)
     this->ModuleComponent->setCollisionProfile(_team);
 }
 
+void ACommonPawn::addPlayerFocusOnMe(int32 _playerId)
+{
+    PlayerFocusOnYou.Add(_playerId);
+    if (!hasEffect(EEffect::Targeted))
+    {
+        addEffect(EEffect::Targeted);
+    }
+}
+
+void ACommonPawn::removePlayerFocusOnMe(int32 _playerId)
+{
+    PlayerFocusOnYou.Remove(_playerId);
+    if (PlayerFocusOnYou.Num() == 0)
+    {
+        removeEffect(EEffect::Targeted);
+    }
+}
+
+void ACommonPawn::removeAllPlayerFocusOnMe()
+{
+    PlayerFocusOnYou.Empty();
+    removeEffect(EEffect::Targeted);
+}
+
 void ACommonPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);

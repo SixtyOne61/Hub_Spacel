@@ -222,6 +222,14 @@ void AShipPawn::RPCServerTargetPlayer_Implementation(int32 _playerId, bool _lock
                     if (playerState->PlayerId == _playerId)
                     {
                         AActor* act = playerState->GetPawn();
+                        if (ACommonPawn* commonPawn = Cast<ACommonPawn>(act))
+                        {
+                            if (APlayerState const* ourPlayerState = this->GetPlayerState<APlayerState>())
+                            {
+                                commonPawn->addPlayerFocusOnMe(ourPlayerState->PlayerId);
+                            }
+                        }
+
                         this->FireComponent->m_target = act;
                         addEffect(EEffect::TargetLock);
                         break;
@@ -389,6 +397,7 @@ void AShipPawn::kill()
         addEffect(EEffect::Killed);
         removeEffect(EEffect::Emp);
         removeEffect(EEffect::BackToGame);
+        removeAllPlayerFocusOnMe();
 
         // replace actor to spawn
         this->SetActorTransform(m_startTransform);
@@ -703,6 +712,13 @@ void AShipPawn::behaviourRemoveEffect(EEffect _type)
     }
     else if (_type == EEffect::TargetLock)
     {
+        if (ACommonPawn* commonPawn = Cast<ACommonPawn>(this->FireComponent->m_target))
+        {
+            if (APlayerState* playerState = this->GetPlayerState<APlayerState>())
+            {
+                commonPawn->removePlayerFocusOnMe(playerState->PlayerId);
+            }
+        }
         this->FireComponent->m_target = nullptr;
     }
 }

@@ -34,6 +34,10 @@ public:
     /* set collision profile name */
     void setCollisionProfile(FString _team);
 
+    void addPlayerFocusOnMe(int32 _playerId);
+    void removePlayerFocusOnMe(int32 _playerId);
+    void removeAllPlayerFocusOnMe();
+
 protected:
 	// Called when the game starts or when spawned
 	void BeginPlay() override;
@@ -134,4 +138,8 @@ protected:
 	float PercentHorizontalStraf{ 0.0f };
 	float PercentVerticalStraf{ 0.0f };
 	float PercentFlightAttitude{ 0.0f };
+
+private:
+    UPROPERTY()
+    TArray<int32> PlayerFocusOnYou{};
 };
