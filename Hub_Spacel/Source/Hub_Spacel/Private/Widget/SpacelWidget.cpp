@@ -11,6 +11,7 @@
 #include "Player/SpacelPlayerState.h"
 #include "Player/GamePlayerController.h"
 #include "Player/ModuleComponent.h"
+#include "Player/Save/SpacelSaveGame.h"
 #include "Player/ShipPawn.h"
 #include "Gameplay/SkillComponent.h"
 #include "GameState/SpacelGameState.h"
@@ -21,11 +22,13 @@
 #include "DataAsset/SkillDataAsset.h"
 #include "DataAsset/EffectDataAsset.h"
 #include "DataAsset/TeamColorDataAsset.h"
+#include "DataAsset/DitactitialDataAsset.h"
 #include "Widget/AllyWidget.h"
 #include "Widget/SkillWidget.h"
 #include "Widget/SkillProgressWidget.h"
 #include "Widget/EffectWidget.h"
 #include "Widget/ScoreUserWidget.h"
+#include "Widget/TutorialUserWidget.h"
 #include "Factory/SpacelFactory.h"
 #include "Styling/SlateColor.h"
 
@@ -42,6 +45,7 @@ void USpacelWidget::NativeConstruct()
     ScoreWidget = SimplyUI::initSafetyFromName<UUserWidget, UScoreUserWidget>(this, TEXT("WBP_Score"));
     SkillBarHorizontalBox = SimplyUI::initSafetyFromName<UUserWidget, UHorizontalBox>(this, TEXT("SkillBar"));
     EffectBarHorizontalBox = SimplyUI::initSafetyFromName<UUserWidget, UHorizontalBox>(this, TEXT("EffectBar"));
+    TutorialWidget = SimplyUI::initSafetyFromName<UUserWidget, UTutorialUserWidget>(this, TEXT("WBP_Didactitiel"));
 
     TArray<FName> allyNames { TEXT("Widget_Ally1"), TEXT("Widget_Ally2") };
     SimplyUI::initArray(this, AllyWidgets, allyNames);
@@ -83,6 +87,7 @@ void USpacelWidget::NativeDestruct()
         world->GetTimerManager().ClearTimer(SetLatestEventHandle);
         world->GetTimerManager().ClearTimer(SetAverragePlayerLatencyHandle);
         world->GetTimerManager().ClearTimer(SetSpeedHandle);
+        world->GetTimerManager().ClearTimer(ShowDitactitialHandle);
     }
     Super::NativeDestruct();
 }
@@ -173,6 +178,87 @@ void USpacelWidget::StartGame()
     }
 
     StartGameFx();
+
+    // Set up the delegate.
+    FAsyncLoadGameFromSlotDelegate LoadedDelegate;
+    // USomeUObjectClass::LoadGameDelegateFunction is a void function that takes the following parameters: const FString& SlotName, const int32 UserIndex, USaveGame* LoadedGameData
+    LoadedDelegate.BindUObject(this, &USpacelWidget::OnLoadGame);
+    UGameplayStatics::AsyncLoadGameFromSlot("Save", 0, LoadedDelegate);
+}
+
+void USpacelWidget::OnLoadGame(const FString& _slotName, const int32 _userIndex, USaveGame* _loadedGameData)
+{
+    USpacelSaveGame* save = Cast<USpacelSaveGame>(_loadedGameData);
+
+    if (save == nullptr || !save->HasSeeDitactitial)
+    {
+        UWorld* world{ this->GetWorld() };
+        if (!ensure(world != nullptr)) return;
+
+        // Start didactitial
+        world->GetTimerManager().SetTimer(ShowDitactitialHandle, this, &USpacelWidget::ShowDidactitial, 10.0f, true, 1.0f);
+    }
+    else
+    {
+        ShowRandomTips();
+    }
+}
+
+void USpacelWidget::ShowRandomTips()
+{
+    if (this->RandomTipsDataAsset != nullptr)
+    {
+        TArray<FDitactitial> const& tipsArray = this->RandomTipsDataAsset->Tips;
+        int32 id = FMath::RandRange(0, tipsArray.Num()-1);
+
+        if (id < tipsArray.Num())
+        {
+            if (this->TutorialWidget != nullptr)
+            {
+                this->TutorialWidget->ShowDitactitial(tipsArray[id].Tips);
+                ShowDidactitialFx();
+            }
+        }
+    }
+}
+
+void USpacelWidget::ShowDidactitial()
+{
+    if (this->TipsDataAsset != nullptr)
+    {
+        TArray<FDitactitial> const& tipsArray = this->TipsDataAsset->Tips;
+        if (m_nextTipsId >= tipsArray.Num())
+        {
+            UWorld* world{ this->GetWorld() };
+            if (world != nullptr)
+            {
+                world->GetTimerManager().ClearTimer(ShowDitactitialHandle);
+
+                // save information
+                if(USpacelSaveGame* saveGameInstance = Cast<USpacelSaveGame>(UGameplayStatics::CreateSaveGameObject(USpacelSaveGame::StaticClass())))
+                {
+                    // Set up the (optional) delegate.
+                    FAsyncSaveGameToSlotDelegate savedDelegate;
+                    // USomeUObjectClass::SaveGameDelegateFunction is a void function that takes the following parameters: const FString& SlotName, const int32 UserIndex, bool bSuccess
+                    //savedDelegate.BindUObject(this, &USomeUObjectClass::SaveGameDelegateFunction);
+
+                    // Set data on the savegame object.
+                    saveGameInstance->HasSeeDitactitial = true;
+
+                    // Start async save process.
+                    UGameplayStatics::AsyncSaveGameToSlot(saveGameInstance, "Save", 0, savedDelegate);
+                }
+                return;
+            }
+        }
+
+        if (this->TutorialWidget != nullptr)
+        {
+            this->TutorialWidget->ShowDitactitial(tipsArray[m_nextTipsId].Tips);
+            ShowDidactitialFx();
+        }
+        ++m_nextTipsId;
+    }
 }
 
 void USpacelWidget::UpdateScore()

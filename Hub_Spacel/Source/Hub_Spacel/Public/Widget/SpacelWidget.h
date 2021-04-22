@@ -25,6 +25,9 @@ public:
 	UPROPERTY()
 	FTimerHandle SetSpeedHandle {};
 
+	UPROPERTY()
+	FTimerHandle ShowDitactitialHandle {};
+
 protected:
 	void NativeConstruct() override;
 	void NativeDestruct() override;
@@ -65,6 +68,15 @@ protected:
 	void StartGameFx();
 
 	UFUNCTION()
+	void ShowDidactitial();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void ShowDidactitialFx();
+
+	UFUNCTION()
+	void ShowRandomTips();
+
+	UFUNCTION()
 	void OnShowScore(bool _show);
 
 	UFUNCTION()
@@ -94,12 +106,20 @@ protected:
 		}
 	}
 
+	void OnLoadGame(const FString& _slotName, const int32 _userIndex, class USaveGame* _loadedGameData);
+
 protected:
 	UPROPERTY(EditAnywhere)
 	class UEffectDataAsset* EffectDataAsset { nullptr };
 
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
 	class UTeamColorDataAsset* TeamColorDataAsset{ nullptr };
+
+	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
+	class UDitactitialDataAsset* TipsDataAsset { nullptr };
+	
+	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
+	class UDitactitialDataAsset* RandomTipsDataAsset { nullptr };
 
 private:
 	UPROPERTY(EditAnywhere)
@@ -135,5 +155,10 @@ private:
 	UPROPERTY()
 	class UScoreUserWidget* ScoreWidget { nullptr };
 
+	UPROPERTY()
+	class UTutorialUserWidget* TutorialWidget { nullptr };
+
 	FString Team {};
+
+	int32 m_nextTipsId { 0 };
 };
