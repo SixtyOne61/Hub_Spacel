@@ -86,6 +86,9 @@ protected:
 	void OnRemoveEffect(EEffect _type);
 
 	UFUNCTION(BlueprintImplementableEvent)
+	void OnRemoveEffectFx(class UTexture2D* _texture);
+
+	UFUNCTION(BlueprintImplementableEvent)
 	void OnSendInfoPlayer(FString const& _text);
 
 	UFUNCTION(BlueprintImplementableEvent)

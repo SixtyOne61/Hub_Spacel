@@ -393,6 +393,11 @@ void USpacelWidget::OnRemoveEffect(EEffect _type)
             if (effect->Effect == _type)
             {
                 this->EffectBarHorizontalBox->RemoveChild(widget);
+                if (this->EffectDataAsset != nullptr)
+                {
+                    FEffect const& param = this->EffectDataAsset->getEffect(_type);
+                    OnRemoveEffectFx(param.Icone);
+                }
                 break;
             }
         }
