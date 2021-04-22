@@ -65,7 +65,7 @@ public:
     FOnTryLock OnTryLockDelegate {};
 
     UPROPERTY()
-    FString CustomPlayerName { "Not set" };
+    FString CustomPlayerName { "BoB" };
 
 private:
     class FHttpModule* HttpModule { nullptr };
