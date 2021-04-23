@@ -482,7 +482,16 @@ void AShipPawn::OnRep_Matiere()
 {
     if (this->OnEndUpdateMatiereDelegate.IsBound())
     {
-        this->OnEndUpdateMatiereDelegate.Broadcast(this->RU_Matiere);
+        int32 delta = this->RU_Matiere - m_lastMatiere;
+        FString str = FString::FromInt(delta);
+        if (delta > 0)
+        {
+            FString signe { "+" };
+            str = signe + str;
+        }
+
+        m_lastMatiere = this->RU_Matiere;
+        this->OnEndUpdateMatiereDelegate.Broadcast(this->RU_Matiere, str);
     }
 }
 

@@ -53,7 +53,7 @@ protected:
 	void SetAverragePlayerLatency();
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void OnUpdateMatiere(int32 _value);
+	void OnUpdateMatiere(int32 _value, FString const& _deltaStr);
 
 	UFUNCTION()
 	void OnUpdateCountProtection(int32 _value, int32 _max);
