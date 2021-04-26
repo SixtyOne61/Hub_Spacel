@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Player/PlayerActorComponent.h"
 #include "Gameplay/Skill/SkillCountDown.h"
+#include "Enum/SpacelEnum.h"
 #include "SkillComponent.generated.h"
 
 /**
@@ -38,13 +39,7 @@ private:
 	void RPCClientFailed(ESkill _skill);
 
 	UFUNCTION()
-	void OnUnlockUltimate();
-
-	UFUNCTION()
-	void OnLooserTeamUnlockLvl2(FName const& _loosingTeam);
-
-	UFUNCTION()
-	void DelayUnlockLvl2();
+	void OnUnlockSkill(EGameState _state);
 
 public:
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)

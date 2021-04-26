@@ -12,7 +12,9 @@ enum class EGameState : uint8
     Undefined = 0,
     Prepare,
     LockPrepare,
-    InGame
+    InGame,
+    UnlockMedium,
+    UnlockUltimate,
 };
 
 UENUM(BlueprintType)

@@ -12,6 +12,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FLockPrepare);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartGame);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FScoreUpdate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FPlayerEnterFog, int32, _playerId, bool, _enter);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUnlockSkill, EGameState, _state);
 
 USTRUCT()
 struct HUB_SPACEL_API FTeamLocation
@@ -54,6 +55,7 @@ class HUB_SPACEL_API ASpacelGameState : public AGameStateBase
 
 	friend class USpacelWidget;
 	friend class UScoreUserWidget;
+	friend class AShipPawn;
 
 public:
 	UFUNCTION()
@@ -64,6 +66,12 @@ public:
 
 	UFUNCTION()
 	void GoToInGame() { this->RU_GameState = (uint8)EGameState::InGame; OnRep_StateGame(); }
+
+	UFUNCTION()
+	void GoToUnlockMedium() { this->RU_GameState = (uint8)EGameState::UnlockMedium; OnRep_StateGame(); }
+
+	UFUNCTION()
+	void GoToUnlockUltimate() { this->RU_GameState = (uint8)EGameState::UnlockUltimate; OnRep_StateGame(); }
 
 	FString GetBestTeam() const;
 
@@ -101,6 +109,13 @@ public:
 
 	UPROPERTY()
 	FPlayerEnterFog OnPlayerEnterFogDelegate {};
+
+	UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
+	FOnUnlockSkill OnUnlockSkillDelegate {};
+
+protected:
+	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
+	class UGameStateDataAsset* GameStateDataAsset { nullptr };
 
 private:
 	UPROPERTY(ReplicatedUsing = OnRep_StateGame)

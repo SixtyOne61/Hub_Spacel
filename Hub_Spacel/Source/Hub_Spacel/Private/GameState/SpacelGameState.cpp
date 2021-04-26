@@ -24,6 +24,11 @@ void ASpacelGameState::OnRep_StateGame()
         OnStartGameDelegate.Broadcast();
         break;
 
+    case (uint8)EGameState::UnlockMedium:
+    case (uint8)EGameState::UnlockUltimate:
+        OnUnlockSkillDelegate.Broadcast(this->RU_GameState);
+        break;
+
     default:
         break;
     }
@@ -47,6 +52,8 @@ FString ASpacelGameState::GetBestTeam() const
 
 void ASpacelGameState::AddScore(FString const& _team, int32 _playerId, EScoreType _type)
 {
+    if (this->GameStateDataAsset == nullptr) return;
+
     uint16 scoreValue = 0;
     for (FScore& score : this->R_Scores)
     {
@@ -72,6 +79,11 @@ void ASpacelGameState::AddScore(FString const& _team, int32 _playerId, EScoreTyp
             case EScoreType::Emp:
                 score.Score += 30;
                 scoreValue = 30;
+            }
+
+            if (score.Score >= this->GameStateDataAsset->ThresholdForUltimate && RU_GameState == (uint8)EGameState::UnlockMedium)
+            {
+                GoToUnlockUltimate();
             }
         }
     }
