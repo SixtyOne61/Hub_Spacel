@@ -37,6 +37,15 @@ private:
 	UFUNCTION(Reliable, Client)
 	void RPCClientFailed(ESkill _skill);
 
+	UFUNCTION()
+	void OnUnlockUltimate();
+
+	UFUNCTION()
+	void OnLooserTeamUnlockLvl2(FName const& _loosingTeam);
+
+	UFUNCTION()
+	void DelayUnlockLvl2();
+
 public:
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
 	class USkillDataAsset* SkillDataAsset{ nullptr };

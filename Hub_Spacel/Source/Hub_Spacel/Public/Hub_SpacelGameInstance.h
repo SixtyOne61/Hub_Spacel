@@ -9,6 +9,8 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnTargetPlayer, int32, _playerId, bool, _lock);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnTryLock);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnUnlockUltimate);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLooserTeamUnlockLvl2, FName const&, _loosingTeam);
 
 /**
  * 
@@ -63,6 +65,12 @@ public:
 
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
     FOnTryLock OnTryLockDelegate {};
+
+    UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
+    FOnUnlockUltimate OnUnlockUltimateDelegate {};
+
+    UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
+    FOnLooserTeamUnlockLvl2 OnLooserTeamUnlockLvl2Delegate {};
 
     UPROPERTY()
     FString CustomPlayerName { "BoB" };

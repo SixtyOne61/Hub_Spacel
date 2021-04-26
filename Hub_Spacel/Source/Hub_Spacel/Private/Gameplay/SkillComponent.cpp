@@ -5,6 +5,7 @@
 #include "Player/SpacelPlayerState.h"
 #include "Player/ShipPawn.h"
 #include "Kismet/GameplayStatics.h"
+#include "Hub_SpacelGameInstance.h"
 #include <functional>
 
 USkillComponent::USkillComponent()
@@ -29,9 +30,65 @@ void USkillComponent::setupSkill()
     m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::GiveAlly1), get(), mode, callbackSucced, callbackFailed));
     m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::GiveAlly2), get(), mode, callbackSucced, callbackFailed));
     m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::NinePack), get(), mode, callbackSucced, callbackFailed));
+}
 
+void USkillComponent::OnUnlockUltimate()
+{
     if (ASpacelPlayerState* spacelPlayerState = Cast<ASpacelPlayerState>(get()->GetPlayerState()))
     {
+        if (this->SkillDataAsset == nullptr) return;
+
+        ENetMode mode = this->GetNetMode();
+
+        auto callbackSucced = std::bind(&USkillComponent::RPCClientSucced, this, std::placeholders::_1);
+        auto callbackFailed = std::bind(&USkillComponent::RPCClientFailed, this, std::placeholders::_1);
+
+        // last in first out so 3 - 4
+        TArray<FKey> defaultKeyboard = this->DefaultKeyboard;
+
+        auto lb = [&](ESkillType _skilltype, ESkill _skill, uint8 _level)
+        {
+            if (spacelPlayerState->getSkillPoint(_skilltype) >= _level)
+            {
+                FSkill skill = this->SkillDataAsset->getSKill(_skill);
+                skill.Key = defaultKeyboard.Pop();
+                m_skills.Add(MakeUnique<SkillCountDown>(skill, get(), mode, callbackSucced, callbackFailed));
+            }
+        };
+
+        uint8 levelMetaForm = this->SkillDataAsset->LevelMetaForm;
+        lb(ESkillType::Attack, ESkill::MetaFormAttack, levelMetaForm);
+        lb(ESkillType::Protection, ESkill::MetaFormProtection, levelMetaForm);
+        lb(ESkillType::Support, ESkill::MetaFormSupport, levelMetaForm);
+    }
+}
+
+void USkillComponent::OnLooserTeamUnlockLvl2(FName const& _loosingTeam)
+{
+    float delay = 30.0f;
+    if (get()->Team == _loosingTeam)
+    {
+        delay = 0.0f;
+    }
+
+    UWorld* world { this->GetWorld() };
+    if (!ensure(world != nullptr)) return;
+
+    FTimerHandle handle;
+    world->GetTimerManager().SetTimer(handle, this, &USkillComponent::DelayUnlockLvl2, delay, false);
+}
+
+void USkillComponent::DelayUnlockLvl2()
+{
+    if (ASpacelPlayerState* spacelPlayerState = Cast<ASpacelPlayerState>(get()->GetPlayerState()))
+    {
+        if (this->SkillDataAsset == nullptr) return;
+
+        ENetMode mode = this->GetNetMode();
+
+        auto callbackSucced = std::bind(&USkillComponent::RPCClientSucced, this, std::placeholders::_1);
+        auto callbackFailed = std::bind(&USkillComponent::RPCClientFailed, this, std::placeholders::_1);
+
         // last in first out so 3 - 4
         TArray<FKey> defaultKeyboard = this->DefaultKeyboard;
 
@@ -49,11 +106,6 @@ void USkillComponent::setupSkill()
         lb(ESkillType::Attack, ESkill::SpecialAttack, levelSpecial);
         lb(ESkillType::Protection, ESkill::SpecialProtection, levelSpecial);
         lb(ESkillType::Support, ESkill::SpecialSupport, levelSpecial);
-
-        uint8 levelMetaForm = this->SkillDataAsset->LevelMetaForm;
-        lb(ESkillType::Attack, ESkill::MetaFormAttack, levelMetaForm);
-        lb(ESkillType::Protection, ESkill::MetaFormProtection, levelMetaForm);
-        lb(ESkillType::Support, ESkill::MetaFormSupport, levelMetaForm);
     }
 }
 
