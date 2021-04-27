@@ -13,6 +13,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartGame);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FScoreUpdate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FPlayerEnterFog, int32, _playerId, bool, _enter);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUnlockSkill, EGameState, _state);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStartMission, EMission, _type);
 
 USTRUCT()
 struct HUB_SPACEL_API FTeamLocation
@@ -112,6 +113,9 @@ public:
 
 	UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
 	FOnUnlockSkill OnUnlockSkillDelegate {};
+
+	UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
+	FOnStartMission OnStartMissionDelegate {};
 
 protected:
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)

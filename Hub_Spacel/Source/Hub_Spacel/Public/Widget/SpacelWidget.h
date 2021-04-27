@@ -94,6 +94,12 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnRespawn();
 
+	UFUNCTION()
+	void OnStartMission(EMission _type);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnStartMissionFx();
+
 	template<class T>
 	void setVisibility(T* _widget, bool _show)
 	{
@@ -125,6 +131,9 @@ protected:
 	
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
 	class UDitactitialDataAsset* RandomTipsDataAsset { nullptr };
+
+	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
+	class UMissionDataAsset* MissionDataAsset { nullptr };
 
 private:
 	UPROPERTY(EditAnywhere)

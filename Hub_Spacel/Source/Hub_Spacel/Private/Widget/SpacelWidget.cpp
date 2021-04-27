@@ -61,6 +61,7 @@ void USpacelWidget::NativeConstruct()
     if (spacelGameState != nullptr)
     {
         spacelGameState->OnStartGameDelegate.AddDynamic(this, &USpacelWidget::StartGame);
+        spacelGameState->OnStartMissionDelegate.AddDynamic(this, &USpacelWidget::OnStartMission);
     }
 
     AShipPawn* shipPawn { this->GetOwningPlayerPawn<AShipPawn>() };
@@ -101,6 +102,11 @@ void USpacelWidget::NativeTick(const FGeometry& _myGeometry, float _deltaTime)
 {
     Super::NativeTick(_myGeometry, _deltaTime);
     UpdateScore();
+}
+
+void USpacelWidget::OnStartMission(EMission _type)
+{
+
 }
 
 void USpacelWidget::StartGame()
@@ -145,18 +151,6 @@ void USpacelWidget::StartGame()
             }
         }
     }
-
-    // create skill bar
-    //if (this->SkillBarHorizontalBox == nullptr) return;
-    //if (AShipPawn* shipPawn = this->GetOwningPlayerPawn<AShipPawn>())
-    //{
-    //    if(shipPawn->SkillComponent == nullptr) return;
-    //    TArray<TUniquePtr<SkillCountDown>> const& skills = shipPawn->SkillComponent->getSkills();
-    //    for (auto const& skillPtr : skills)
-    //    {
-    //        addSkill(skillPtr.Get());
-    //    }
-    //}
 
     StartGameFx();
 

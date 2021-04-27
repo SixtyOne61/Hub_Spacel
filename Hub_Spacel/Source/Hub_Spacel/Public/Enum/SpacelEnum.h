@@ -107,3 +107,10 @@ enum class EScoreType : uint8
     Tank UMETA(DisplayName = "Tank"),
     Emp UMETA(DisplayName = "Emp")
 };
+
+UENUM(BlueprintType)
+enum class EMission : uint8
+{
+    FirstBlood UMETA(DisplayName = "FirstBlood"),
+    ScoreRace UMETA(DisplayName = "ScoreRace"),
+};

@@ -22,8 +22,17 @@ void ASpacelGameState::OnRep_StateGame()
         break;
 
     case (uint8)EGameState::InGame:
+    {
         OnStartGameDelegate.Broadcast();
+        FTimerDelegate timerCallback;
+        timerCallback.BindLambda([&]() {
+            OnStartMissionDelegate.Broadcast(EMission::FirstBlood);
+            OnStartMissionDelegate.Broadcast(EMission::ScoreRace); });
+
+        FTimerHandle handle;
+        this->GetWorldTimerManager().SetTimer(handle, timerCallback, 5.0f, false);
         break;
+    }
 
     case (uint8)EGameState::UnlockMedium:
     case (uint8)EGameState::UnlockUltimate:

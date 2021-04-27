@@ -26,8 +26,9 @@ UCLASS()
 class HUB_SPACEL_API UGameStateDataAsset : public UDataAsset
 {
 	GENERATED_BODY()
+
 public:
-	int32 getScore(EScoreType _type) const
+	inline int32 getScore(EScoreType _type) const
 	{
 		for (auto const& score : Scores)
 		{
@@ -40,6 +41,7 @@ public:
 		ensure(false);
 		return 0;
 	}
+
 public:
 	UPROPERTY(EditAnywhere)
 	TArray<FScoreByType> Scores;
