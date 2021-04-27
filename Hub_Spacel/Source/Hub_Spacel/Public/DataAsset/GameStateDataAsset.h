@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
 #include "Enum/SpacelEnum.h"
-#include "MeshDataAsset.generated.h"
+#include "GameStateDataAsset.generated.h"
 
 USTRUCT(BlueprintType)
 struct HUB_SPACEL_API FScoreByType
@@ -42,7 +42,7 @@ public:
 	}
 public:
 	UPROPERTY(EditAnywhere)
-	TArrat<FScoreByType> Scores;
+	TArray<FScoreByType> Scores;
 
 	UPROPERTY(EditAnywhere)
 	int32 ThresholdForUltimate { 2000 };

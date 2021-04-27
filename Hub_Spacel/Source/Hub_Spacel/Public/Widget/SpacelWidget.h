@@ -111,6 +111,8 @@ protected:
 
 	void OnLoadGame(const FString& _slotName, const int32 _userIndex, class USaveGame* _loadedGameData);
 
+	void addSkill(class SkillCountDown * _skill);
+
 protected:
 	UPROPERTY(EditAnywhere)
 	class UEffectDataAsset* EffectDataAsset { nullptr };

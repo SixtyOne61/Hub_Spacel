@@ -32,6 +32,17 @@ void USkillComponent::setupSkill()
     m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::GiveAlly2), get(), mode, callbackSucced, callbackFailed));
     m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::NinePack), get(), mode, callbackSucced, callbackFailed));
 
+    if (ASpacelPlayerState* spacelPlayerState = Cast<ASpacelPlayerState>(get()->GetPlayerState()))
+    {
+        if (spacelPlayerState->OnAddSkillUniqueDelegate != nullptr)
+        {
+            for (auto const& skill : m_skills)
+            {
+                spacelPlayerState->OnAddSkillUniqueDelegate(skill.Get());
+            }
+        }
+    }
+
     if (ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld())))
     {
         spacelGameState->OnUnlockSkillDelegate.AddDynamic(this, &USkillComponent::OnUnlockSkill);
@@ -52,29 +63,34 @@ void USkillComponent::OnUnlockSkill(EGameState _state)
         // last in first out so 3 - 4
         TArray<FKey> defaultKeyboard = this->DefaultKeyboard;
 
-        auto lb = [&](ESkillType _skilltype, ESkill _skill, uint8 _level)
+        auto lb = [&](ESkillType _skilltype, ESkill _skill, uint8 _level, FKey _key)
         {
             if (spacelPlayerState->getSkillPoint(_skilltype) >= _level)
             {
                 FSkill skill = this->SkillDataAsset->getSKill(_skill);
-                skill.Key = defaultKeyboard.Pop();
+                skill.Key = _key;
                 m_skills.Add(MakeUnique<SkillCountDown>(skill, get(), mode, callbackSucced, callbackFailed));
+
+                if (spacelPlayerState->OnAddSkillUniqueDelegate != nullptr)
+                {
+                    spacelPlayerState->OnAddSkillUniqueDelegate(m_skills.Last().Get());
+                }
             }
         };
 
         if (_state == EGameState::UnlockMedium)
         {
             uint8 levelSpecial = this->SkillDataAsset->LevelSpecial;
-            lb(ESkillType::Attack, ESkill::SpecialAttack, levelSpecial);
-            lb(ESkillType::Protection, ESkill::SpecialProtection, levelSpecial);
-            lb(ESkillType::Support, ESkill::SpecialSupport, levelSpecial);
+            lb(ESkillType::Attack, ESkill::SpecialAttack, levelSpecial, this->DefaultKeyboard[0]);
+            lb(ESkillType::Protection, ESkill::SpecialProtection, levelSpecial, this->DefaultKeyboard[0]);
+            lb(ESkillType::Support, ESkill::SpecialSupport, levelSpecial, this->DefaultKeyboard[0]);
         }
         else if (_state == EGameState::UnlockUltimate)
         {
             uint8 levelMetaForm = this->SkillDataAsset->LevelMetaForm;
-            lb(ESkillType::Attack, ESkill::MetaFormAttack, levelMetaForm);
-            lb(ESkillType::Protection, ESkill::MetaFormProtection, levelMetaForm);
-            lb(ESkillType::Support, ESkill::MetaFormSupport, levelMetaForm);
+            lb(ESkillType::Attack, ESkill::MetaFormAttack, levelMetaForm, this->DefaultKeyboard[1]);
+            lb(ESkillType::Protection, ESkill::MetaFormProtection, levelMetaForm, this->DefaultKeyboard[1]);
+            lb(ESkillType::Support, ESkill::MetaFormSupport, levelMetaForm, this->DefaultKeyboard[1]);
         }
     }
 }

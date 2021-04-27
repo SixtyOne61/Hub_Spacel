@@ -76,6 +76,11 @@ void USpacelWidget::NativeConstruct()
         shipPawn->OnRemoveEffectDelegate.AddDynamic(this, &USpacelWidget::OnRemoveEffect);
 
         shipPawn->OnSendInfoPlayerDelegate.AddDynamic(this, &USpacelWidget::OnSendInfoPlayer);
+
+        if (ASpacelPlayerState* playerState = shipPawn->GetPlayerState<ASpacelPlayerState>())
+        {
+            playerState->OnAddSkillUniqueDelegate = std::bind(&USpacelWidget::addSkill, this, std::placeholders::_1);
+        }
     }
 }
 
@@ -142,40 +147,16 @@ void USpacelWidget::StartGame()
     }
 
     // create skill bar
-    if (this->SkillBarHorizontalBox == nullptr) return;
-    if (AShipPawn* shipPawn = this->GetOwningPlayerPawn<AShipPawn>())
-    {
-        if(shipPawn->SkillComponent == nullptr) return;
-        TArray<TUniquePtr<SkillCountDown>> const& skills = shipPawn->SkillComponent->getSkills();
-        uint8 id {1};
-        for (auto const& skillPtr : skills)
-        {
-            FSkill const& skill = skillPtr.Get()->getParam();
-            USkillWidget* skillWidget { nullptr };
-            if (skill.SkillWidgetClass != nullptr)
-            {
-                FString name = "Skill";
-                name.Append(FString::FromInt((int)skill.Skill));
-                skillWidget = CreateWidget<USkillWidget, UHorizontalBox>(this->SkillBarHorizontalBox, skill.SkillWidgetClass, *name);
-                this->SkillBarHorizontalBox->AddChildToHorizontalBox(skillWidget);
-            }
-            else if(skill.WidgetName.IsValid())
-            {
-                skillWidget = SimplyUI::initUnSafeFromName<UUserWidget, USkillWidget>(this, skill.WidgetName);
-            }
-
-            if (skillWidget != nullptr)
-            {
-                skillWidget->SetSkillWithKey(skill.BackgroundColorBtn, skill.IconeBtn, skill.Key.GetDisplayName(false));
-            }
-
-            if (UProgressBar* progress = SimplyUI::initUnSafeFromName<UUserWidget, UProgressBar>(skillWidget, TEXT("ProgressBar_Skill")))
-            {
-                skillPtr->addProgressBar(progress);
-            }
-            ++id;
-        }
-    }
+    //if (this->SkillBarHorizontalBox == nullptr) return;
+    //if (AShipPawn* shipPawn = this->GetOwningPlayerPawn<AShipPawn>())
+    //{
+    //    if(shipPawn->SkillComponent == nullptr) return;
+    //    TArray<TUniquePtr<SkillCountDown>> const& skills = shipPawn->SkillComponent->getSkills();
+    //    for (auto const& skillPtr : skills)
+    //    {
+    //        addSkill(skillPtr.Get());
+    //    }
+    //}
 
     StartGameFx();
 
@@ -184,6 +165,36 @@ void USpacelWidget::StartGame()
     // USomeUObjectClass::LoadGameDelegateFunction is a void function that takes the following parameters: const FString& SlotName, const int32 UserIndex, USaveGame* LoadedGameData
     LoadedDelegate.BindUObject(this, &USpacelWidget::OnLoadGame);
     UGameplayStatics::AsyncLoadGameFromSlot("Save", 0, LoadedDelegate);
+}
+
+void USpacelWidget::addSkill(class SkillCountDown * _skill)
+{
+    if (this->SkillBarHorizontalBox == nullptr) return;
+    if(_skill == nullptr) return;
+
+    FSkill const& skill = _skill->getParam();
+    USkillWidget* skillWidget{ nullptr };
+    if (skill.SkillWidgetClass != nullptr)
+    {
+        FString name = "Skill";
+        name.Append(FString::FromInt((int)skill.Skill));
+        skillWidget = CreateWidget<USkillWidget, UHorizontalBox>(this->SkillBarHorizontalBox, skill.SkillWidgetClass, *name);
+        this->SkillBarHorizontalBox->AddChildToHorizontalBox(skillWidget);
+    }
+    else if (skill.WidgetName.IsValid())
+    {
+        skillWidget = SimplyUI::initUnSafeFromName<UUserWidget, USkillWidget>(this, skill.WidgetName);
+    }
+
+    if (skillWidget != nullptr)
+    {
+        skillWidget->SetSkillWithKey(skill.BackgroundColorBtn, skill.IconeBtn, skill.Key.GetDisplayName(false));
+    }
+
+    if (UProgressBar* progress = SimplyUI::initUnSafeFromName<UUserWidget, UProgressBar>(skillWidget, TEXT("ProgressBar_Skill")))
+    {
+        _skill->addProgressBar(progress);
+    }
 }
 
 void USpacelWidget::OnLoadGame(const FString& _slotName, const int32 _userIndex, USaveGame* _loadedGameData)

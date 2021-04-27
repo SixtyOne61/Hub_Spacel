@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerState.h"
 #include "Enum/SpacelEnum.h"
+#include <functional>
 #include "SpacelPlayerState.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FUpdateRemainingSkillPoint);
@@ -72,6 +73,8 @@ public:
     uint8 R_Support {};
 
     FTransform PlayerStartTransform {};
+
+    std::function<void(class SkillCountDown*)> OnAddSkillUniqueDelegate{ nullptr };
 
 private:
     UPROPERTY()

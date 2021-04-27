@@ -7,6 +7,7 @@
 #include "Net/UnrealNetwork.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerStart.h"
+#include "DataAsset/GameStateDataAsset.h"
 
 void ASpacelGameState::OnRep_StateGame()
 {
@@ -26,7 +27,7 @@ void ASpacelGameState::OnRep_StateGame()
 
     case (uint8)EGameState::UnlockMedium:
     case (uint8)EGameState::UnlockUltimate:
-        OnUnlockSkillDelegate.Broadcast(this->RU_GameState);
+        OnUnlockSkillDelegate.Broadcast((EGameState)this->RU_GameState);
         break;
 
     default:
@@ -59,27 +60,9 @@ void ASpacelGameState::AddScore(FString const& _team, int32 _playerId, EScoreTyp
     {
         if (score.Team == _team)
         {
-            switch (_type)
-            {
-            case EScoreType::Hit:
-                score.Score += 5;
-                scoreValue = 5;
-                break;
-
-            case EScoreType::Kill:
-                score.Score += 300;
-                scoreValue = 300;
-                break;
-
-            case EScoreType::Tank:
-                score.Score += 10;
-                scoreValue = 10;
-                break;
-
-            case EScoreType::Emp:
-                score.Score += 30;
-                scoreValue = 30;
-            }
+            int32 delta = this->GameStateDataAsset->getScore(_type);
+            score.Score += delta;
+            scoreValue = delta;
 
             if (score.Score >= this->GameStateDataAsset->ThresholdForUltimate && RU_GameState == (uint8)EGameState::UnlockMedium)
             {
