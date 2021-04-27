@@ -98,7 +98,7 @@ protected:
 	void OnStartMission(EMission _type);
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void OnStartMissionFx();
+	void ShowMissionPanel();
 
 	template<class T>
 	void setVisibility(T* _widget, bool _show)
@@ -175,4 +175,6 @@ private:
 	FString Team {};
 
 	int32 m_nextTipsId { 0 };
+
+	TSet<EMission> m_currentMission {};
 };

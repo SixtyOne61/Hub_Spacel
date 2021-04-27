@@ -16,7 +16,7 @@ struct HUB_SPACEL_API FMission
 	EMission Type {};
 
 	UPROPERTY(EditAnywhere)
-	FString MissionDesc { };
+	FString MissionTitle { };
 };
 
 /**

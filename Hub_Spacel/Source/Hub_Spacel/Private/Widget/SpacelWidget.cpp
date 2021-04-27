@@ -23,12 +23,14 @@
 #include "DataAsset/EffectDataAsset.h"
 #include "DataAsset/TeamColorDataAsset.h"
 #include "DataAsset/DitactitialDataAsset.h"
+#include "DataAsset/MissionDataAsset.h"
 #include "Widget/AllyWidget.h"
 #include "Widget/SkillWidget.h"
 #include "Widget/SkillProgressWidget.h"
 #include "Widget/EffectWidget.h"
 #include "Widget/ScoreUserWidget.h"
 #include "Widget/TutorialUserWidget.h"
+#include "Widget/MissionPanelUserWidget.h"
 #include "Factory/SpacelFactory.h"
 #include "Styling/SlateColor.h"
 
@@ -106,7 +108,21 @@ void USpacelWidget::NativeTick(const FGeometry& _myGeometry, float _deltaTime)
 
 void USpacelWidget::OnStartMission(EMission _type)
 {
+    if (m_currentMission.Num() == 0)
+    {
+        // appear mission panel
+        ShowMissionPanel();
+    }
 
+    m_currentMission.Add(_type);
+
+    UMissionPanelUserWidget* panelMission = SimplyUI::initSafetyFromName<UUserWidget, UMissionPanelUserWidget>(this, TEXT("WBP_Mission"));
+    if (panelMission != nullptr && this->MissionDataAsset != nullptr)
+    {
+        FMission mission {};
+        this->MissionDataAsset->fillMission(_type, mission);
+        panelMission->addMission(mission);
+    }
 }
 
 void USpacelWidget::StartGame()
@@ -195,7 +211,7 @@ void USpacelWidget::OnLoadGame(const FString& _slotName, const int32 _userIndex,
 {
     USpacelSaveGame* save = Cast<USpacelSaveGame>(_loadedGameData);
 
-    //if (save == nullptr || !save->HasSeeDitactitial)
+    if (save == nullptr || !save->HasSeeDitactitial)
     {
         UWorld* world{ this->GetWorld() };
         if (!ensure(world != nullptr)) return;
@@ -203,10 +219,10 @@ void USpacelWidget::OnLoadGame(const FString& _slotName, const int32 _userIndex,
         // Start didactitial
         world->GetTimerManager().SetTimer(ShowDitactitialHandle, this, &USpacelWidget::ShowDidactitial, 10.0f, true, 1.0f);
     }
-    //else
-    //{
-    //    ShowRandomTips();
-    //}
+    else
+    {
+        ShowRandomTips();
+    }
 }
 
 void USpacelWidget::ShowRandomTips()

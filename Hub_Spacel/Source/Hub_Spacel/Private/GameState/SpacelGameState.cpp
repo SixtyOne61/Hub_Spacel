@@ -24,13 +24,17 @@ void ASpacelGameState::OnRep_StateGame()
     case (uint8)EGameState::InGame:
     {
         OnStartGameDelegate.Broadcast();
-        FTimerDelegate timerCallback;
-        timerCallback.BindLambda([&]() {
-            OnStartMissionDelegate.Broadcast(EMission::FirstBlood);
-            OnStartMissionDelegate.Broadcast(EMission::ScoreRace); });
+        FTimerDelegate timerCallbackFirstBlood;
+        timerCallbackFirstBlood.BindLambda([&]() { OnStartMissionDelegate.Broadcast(EMission::FirstBlood); });
 
-        FTimerHandle handle;
-        this->GetWorldTimerManager().SetTimer(handle, timerCallback, 5.0f, false);
+        FTimerHandle handleFirstBlood;
+        this->GetWorldTimerManager().SetTimer(handleFirstBlood, timerCallbackFirstBlood, 5.0f, false);
+
+        FTimerDelegate timerCallbackScore;
+        timerCallbackScore.BindLambda([&]() { OnStartMissionDelegate.Broadcast(EMission::ScoreRace); });
+
+        FTimerHandle handleScore;
+        this->GetWorldTimerManager().SetTimer(handleScore, timerCallbackScore, 30.0f, false);
         break;
     }
 
