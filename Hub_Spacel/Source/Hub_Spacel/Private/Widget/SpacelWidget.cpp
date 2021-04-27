@@ -195,7 +195,7 @@ void USpacelWidget::OnLoadGame(const FString& _slotName, const int32 _userIndex,
 {
     USpacelSaveGame* save = Cast<USpacelSaveGame>(_loadedGameData);
 
-    if (save == nullptr || !save->HasSeeDitactitial)
+    //if (save == nullptr || !save->HasSeeDitactitial)
     {
         UWorld* world{ this->GetWorld() };
         if (!ensure(world != nullptr)) return;
@@ -203,10 +203,10 @@ void USpacelWidget::OnLoadGame(const FString& _slotName, const int32 _userIndex,
         // Start didactitial
         world->GetTimerManager().SetTimer(ShowDitactitialHandle, this, &USpacelWidget::ShowDidactitial, 10.0f, true, 1.0f);
     }
-    else
-    {
-        ShowRandomTips();
-    }
+    //else
+    //{
+    //    ShowRandomTips();
+    //}
 }
 
 void USpacelWidget::ShowRandomTips()
