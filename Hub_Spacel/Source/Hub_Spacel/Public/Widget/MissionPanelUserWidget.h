@@ -20,6 +20,7 @@ protected:
 
 public:
 	void addMission(FMission _mission);
+	void removeMission(EMission _type);
 
 public:
 	UPROPERTY(EditAnywhere)

@@ -39,7 +39,12 @@ void ASpacelGameState::OnRep_StateGame()
     }
 
     case (uint8)EGameState::UnlockMedium:
+        OnEndMissionDelegate.Broadcast(EMission::FirstBlood);
+        OnUnlockSkillDelegate.Broadcast((EGameState)this->RU_GameState);
+        break;
+
     case (uint8)EGameState::UnlockUltimate:
+        OnEndMissionDelegate.Broadcast(EMission::ScoreRace);
         OnUnlockSkillDelegate.Broadcast((EGameState)this->RU_GameState);
         break;
 

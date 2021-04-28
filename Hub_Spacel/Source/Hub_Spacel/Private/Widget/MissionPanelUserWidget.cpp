@@ -29,3 +29,16 @@ void UMissionPanelUserWidget::addMission(FMission _mission)
         }
     }
 }
+
+void UMissionPanelUserWidget::removeMission(EMission _type)
+{
+    if (this->VerticalBox != nullptr)
+    {
+        FString name = "Mission";
+        name.Append(FString::FromInt((int)_type));
+        if (UMissionInfoUserWidget* widget = SimplyUI::initSafetyFromName<UUserWidget, UMissionInfoUserWidget>(this, *name))
+        {
+            this->VerticalBox->RemoveChild(widget);
+        }
+    }
+}

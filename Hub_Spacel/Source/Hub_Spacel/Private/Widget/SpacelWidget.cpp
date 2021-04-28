@@ -64,6 +64,7 @@ void USpacelWidget::NativeConstruct()
     {
         spacelGameState->OnStartGameDelegate.AddDynamic(this, &USpacelWidget::StartGame);
         spacelGameState->OnStartMissionDelegate.AddDynamic(this, &USpacelWidget::OnStartMission);
+        spacelGameState->OnEndMissionDelegate.AddDynamic(this, &USpacelWidget::OnEndMission);
     }
 
     AShipPawn* shipPawn { this->GetOwningPlayerPawn<AShipPawn>() };
@@ -122,6 +123,25 @@ void USpacelWidget::OnStartMission(EMission _type)
         FMission mission {};
         this->MissionDataAsset->fillMission(_type, mission);
         panelMission->addMission(mission);
+    }
+}
+
+void USpacelWidget::OnEndMission(EMission _type)
+{
+    if (m_currentMission.Contains(_type))
+    {
+        m_currentMission.Remove(_type);
+
+        if (m_currentMission.Num() == 0)
+        {
+            // hide mission panel
+            HideMissionPanel();
+        }
+
+        if (UMissionPanelUserWidget* panelMission = SimplyUI::initSafetyFromName<UUserWidget, UMissionPanelUserWidget>(this, TEXT("WBP_Mission")))
+        {
+            panelMission->removeMission(_type);
+        }
     }
 }
 

@@ -100,6 +100,12 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void ShowMissionPanel();
 
+	UFUNCTION()
+	void OnEndMission(EMission _type);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void HideMissionPanel();
+
 	template<class T>
 	void setVisibility(T* _widget, bool _show)
 	{
