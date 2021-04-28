@@ -23,4 +23,14 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+private:
+	UFUNCTION()
+	void OnStartGame();
+
+	void startMissionOnAllClient(FMission const& _mision) const;
+
+public:
+	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
+	class UMissionDataAsset* MissionDataAsset{ nullptr };
+
 };

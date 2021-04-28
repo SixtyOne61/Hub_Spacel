@@ -51,6 +51,20 @@ public:
 		ensure(false);
 	}
 
+	inline FMission getMission(EMission _type) const
+	{
+		for (auto const& mission : Missions)
+		{
+			if (mission.Type == _type)
+			{
+				return mission;
+			}
+		}
+
+		ensure(false);
+		return {};
+	}
+
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<FMission> Missions {};
