@@ -23,7 +23,6 @@
 #include "DataAsset/EffectDataAsset.h"
 #include "DataAsset/TeamColorDataAsset.h"
 #include "DataAsset/DitactitialDataAsset.h"
-#include "DataAsset/MissionDataAsset.h"
 #include "Widget/AllyWidget.h"
 #include "Widget/SkillWidget.h"
 #include "Widget/SkillProgressWidget.h"
@@ -107,30 +106,43 @@ void USpacelWidget::NativeTick(const FGeometry& _myGeometry, float _deltaTime)
     UpdateScore();
 }
 
-void USpacelWidget::OnStartMission(EMission _type)
+void USpacelWidget::OnStartMission(FMission _mission)
 {
+    if (_mission.Type == EMission::EcartType)
+    {
+        ASpacelPlayerState* owningPlayerState{ Cast<ASpacelPlayerState>(this->GetOwningPlayerState()) };
+        if (owningPlayerState == nullptr) return;
+        FString owningPlayerTeam { owningPlayerState->R_Team };
+
+        if (ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld())))
+        {
+            if (spacelGameState->GetWorstTeam() != owningPlayerTeam)
+            {
+                return;
+            }
+        }
+    }
+
     if (m_currentMission.Num() == 0)
     {
         // appear mission panel
         ShowMissionPanel();
     }
 
-    m_currentMission.Add(_type);
+    m_currentMission.Add(_mission.Type);
 
     UMissionPanelUserWidget* panelMission = SimplyUI::initSafetyFromName<UUserWidget, UMissionPanelUserWidget>(this, TEXT("WBP_Mission"));
     if (panelMission != nullptr && this->MissionDataAsset != nullptr)
     {
-        FMission mission {};
-        this->MissionDataAsset->fillMission(_type, mission);
-        panelMission->addMission(mission);
+        panelMission->addMission(_mission);
     }
 }
 
-void USpacelWidget::OnEndMission(EMission _type)
+void USpacelWidget::OnEndMission(FMission _mission)
 {
-    if (m_currentMission.Contains(_type))
+    if (m_currentMission.Contains(_mission.Type))
     {
-        m_currentMission.Remove(_type);
+        m_currentMission.Remove(_mission.Type);
 
         if (m_currentMission.Num() == 0)
         {
@@ -140,7 +152,7 @@ void USpacelWidget::OnEndMission(EMission _type)
 
         if (UMissionPanelUserWidget* panelMission = SimplyUI::initSafetyFromName<UUserWidget, UMissionPanelUserWidget>(this, TEXT("WBP_Mission")))
         {
-            panelMission->removeMission(_type);
+            panelMission->removeMission(_mission.Type);
         }
     }
 }

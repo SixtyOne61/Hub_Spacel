@@ -19,6 +19,9 @@ public:
 	UPROPERTY(EditAnywhere)
 	FColor Color {};
 
+	UPROPERTY(EditAnywhere)
+	FString ShortName {};
+
 	template<typename T>
 	T get() const;
 };
@@ -43,6 +46,21 @@ class HUB_SPACEL_API UTeamColorDataAsset : public UDataAsset
 public:
 	template<typename T>
 	T GetColor(FString const& _team) const;
+
+	FColorsType GetColorType(FString const& _team) const
+	{
+		TArray<FString> names = { "Team 1", "Team 2", "Team 3", "Team 4", "Team 5", "Team 6" };
+		for (int32 i = 0; i < names.Num(); ++i)
+		{
+			if (_team == names[i])
+			{
+				return TeamColors[i];
+			}
+		}
+
+		ensure(false);
+		return FColorsType();
+	}
 
 public:
 	UPROPERTY(EditAnywhere)

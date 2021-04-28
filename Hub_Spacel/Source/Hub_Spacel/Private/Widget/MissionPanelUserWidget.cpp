@@ -5,6 +5,7 @@
 #include "Util/SimplyUI.h"
 #include "Widget/MissionInfoUserWidget.h"
 #include "Components/VerticalBox.h"
+#include "DataAsset/TeamColorDataAsset.h"
 
 
 void UMissionPanelUserWidget::NativeConstruct()
@@ -25,6 +26,13 @@ void UMissionPanelUserWidget::addMission(FMission _mission)
             missionWidget->Type = _mission.Type;
             FString title = _mission.MissionTitle;
             title = title.Replace(*FString("%reward%"), *FString::FromInt(_mission.RewardValue));
+            title = title.Replace(*FString("%condition%"), *FString::FromInt(_mission.ConditionValue));
+
+            if (this->TeamColorDataAsset != nullptr && !_mission.Team.IsEmpty())
+            {
+                FColorsType const& info = this->TeamColorDataAsset->GetColorType(_mission.Team);
+                title = title.Replace(*FString("%team%"), *info.ShortName);
+            }
             missionWidget->SetTitle(title);
 
             this->VerticalBox->AddChildToVerticalBox(missionWidget);

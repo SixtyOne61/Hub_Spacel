@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/GameStateBase.h"
 #include "Enum/SpacelEnum.h"
+#include "DataAsset/MissionDataAsset.h"
 #include "SpacelGameState.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartPrepare);
@@ -13,8 +14,8 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartGame);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FScoreUpdate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FPlayerEnterFog, int32, _playerId, bool, _enter);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUnlockSkill, EGameState, _state);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStartMission, EMission, _type);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEndMission, EMission, _type);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStartMission, FMission, _mission);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEndMission, FMission, _mission);
 
 USTRUCT()
 struct HUB_SPACEL_API FTeamLocation
@@ -75,7 +76,14 @@ public:
 	UFUNCTION()
 	void GoToUnlockUltimate() { this->RU_GameState = (uint8)EGameState::UnlockUltimate; OnRep_StateGame(); }
 
+	UFUNCTION()
 	FString GetBestTeam() const;
+
+	UFUNCTION()
+	FString GetWorstTeam() const;
+
+	UFUNCTION()
+	int32 GetScore(FString const& _team) const;
 
 	void AddScore(FString const& _team, int32 _playerId, EScoreType _type);
 	void AddScore(FString const& _team, int32 _playerId, EScoreType _type, int32 _nb);
@@ -89,6 +97,11 @@ protected:
 private:
 	UFUNCTION()
 	void OnRep_StateGame();
+
+	void teamScoreBoost();
+
+	UFUNCTION(Reliable, NetMulticast)
+	void RPCNetMulticastScoreBoost(FMission const& _mission);
 
 public:
 	UPROPERTY(Replicated)
@@ -134,4 +147,6 @@ private:
 
 	UPROPERTY(Replicated)
 	TArray<FScore> R_Scores {};
+
+	TSet<FString> TeamWithBonusMission {};
 };

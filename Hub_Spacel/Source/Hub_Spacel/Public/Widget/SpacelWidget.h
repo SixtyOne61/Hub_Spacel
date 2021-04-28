@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "SpacelEnum.h"
+#include "DataAsset/MissionDataAsset.h"
 #include "SpacelWidget.generated.h"
 
 /**
@@ -95,13 +96,13 @@ protected:
 	void OnRespawn();
 
 	UFUNCTION()
-	void OnStartMission(EMission _type);
+	void OnStartMission(FMission _mission);
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void ShowMissionPanel();
 
 	UFUNCTION()
-	void OnEndMission(EMission _type);
+	void OnEndMission(FMission _mission);
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void HideMissionPanel();

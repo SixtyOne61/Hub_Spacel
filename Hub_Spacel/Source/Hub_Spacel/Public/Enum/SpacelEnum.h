@@ -113,4 +113,5 @@ enum class EMission : uint8
 {
     FirstBlood UMETA(DisplayName = "FirstBlood"),
     ScoreRace UMETA(DisplayName = "ScoreRace"),
+    EcartType UMETA(DisplayName = "EcartType"),
 };

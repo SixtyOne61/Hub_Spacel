@@ -28,4 +28,7 @@ public:
 
 	UPROPERTY()
 	class UVerticalBox* VerticalBox{ nullptr };
+
+	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
+	class UTeamColorDataAsset* TeamColorDataAsset{ nullptr };
 };

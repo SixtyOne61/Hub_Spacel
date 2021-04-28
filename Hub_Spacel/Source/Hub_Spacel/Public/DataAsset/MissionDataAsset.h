@@ -20,6 +20,12 @@ struct HUB_SPACEL_API FMission
 
 	UPROPERTY(EditAnywhere)
 	int32 RewardValue { 0 };
+	
+	UPROPERTY(EditAnywhere)
+	int32 ConditionValue { 0 };
+
+	UPROPERTY(EditAnywhere)
+	FString Team {};
 };
 
 /**
