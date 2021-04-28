@@ -23,7 +23,9 @@ void UMissionPanelUserWidget::addMission(FMission _mission)
         if (UMissionInfoUserWidget* missionWidget = CreateWidget<UMissionInfoUserWidget, UVerticalBox>(this->VerticalBox, this->MissionInfoWidgetClass, *name))
         {
             missionWidget->Type = _mission.Type;
-            missionWidget->SetTitle(_mission.MissionTitle);
+            FString title = _mission.MissionTitle;
+            title = title.Replace(*FString("%reward%"), *FString::FromInt(_mission.RewardValue));
+            missionWidget->SetTitle(title);
 
             this->VerticalBox->AddChildToVerticalBox(missionWidget);
         }

@@ -8,6 +8,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerStart.h"
 #include "DataAsset/GameStateDataAsset.h"
+#include "DataAsset/MissionDataAsset.h"
 
 void ASpacelGameState::OnRep_StateGame()
 {
@@ -72,6 +73,11 @@ FString ASpacelGameState::GetBestTeam() const
 void ASpacelGameState::AddScore(FString const& _team, int32 _playerId, EScoreType _type)
 {
     if (this->GameStateDataAsset == nullptr) return;
+    if (this->MissionDataAsset == nullptr) return;
+
+    FMission mission{};
+    this->MissionDataAsset->fillMission(EMission::ScoreRace, mission);
+    int32 thresholdUltimate = mission.RewardValue;
 
     uint16 scoreValue = 0;
     for (FScore& score : this->R_Scores)
@@ -82,7 +88,7 @@ void ASpacelGameState::AddScore(FString const& _team, int32 _playerId, EScoreTyp
             score.Score += delta;
             scoreValue = delta;
 
-            if (score.Score >= this->GameStateDataAsset->ThresholdForUltimate && RU_GameState == (uint8)EGameState::UnlockMedium)
+            if (score.Score >= thresholdUltimate && RU_GameState == (uint8)EGameState::UnlockMedium)
             {
                 GoToUnlockUltimate();
             }

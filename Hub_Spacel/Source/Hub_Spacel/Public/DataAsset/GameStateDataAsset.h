@@ -45,7 +45,4 @@ public:
 public:
 	UPROPERTY(EditAnywhere)
 	TArray<FScoreByType> Scores;
-
-	UPROPERTY(EditAnywhere)
-	int32 ThresholdForUltimate { 2000 };
 };

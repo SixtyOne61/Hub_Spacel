@@ -17,6 +17,9 @@ struct HUB_SPACEL_API FMission
 
 	UPROPERTY(EditAnywhere)
 	FString MissionTitle { };
+
+	UPROPERTY(EditAnywhere)
+	int32 RewardValue { 0 };
 };
 
 /**

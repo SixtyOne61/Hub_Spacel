@@ -125,6 +125,9 @@ protected:
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
 	class UGameStateDataAsset* GameStateDataAsset { nullptr };
 
+	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
+	class UMissionDataAsset* MissionDataAsset{ nullptr };
+
 private:
 	UPROPERTY(ReplicatedUsing = OnRep_StateGame)
 	uint8 RU_GameState { (uint8)EGameState::Undefined } ;
