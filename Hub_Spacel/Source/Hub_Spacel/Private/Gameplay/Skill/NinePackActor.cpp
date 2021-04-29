@@ -46,6 +46,8 @@ void ANinePackActor::BeginPlay()
 	this->Voxels->AddInstance(FTransform(FVector(0.0f, 43.0f, 123.0f)));
 	this->Voxels->AddInstance(FTransform(FVector(0.0f, 123.0f, 123.0f)));
 
+	this->Voxels->AddInstance(FTransform(FVector(-86.0f, 0.0f, 0.0f)));
+
 	// server side
 	if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
 	{
