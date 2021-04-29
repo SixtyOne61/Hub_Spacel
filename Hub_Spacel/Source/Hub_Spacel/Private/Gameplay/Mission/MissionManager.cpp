@@ -40,36 +40,25 @@ void AMissionManager::Tick(float DeltaTime)
 
 	if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
 	{
-		for (auto& mission : m_openMission)
+		auto lb = [&](auto& _missions)
 		{
-			if (mission.IsValid())
+			for (auto& mission : _missions)
 			{
-				mission->tick(DeltaTime, this->GetWorld());
-				if (mission->m_isEnd)
+				if (mission.IsValid())
 				{
-					endMissionOnNetMulticast(mission->m_mission);
+					mission->tick(DeltaTime, this->GetWorld());
+					if (mission->m_isEnd)
+					{
+						endMissionOnNetMulticast(mission->m_mission);
+					}
 				}
 			}
-		}
 
-		m_openMission.RemoveAll([](auto& _mission) { return _mission->m_isEnd; });
-	
-		for (auto& mission : m_silenceMission)
-		{
-			if (mission.IsValid())
-			{
-				mission->tick(DeltaTime, this->GetWorld());
-				if (mission->m_mustStart)
-				{
-				}
-				else if (mission->m_isEnd)
-				{
-					endMissionOnNetMulticast(mission->m_mission);
-				}
-			}
-		}
-
-		m_silenceMission.RemoveAll([](auto& _mission) { return _mission->m_isEnd; });
+			_missions.RemoveAll([](auto& _mission) { return _mission->m_isEnd; });
+		};
+		
+		lb(m_openMission);
+		lb(m_silenceMission);
 	}
 }
 

@@ -48,7 +48,7 @@ public:
 	MissionSilence(FMission const& _mission) : MissionBehaviour(_mission) {};
 
 protected:
-	bool m_mustStart { false };
+	bool m_start { false };
 };
 
 class HUB_SPACEL_API MissionEcartType : public MissionSilence
@@ -57,5 +57,13 @@ class HUB_SPACEL_API MissionEcartType : public MissionSilence
 
 public:
 	void tick(float _deltaTime, UWorld* _world) override;
+
+private:
+	void onKill(FString const& _victim, FString const& _killer);
+
+private:
+	FString m_loosingTeam {};
+	bool m_killDone { false };
+	float m_timer { 0.0f };
 };
 

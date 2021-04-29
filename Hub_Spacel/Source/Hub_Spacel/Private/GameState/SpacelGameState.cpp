@@ -119,33 +119,17 @@ void ASpacelGameState::AddScore(FString const& _team, int32 _playerId, EScoreTyp
     }
 }
 
-void ASpacelGameState::teamScoreBoost()
+void ASpacelGameState::AddScore(FString const& _team, int32 _value)
 {
-    FString const& bestTeam = GetBestTeam();
-    FString const& worstTeam = GetWorstTeam();
-
-    int32 bestTeamScore = GetScore(bestTeam);
-    int32 worstTeamScore = GetScore(worstTeam);
-
-    //if (this->MissionDataAsset != nullptr)
-    //{
-    //    FMission mission;
-    //    this->MissionDataAsset->fillMission(EMission::EcartType, mission);
-    //
-    //    if (bestTeamScore - worstTeamScore > mission.ConditionValue
-    //        && !this->TeamWithBonusMission.Contains(worstTeam))
-    //    {
-    //        this->TeamWithBonusMission.Add(worstTeam);
-    //        mission.Team = bestTeam;
-    //        RPCNetMulticastScoreBoost(mission);
-    //    }
-    //}
+    uint16 scoreValue = 0;
+    for (FScore& score : this->R_Scores)
+    {
+        if (score.Team == _team)
+        {
+            score.Score += _value;
+        }
+    }
 }
-
-//void ASpacelGameState::RPCNetMulticastScoreBoost_Implementation(FMission const& _mission)
-//{
-//    //this->OnStartMissionDelegate.Broadcast(_mission);
-//}
 
 void ASpacelGameState::RegisterTeam()
 {

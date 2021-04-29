@@ -219,18 +219,19 @@ void UCustomCollisionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 	if (sweepByProfile(hits, ownerLocation, profileCollision, { FCollisionShape::MakeBox({400, 350, 200}) }))
 	{
 		FVector const& scale = get()->GetTransform().GetScale3D();
-		if(get<AShipPawn>() == nullptr) return;
+		AShipPawn* pawn = get<AShipPawn>();
+		if(pawn == nullptr) return;
 		FString tagTeam = "Team:" + get()->Team.ToString();
 
 		FName prot = get()->ModuleComponent->ProtectionMeshComponent->GetCollisionProfileName();
 		// for each module, we need to check each instance
 		if (sweepForInstancedStaticMesh(get()->ModuleComponent->ProtectionMeshComponent, get()->ModuleComponent->RU_ProtectionLocations, get()->ModuleComponent->R_RemovedProtectionLocations, scale, profileCollision, *tagTeam))
 		{
-			get<AShipPawn>()->RPCClientPlayCameraShake();
+			pawn->RPCClientPlayCameraShake();
 		}
 		if (sweepForInstancedStaticMesh(get()->ModuleComponent->SupportMeshComponent, get()->ModuleComponent->RU_SupportLocations, get()->ModuleComponent->R_RemovedSupportLocations, scale, profileCollision, *tagTeam))
 		{
-			get<AShipPawn>()->RPCClientPlayCameraShake();
+			pawn->RPCClientPlayCameraShake();
 		}
 
 		// end check red zone
@@ -239,10 +240,28 @@ void UCustomCollisionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 		if (sweepByProfile(hits, redZoneLocation, profileCollision, redZoneShape, { Tags::Matiere, Tags::Fog, *tagTeam, Tags::WorldManager }))
 		{
 			dispatch(hits);
-			if (!get<AShipPawn>()->canTank(hits.Num()))
+			if (!pawn->canTank(hits.Num()))
 			{
-				get<AShipPawn>()->kill();
+				pawn->kill();
 				addScore(hits, EScoreType::Kill);
+
+				// find team, if exist, of killer then broadcast event
+				for (auto const& hit : hits)
+				{
+					for (FName const& tag : hit.GetActor()->Tags)
+					{
+						FString stag = tag.ToString();
+						if (stag.Contains("Team:"))
+						{
+							TArray<FString> out;
+							stag.ParseIntoArray(out, TEXT(":"), true);
+							if (out.Num() == 2)
+							{
+								pawn->OnKill.broadcast(pawn->Team.ToString(), *out[1]);
+							}
+						}
+					}
+				}
 				return; // break flow
 			}
 		}
@@ -355,12 +374,14 @@ void UCustomCollisionComponent::hit(FString const& _team, int32 _playerId, class
 	}
 	else if (uniqueId == get()->DriverMeshComponent->GetUniqueID())
 	{
-		if (get<AShipPawn>() != nullptr)
+		
+		if (AShipPawn* pawn = get<AShipPawn>())
 		{
-			if (!get<AShipPawn>()->canTank(1))
+			if (!pawn->canTank(1))
 			{
-				get<AShipPawn>()->kill();
+				pawn->kill();
 				lb_addScore(EScoreType::Kill);
+				pawn->OnKill.broadcast(pawn->Team.ToString(), _team);
 			}
 		}
 	}

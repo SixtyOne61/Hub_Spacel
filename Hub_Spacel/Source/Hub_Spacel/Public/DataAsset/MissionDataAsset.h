@@ -25,6 +25,9 @@ struct HUB_SPACEL_API FMission
 	int32 ConditionValue { 0 };
 
 	UPROPERTY(EditAnywhere)
+	int32 DurationValue { 0 };
+
+	UPROPERTY(EditAnywhere)
 	FString Team {};
 };
 

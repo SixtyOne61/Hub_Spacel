@@ -27,7 +27,7 @@ void UMissionPanelUserWidget::addMission(FMission const& _mission)
             FString title = _mission.MissionTitle;
             title = title.Replace(*FString("%reward%"), *FString::FromInt(_mission.RewardValue));
             title = title.Replace(*FString("%condition%"), *FString::FromInt(_mission.ConditionValue));
-
+            title = title.Replace(*FString("%time%"), *(FString::FromInt(_mission.DurationValue) + "s"));
             if (this->TeamColorDataAsset != nullptr && !_mission.Team.IsEmpty())
             {
                 FColorsType const& info = this->TeamColorDataAsset->GetColorType(_mission.Team);

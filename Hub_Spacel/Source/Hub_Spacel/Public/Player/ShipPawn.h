@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Player/Common/CommonPawn.h"
 #include "Util/EnumUtil.h"
+#include "Util/SpacelEvent.h"
 #include "DataAsset/MissionDataAsset.h"
 #include <functional>
 #include "ShipPawn.generated.h"
@@ -71,6 +72,15 @@ public:
     void farmAsteroide();
     bool spawnNinePack();
 
+    UFUNCTION(Reliable, Client)
+    void RPCClientStartMission(FMission const& _mission);
+
+    UFUNCTION(Reliable, Client)
+    void RPCClientEndMission(FMission const& _mission);
+
+    UFUNCTION(Reliable, NetMulticast)
+    void RPCNetMulticastEndMission(FMission const& _mission);
+
 private:
     void OnRep_PlayerState() override;
 
@@ -128,15 +138,6 @@ private:
     UFUNCTION(Reliable, Client)
     void RPCClientRemoveEffect(EEffect _effect);
 
-    UFUNCTION(Reliable, Client)
-    void RPCClientStartMission(FMission const& _mission);
-
-    UFUNCTION(Reliable, Client)
-    void RPCClientEndMission(FMission const& _mission);
-
-    UFUNCTION(Reliable, NetMulticast)
-    void RPCNetMulticastEndMission(FMission const& _mission);
-
     bool canTank(int32 _val);
 
     UFUNCTION()
@@ -157,6 +158,9 @@ public:
 
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
     FOnEndMission OnEndMissionDelegate {};
+
+    using ConstStr = FString const&;
+    Util::EventTwoParams<ConstStr, ConstStr> OnKill {};
 
 protected:
     UPROPERTY(ReplicatedUsing = "OnRep_Matiere")

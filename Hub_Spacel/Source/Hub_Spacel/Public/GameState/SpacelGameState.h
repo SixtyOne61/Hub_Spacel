@@ -83,6 +83,7 @@ public:
 
 	void AddScore(FString const& _team, int32 _playerId, EScoreType _type);
 	void AddScore(FString const& _team, int32 _playerId, EScoreType _type, int32 _nb);
+	void AddScore(FString const& _team, int32 _value);
 
 	UFUNCTION()
 	void RegisterTeam();
@@ -96,8 +97,6 @@ protected:
 private:
 	UFUNCTION()
 	void OnRep_StateGame();
-
-	void teamScoreBoost();
 
 public:
 	UPROPERTY(Replicated)
