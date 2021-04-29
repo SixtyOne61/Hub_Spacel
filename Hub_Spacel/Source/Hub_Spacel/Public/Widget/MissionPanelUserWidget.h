@@ -19,7 +19,7 @@ protected:
 	void NativeConstruct() override;
 
 public:
-	void addMission(FMission _mission);
+	void addMission(FMission const& _mission);
 	void removeMission(EMission _type);
 
 public:

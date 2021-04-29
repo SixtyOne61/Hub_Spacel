@@ -39,7 +39,7 @@ private:
 	void RPCClientFailed(ESkill _skill);
 
 	UFUNCTION()
-	void OnUnlockSkill(EGameState _state);
+	void OnMissionEnd(EMission _type);
 
 public:
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)

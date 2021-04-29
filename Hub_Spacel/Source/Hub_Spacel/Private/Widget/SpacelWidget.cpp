@@ -62,8 +62,6 @@ void USpacelWidget::NativeConstruct()
     if (spacelGameState != nullptr)
     {
         spacelGameState->OnStartGameDelegate.AddDynamic(this, &USpacelWidget::StartGame);
-        spacelGameState->OnStartMissionDelegate.AddDynamic(this, &USpacelWidget::OnStartMission);
-        spacelGameState->OnEndMissionDelegate.AddDynamic(this, &USpacelWidget::OnEndMission);
     }
 
     AShipPawn* shipPawn { this->GetOwningPlayerPawn<AShipPawn>() };
@@ -79,6 +77,10 @@ void USpacelWidget::NativeConstruct()
         shipPawn->OnRemoveEffectDelegate.AddDynamic(this, &USpacelWidget::OnRemoveEffect);
 
         shipPawn->OnSendInfoPlayerDelegate.AddDynamic(this, &USpacelWidget::OnSendInfoPlayer);
+
+        // mission
+        shipPawn->OnStartMissionDelegate.AddDynamic(this, &USpacelWidget::OnStartMission);
+        shipPawn->OnEndMissionDelegate.AddDynamic(this, &USpacelWidget::OnEndMission);
 
         if (ASpacelPlayerState* playerState = shipPawn->GetPlayerState<ASpacelPlayerState>())
         {
@@ -106,23 +108,8 @@ void USpacelWidget::NativeTick(const FGeometry& _myGeometry, float _deltaTime)
     UpdateScore();
 }
 
-void USpacelWidget::OnStartMission(FMission _mission)
+void USpacelWidget::OnStartMission(FMission const& _mission)
 {
-    if (_mission.Type == EMission::EcartType)
-    {
-        ASpacelPlayerState* owningPlayerState{ Cast<ASpacelPlayerState>(this->GetOwningPlayerState()) };
-        if (owningPlayerState == nullptr) return;
-        FString owningPlayerTeam { owningPlayerState->R_Team };
-
-        if (ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld())))
-        {
-            if (spacelGameState->GetWorstTeam() != owningPlayerTeam)
-            {
-                return;
-            }
-        }
-    }
-
     if (m_currentMission.Num() == 0)
     {
         // appear mission panel
@@ -132,17 +119,17 @@ void USpacelWidget::OnStartMission(FMission _mission)
     m_currentMission.Add(_mission.Type);
 
     UMissionPanelUserWidget* panelMission = SimplyUI::initSafetyFromName<UUserWidget, UMissionPanelUserWidget>(this, TEXT("WBP_Mission"));
-    if (panelMission != nullptr && this->MissionDataAsset != nullptr)
+    if (panelMission != nullptr)
     {
         panelMission->addMission(_mission);
     }
 }
 
-void USpacelWidget::OnEndMission(FMission _mission)
+void USpacelWidget::OnEndMission(EMission _type)
 {
-    if (m_currentMission.Contains(_mission.Type))
+    if (m_currentMission.Contains(_type))
     {
-        m_currentMission.Remove(_mission.Type);
+        m_currentMission.Remove(_type);
 
         if (m_currentMission.Num() == 0)
         {
@@ -152,7 +139,7 @@ void USpacelWidget::OnEndMission(FMission _mission)
 
         if (UMissionPanelUserWidget* panelMission = SimplyUI::initSafetyFromName<UUserWidget, UMissionPanelUserWidget>(this, TEXT("WBP_Mission")))
         {
-            panelMission->removeMission(_mission.Type);
+            panelMission->removeMission(_type);
         }
     }
 }

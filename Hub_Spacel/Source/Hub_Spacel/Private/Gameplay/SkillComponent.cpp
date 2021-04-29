@@ -43,14 +43,16 @@ void USkillComponent::setupSkill()
         }
     }
 
-    if (ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld())))
+    if (AShipPawn* pawn = get<AShipPawn>())
     {
-        spacelGameState->OnUnlockSkillDelegate.AddDynamic(this, &USkillComponent::OnUnlockSkill);
+        pawn->OnEndMissionDelegate.AddDynamic(this, &USkillComponent::OnMissionEnd);
     }
 }
 
-void USkillComponent::OnUnlockSkill(EGameState _state)
+void USkillComponent::OnMissionEnd(EMission _type)
 {
+    if(_type != EMission::FirstBlood && _type != EMission::ScoreRace) return;
+
     if (ASpacelPlayerState* spacelPlayerState = Cast<ASpacelPlayerState>(get()->GetPlayerState()))
     {
         if (this->SkillDataAsset == nullptr) return;
@@ -78,14 +80,14 @@ void USkillComponent::OnUnlockSkill(EGameState _state)
             }
         };
 
-        if (_state == EGameState::UnlockMedium)
+        if (_type == EMission::FirstBlood)
         {
             uint8 levelSpecial = this->SkillDataAsset->LevelSpecial;
             lb(ESkillType::Attack, ESkill::SpecialAttack, levelSpecial, this->DefaultKeyboard[0]);
             lb(ESkillType::Protection, ESkill::SpecialProtection, levelSpecial, this->DefaultKeyboard[0]);
             lb(ESkillType::Support, ESkill::SpecialSupport, levelSpecial, this->DefaultKeyboard[0]);
         }
-        else if (_state == EGameState::UnlockUltimate)
+        else if (_type == EMission::ScoreRace)
         {
             uint8 levelMetaForm = this->SkillDataAsset->LevelMetaForm;
             lb(ESkillType::Attack, ESkill::MetaFormAttack, levelMetaForm, this->DefaultKeyboard[1]);

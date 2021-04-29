@@ -631,6 +631,21 @@ void AShipPawn::RPCClientRemoveEffect_Implementation(EEffect _effect)
     OnRemoveEffectDelegate.Broadcast(_effect);
 }
 
+void AShipPawn::RPCClientStartMission_Implementation(FMission const& _mission)
+{
+    OnStartMissionDelegate.Broadcast(_mission);
+}
+
+void AShipPawn::RPCClientEndMission_Implementation(FMission const& _mission)
+{
+    OnEndMissionDelegate.Broadcast(_mission.Type);
+}
+
+void AShipPawn::RPCNetMulticastEndMission_Implementation(FMission const& _mission)
+{
+    OnEndMissionDelegate.Broadcast(_mission.Type);
+}
+
 void AShipPawn::behaviourAddEffect(EEffect _type)
 {
     if (_type == EEffect::Shield)

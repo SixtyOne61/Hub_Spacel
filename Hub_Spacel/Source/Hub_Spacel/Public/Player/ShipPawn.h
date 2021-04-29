@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Player/Common/CommonPawn.h"
 #include "Util/EnumUtil.h"
+#include "DataAsset/MissionDataAsset.h"
 #include <functional>
 #include "ShipPawn.generated.h"
 
@@ -15,6 +16,8 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLocalTeamUpdate, FString const&, 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAddEffect, EEffect, _type);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRemoveEffect, EEffect, _type);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnFeedbackScore, EScoreType, _type, int32, _value);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStartMission, FMission const&, _mission);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEndMission, EMission, _type);
 
 UCLASS()
 class HUB_SPACEL_API AShipPawn : public ACommonPawn
@@ -28,6 +31,7 @@ class HUB_SPACEL_API AShipPawn : public ACommonPawn
     friend class URepairComponent;
     friend class ULocalPlayerActionComponent;
     friend class USkillComponent;
+    friend class AMissionManager;
 
 public:
     // Called when the game starts or when spawned
@@ -124,6 +128,15 @@ private:
     UFUNCTION(Reliable, Client)
     void RPCClientRemoveEffect(EEffect _effect);
 
+    UFUNCTION(Reliable, Client)
+    void RPCClientStartMission(FMission const& _mission);
+
+    UFUNCTION(Reliable, Client)
+    void RPCClientEndMission(FMission const& _mission);
+
+    UFUNCTION(Reliable, NetMulticast)
+    void RPCNetMulticastEndMission(FMission const& _mission);
+
     bool canTank(int32 _val);
 
     UFUNCTION()
@@ -138,6 +151,12 @@ private:
 public:
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
     FOnFeedbackScore OnFeedbackScoreDelegate {};
+
+    UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
+    FOnStartMission OnStartMissionDelegate {};
+
+    UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
+    FOnEndMission OnEndMissionDelegate {};
 
 protected:
     UPROPERTY(ReplicatedUsing = "OnRep_Matiere")

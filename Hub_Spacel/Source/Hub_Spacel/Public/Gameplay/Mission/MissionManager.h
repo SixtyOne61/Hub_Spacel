@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "DataAsset/MissionDataAsset.h"
+#include "Gameplay/Mission/MissionBehaviour.h"
 #include "MissionManager.generated.h"
 
 UCLASS()
@@ -27,10 +29,13 @@ private:
 	UFUNCTION()
 	void OnStartGame();
 
-	void startMissionOnAllClient(FMission const& _mision) const;
+	void startMissionOnAllClient(FMission const& _mission) const;
+	void endMissionOnNetMulticast(FMission const& _mission) const;
 
 public:
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
 	class UMissionDataAsset* MissionDataAsset{ nullptr };
 
+	TArray<TUniquePtr<MissionBehaviour>> m_openMission;
+	TArray<TUniquePtr<MissionSilence>> m_silenceMission;
 };

@@ -96,13 +96,13 @@ protected:
 	void OnRespawn();
 
 	UFUNCTION()
-	void OnStartMission(FMission _mission);
+	void OnStartMission(FMission const& _mission);
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void ShowMissionPanel();
 
 	UFUNCTION()
-	void OnEndMission(FMission _mission);
+	void OnEndMission(EMission _type);
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void HideMissionPanel();

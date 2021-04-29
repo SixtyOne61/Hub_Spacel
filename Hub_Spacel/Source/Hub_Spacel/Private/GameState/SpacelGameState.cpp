@@ -22,45 +22,12 @@ void ASpacelGameState::OnRep_StateGame()
         break;
 
     case (uint8)EGameState::InGame:
-    {
         OnStartGameDelegate.Broadcast();
-        FTimerDelegate timerCallbackFirstBlood;
-        timerCallbackFirstBlood.BindLambda([&]() { 
-            FMission mission;
-            this->MissionDataAsset->fillMission(EMission::FirstBlood, mission);
-            OnStartMissionDelegate.Broadcast(mission); });
-
-        FTimerHandle handleFirstBlood;
-        this->GetWorldTimerManager().SetTimer(handleFirstBlood, timerCallbackFirstBlood, 5.0f, false);
-
-        FTimerDelegate timerCallbackScore;
-        timerCallbackScore.BindLambda([&]() {
-            FMission mission;
-            this->MissionDataAsset->fillMission(EMission::ScoreRace, mission);
-            OnStartMissionDelegate.Broadcast(mission); });
-
-        FTimerHandle handleScore;
-        this->GetWorldTimerManager().SetTimer(handleScore, timerCallbackScore, 30.0f, false);
         break;
-    }
 
     case (uint8)EGameState::UnlockMedium:
-    {
-        FMission mission;
-        this->MissionDataAsset->fillMission(EMission::FirstBlood, mission);
-        OnEndMissionDelegate.Broadcast(mission);
-        OnUnlockSkillDelegate.Broadcast((EGameState)this->RU_GameState);
-        break;
-    }
-
     case (uint8)EGameState::UnlockUltimate:
-    {
-        FMission mission;
-        this->MissionDataAsset->fillMission(EMission::ScoreRace, mission);
-        OnEndMissionDelegate.Broadcast(mission);
-        OnUnlockSkillDelegate.Broadcast((EGameState)this->RU_GameState);
-        break;
-    }
+    break;
 
     default:
         break;
@@ -116,11 +83,6 @@ int32 ASpacelGameState::GetScore(FString const& _team) const
 void ASpacelGameState::AddScore(FString const& _team, int32 _playerId, EScoreType _type)
 {
     if (this->GameStateDataAsset == nullptr) return;
-    if (this->MissionDataAsset == nullptr) return;
-
-    FMission mission{};
-    this->MissionDataAsset->fillMission(EMission::ScoreRace, mission);
-    int32 thresholdUltimate = mission.ConditionValue;
 
     uint16 scoreValue = 0;
     for (FScore& score : this->R_Scores)
@@ -130,15 +92,8 @@ void ASpacelGameState::AddScore(FString const& _team, int32 _playerId, EScoreTyp
             int32 delta = this->GameStateDataAsset->getScore(_type);
             score.Score += delta;
             scoreValue = delta;
-
-            if (score.Score >= thresholdUltimate && RU_GameState == (uint8)EGameState::UnlockMedium)
-            {
-                GoToUnlockUltimate();
-            }
         }
     }
-
-    teamScoreBoost();
 
     // send feedback to player
     for (APlayerState* playerState : this->PlayerArray)
@@ -172,25 +127,25 @@ void ASpacelGameState::teamScoreBoost()
     int32 bestTeamScore = GetScore(bestTeam);
     int32 worstTeamScore = GetScore(worstTeam);
 
-    if (this->MissionDataAsset != nullptr)
-    {
-        FMission mission;
-        this->MissionDataAsset->fillMission(EMission::EcartType, mission);
-
-        if (bestTeamScore - worstTeamScore > mission.ConditionValue
-            && !this->TeamWithBonusMission.Contains(worstTeam))
-        {
-            this->TeamWithBonusMission.Add(worstTeam);
-            mission.Team = bestTeam;
-            RPCNetMulticastScoreBoost(mission);
-        }
-    }
+    //if (this->MissionDataAsset != nullptr)
+    //{
+    //    FMission mission;
+    //    this->MissionDataAsset->fillMission(EMission::EcartType, mission);
+    //
+    //    if (bestTeamScore - worstTeamScore > mission.ConditionValue
+    //        && !this->TeamWithBonusMission.Contains(worstTeam))
+    //    {
+    //        this->TeamWithBonusMission.Add(worstTeam);
+    //        mission.Team = bestTeam;
+    //        RPCNetMulticastScoreBoost(mission);
+    //    }
+    //}
 }
 
-void ASpacelGameState::RPCNetMulticastScoreBoost_Implementation(FMission const& _mission)
-{
-    this->OnStartMissionDelegate.Broadcast(_mission);
-}
+//void ASpacelGameState::RPCNetMulticastScoreBoost_Implementation(FMission const& _mission)
+//{
+//    //this->OnStartMissionDelegate.Broadcast(_mission);
+//}
 
 void ASpacelGameState::RegisterTeam()
 {

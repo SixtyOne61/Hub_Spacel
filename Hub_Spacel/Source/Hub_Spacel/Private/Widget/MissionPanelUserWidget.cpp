@@ -15,7 +15,7 @@ void UMissionPanelUserWidget::NativeConstruct()
     VerticalBox = SimplyUI::initSafetyFromName<UUserWidget, UVerticalBox>(this, TEXT("Mission_VerticalBox"));
 }
 
-void UMissionPanelUserWidget::addMission(FMission _mission)
+void UMissionPanelUserWidget::addMission(FMission const& _mission)
 {
     if (this->VerticalBox != nullptr)
     {

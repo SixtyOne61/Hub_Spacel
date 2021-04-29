@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "GameFramework/GameStateBase.h"
 #include "Enum/SpacelEnum.h"
-#include "DataAsset/MissionDataAsset.h"
 #include "SpacelGameState.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartPrepare);
@@ -13,9 +12,6 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FLockPrepare);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartGame);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FScoreUpdate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FPlayerEnterFog, int32, _playerId, bool, _enter);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUnlockSkill, EGameState, _state);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStartMission, FMission, _mission);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEndMission, FMission, _mission);
 
 USTRUCT()
 struct HUB_SPACEL_API FTeamLocation
@@ -91,6 +87,9 @@ public:
 	UFUNCTION()
 	void RegisterTeam();
 
+	UFUNCTION()
+	inline EGameState GetState() const { return (EGameState)this->RU_GameState; }
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -99,9 +98,6 @@ private:
 	void OnRep_StateGame();
 
 	void teamScoreBoost();
-
-	UFUNCTION(Reliable, NetMulticast)
-	void RPCNetMulticastScoreBoost(FMission const& _mission);
 
 public:
 	UPROPERTY(Replicated)
@@ -125,21 +121,9 @@ public:
 	UPROPERTY()
 	FPlayerEnterFog OnPlayerEnterFogDelegate {};
 
-	UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
-	FOnUnlockSkill OnUnlockSkillDelegate {};
-
-	UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
-	FOnStartMission OnStartMissionDelegate {};
-
-	UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
-	FOnEndMission OnEndMissionDelegate {};
-
 protected:
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
 	class UGameStateDataAsset* GameStateDataAsset { nullptr };
-
-	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
-	class UMissionDataAsset* MissionDataAsset{ nullptr };
 
 private:
 	UPROPERTY(ReplicatedUsing = OnRep_StateGame)

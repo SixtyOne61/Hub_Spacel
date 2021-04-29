@@ -12,7 +12,7 @@ struct HUB_SPACEL_API FMission
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BitmaskEnum = "EEffect"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	EMission Type {};
 
 	UPROPERTY(EditAnywhere)
@@ -37,20 +37,6 @@ class HUB_SPACEL_API UMissionDataAsset : public UDataAsset
 	GENERATED_BODY()
 
 public:
-	inline void fillMission(EMission _type, FMission & _mission) const
-	{
-		for (auto const& mission : Missions)
-		{
-			if (mission.Type == _type)
-			{
-				_mission = mission;
-				return;
-			}
-		}
-
-		ensure(false);
-	}
-
 	inline FMission getMission(EMission _type) const
 	{
 		for (auto const& mission : Missions)
