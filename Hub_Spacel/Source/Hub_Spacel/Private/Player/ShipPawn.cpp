@@ -678,6 +678,11 @@ void AShipPawn::behaviourAddEffect(EEffect _type)
     }
     else if (_type == EEffect::BackToGame)
     {
+        if (this->FireComponent != nullptr)
+        {
+            this->FireComponent->m_isFire = false;
+        }
+
         FTimerHandle handle;
         this->GetWorldTimerManager().SetTimer(handle, this, &AShipPawn::BackToGame, 1.0f, false);
     }
