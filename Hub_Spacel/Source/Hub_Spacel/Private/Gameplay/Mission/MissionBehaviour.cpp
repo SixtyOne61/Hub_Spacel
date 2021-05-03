@@ -15,7 +15,7 @@ void MissionFirstBlood::tick(float _deltaTime, UWorld* _world)
     {
         if (spacelGameState->GetState() == EGameState::UnlockMedium)
         {
-            end(_world);
+            end();
         }
     }
 }
@@ -33,7 +33,7 @@ void MissionRaceScore::tick(float _deltaTime, UWorld* _world)
         if (score >= m_mission.RewardValue)
         {
             spacelGameState->GoToUnlockUltimate();
-            end(_world);
+            end();
         }
     }
 }
@@ -46,7 +46,7 @@ void MissionEcartType::tick(float _deltaTime, UWorld* _world)
         {
             spacelGameState->AddScore(m_loosingTeam, m_mission.RewardValue);
         }
-        end(_world);
+        end();
     }
     else if(!m_start)
     {
@@ -90,7 +90,7 @@ void MissionEcartType::tick(float _deltaTime, UWorld* _world)
         m_timer += _deltaTime;
         if (m_timer >= m_mission.DurationValue)
         {
-            end(_world);
+            end();
         }
     }
 }
@@ -101,4 +101,14 @@ void MissionEcartType::onKill(FString const& _victim, FString const& _killer)
     {
         m_killDone = true;
     }
+}
+
+void MissionComet::tick(float _deltaTime, UWorld* _world)
+{
+
+}
+
+void MissionComet::onCometDestroy()
+{
+    end();
 }

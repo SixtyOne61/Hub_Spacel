@@ -22,6 +22,8 @@ protected:
 	UFUNCTION()
 	void OnComponentEndOverlap(UPrimitiveComponent* _overlappedComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, int32 _otherBodyIndex);
 
+	void spawnCometStart(int _size) const;
+
 public:
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Settings")
     class UBoxComponent* BoxComponent;
@@ -31,4 +33,7 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Settings")
 	TSubclassOf<class AChunck> ChunckClass { nullptr };
+
+	UPROPERTY(EditAnywhere, Category = "Settings")
+	TSubclassOf<class AActor> PointStartCometClass { nullptr };
 };

@@ -8,6 +8,7 @@
 #include "Player/ShipPawn.h"
 #include "Util/SimplyMath.h"
 #include "Util/Tag.h"
+#include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
 AWorldManager::AWorldManager()
@@ -49,6 +50,8 @@ void AWorldManager::BeginPlay()
     FVector box = FVector(environmentSize, environmentSize, environmentSize);
     this->BoxComponent->OnComponentEndOverlap.AddDynamic(this, &AWorldManager::OnComponentEndOverlap);
 
+    spawnCometStart(environmentSize);
+
     FVector offset = box / 2.0f;
 
     for (int x = 0; x < nb; ++x)
@@ -74,6 +77,39 @@ void AWorldManager::BeginPlay()
                     chunck->FinishSpawning(transform);
                 }
             }
+        }
+    }
+}
+
+void AWorldManager::spawnCometStart(int _size) const
+{
+    if(this->PointStartCometClass == nullptr) return;
+
+    UWorld* const world{ this->GetWorld() };
+    if (!ensure(world != nullptr)) return;
+
+    TArray<FVector> locs{
+        FVector { _size * -1.0f, _size * -1.0f, _size * -1.0f },
+        FVector { _size * -1.0f, _size * -1.0f, (float)_size },
+        FVector { _size * -1.0f, (float)_size, _size * -1.0f },
+        FVector { _size * -1.0f, (float)_size, (float)_size },
+
+        FVector { (float)_size, _size * -1.0f, _size * -1.0f },
+        FVector { (float)_size, _size * -1.0f, (float)_size },
+        FVector { (float)_size, (float)_size, _size * -1.0f },
+        FVector { (float)_size, (float)_size, (float)_size },
+    };
+
+    for (FVector const& loc : locs)
+    {
+        FTransform transform;
+        transform.SetLocation(loc);
+        transform.SetRotation(UKismetMathLibrary::FindLookAtRotation(loc, FVector::ZeroVector).Quaternion());
+
+        AActor* cometStart = world->SpawnActorDeferred<AActor>(this->PointStartCometClass, transform);
+        if (cometStart)
+        {
+            cometStart->FinishSpawning(transform);
         }
     }
 }

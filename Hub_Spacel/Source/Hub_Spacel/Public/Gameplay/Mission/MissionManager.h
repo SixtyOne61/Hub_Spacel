@@ -32,9 +32,14 @@ private:
 	void startMissionOnAllClient(FMission const& _mission) const;
 	void endMissionOnNetMulticast(FMission const& _mission) const;
 
+	void startMissionComet();
+
 public:
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
 	class UMissionDataAsset* MissionDataAsset{ nullptr };
+
+	UPROPERTY(Category = "Sub class", EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<class AComet> CometClass { nullptr };
 
 	TArray<TUniquePtr<MissionBehaviour>> m_openMission;
 	TArray<TUniquePtr<MissionSilence>> m_silenceMission;

@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "DataAsset/MissionDataAsset.h"
-
+#include "Util/SpacelEvent.h"
 /**
  * 
  */
@@ -17,7 +17,7 @@ public:
 	virtual ~MissionBehaviour() {};
 
 	virtual void tick(float _deltaTime, UWorld* _world) = 0;
-	virtual void end(UWorld* _world) { m_isEnd = true; };
+	virtual void end() { m_isEnd = true; };
 
 protected:
 	FMission m_mission {};
@@ -67,3 +67,12 @@ private:
 	float m_timer { 0.0f };
 };
 
+class HUB_SPACEL_API MissionComet : public MissionBehaviour
+{
+	using MissionBehaviour::MissionBehaviour;
+
+public:
+	void tick(float _deltaTime, UWorld* _world) override;
+
+	void onCometDestroy();
+};

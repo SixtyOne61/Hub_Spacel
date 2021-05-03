@@ -7,6 +7,9 @@
 #include "Player/SpacelPlayerState.h"
 #include "Player/ShipPawn.h"
 #include "Gameplay/Mission/MissionBehaviour.h"
+#include "Gameplay/Mission/Comet.h"
+#include "Util/Tag.h"
+#include <functional>
 
 // Sets default values
 AMissionManager::AMissionManager()
@@ -88,6 +91,8 @@ void AMissionManager::OnStartGame()
 	
 	FTimerHandle handleScoreRace;
 	this->GetWorldTimerManager().SetTimer(handleScoreRace, timerCallbackScoreRace, scoreRace.ConditionValue, false);
+
+	startMissionComet();
 }
 
 void AMissionManager::startMissionOnAllClient(FMission const& _mission) const
@@ -122,6 +127,68 @@ void AMissionManager::endMissionOnNetMulticast(FMission const& _mission) const
 			{
 				shipPawn->RPCNetMulticastEndMission(_mission);
 			}
+		}
+	}
+}
+
+void AMissionManager::startMissionComet()
+{
+	if (this->CometClass == nullptr) return;
+
+	UWorld* const world{ this->GetWorld() };
+	if (!ensure(world != nullptr)) return;
+
+	// find start position
+	TArray<AActor*> starts {};
+	UGameplayStatics::GetAllActorsWithTag(world, Tags::PointStartComet, starts);
+
+	// spawn actor
+	int32 index = FMath::RandRange(0, starts.Num()-1);
+	if(starts[index] == nullptr) return;
+
+	FTransform transform = starts[index]->GetActorTransform();
+	FVector const& baseLocation = transform.GetLocation();
+
+	TArray<FVector> scales {
+		FVector { 20.0f, 3.0f, 5.0f },
+		FVector { 7.0f, 5.0f, 1.0f },
+		FVector { 1.0f, 1.0f, 1.0f },
+		FVector { 11.0f, 4.0f, 4.0f }
+	};
+
+	TArray<FVector> delta
+	{
+		FVector { 860.0f, 860.0f, 860.0f },
+		FVector { -640.0f, 180.0f, 440.0f },
+		FVector { 0.0, -440.0f, -1200.0f },
+		FVector { -600.0f, -800.0f, -330.0f }
+	};
+
+	transform.SetScale3D(FVector{ 30.0f, 7.0f, 7.0f });
+
+	for (int i = 0; i < 5; ++i)
+	{
+		AComet* comet = world->SpawnActorDeferred<AComet>(this->CometClass, transform);
+		if (comet)
+		{
+			FMission const& cometMission = this->MissionDataAsset->getMission(EMission::Comet);
+			m_openMission.Add(MakeUnique<MissionComet>(cometMission));
+			startMissionOnAllClient(this->MissionDataAsset->getMission(EMission::Comet));
+
+			MissionComet* missionPtr = static_cast<MissionComet*>(m_openMission.Last().Get());
+			comet->m_onIntercep.add(std::bind(&MissionComet::onCometDestroy, missionPtr));
+
+			comet->FinishSpawning(transform);
+		}
+
+		if (scales.Num() > 0 && delta.Num() > 0)
+		{
+			int32 randScaleIndex = FMath::RandRange(0, scales.Num() - 1);
+			transform.SetScale3D(scales[randScaleIndex]);
+
+			int32 randDeltaIndex = FMath::RandRange(0, delta.Num() - 1);
+			transform.SetTranslation(baseLocation + delta[randDeltaIndex]);
+			delta.RemoveAt(randDeltaIndex);
 		}
 	}
 }

@@ -160,7 +160,7 @@ public:
     FOnEndMission OnEndMissionDelegate {};
 
     using ConstStr = FString const&;
-    Util::EventTwoParams<ConstStr, ConstStr> OnKill {};
+    Util::Event<ConstStr, ConstStr> OnKill {};
 
 protected:
     UPROPERTY(ReplicatedUsing = "OnRep_Matiere")
