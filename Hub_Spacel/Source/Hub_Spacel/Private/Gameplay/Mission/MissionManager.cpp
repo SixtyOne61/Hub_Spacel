@@ -91,8 +91,6 @@ void AMissionManager::OnStartGame()
 	
 	FTimerHandle handleScoreRace;
 	this->GetWorldTimerManager().SetTimer(handleScoreRace, timerCallbackScoreRace, scoreRace.ConditionValue, false);
-
-	startMissionComet();
 }
 
 void AMissionManager::startMissionOnAllClient(FMission const& _mission) const

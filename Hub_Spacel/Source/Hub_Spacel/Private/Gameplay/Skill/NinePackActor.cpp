@@ -55,7 +55,7 @@ void ANinePackActor::BeginPlay()
 		this->Voxels->AddInstance(FTransform(FVector(-172.0f, 43.0f, -43.0f)));
 		this->Voxels->AddInstance(FTransform(FVector(-172.0f, 43.0f, 43.0f)));
 	}
-
+	// to do collision with asteroid && when this mission is triggered (timer)
 	// server side
 	if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
 	{
