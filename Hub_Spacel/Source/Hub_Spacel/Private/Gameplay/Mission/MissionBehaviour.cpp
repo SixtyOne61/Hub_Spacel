@@ -105,10 +105,36 @@ void MissionEcartType::onKill(FString const& _victim, FString const& _killer)
 
 void MissionComet::tick(float _deltaTime, UWorld* _world)
 {
+    if (m_teams.Num() != 0)
+    {
+        if (ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(_world->GetGameState()))
+        {
+            TArray<APlayerState*> playerStates = spacelGameState->PlayerArray;
+            for (auto* playerState : playerStates)
+            {
+                if (AShipPawn* shipPawn = playerState->GetPawn<AShipPawn>())
+                {
+                    for (auto const& team : m_teams)
+                    {
+                        if (shipPawn->Team == *team)
+                        {
+                            shipPawn->boostWall();
+                        }
+                    }
+                }
+            }
+        }
+        m_teams.Empty();
+    }
 
+    if (m_nbComet == 0)
+    {
+        end();
+    }
 }
 
-void MissionComet::onCometDestroy()
+void MissionComet::onCometDestroy(FString const& _team)
 {
-    end();
+    m_nbComet--;
+    m_teams.Add(_team);
 }

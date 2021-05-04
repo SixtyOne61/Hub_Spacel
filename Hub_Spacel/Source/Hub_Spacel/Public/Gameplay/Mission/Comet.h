@@ -3,12 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
+#include "Gameplay/Mission/MissionActor.h"
 #include "Util/SpacelEvent.h"
 #include "Comet.generated.h"
 
 UCLASS()
-class HUB_SPACEL_API AComet : public AActor
+class HUB_SPACEL_API AComet : public AMissionActor
 {
 	GENERATED_BODY()
 
@@ -17,6 +17,8 @@ class HUB_SPACEL_API AComet : public AActor
 public:	
 	// Sets default values for this actor's properties
 	AComet();
+
+	void hit(class AShipPawn* _pawn, FString const& _team) override;
 
 protected:
 	// Called when the game starts or when spawned
@@ -30,7 +32,7 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Default")
 	class UProjectileMovementComponent* ProjectileMovementComponent{ nullptr };
 
-	Util::Event<> m_onIntercep {};
+	Util::Event<FString const&> m_onIntercep {};
 
 	int32 m_speedRoll { 0 };
 };

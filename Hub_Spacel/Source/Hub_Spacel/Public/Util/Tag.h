@@ -10,4 +10,5 @@ namespace Tags
     static const FName WorldManager { "WorldManager" };
     static const FName Asteroide { "Asteroide" };
     static const FName PointStartComet { "CometStart" };
+    static const FName Mission { "Mission" };
 }

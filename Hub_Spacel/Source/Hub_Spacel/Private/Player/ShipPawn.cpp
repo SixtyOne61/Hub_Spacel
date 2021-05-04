@@ -34,6 +34,7 @@
 #include "TimerManager.h"
 #include "Gameplay/SkillComponent.h"
 #include "NiagaraComponent.h"
+#include "Skill/NinePackActor.h"
 
 void AShipPawn::OnLockPrepare()
 {
@@ -556,6 +557,11 @@ float AShipPawn::getPercentSupport() const
     return this->ModuleComponent->getPercentSupport();
 }
 
+void AShipPawn::boostWall()
+{
+    this->R_HasBoostWall = true;
+}
+
 bool AShipPawn::canTank(int32 _val)
 {
     auto lb_addScore = [&](int32 _val)
@@ -823,8 +829,12 @@ bool AShipPawn::spawnNinePack()
                 if (USceneComponent* comp = Cast<USceneComponent>(actors[0]))
                 {
                     FTransform const& tr = comp->GetComponentTransform();
-                    AActor* actor = Cast<AActor>(UGameplayStatics::BeginDeferredActorSpawnFromClass(GetWorld(), this->PlayerDataAsset->NinePackClass, tr));
-                    UGameplayStatics::FinishSpawningActor(actor, tr);
+                    ANinePackActor* ninePackActor = Cast<ANinePackActor>(UGameplayStatics::BeginDeferredActorSpawnFromClass(GetWorld(), this->PlayerDataAsset->NinePackClass, tr));
+                    if (ninePackActor != nullptr)
+                    {
+                        ninePackActor->R_IsBoost = this->R_HasBoostWall;
+                    }
+                    UGameplayStatics::FinishSpawningActor(ninePackActor, tr);
                     return true;
                 }
             }
@@ -839,5 +849,6 @@ void AShipPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetim
     DOREPLIFETIME(AShipPawn, RU_Matiere);
     DOREPLIFETIME(AShipPawn, R_ShieldLife);
     DOREPLIFETIME(AShipPawn, R_Effect);
+    DOREPLIFETIME(AShipPawn, R_HasBoostWall);
 }
 

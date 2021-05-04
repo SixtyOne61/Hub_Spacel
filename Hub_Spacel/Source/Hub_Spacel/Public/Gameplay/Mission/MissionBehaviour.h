@@ -74,5 +74,8 @@ class HUB_SPACEL_API MissionComet : public MissionBehaviour
 public:
 	void tick(float _deltaTime, UWorld* _world) override;
 
-	void onCometDestroy();
+	void onCometDestroy(FString const& _team);
+
+	int m_nbComet { 0 };
+	TSet<FString> m_teams {};
 };

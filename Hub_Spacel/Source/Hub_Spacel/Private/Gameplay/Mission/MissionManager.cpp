@@ -176,7 +176,8 @@ void AMissionManager::startMissionComet()
 			startMissionOnAllClient(this->MissionDataAsset->getMission(EMission::Comet));
 
 			MissionComet* missionPtr = static_cast<MissionComet*>(m_openMission.Last().Get());
-			comet->m_onIntercep.add(std::bind(&MissionComet::onCometDestroy, missionPtr));
+			missionPtr->m_nbComet++;
+			comet->m_onIntercep.add(std::bind(&MissionComet::onCometDestroy, missionPtr, std::placeholders::_1));
 
 			comet->FinishSpawning(transform);
 		}

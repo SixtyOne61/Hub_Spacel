@@ -26,6 +26,8 @@ public:
 
 	bool& inputeState() { return m_isDown; }
 
+	ESkill getSkillType() const { return m_param.Skill; }
+
 private:
 	void onAvailable();
 	void onIng();

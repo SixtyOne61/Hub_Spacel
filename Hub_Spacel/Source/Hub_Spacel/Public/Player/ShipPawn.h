@@ -33,6 +33,7 @@ class HUB_SPACEL_API AShipPawn : public ACommonPawn
     friend class ULocalPlayerActionComponent;
     friend class USkillComponent;
     friend class AMissionManager;
+    friend class AComet;
 
 public:
     // Called when the game starts or when spawned
@@ -80,6 +81,8 @@ public:
 
     UFUNCTION(Reliable, NetMulticast)
     void RPCNetMulticastEndMission(FMission const& _mission);
+
+    void boostWall();
 
 private:
     void OnRep_PlayerState() override;
@@ -168,6 +171,9 @@ protected:
 
     UPROPERTY(Replicated)
     int32 R_ShieldLife { 0 };
+
+    UPROPERTY(Replicated)
+    bool R_HasBoostWall { false };
 
     FName m_lastTeamEmp {};
     int32 m_lastPlayerIdEmp {};

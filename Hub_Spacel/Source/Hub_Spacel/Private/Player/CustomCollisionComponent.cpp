@@ -8,6 +8,7 @@
 #include "CollisionQueryParams.h"
 #include "Gameplay/DestroyActor.h"
 #include "Gameplay/Bullet/ProjectileBase.h"
+#include "Gameplay/Mission/MissionActor.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "World/MatiereManager.h"
 #include "Kismet/GameplayStatics.h"
@@ -214,6 +215,8 @@ void UCustomCollisionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 
 	// add matiere if we hit it
 	hitMatiere(ownerLocation, profileCollision);
+	// resolve mission
+	hitMission(ownerLocation, profileCollision);
 
 	TArray<FHitResult> hits;
 	if (sweepByProfile(hits, ownerLocation, profileCollision, { FCollisionShape::MakeBox({400, 350, 200}) }))
@@ -263,6 +266,36 @@ void UCustomCollisionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 					}
 				}
 				return; // break flow
+			}
+		}
+	}
+}
+
+void UCustomCollisionComponent::hitMission(FVector const& _ownerLocation, FName const& _profileCollision) const
+{
+	// TO DO optim : check if we have a mission
+	TArray<FHitResult> hits;
+	if (sweepByProfile(hits, _ownerLocation, _profileCollision, { FCollisionShape::MakeBox({600, 600, 600}) }))
+	{
+		hits.RemoveAll([](FHitResult const& _item)
+			{
+				if (_item.Actor.IsValid() && _item.Actor.Get()->ActorHasTag(Tags::Mission))
+				{
+					return false;
+				}
+				return true;
+			});
+
+		ASpacelPlayerState const* spacelPlayerState = get()->GetPlayerState<ASpacelPlayerState>();
+		if (spacelPlayerState == nullptr) return;
+
+		FString const& team = spacelPlayerState->R_Team;
+
+		for (auto const& hit : hits)
+		{
+			if (AMissionActor* mission = Cast<AMissionActor>(hit.Actor))
+			{
+				mission->hit(get<AShipPawn>(), team);
 			}
 		}
 	}

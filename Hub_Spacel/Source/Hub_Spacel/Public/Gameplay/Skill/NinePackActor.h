@@ -27,6 +27,10 @@ private:
 	UFUNCTION()
 	void OnComponentHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit);
 
+public:
+	UPROPERTY(Replicated)
+	bool R_IsBoost { false };
+
 protected:
 	UPROPERTY(VisibleAnywhere, Category = "Component")
 	class UInstancedStaticMeshComponent* Voxels { nullptr };

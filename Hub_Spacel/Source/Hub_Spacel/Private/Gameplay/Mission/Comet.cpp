@@ -4,6 +4,8 @@
 #include "Comet.h"
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "Util/Tag.h"
+#include "Player/ShipPawn.h"
 
 // Sets default values
 AComet::AComet()
@@ -21,7 +23,7 @@ AComet::AComet()
 void AComet::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 	m_speedRoll = FMath::RandRange(10, 60);
 	m_speedRoll *= FMath::RandRange(-1, 1);
 }
@@ -33,4 +35,17 @@ void AComet::Tick(float _deltaTime)
 	FRotator rot = this->GetActorRotation();
 	rot.Add(0.0f, 0.0f, m_speedRoll * _deltaTime);
 	this->SetActorRotation(rot);
+}
+
+void AComet::hit(AShipPawn * _pawn, FString const& _team)
+{
+	this->Destroy();
+	if (_pawn != nullptr)
+	{
+		if (!_pawn->canTank(1))
+		{
+			_pawn->kill();
+		}
+		m_onIntercep.broadcast(_team);
+	}
 }
