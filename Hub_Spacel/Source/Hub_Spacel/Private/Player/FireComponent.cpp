@@ -94,7 +94,7 @@ void UFireComponent::spawnBullet(FTransform const& _transform) const
 
         if (AShipPawn* shipPawn = get<AShipPawn>())
         {
-            shipPawn->RPCClientFxFireBullet();
+            shipPawn->RPCNetMulticastFxFireBullet();
         }
     }
 }
@@ -116,7 +116,7 @@ void UFireComponent::launchMissile(FTransform const _transform) const
 
         if (AShipPawn* shipPawn = get<AShipPawn>())
         {
-            shipPawn->RPCClientFxFireMissile();
+            shipPawn->RPCNetMulticastFxFireMissile();
         }
     }
 }

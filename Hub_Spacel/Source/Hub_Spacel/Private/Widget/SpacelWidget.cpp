@@ -192,7 +192,9 @@ void USpacelWidget::StartGame()
     BP_StartGame();
 
     // timer for start animation
-    world->GetTimerManager().SetTimer(this->RedLightAnimationHandle, this, &USpacelWidget::RedLight, AFlyingGameMode::RemainingUnlockInputTime / 3.0f, true, AFlyingGameMode::RemainingUnlockInputTime / 3.0f);
+    float firstDelay = AFlyingGameMode::RemainingUnlockInputTime / 2.0f;
+    float inRate = (AFlyingGameMode::RemainingUnlockInputTime - firstDelay) / 2.0f;
+    world->GetTimerManager().SetTimer(this->RedLightAnimationHandle, this, &USpacelWidget::RedLight, inRate, true, firstDelay);
 
     // Set up the delegate.
     FAsyncLoadGameFromSlotDelegate LoadedDelegate;

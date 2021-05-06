@@ -157,14 +157,14 @@ private:
     UFUNCTION(Reliable, Client)
     void RPCClientRemoveEffect(EEffect _effect);
 
-    UFUNCTION(Reliable, Client)
-    void RPCClientFxFireBullet();
+    UFUNCTION(UnReliable, NetMulticast)
+    void RPCNetMulticastFxFireBullet();
 
-    UFUNCTION(Reliable, Client)
-    void RPCClientFxFireMissile();
+    UFUNCTION(UnReliable, NetMulticast)
+    void RPCNetMulticastFxFireMissile();
 
-    UFUNCTION(Reliable, Client)
-    void RPCClientFxNinePack();
+    UFUNCTION(UnReliable, NetMulticast)
+    void RPCNetMulticastFxNinePack();
 
     bool canTank(int32 _val);
 

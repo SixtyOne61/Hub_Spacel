@@ -124,17 +124,17 @@ void AShipPawn::RPCClientStartGame_Implementation(FName const& _team)
     BP_OnStartGame();
 }
 
-void AShipPawn::RPCClientFxFireBullet_Implementation()
+void AShipPawn::RPCNetMulticastFxFireBullet_Implementation()
 {
     BP_FxFireBullet();
 }
 
-void AShipPawn::RPCClientFxFireMissile_Implementation()
+void AShipPawn::RPCNetMulticastFxFireMissile_Implementation()
 {
     BP_FxFireMissile();
 }
 
-void AShipPawn::RPCClientFxNinePack_Implementation()
+void AShipPawn::RPCNetMulticastFxNinePack_Implementation()
 {
     BP_FxSpawnNinePacks();
 }
@@ -856,7 +856,7 @@ bool AShipPawn::spawnNinePack()
                         ninePackActor->R_IsBoost = this->R_HasBoostWall;
                     }
                     UGameplayStatics::FinishSpawningActor(ninePackActor, tr);
-                    RPCClientFxNinePack();
+                    RPCNetMulticastFxNinePack();
                     return true;
                 }
             }
