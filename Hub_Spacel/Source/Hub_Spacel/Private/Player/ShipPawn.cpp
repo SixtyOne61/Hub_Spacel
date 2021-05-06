@@ -821,6 +821,13 @@ void AShipPawn::addMatiere(int32 _val)
 {
     this->RU_Matiere += _val;
     OnRep_Matiere();
+
+    RPCClientFxAddMatiere(_val);
+}
+
+void AShipPawn::RPCClientFxAddMatiere_Implementation(int32 _val)
+{
+    BP_FxAddMatiere(_val);
 }
 
 void AShipPawn::farmAsteroide()
