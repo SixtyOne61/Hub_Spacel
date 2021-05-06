@@ -25,6 +25,10 @@ void ASpacelGameState::OnRep_StateGame()
         OnStartGameDelegate.Broadcast();
         break;
 
+    case (uint8)EGameState::UnlockInput:
+        OnUnlockInputDelegate.Broadcast();
+        break;
+
     case (uint8)EGameState::UnlockMedium:
     case (uint8)EGameState::UnlockUltimate:
     break;

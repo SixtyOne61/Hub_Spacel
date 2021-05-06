@@ -62,6 +62,7 @@ void USpacelWidget::NativeConstruct()
     if (spacelGameState != nullptr)
     {
         spacelGameState->OnStartGameDelegate.AddDynamic(this, &USpacelWidget::StartGame);
+        spacelGameState->OnUnlockInputDelegate.AddDynamic(this, &USpacelWidget::UnlockInput);
     }
 
     AShipPawn* shipPawn { this->GetOwningPlayerPawn<AShipPawn>() };
@@ -187,7 +188,7 @@ void USpacelWidget::StartGame()
         }
     }
 
-    StartGameFx();
+    BP_StartGame();
 
     // Set up the delegate.
     FAsyncLoadGameFromSlotDelegate LoadedDelegate;

@@ -31,7 +31,7 @@ void AGamePlayerController::BeginPlay()
             ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld()));
             if (spacelGameState != nullptr)
             {
-                spacelGameState->OnStartGameDelegate.AddDynamic(this, &AGamePlayerController::StartGame);
+                spacelGameState->OnUnlockInputDelegate.AddDynamic(this, &AGamePlayerController::StartGame);
             }
 
             shipPawn->OnAddEffectDelegate.AddDynamic(this, &AGamePlayerController::OnAddEffect);

@@ -13,6 +13,7 @@ enum class EGameState : uint8
     Prepare,
     LockPrepare,
     InGame,
+    UnlockInput,
     UnlockMedium,
     UnlockUltimate,
 };

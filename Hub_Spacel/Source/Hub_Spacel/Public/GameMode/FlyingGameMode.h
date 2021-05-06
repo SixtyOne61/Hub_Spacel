@@ -103,6 +103,9 @@ private:
 	void PreparePhaseUntilOver();
 
 	UFUNCTION()
+	void UnlockInput();
+
+	UFUNCTION()
 	void EndGame();
 
 	UFUNCTION()
@@ -146,10 +149,16 @@ public:
 	FTimerHandle PreparePhaseUntilLockHandle {};
 
 	UPROPERTY()
+	FTimerHandle UnlockInputHandle {};
+
+	UPROPERTY()
 	int RemainingGameTime { 690 }; // 11'30
 
 	UPROPERTY()
 	int RemainingPrepareTime { 60 }; // 60
+
+	UPROPERTY()
+	int RemainingUnlockInputTime { 10 };
 
 	int m_lockTime { RemainingPrepareTime  - 5 };
 

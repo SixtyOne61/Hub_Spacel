@@ -56,7 +56,10 @@ void AShipPawn::OnStartGame()
 
     RPCClientStartGame(this->Team);
     RPCNetMulticastStartGame(this->Team);
+}
 
+void AShipPawn::OnUnlockInput()
+{
     addEffect(EEffect::Respawned);
     FTimerDelegate timerCallback;
     timerCallback.BindLambda([&]() { removeEffect(EEffect::Respawned); });
@@ -117,6 +120,8 @@ void AShipPawn::RPCClientStartGame_Implementation(FName const& _team)
     }
 
     this->Team = _team;
+
+    BP_OnStartGame();
 }
 
 // Called when the game starts or when spawned
@@ -130,6 +135,7 @@ void AShipPawn::BeginPlay()
         if (spacelGameState != nullptr)
         {
             spacelGameState->OnStartGameDelegate.AddDynamic(this, &AShipPawn::OnStartGame);
+            spacelGameState->OnUnlockInputDelegate.AddDynamic(this, &AShipPawn::OnUnlockInput);
             spacelGameState->OnLockPrepareDelegate.AddDynamic(this, &AShipPawn::OnLockPrepare);
             spacelGameState->OnPlayerEnterFogDelegate.AddDynamic(this, &AShipPawn::OnPlayerEnterFog);
         }

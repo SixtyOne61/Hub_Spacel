@@ -84,6 +84,9 @@ public:
 
     void boostWall();
 
+    UFUNCTION(BlueprintImplementableEvent)
+    void BP_OnStartGame();
+
 private:
     void OnRep_PlayerState() override;
 
@@ -113,6 +116,9 @@ private:
 
     UFUNCTION()
     void OnStartGame();
+
+    UFUNCTION()
+    void OnUnlockInput();
 
     UFUNCTION()
     void OnPlayerEnterFog(int32 _playerId, bool _enter);

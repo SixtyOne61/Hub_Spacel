@@ -10,6 +10,7 @@
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartPrepare);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FLockPrepare);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartGame);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FUnlockInput);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FScoreUpdate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FPlayerEnterFog, int32, _playerId, bool, _enter);
 
@@ -67,6 +68,9 @@ public:
 	void GoToInGame() { this->RU_GameState = (uint8)EGameState::InGame; OnRep_StateGame(); }
 
 	UFUNCTION()
+	void GoToUnlockInput() { this->RU_GameState = (uint8)EGameState::UnlockInput; OnRep_StateGame(); }
+
+	UFUNCTION()
 	void GoToUnlockMedium() { this->RU_GameState = (uint8)EGameState::UnlockMedium; OnRep_StateGame(); }
 
 	UFUNCTION()
@@ -113,6 +117,9 @@ public:
 
 	UPROPERTY()
 	FStartGame OnStartGameDelegate {};
+
+	UPROPERTY()
+	FUnlockInput OnUnlockInputDelegate {};
 
 	UPROPERTY()
 	FScoreUpdate OnScoreUpdateDelegate {};

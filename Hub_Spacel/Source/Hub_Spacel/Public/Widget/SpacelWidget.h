@@ -44,6 +44,9 @@ protected:
 	UFUNCTION()
 	void StartGame();
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void UnlockInput();
+
 	UFUNCTION()
 	void UpdateScore();
 
@@ -66,7 +69,7 @@ protected:
 	void UpdatePercent(class UProgressBar* _progressBar, class UTextBlock* _text, int32 _value, int32 _max);
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void StartGameFx();
+	void BP_StartGame();
 
 	UFUNCTION()
 	void ShowDidactitial();
