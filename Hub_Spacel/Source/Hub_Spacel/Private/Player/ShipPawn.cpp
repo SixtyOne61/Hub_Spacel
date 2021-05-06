@@ -436,7 +436,7 @@ void AShipPawn::kill()
 
         if (ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld())))
         {
-            if (spacelGameState->RU_GameState == (uint8)EGameState::InGame)
+            if (spacelGameState->RU_GameState == (uint8)EGameState::UnlockInput)
             {
                 spacelGameState->GoToUnlockMedium();
             }
