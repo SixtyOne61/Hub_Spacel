@@ -124,6 +124,21 @@ void AShipPawn::RPCClientStartGame_Implementation(FName const& _team)
     BP_OnStartGame();
 }
 
+void AShipPawn::RPCClientFxFireBullet_Implementation()
+{
+    BP_FxFireBullet();
+}
+
+void AShipPawn::RPCClientFxFireMissile_Implementation()
+{
+    BP_FxFireMissile();
+}
+
+void AShipPawn::RPCClientFxNinePack_Implementation()
+{
+    BP_FxSpawnNinePacks();
+}
+
 // Called when the game starts or when spawned
 void AShipPawn::BeginPlay()
 {
@@ -841,6 +856,7 @@ bool AShipPawn::spawnNinePack()
                         ninePackActor->R_IsBoost = this->R_HasBoostWall;
                     }
                     UGameplayStatics::FinishSpawningActor(ninePackActor, tr);
+                    RPCClientFxNinePack();
                     return true;
                 }
             }

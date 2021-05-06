@@ -157,8 +157,7 @@ public:
 	UPROPERTY()
 	int RemainingPrepareTime { 60 }; // 60
 
-	UPROPERTY()
-	int RemainingUnlockInputTime { 10 };
+	static const int RemainingUnlockInputTime { 10 };
 
 	int m_lockTime { RemainingPrepareTime  - 5 };
 

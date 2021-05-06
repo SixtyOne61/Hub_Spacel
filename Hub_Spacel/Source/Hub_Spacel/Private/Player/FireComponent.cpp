@@ -91,6 +91,11 @@ void UFireComponent::spawnBullet(FTransform const& _transform) const
         laser->R_Team = get()->Team;
         UGameplayStatics::FinishSpawningActor(laser, _transform);
         setupProjectile(laser);
+
+        if (AShipPawn* shipPawn = get<AShipPawn>())
+        {
+            shipPawn->RPCClientFxFireBullet();
+        }
     }
 }
 
@@ -108,6 +113,11 @@ void UFireComponent::launchMissile(FTransform const _transform) const
 
         UGameplayStatics::FinishSpawningActor(missile, _transform);
         setupProjectile(missile);
+
+        if (AShipPawn* shipPawn = get<AShipPawn>())
+        {
+            shipPawn->RPCClientFxFireMissile();
+        }
     }
 }
 

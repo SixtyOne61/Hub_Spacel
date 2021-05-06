@@ -72,6 +72,12 @@ protected:
 	void BP_StartGame();
 
 	UFUNCTION()
+	void RedLight();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void BP_RedLight(int32 _level);
+
+	UFUNCTION()
 	void ShowDidactitial();
 
 	UFUNCTION(BlueprintImplementableEvent)
@@ -145,6 +151,9 @@ protected:
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
 	class UMissionDataAsset* MissionDataAsset { nullptr };
 
+	UPROPERTY()
+	FTimerHandle RedLightAnimationHandle {};
+
 private:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class UEffectWidget> EffectWidgetClass { nullptr };
@@ -185,6 +194,7 @@ private:
 	FString Team {};
 
 	int32 m_nextTipsId { 0 };
+	int8 m_currentIdRedLight { 0 };
 
 	TSet<EMission> m_currentMission {};
 };

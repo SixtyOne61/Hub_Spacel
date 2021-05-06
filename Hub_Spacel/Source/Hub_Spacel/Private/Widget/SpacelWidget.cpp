@@ -32,6 +32,7 @@
 #include "Widget/MissionPanelUserWidget.h"
 #include "Factory/SpacelFactory.h"
 #include "Styling/SlateColor.h"
+#include "GameMode/FlyingGameMode.h"
 
 void USpacelWidget::NativeConstruct()
 {
@@ -190,11 +191,20 @@ void USpacelWidget::StartGame()
 
     BP_StartGame();
 
+    // timer for start animation
+    world->GetTimerManager().SetTimer(this->RedLightAnimationHandle, this, &USpacelWidget::RedLight, AFlyingGameMode::RemainingUnlockInputTime / 3.0f, true, AFlyingGameMode::RemainingUnlockInputTime / 3.0f);
+
     // Set up the delegate.
     FAsyncLoadGameFromSlotDelegate LoadedDelegate;
     // USomeUObjectClass::LoadGameDelegateFunction is a void function that takes the following parameters: const FString& SlotName, const int32 UserIndex, USaveGame* LoadedGameData
     LoadedDelegate.BindUObject(this, &USpacelWidget::OnLoadGame);
     UGameplayStatics::AsyncLoadGameFromSlot("Save", 0, LoadedDelegate);
+}
+
+void USpacelWidget::RedLight()
+{
+    BP_RedLight(m_currentIdRedLight);
+    ++m_currentIdRedLight;
 }
 
 void USpacelWidget::addSkill(class SkillCountDown * _skill)

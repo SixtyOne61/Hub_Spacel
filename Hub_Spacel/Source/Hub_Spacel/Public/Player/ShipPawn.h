@@ -84,8 +84,18 @@ public:
 
     void boostWall();
 
+protected:
     UFUNCTION(BlueprintImplementableEvent)
     void BP_OnStartGame();
+
+    UFUNCTION(BlueprintImplementableEvent)
+    void BP_FxFireBullet();
+
+    UFUNCTION(BlueprintImplementableEvent)
+    void BP_FxFireMissile();
+
+    UFUNCTION(BlueprintImplementableEvent)
+    void BP_FxSpawnNinePacks();
 
 private:
     void OnRep_PlayerState() override;
@@ -146,6 +156,15 @@ private:
 
     UFUNCTION(Reliable, Client)
     void RPCClientRemoveEffect(EEffect _effect);
+
+    UFUNCTION(Reliable, Client)
+    void RPCClientFxFireBullet();
+
+    UFUNCTION(Reliable, Client)
+    void RPCClientFxFireMissile();
+
+    UFUNCTION(Reliable, Client)
+    void RPCClientFxNinePack();
 
     bool canTank(int32 _val);
 
