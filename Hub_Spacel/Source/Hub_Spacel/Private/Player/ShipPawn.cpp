@@ -695,6 +695,11 @@ void AShipPawn::behaviourAddEffect(EEffect _type)
                 spacelGameState->OnPlayerEnterFogDelegate.Broadcast(playerState->PlayerId, true);
             }
         }
+
+        if (_type == EEffect::Killed)
+        {
+            RPCNetMulticastFxKilled();
+        }
     }
     else if (_type == EEffect::Emp)
     {
@@ -725,6 +730,11 @@ void AShipPawn::behaviourAddEffect(EEffect _type)
             }
         }
     }
+}
+
+void AShipPawn::RPCNetMulticastFxKilled_Implementation()
+{
+    BP_FxKilled();
 }
 
 void AShipPawn::BackToGame()

@@ -100,6 +100,9 @@ protected:
     UFUNCTION(BlueprintImplementableEvent)
     void BP_FxAddMatiere(int32 _val);
 
+    UFUNCTION(BlueprintImplementableEvent)
+    void BP_FxKilled();
+
 private:
     void OnRep_PlayerState() override;
 
@@ -171,6 +174,9 @@ private:
 
     UFUNCTION(UnReliable, NetMulticast)
     void RPCClientFxAddMatiere(int32 _val);
+
+    UFUNCTION(UnReliable, NetMulticast)
+    void RPCNetMulticastFxKilled();
 
     bool canTank(int32 _val);
 
