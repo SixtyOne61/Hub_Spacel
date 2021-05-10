@@ -103,6 +103,12 @@ protected:
     UFUNCTION(BlueprintImplementableEvent)
     void BP_FxKilled();
 
+    UFUNCTION(BlueprintImplementableEvent)
+    void BP_FxAddEffect(EEffect _effect);
+
+    UFUNCTION(BlueprintImplementableEvent)
+    void BP_FxRemoveEffect(EEffect _effect);
+
 private:
     void OnRep_PlayerState() override;
 

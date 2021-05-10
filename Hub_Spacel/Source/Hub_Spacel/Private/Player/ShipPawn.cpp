@@ -651,11 +651,13 @@ void AShipPawn::RPCNetMulticastEnterHidding_Implementation(int32 _playerId, bool
 void AShipPawn::RPCClientAddEffect_Implementation(EEffect _effect)
 {
     OnAddEffectDelegate.Broadcast(_effect);
+    BP_FxAddEffect(_effect);
 }
 
 void AShipPawn::RPCClientRemoveEffect_Implementation(EEffect _effect)
 {
     OnRemoveEffectDelegate.Broadcast(_effect);
+    BP_FxRemoveEffect(_effect);
 }
 
 void AShipPawn::RPCClientStartMission_Implementation(FMission const& _mission)

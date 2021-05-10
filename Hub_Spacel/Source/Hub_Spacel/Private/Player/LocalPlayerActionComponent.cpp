@@ -6,9 +6,13 @@
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Camera/CameraComponent.h"
 #include "Components/PostProcessComponent.h"
+#include "Components/InstancedStaticMeshComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Player/ShipPawn.h"
+#include "Player/ModuleComponent.h"
+#include "Player/Common/CommonPawn.h"
 #include "World/MatiereManager.h"
+#include "DataAsset/PlayerDataAsset.h"
 
 ULocalPlayerActionComponent::ULocalPlayerActionComponent()
 {
@@ -37,11 +41,18 @@ void ULocalPlayerActionComponent::TickComponent(float _deltaTime, ELevelTick _ti
 {
     Super::TickComponent(_deltaTime, _tickType, _thisTickFunction);
 
-    if (m_postProcessMaterial != nullptr && get() && get()->CameraComponent != nullptr)
+    ACommonPawn* pawn = get();
+    if (m_postProcessMaterial != nullptr && pawn != nullptr && pawn->CameraComponent != nullptr)
     {
+        float coefSpeed = FMath::Max((pawn->ModuleComponent->SupportMeshComponent->GetInstanceCount() / 9.0f), pawn->PlayerDataAsset->MinCoefSpeed);
+        if (pawn->hasEffect(EEffect::MetaFormAttack) || pawn->hasEffect(EEffect::MetaFormProtection) || pawn->hasEffect(EEffect::MetaFormSupport) || pawn->hasEffect(EEffect::EscapeMode))
+        {
+            // override speed max
+            coefSpeed = pawn->PlayerDataAsset->EscapeModeCoef;
+        }
         // set material parameter
-        float percent = FMath::Clamp(get()->RU_PercentSpeed, 0.0f, 1.0f);
-        m_postProcessMaterial->SetScalarParameterValue("Weight", percent);
+        float percent = FMath::Clamp(get()->RU_PercentSpeed * coefSpeed, 0.0f, 2.6f);
+        m_postProcessMaterial->SetScalarParameterValue("Weight", percent * 2);
         m_postProcessMaterial->SetVectorParameterValue("SpeedLinesColor", FMath::Lerp(FLinearColor(1.0f, 1.0f, 1.0f, 1.0f), FLinearColor(0.0f, 0.943892f, 1.0f, 1.0f), percent));
 
         // set fov
