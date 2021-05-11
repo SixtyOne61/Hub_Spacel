@@ -16,7 +16,7 @@ class HUB_SPACEL_API SkillCountDown
 {
 public:
 	SkillCountDown(const SkillCountDown &);
-	SkillCountDown(FSkill _skill, class ACommonPawn* _pawn, ENetMode _netMode, std::function<void(ESkill)> _callbackSucced, std::function<void(ESkill)> _callbackFailed);
+	SkillCountDown(FSkill _skill, class ACommonPawn* _pawn, ENetMode _netMode, std::function<void(ESkill)> _callbackSucced, std::function<void(ESkill, ESkillReturn)> _callbackFailed);
 	~SkillCountDown();
 
 	void use(class UWorld* _context);
@@ -46,5 +46,5 @@ private:
 
 	bool m_isDown { false };
 	std::function<void(ESkill)> m_callbackSucced {};
-	std::function<void(ESkill)> m_callbackFailed{};
+	std::function<void(ESkill, ESkillReturn)> m_callbackFailed{};
 };

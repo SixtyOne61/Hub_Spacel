@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Player/PlayerActorComponent.h"
+#include "Enum/SpacelEnum.h"
 #include <functional>
 #include "RepairComponent.generated.h"
 
@@ -27,10 +28,10 @@ private:
 	void OnUpdateMatiere(int _value);
 
 	/* repair protection */
-	bool onRepairProtection();
+	ESkillReturn onRepairProtection();
 
 	/* repair support */
-	bool onRepairSupport();
+	ESkillReturn onRepairSupport();
 
-	bool repair(TArray<FVector> & _removedLocations, TArray<FVector> & _locations, std::function<void(void)> _onRep, int _minMatiere, int _effect);
+	ESkillReturn repair(TArray<FVector> & _removedLocations, TArray<FVector> & _locations, std::function<void(void)> _onRep, int _minMatiere, int _effect);
 };

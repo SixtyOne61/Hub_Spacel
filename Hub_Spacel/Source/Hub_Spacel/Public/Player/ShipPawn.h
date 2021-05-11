@@ -61,17 +61,17 @@ public:
     void launchMissile();
     void emp();
     void emp(uint32 _duration, FName const& _team, int32 _playerId);
-    bool giveMatiereToAlly(uint8 _id);
+    ESkillReturn giveMatiereToAlly(uint8 _id);
 
-    bool onRepairProtection();
-    bool onRepairSupport();
+    ESkillReturn onRepairProtection();
+    ESkillReturn onRepairSupport();
 
     UFUNCTION(UnReliable, Client)
     void RPCClientFeedbackScore(EScoreType _type, int16 _value);
 
     void addMatiere(int32 _val);
     void farmAsteroide();
-    bool spawnNinePack();
+    ESkillReturn spawnNinePack();
 
     UFUNCTION(Reliable, Client)
     void RPCClientStartMission(FMission const& _mission);

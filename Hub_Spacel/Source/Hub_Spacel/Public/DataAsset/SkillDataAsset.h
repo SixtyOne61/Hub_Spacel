@@ -24,6 +24,9 @@ public:
 	float FlatDuration { 0.0f };
 
 	UPROPERTY(EditAnywhere)
+	uint32 Value { 0 };
+
+	UPROPERTY(EditAnywhere)
 	class UTexture2D * IconeBtn { nullptr };
 
 	UPROPERTY(EditAnywhere)
@@ -62,4 +65,13 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	uint8 LevelMetaForm { 3 };
+
+	UPROPERTY(EditAnywhere)
+	FString NotEnoughMater { };
+
+	UPROPERTY(EditAnywhere)
+	FString InternError { };
+
+	UPROPERTY(EditAnywhere)
+	FString CountDown { };
 };

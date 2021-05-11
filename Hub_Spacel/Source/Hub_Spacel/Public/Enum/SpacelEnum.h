@@ -20,6 +20,16 @@ enum class EGameState : uint8
 };
 
 UENUM(BlueprintType)
+enum class ESkillReturn : uint8
+{
+    InternError,
+    Success,
+    CountDown,
+    Unavailable,
+    NoMater,
+};
+
+UENUM(BlueprintType)
 enum class EUIType : uint8
 {
     None UMETA(DisplayName = "None"),

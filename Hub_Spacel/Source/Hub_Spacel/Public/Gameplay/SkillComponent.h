@@ -36,10 +36,12 @@ private:
 	void RPCClientSucced(ESkill _skill);
 
 	UFUNCTION(Reliable, Client)
-	void RPCClientFailed(ESkill _skill);
+	void RPCClientFailed(ESkill _skill, ESkillReturn _returnValue);
 
 	UFUNCTION()
 	void OnMissionEnd(EMission _type);
+
+	FSkill const& getSkill(ESkill _skill) const;
 
 public:
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)

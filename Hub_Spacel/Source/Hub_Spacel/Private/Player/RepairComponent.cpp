@@ -33,7 +33,7 @@ void URepairComponent::OnUpdateMatiere(int _value)
     }
 }
 
-bool URepairComponent::onRepairProtection()
+ESkillReturn URepairComponent::onRepairProtection()
 {
     if (get() != nullptr)
     {
@@ -44,10 +44,10 @@ bool URepairComponent::onRepairProtection()
             return repair(get()->ModuleComponent->R_RemovedProtectionLocations, get()->ModuleComponent->RU_ProtectionLocations, std::bind(&UModuleComponent::OnRep_Protection, get()->ModuleComponent), min, effect);
         }
     }
-    return false;
+    return ESkillReturn::InternError;
 }
 
-bool URepairComponent::onRepairSupport()
+ESkillReturn URepairComponent::onRepairSupport()
 {
     if (get() != nullptr)
     {
@@ -58,10 +58,10 @@ bool URepairComponent::onRepairSupport()
             return repair(get()->ModuleComponent->R_RemovedSupportLocations, get()->ModuleComponent->RU_SupportLocations, std::bind(&UModuleComponent::OnRep_Support, get()->ModuleComponent), min, effect);
         }
     }
-    return false;
+    return ESkillReturn::InternError;
 }
 
-bool URepairComponent::repair(TArray<FVector>& _removedLocations, TArray<FVector>& _locations, std::function<void(void)> _onRep, int _minMatiere, int _effect)
+ESkillReturn URepairComponent::repair(TArray<FVector>& _removedLocations, TArray<FVector>& _locations, std::function<void(void)> _onRep, int _minMatiere, int _effect)
 {
     if (_removedLocations.Num() != 0)
     {
@@ -76,9 +76,13 @@ bool URepairComponent::repair(TArray<FVector>& _removedLocations, TArray<FVector
 
             this->OnUpdateMatiere(-1 * _minMatiere);
             _onRep();
-            return true;
+            return ESkillReturn::Success;
+        }
+        else
+        {
+            return ESkillReturn::NoMater;
         }
     }
-    return false;
+    return ESkillReturn::Unavailable;
 }
 

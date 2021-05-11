@@ -22,7 +22,7 @@ void USkillComponent::setupSkill()
     ENetMode mode = this->GetNetMode();
 
     auto callbackSucced = std::bind(&USkillComponent::RPCClientSucced, this, std::placeholders::_1);
-    auto callbackFailed = std::bind(&USkillComponent::RPCClientFailed, this, std::placeholders::_1);
+    auto callbackFailed = std::bind(&USkillComponent::RPCClientFailed, this, std::placeholders::_1, std::placeholders::_2);
 
     // order is important
     m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::EscapeMode), get(), mode, callbackSucced, callbackFailed));
@@ -60,7 +60,7 @@ void USkillComponent::OnMissionEnd(EMission _type)
         ENetMode mode = this->GetNetMode();
 
         auto callbackSucced = std::bind(&USkillComponent::RPCClientSucced, this, std::placeholders::_1);
-        auto callbackFailed = std::bind(&USkillComponent::RPCClientFailed, this, std::placeholders::_1);
+        auto callbackFailed = std::bind(&USkillComponent::RPCClientFailed, this, std::placeholders::_1, std::placeholders::_2);
 
         // last in first out so 3 - 4
         TArray<FKey> defaultKeyboard = this->DefaultKeyboard;
@@ -126,7 +126,7 @@ void USkillComponent::RPCClientSucced_Implementation(ESkill _skill)
     }
 }
 
-void USkillComponent::RPCClientFailed_Implementation(ESkill _skill)
+FSkill const& USkillComponent::getSkill(ESkill _skill) const
 {
     for (auto& skill : m_skills)
     {
@@ -134,13 +134,47 @@ void USkillComponent::RPCClientFailed_Implementation(ESkill _skill)
         {
             if (skill.Get()->getParam().Skill == _skill)
             {
-                // send text failed to player
-                if (get() != nullptr)
-                {
-                    get()->OnSendInfoPlayerDelegate.Broadcast(skill.Get()->getParam().TextWhenFail);
-                }
+                return skill.Get()->getParam();
             }
         }
+    }
+
+    ensure(false);
+    static FSkill fail {};
+    return fail;
+}
+
+void USkillComponent::RPCClientFailed_Implementation(ESkill _skill, ESkillReturn _returnValue)
+{
+    if(this->SkillDataAsset == nullptr) return;
+
+    FString info = "";
+
+    if (_returnValue == ESkillReturn::InternError)
+    {
+        info = this->SkillDataAsset->InternError;
+    }
+    else if (_returnValue == ESkillReturn::NoMater)
+    {
+        info = this->SkillDataAsset->NotEnoughMater;
+        FSkill const& skill = getSkill(_skill);
+
+        info = info.Replace(TEXT("%value%"), *FString::FromInt(skill.Value));
+    }
+    else if (_returnValue == ESkillReturn::CountDown)
+    {
+        info = this->SkillDataAsset->CountDown;
+    }
+    else if (_returnValue == ESkillReturn::Unavailable)
+    {
+        FSkill const& skill = getSkill(_skill);
+        info = skill.TextWhenFail;
+    }
+
+    // send text failed to player
+    if (get() != nullptr && info != "")
+    {
+        get()->OnSendInfoPlayerDelegate.Broadcast(info);
     }
 }
 

@@ -305,10 +305,10 @@ void AShipPawn::emp(uint32 _duration, FName const& _team, int32 _playerId)
     this->GetWorldTimerManager().SetTimer(handle, this, &AShipPawn::CleanEmp, _duration, false);
 }
 
-bool AShipPawn::giveMatiereToAlly(uint8 _id)
+ESkillReturn AShipPawn::giveMatiereToAlly(uint8 _id)
 {
-    if(this->RU_Matiere <= 0) return false;
-    if(this->PlayerDataAsset == nullptr) return false;
+    if(this->RU_Matiere <= 0) return ESkillReturn::NoMater;
+    if(this->PlayerDataAsset == nullptr) return ESkillReturn::InternError;
 
     if (ASpacelPlayerState* localSpacelPlayerState = GetPlayerState<ASpacelPlayerState>())
     {
@@ -334,7 +334,7 @@ bool AShipPawn::giveMatiereToAlly(uint8 _id)
                                 allyPawn->addMatiere(value);
 
                                 addMatiere(value * -1);
-                                return true;
+                                return ESkillReturn::Success;
                             }
                         }
                         ++i;
@@ -344,7 +344,7 @@ bool AShipPawn::giveMatiereToAlly(uint8 _id)
         }
     }
 
-    return false;
+    return ESkillReturn::InternError;
 }
 
 void AShipPawn::CleanEmp()
@@ -811,22 +811,22 @@ void AShipPawn::RPCClientFeedbackScore_Implementation(EScoreType _type, int16 _v
     OnFeedbackScoreDelegate.Broadcast(_type, _value);
 }
 
-bool AShipPawn::onRepairProtection()
+ESkillReturn AShipPawn::onRepairProtection()
 {
     if (this->RepairComponent != nullptr)
     {
         return this->RepairComponent->onRepairProtection();
     }
-    return false;
+    return ESkillReturn::InternError;
 }
 
-bool AShipPawn::onRepairSupport()
+ESkillReturn AShipPawn::onRepairSupport()
 {
     if (this->RepairComponent != nullptr)
     {
         return this->RepairComponent->onRepairSupport();
     }
-    return false;
+    return ESkillReturn::InternError;
 }
 
 void AShipPawn::addMatiere(int32 _val)
@@ -855,7 +855,7 @@ void AShipPawn::farmAsteroide()
     }
 }
 
-bool AShipPawn::spawnNinePack()
+ESkillReturn AShipPawn::spawnNinePack()
 {
     if (this->PlayerDataAsset != nullptr)
     {
@@ -876,12 +876,16 @@ bool AShipPawn::spawnNinePack()
                     }
                     UGameplayStatics::FinishSpawningActor(ninePackActor, tr);
                     RPCNetMulticastFxNinePack();
-                    return true;
+                    return ESkillReturn::Success;
                 }
             }
         }
+        else
+        {
+            return ESkillReturn::NoMater;
+        }
     }
-    return false;
+    return ESkillReturn::InternError;
 }
 
 void AShipPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetimeProps) const

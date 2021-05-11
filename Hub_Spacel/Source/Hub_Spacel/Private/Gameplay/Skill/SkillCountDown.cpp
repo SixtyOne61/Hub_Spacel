@@ -25,7 +25,7 @@ SkillCountDown::SkillCountDown(SkillCountDown const& _cpy)
     m_callbackFailed = _cpy.m_callbackFailed;
 }
 
-SkillCountDown::SkillCountDown(FSkill _skill, class ACommonPawn* _pawn, ENetMode _netMode, std::function<void(ESkill)> _callbackSucced, std::function<void(ESkill)> _callbackFailed)
+SkillCountDown::SkillCountDown(FSkill _skill, class ACommonPawn* _pawn, ENetMode _netMode, std::function<void(ESkill)> _callbackSucced, std::function<void(ESkill, ESkillReturn)> _callbackFailed)
     : m_netMode(_netMode)
     , m_param(_skill)
     , m_pawn(_pawn)
@@ -103,7 +103,8 @@ void SkillCountDown::onIng()
     updatePercent(m_progressBar, 0.0f);
     if (m_netMode == ENetMode::NM_DedicatedServer)
     {
-        if (m_behaviour.IsValid() && m_behaviour.Get()->onStart())
+        ESkillReturn returnValue = m_behaviour.Get()->onStart();
+        if (m_behaviour.IsValid() && returnValue == ESkillReturn::Success)
         {
             if (m_callbackSucced != nullptr)
             {
@@ -113,7 +114,7 @@ void SkillCountDown::onIng()
         else
         {
             m_state = ECountDown::Available;
-            m_callbackFailed(m_param.Skill);
+            m_callbackFailed(m_param.Skill, returnValue);
         }
     }
 }
