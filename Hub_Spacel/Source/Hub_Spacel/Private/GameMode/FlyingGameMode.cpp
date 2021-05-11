@@ -482,6 +482,7 @@ void AFlyingGameMode::EndGame()
     GetWorldTimerManager().ClearTimer(this->SuspendBackfillHandle);
     GetWorldTimerManager().ClearTimer(this->PreparePhaseUntilOverHandle);
     GetWorldTimerManager().ClearTimer(this->PreparePhaseUntilLockHandle);
+    GetWorldTimerManager().ClearTimer(this->LeaveLevelHandle);
 
 #if WITH_GAMELIFT
     Aws::GameLift::Server::TerminateGameSession();
@@ -490,41 +491,67 @@ void AFlyingGameMode::EndGame()
 #endif
 }
 
-void AFlyingGameMode::PickAWinningTeam()
+void AFlyingGameMode::LeaveLevel()
 {
-#if WITH_GAMELIFT
-    ASpacelGameState* spacelGameState { Cast<ASpacelGameState>(this->GameState) };
-    if (spacelGameState != nullptr)
+    this->RemainingLeaveTime--;
+
+    ASpacelGameState* spacelGameState{ Cast<ASpacelGameState>(this->GameState) };
+    if (!ensure(spacelGameState != nullptr)) return;
+    // format time
+    int min = this->RemainingLeaveTime / 60;
+    int sec = this->RemainingLeaveTime % 60;
+    FString minStr = min < 10 ? "0" + FString::FromInt(min) : FString::FromInt(min);
+    FString secStr = sec < 10 ? "0" + FString::FromInt(sec) : FString::FromInt(sec);
+    spacelGameState->R_LatestEvent = minStr + ":" + secStr;
+
+    if(this->RemainingLeaveTime <= 0)
     {
-        spacelGameState->R_LatestEvent = "GameEnded";
+        GetWorldTimerManager().ClearTimer(this->LeaveLevelHandle);
 
-        spacelGameState->R_WinningTeam = spacelGameState->GetBestTeam();
-
-        TSharedPtr<FJsonObject> requestObj { MakeShareable(new FJsonObject) };
-        requestObj->SetStringField("winningTeam", spacelGameState->R_WinningTeam);
-
-        auto getGameSessionIdOutcome { Aws::GameLift::Server::GetGameSessionId() };
-        if (getGameSessionIdOutcome.IsSuccess())
+#if WITH_GAMELIFT
+        ASpacelGameState* spacelGameState{ Cast<ASpacelGameState>(this->GameState) };
+        if (spacelGameState != nullptr)
         {
-            requestObj->SetStringField("gameSessionId", getGameSessionIdOutcome.GetResult());
+            spacelGameState->R_LatestEvent = "GameEnded";
 
-            FString requestBody {};
-            TSharedRef<TJsonWriter<>> writer { TJsonWriterFactory<>::Create(&requestBody) };
-            if (FJsonSerializer::Serialize(requestObj.ToSharedRef(), writer))
+            spacelGameState->R_WinningTeam = spacelGameState->GetBestTeam();
+
+            TSharedPtr<FJsonObject> requestObj{ MakeShareable(new FJsonObject) };
+            requestObj->SetStringField("winningTeam", spacelGameState->R_WinningTeam);
+
+            auto getGameSessionIdOutcome{ Aws::GameLift::Server::GetGameSessionId() };
+            if (getGameSessionIdOutcome.IsSuccess())
             {
-                SimplyHttpRequest::processRequest(this->HttpModule, this, 
-                    &AFlyingGameMode::onRecordMatchResultResponseReceive,
-                    this->ApiUrl + "/recordmatchresult", "POST",
-                    TArray<FString> {"Authorization", this->ServerPassword, "Content-Type", "application/json"},
-                    requestBody);
-                // early return, no need to set timer in this case (and the only case)
-                return;
+                requestObj->SetStringField("gameSessionId", getGameSessionIdOutcome.GetResult());
+
+                FString requestBody{};
+                TSharedRef<TJsonWriter<>> writer{ TJsonWriterFactory<>::Create(&requestBody) };
+                if (FJsonSerializer::Serialize(requestObj.ToSharedRef(), writer))
+                {
+                    SimplyHttpRequest::processRequest(this->HttpModule, this,
+                        &AFlyingGameMode::onRecordMatchResultResponseReceive,
+                        this->ApiUrl + "/recordmatchresult", "POST",
+                        TArray<FString> {"Authorization", this->ServerPassword, "Content-Type", "application/json"},
+                        requestBody);
+                    // early return, no need to set timer in this case (and the only case)
+                    return;
+                }
             }
         }
-    }
-    // something wrong
-    GetWorldTimerManager().SetTimer(this->EndGameHandle, this, &AFlyingGameMode::EndGame, 1.0f, false, 5.0f);
+        // something wrong
+        GetWorldTimerManager().SetTimer(this->EndGameHandle, this, &AFlyingGameMode::EndGame, 1.0f, false, 5.0f);
 #endif
+    }
+}
+
+
+void AFlyingGameMode::PickAWinningTeam()
+{
+    ASpacelGameState* spacelGameState{ Cast<ASpacelGameState>(this->GameState) };
+    if (!ensure(spacelGameState != nullptr)) return;
+    spacelGameState->GoToEndGame();
+
+    GetWorldTimerManager().SetTimer(this->LeaveLevelHandle, this, &AFlyingGameMode::LeaveLevel, 1.0f, true, 0.0f);
 }
 
 void AFlyingGameMode::HandleProcessTermination()

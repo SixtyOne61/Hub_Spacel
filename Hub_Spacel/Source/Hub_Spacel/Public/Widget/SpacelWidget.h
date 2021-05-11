@@ -45,6 +45,15 @@ protected:
 	void StartGame();
 
 	UFUNCTION(BlueprintImplementableEvent)
+	void BP_StartGame();
+	
+	UFUNCTION()
+	void EndGame();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void BP_EndGame();
+
+	UFUNCTION(BlueprintImplementableEvent)
 	void UnlockInput();
 
 	UFUNCTION()
@@ -67,9 +76,6 @@ protected:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void UpdatePercent(class UProgressBar* _progressBar, class UTextBlock* _text, int32 _value, int32 _max);
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void BP_StartGame();
 
 	UFUNCTION()
 	void RedLight();

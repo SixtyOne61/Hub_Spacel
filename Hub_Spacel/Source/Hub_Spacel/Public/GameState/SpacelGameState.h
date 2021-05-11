@@ -12,6 +12,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FLockPrepare);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartGame);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FUnlockInput);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FScoreUpdate);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FEndGame);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FPlayerEnterFog, int32, _playerId, bool, _enter);
 
 USTRUCT()
@@ -77,6 +78,9 @@ public:
 	void GoToUnlockUltimate() { this->RU_GameState = (uint8)EGameState::UnlockUltimate; OnRep_StateGame(); }
 
 	UFUNCTION()
+	void GoToEndGame() { this->RU_GameState = (uint8)EGameState::EndGame; OnRep_StateGame(); }
+
+	UFUNCTION()
 	FString GetBestTeam() const;
 
 	UFUNCTION()
@@ -126,6 +130,9 @@ public:
 
 	UPROPERTY()
 	FPlayerEnterFog OnPlayerEnterFogDelegate {};
+
+	UPROPERTY()
+	FEndGame OnEndGameDelegate {};
 
 protected:
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)

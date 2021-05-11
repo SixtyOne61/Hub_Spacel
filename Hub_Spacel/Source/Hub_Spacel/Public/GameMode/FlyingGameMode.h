@@ -112,6 +112,9 @@ private:
 	void PickAWinningTeam();
 
 	UFUNCTION()
+	void LeaveLevel();
+
+	UFUNCTION()
 	void HandleProcessTermination();
 
 	UFUNCTION()
@@ -132,6 +135,9 @@ public:
 
 	UPROPERTY()
 	FTimerHandle EndGameHandle {};
+
+	UPROPERTY()
+	FTimerHandle LeaveLevelHandle {};
 
 	UPROPERTY()
 	FTimerHandle HandleProcessTerminationHandle {};
@@ -156,6 +162,9 @@ public:
 
 	UPROPERTY()
 	int RemainingPrepareTime { 60 }; // 60
+
+	UPROPERTY()
+	int RemainingLeaveTime { 20 };
 
 	static const int RemainingUnlockInputTime { 10 };
 

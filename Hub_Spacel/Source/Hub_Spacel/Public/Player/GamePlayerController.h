@@ -46,6 +46,9 @@ private:
 	UFUNCTION(Reliable, Server)
 	void RPCServerStartGame();
 
+	UFUNCTION(Reliable, Server)
+	void RPCServerEndGame();
+
 	/* input callback */
 	void forward(float _value) override;
 	void horizontalStraf(float _value) override;
@@ -61,6 +64,8 @@ private:
 	/* from event */
 	UFUNCTION()
 	void StartGame();
+	UFUNCTION()
+	void EndGame();
 
 	void kill();
 	void restarted();

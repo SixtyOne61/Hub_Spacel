@@ -32,6 +32,7 @@ void AGamePlayerController::BeginPlay()
             if (spacelGameState != nullptr)
             {
                 spacelGameState->OnUnlockInputDelegate.AddDynamic(this, &AGamePlayerController::StartGame);
+                spacelGameState->OnEndGameDelegate.AddDynamic(this, &AGamePlayerController::EndGame);
             }
 
             shipPawn->OnAddEffectDelegate.AddDynamic(this, &AGamePlayerController::OnAddEffect);
@@ -254,6 +255,15 @@ void AGamePlayerController::RPCServerStartGame_Implementation()
     lb_init(shipPawn->PlayerDataAsset->FlightAttitudeInput, m_data.m_flightAttitude);
 
     R_EnableInput = true;
+}
+
+void AGamePlayerController::EndGame()
+{
+    this->RPCServerEndGame();
+}
+void AGamePlayerController::RPCServerEndGame_Implementation()
+{
+    R_EnableInput = false;
 }
 
 void AGamePlayerController::kill()

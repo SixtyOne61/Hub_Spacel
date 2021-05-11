@@ -16,6 +16,7 @@ enum class EGameState : uint8
     UnlockInput,
     UnlockMedium,
     UnlockUltimate,
+    EndGame,
 };
 
 UENUM(BlueprintType)

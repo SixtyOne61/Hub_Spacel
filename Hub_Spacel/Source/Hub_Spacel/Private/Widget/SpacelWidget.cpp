@@ -64,6 +64,7 @@ void USpacelWidget::NativeConstruct()
     {
         spacelGameState->OnStartGameDelegate.AddDynamic(this, &USpacelWidget::StartGame);
         spacelGameState->OnUnlockInputDelegate.AddDynamic(this, &USpacelWidget::UnlockInput);
+        spacelGameState->OnEndGameDelegate.AddDynamic(this, &USpacelWidget::EndGame);
     }
 
     AShipPawn* shipPawn { this->GetOwningPlayerPawn<AShipPawn>() };
@@ -201,6 +202,11 @@ void USpacelWidget::StartGame()
     // USomeUObjectClass::LoadGameDelegateFunction is a void function that takes the following parameters: const FString& SlotName, const int32 UserIndex, USaveGame* LoadedGameData
     LoadedDelegate.BindUObject(this, &USpacelWidget::OnLoadGame);
     UGameplayStatics::AsyncLoadGameFromSlot("Save", 0, LoadedDelegate);
+}
+
+void USpacelWidget::EndGame()
+{
+    BP_EndGame();
 }
 
 void USpacelWidget::RedLight()

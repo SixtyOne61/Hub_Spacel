@@ -33,6 +33,10 @@ void ASpacelGameState::OnRep_StateGame()
     case (uint8)EGameState::UnlockUltimate:
     break;
 
+    case (uint8)EGameState::EndGame:
+        OnEndGameDelegate.Broadcast();
+    break;
+
     default:
         break;
     }
