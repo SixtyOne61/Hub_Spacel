@@ -134,4 +134,8 @@ void SkillCountDown::use(class UWorld* _context)
     {
         m_state = ECountDown::Ing;
     }
+    else if(m_state == ECountDown::CountDown)
+    {
+        m_callbackFailed(m_param.Skill, ESkillReturn::CountDown);
+    }
 }
