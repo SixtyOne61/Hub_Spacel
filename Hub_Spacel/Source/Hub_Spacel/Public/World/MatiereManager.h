@@ -54,6 +54,10 @@ public:
 	UPROPERTY()
 	FString LocalTeam {};
 
+protected:
+	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
+	class UMatiereDataAsset* MatiereDataAsset{ nullptr };
+
 private:
 	UPROPERTY()
 	TArray<class UInstancedStaticMeshComponent*> Matieres{};

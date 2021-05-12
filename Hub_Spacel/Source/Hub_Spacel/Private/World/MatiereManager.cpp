@@ -7,6 +7,7 @@
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "Util/Tag.h"
+#include "DataAsset/MatiereDataAsset.h"
 #include <functional>
 
 int32 getId(FString const& _team)
@@ -116,7 +117,10 @@ int AMatiereManager::depopulate(class UInstancedStaticMeshComponent* _comp, FHit
 	if (_comp->GetInstanceTransform(_hit.Item, world, true))
 	{
 		_index.Add(_hit.Item);
-		return 1;
+		if (this->MatiereDataAsset != nullptr)
+		{
+			return this->MatiereDataAsset->NbMatterGiveByCube;
+		}
 	}
 	return 0;
 }

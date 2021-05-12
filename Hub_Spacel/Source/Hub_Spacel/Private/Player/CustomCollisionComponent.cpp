@@ -140,41 +140,6 @@ bool UCustomCollisionComponent::sweepForInstancedStaticMesh(UInstancedStaticMesh
 				continue;
 			}
 
-			// spawn matiere
-			if (m_matiereManager.IsValid())
-			{
-				bool needSpawnMatiere = true;
-				if (!get()->hasEffect(EEffect::Emp))
-				{
-					needSpawnMatiere = false;
-					// check if we have team player in hits
-					for (FHitResult const& hit : hits)
-					{
-						if (hit.Actor.IsValid())
-						{
-							for (FName const& name : hit.Actor->Tags)
-							{
-								if (name.ToString().Contains("Team"))
-								{
-									needSpawnMatiere = true;
-									break;
-								}
-							}
-						}
-
-						if (needSpawnMatiere) break;
-					}
-				}
-
-				if (needSpawnMatiere)
-				{
-					if (ASpacelPlayerState const* spacelPlayerState = get()->GetPlayerState<ASpacelPlayerState>())
-					{
-						m_matiereManager.Get()->spawnMatiere(worldTransform.GetLocation(), spacelPlayerState->R_Team);
-					}
-				}
-			}
-
 			// remove instance
 			_mesh->RemoveInstance(index);
 			FVector const& location = localTransform.GetLocation();
@@ -265,6 +230,30 @@ void UCustomCollisionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 						}
 					}
 				}
+
+				// spawn matiere
+				if (m_matiereManager.IsValid())
+				{
+					// check if we have team player in hits
+					for (FHitResult const& hit : hits)
+					{
+						if (hit.Actor.IsValid())
+						{
+							for (FName const& name : hit.Actor->Tags)
+							{
+								if (name.ToString().Contains("Team"))
+								{
+									if (ASpacelPlayerState const* spacelPlayerState = get()->GetPlayerState<ASpacelPlayerState>())
+									{
+										m_matiereManager.Get()->spawnMatiere(get()->GetActorLocation(), spacelPlayerState->R_Team);
+										return; //break flow
+									}
+								}
+							}
+						}
+					}
+				}
+
 				return; // break flow
 			}
 		}
@@ -354,14 +343,6 @@ void UCustomCollisionComponent::hit(FString const& _team, int32 _playerId, class
 
 		if (ret)
 		{
-			if (m_matiereManager.IsValid())
-			{
-				if (ASpacelPlayerState const* spacelPlayerState = get()->GetPlayerState<ASpacelPlayerState>())
-				{
-					m_matiereManager.Get()->spawnMatiere(worldTransform.GetLocation(), spacelPlayerState->R_Team);
-				}
-			}
-
 			// manage item hits
 			_mesh->RemoveInstance(_index);
 			// TO DO Check if it's better to make this in temp array
@@ -407,11 +388,18 @@ void UCustomCollisionComponent::hit(FString const& _team, int32 _playerId, class
 	}
 	else if (uniqueId == get()->DriverMeshComponent->GetUniqueID())
 	{
-		
 		if (AShipPawn* pawn = get<AShipPawn>())
 		{
 			if (!pawn->canTank(1))
 			{
+				if (m_matiereManager.IsValid())
+				{
+					if (ASpacelPlayerState const* spacelPlayerState = get()->GetPlayerState<ASpacelPlayerState>())
+					{
+						m_matiereManager.Get()->spawnMatiere(get()->DriverMeshComponent->GetComponentLocation(), spacelPlayerState->R_Team);
+					}
+				}
+
 				pawn->kill();
 				lb_addScore(EScoreType::Kill);
 				pawn->OnKill.broadcast(pawn->Team.ToString(), _team);
