@@ -80,7 +80,7 @@ void USelectorSkillWidget::OnMinus()
 
 void USelectorSkillWidget::onLevel(int8 _delta)
 {
-    ASpacelPlayerState* owningPlayerState = Cast<ASpacelPlayerState>(this->GetOwningPlayerState());
+    /*ASpacelPlayerState* owningPlayerState = Cast<ASpacelPlayerState>(this->GetOwningPlayerState());
     if (owningPlayerState == nullptr) return;
 
     if (_delta < 0)
@@ -107,7 +107,7 @@ void USelectorSkillWidget::onLevel(int8 _delta)
                 updateBorderColor();
             }
         }
-    }
+    }*/
 }
 
 void USelectorSkillWidget::updateBorderColor()

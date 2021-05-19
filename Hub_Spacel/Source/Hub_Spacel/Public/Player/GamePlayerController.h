@@ -63,9 +63,7 @@ private:
 
 	/* from event */
 	UFUNCTION()
-	void StartGame();
-	UFUNCTION()
-	void EndGame();
+	void GameModeChangeState(EGameState _state);
 
 	void kill();
 	void restarted();

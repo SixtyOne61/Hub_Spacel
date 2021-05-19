@@ -7,6 +7,8 @@
 #include "Player/ShipPawn.h"
 #include "Kismet/GameplayStatics.h"
 #include "Hub_SpacelGameInstance.h"
+#include "DataAsset/SkillDataAsset.h"
+#include "DataAsset/UniqueSkillDataAsset.h"
 #include <functional>
 
 USkillComponent::USkillComponent()
@@ -65,34 +67,26 @@ void USkillComponent::OnMissionEnd(EMission _type)
         // last in first out so 3 - 4
         TArray<FKey> defaultKeyboard = this->DefaultKeyboard;
 
-        auto lb = [&](ESkillType _skilltype, ESkill _skill, uint8 _level, FKey _key)
+        auto lb = [&](ESkillType _skilltype, FKey _key)
         {
-            if (spacelPlayerState->getSkillPoint(_skilltype) >= _level)
-            {
-                FSkill skill = this->SkillDataAsset->getSKill(_skill);
-                skill.Key = _key;
-                m_skills.Add(MakeUnique<SkillCountDown>(skill, get(), mode, callbackSucced, callbackFailed));
+            ESkill skill = (ESkill)spacelPlayerState->getSkillId(_skilltype);
+            UUniqueSkillDataAsset* skillParam = this->SkillDataAsset->getSKill(skill);
+            skillParam->Key = _key;
+            m_skills.Add(MakeUnique<SkillCountDown>(skillParam, get(), mode, callbackSucced, callbackFailed));
 
-                if (spacelPlayerState->OnAddSkillUniqueDelegate != nullptr)
-                {
-                    spacelPlayerState->OnAddSkillUniqueDelegate(m_skills.Last().Get());
-                }
+            if (spacelPlayerState->OnAddSkillUniqueDelegate != nullptr)
+            {
+                spacelPlayerState->OnAddSkillUniqueDelegate(m_skills.Last().Get());
             }
         };
 
         if (_type == EMission::FirstBlood)
         {
-            uint8 levelSpecial = this->SkillDataAsset->LevelSpecial;
-            lb(ESkillType::Attack, ESkill::SpecialAttack, levelSpecial, this->DefaultKeyboard[0]);
-            lb(ESkillType::Protection, ESkill::SpecialProtection, levelSpecial, this->DefaultKeyboard[0]);
-            lb(ESkillType::Support, ESkill::SpecialSupport, levelSpecial, this->DefaultKeyboard[0]);
+            lb(ESkillType::Medium, this->DefaultKeyboard[0]);
         }
         else if (_type == EMission::ScoreRace)
         {
-            uint8 levelMetaForm = this->SkillDataAsset->LevelMetaForm;
-            lb(ESkillType::Attack, ESkill::MetaFormAttack, levelMetaForm, this->DefaultKeyboard[1]);
-            lb(ESkillType::Protection, ESkill::MetaFormProtection, levelMetaForm, this->DefaultKeyboard[1]);
-            lb(ESkillType::Support, ESkill::MetaFormSupport, levelMetaForm, this->DefaultKeyboard[1]);
+            lb(ESkillType::Hight, this->DefaultKeyboard[1]);
         }
     }
 }
@@ -103,7 +97,7 @@ void USkillComponent::RPCServerUseSkill_Implementation(ESkill _skill)
     {
         if (skill.IsValid())
         {
-            if (skill.Get()->getParam().Skill == _skill)
+            if (skill.Get()->getSkillType() == _skill)
             {
                 skill.Get()->use(get()->GetWorld());
             }
@@ -117,7 +111,7 @@ void USkillComponent::RPCClientSucced_Implementation(ESkill _skill)
     {
         if (skill.IsValid())
         {
-            if (skill.Get()->getParam().Skill == _skill)
+            if (skill.Get()->getSkillType() == _skill)
             {
                 // no behaviour will be triggered, only UI
                 skill.Get()->use(get()->GetWorld());
@@ -126,13 +120,13 @@ void USkillComponent::RPCClientSucced_Implementation(ESkill _skill)
     }
 }
 
-FSkill const& USkillComponent::getSkill(ESkill _skill) const
+UUniqueSkillDataAsset const* USkillComponent::getSkill(ESkill _skill) const
 {
     for (auto& skill : m_skills)
     {
         if (skill.IsValid())
         {
-            if (skill.Get()->getParam().Skill == _skill)
+            if (skill.Get()->getSkillType() == _skill)
             {
                 return skill.Get()->getParam();
             }
@@ -140,8 +134,7 @@ FSkill const& USkillComponent::getSkill(ESkill _skill) const
     }
 
     ensure(false);
-    static FSkill fail {};
-    return fail;
+    return nullptr;
 }
 
 void USkillComponent::RPCClientFailed_Implementation(ESkill _skill, ESkillReturn _returnValue)
@@ -157,9 +150,10 @@ void USkillComponent::RPCClientFailed_Implementation(ESkill _skill, ESkillReturn
     else if (_returnValue == ESkillReturn::NoMater)
     {
         info = this->SkillDataAsset->NotEnoughMater;
-        FSkill const& skill = getSkill(_skill);
-
-        info = info.Replace(TEXT("%value%"), *FString::FromInt(skill.Value));
+        if (UUniqueSkillDataAsset const* skill = getSkill(_skill))
+        {
+            info = info.Replace(TEXT("%value%"), *FString::FromInt(skill->Value));
+        }
     }
     else if (_returnValue == ESkillReturn::CountDown)
     {
@@ -167,8 +161,10 @@ void USkillComponent::RPCClientFailed_Implementation(ESkill _skill, ESkillReturn
     }
     else if (_returnValue == ESkillReturn::Unavailable)
     {
-        FSkill const& skill = getSkill(_skill);
-        info = skill.TextWhenFail;
+        if (UUniqueSkillDataAsset const* skill = getSkill(_skill))
+        {
+            info = skill->TextWhenFail;
+        }
     }
 
     // send text failed to player
@@ -191,12 +187,19 @@ void USkillComponent::TickComponent(float _deltaTime, ELevelTick _tickType, FAct
                 // client side
                 if (APlayerController* controller = UGameplayStatics::GetPlayerController(get()->GetWorld(), 0))
                 {
-                    bool keyDown = controller->IsInputKeyDown(skill.Get()->getParam().Key);
+                    UUniqueSkillDataAsset const* param = skill.Get()->getParam();
+                    if (param == nullptr)
+                    {
+                        ensure(false);
+                        return;
+                    }
+
+                    bool keyDown = controller->IsInputKeyDown(param->Key);
                     bool& inputState = skill.Get()->inputeState();
                     if (keyDown && !inputState)
                     {
                         inputState = true;
-                        RPCServerUseSkill(skill.Get()->getParam().Skill);
+                        RPCServerUseSkill(param->Skill);
                     }
                     else if (!keyDown && inputState)
                     {

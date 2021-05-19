@@ -100,7 +100,7 @@ private:
 	void PreparePhaseUntilLock();
 
 	UFUNCTION()
-	void PreparePhaseUntilOver();
+	void EndLobby();
 
 	UFUNCTION()
 	void UnlockInput();
@@ -149,9 +149,6 @@ public:
 	FTimerHandle SuspendBackfillHandle {};
 
 	UPROPERTY()
-	FTimerHandle PreparePhaseUntilOverHandle {};
-
-	UPROPERTY()
 	FTimerHandle PreparePhaseUntilLockHandle {};
 
 	UPROPERTY()
@@ -161,14 +158,17 @@ public:
 	int RemainingGameTime { 690 }; // 11'30
 
 	UPROPERTY()
-	int RemainingPrepareTime { 60 }; // 60
+	int RemainingChooseModuleTime { 20 }; // 60
+
+	UPROPERTY()
+	int NbStep { 0 };
 
 	UPROPERTY()
 	int RemainingLeaveTime { 20 };
 
 	static const int RemainingUnlockInputTime { 10 };
 
-	int m_lockTime { RemainingPrepareTime  - 5 };
+	int m_nextStepTime { RemainingChooseModuleTime };
 
 	UPROPERTY()
 	int SuspendBackfillTime { 45 };

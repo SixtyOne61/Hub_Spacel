@@ -11,35 +11,7 @@
 
 void ASpacelGameState::OnRep_StateGame()
 {
-    switch (this->RU_GameState)
-    {
-    case (uint8)EGameState::Prepare:
-        OnStartPrepareDelegate.Broadcast();
-        break;
-
-    case (uint8)EGameState::LockPrepare:
-        OnLockPrepareDelegate.Broadcast();
-        break;
-
-    case (uint8)EGameState::InGame:
-        OnStartGameDelegate.Broadcast();
-        break;
-
-    case (uint8)EGameState::UnlockInput:
-        OnUnlockInputDelegate.Broadcast();
-        break;
-
-    case (uint8)EGameState::UnlockMedium:
-    case (uint8)EGameState::UnlockUltimate:
-    break;
-
-    case (uint8)EGameState::EndGame:
-        OnEndGameDelegate.Broadcast();
-    break;
-
-    default:
-        break;
-    }
+    OnChangeStateDelegate.Broadcast((EGameState)this->RU_GameState);
 }
 
 FString ASpacelGameState::GetBestTeam() const

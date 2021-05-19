@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "Player/PlayerActorComponent.h"
+#include "Gameplay/Metric/LocalMetric.h"
+#include <memory>
 #include "LocalPlayerActionComponent.generated.h"
 
 /**
@@ -16,6 +18,7 @@ class HUB_SPACEL_API ULocalPlayerActionComponent : public UPlayerActorComponent
 	
 public:
 	ULocalPlayerActionComponent();
+	~ULocalPlayerActionComponent();
 
 	void BeginPlay() override;
 	void TickComponent(float _deltaTime, ELevelTick _tickType, FActorComponentTickFunction* _thisTickFunction) override;
@@ -26,4 +29,6 @@ private:
 
 private:
 	class UMaterialInstanceDynamic* m_postProcessMaterial { nullptr };
+
+	std::unique_ptr<LocalMetric> m_metric { nullptr };
 };

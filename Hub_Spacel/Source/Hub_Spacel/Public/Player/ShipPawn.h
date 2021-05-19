@@ -134,13 +134,7 @@ private:
     void OnRep_Matiere();
 
     UFUNCTION()
-    void OnLockPrepare();
-
-    UFUNCTION()
-    void OnStartGame();
-
-    UFUNCTION()
-    void OnUnlockInput();
+    void OnChangeState(EGameState _state);
 
     UFUNCTION()
     void OnPlayerEnterFog(int32 _playerId, bool _enter);

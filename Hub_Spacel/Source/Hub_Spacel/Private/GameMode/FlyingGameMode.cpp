@@ -14,11 +14,6 @@
 
 AFlyingGameMode::AFlyingGameMode()
 {
-#if WITH_EDITOR
-    RemainingPrepareTime = 10;
-    m_lockTime = RemainingPrepareTime - 5;
-#endif
-
     UTextReaderComponent* textReader = CreateDefaultSubobject<UTextReaderComponent>(TEXT("TextReaderComponent"));
     if (!ensure(textReader != nullptr)) return;
     ApiUrl = textReader->ReadFile("Urls/ApiUrl.txt");
@@ -228,9 +223,7 @@ void AFlyingGameMode::BeginPlay()
     ASpacelGameState* spacelGameState{ Cast<ASpacelGameState>(this->GameState) };
     if (!ensure(spacelGameState != nullptr)) return;
     spacelGameState->GoToPrepare();
-    GetWorldTimerManager().SetTimer(this->PreparePhaseUntilOverHandle, this, &AFlyingGameMode::PreparePhaseUntilOver, 1.0f, true, 0.0f);
     GetWorldTimerManager().SetTimer(this->PreparePhaseUntilLockHandle, this, &AFlyingGameMode::PreparePhaseUntilLock, 1.0f, true, 0.0f);
-
 #endif
 
     TArray<AActor*> out {};
@@ -427,42 +420,59 @@ void AFlyingGameMode::CountDownUntilGameOver()
 
 void AFlyingGameMode::PreparePhaseUntilLock()
 {
-    if(m_lockTime > 0)
+    if(m_nextStepTime > 0)
     {
-        m_lockTime--;
+        m_nextStepTime--;
     }
     else
     {
-        GetWorldTimerManager().ClearTimer(this->PreparePhaseUntilLockHandle);
         ASpacelGameState* spacelGameState{ Cast<ASpacelGameState>(this->GameState) };
         if (!ensure(spacelGameState != nullptr)) return;
-        spacelGameState->GoToLockPrepare();
+
+        switch(NbStep)
+        {
+            case 0:
+                spacelGameState->GoToLockLowModule();
+            break;
+
+            case 1:
+                spacelGameState->GoToLockMediumModule();
+            break;
+
+            case 2:
+                spacelGameState->GoToLockPrepare();
+                this->RemainingChooseModuleTime /= 4.0f;
+            break;
+
+            case 3:
+                GetWorldTimerManager().ClearTimer(this->PreparePhaseUntilLockHandle);
+                EndLobby();
+            break;
+
+            default:
+                ensure(false);
+            break;
+        }
+
+        m_nextStepTime = this->RemainingChooseModuleTime;
+        ++NbStep;
     }
 }
 
-void AFlyingGameMode::PreparePhaseUntilOver()
+void AFlyingGameMode::EndLobby()
 {
-    if (this->RemainingPrepareTime > 0)
-    {
-        this->RemainingPrepareTime--;
-    }
-    else
-    {
-        GetWorldTimerManager().ClearTimer(this->PreparePhaseUntilOverHandle);
+    GetWorldTimerManager().SetTimer(this->CountDownUntilGameOverHandle, this, &AFlyingGameMode::CountDownUntilGameOver, 1.0f, true, 0.0f);
 
-        GetWorldTimerManager().SetTimer(this->CountDownUntilGameOverHandle, this, &AFlyingGameMode::CountDownUntilGameOver, 1.0f, true, 0.0f);
+    ASpacelGameState* spacelGameState{ Cast<ASpacelGameState>(this->GameState) };
+    if (!ensure(spacelGameState != nullptr)) return;
 
-        ASpacelGameState* spacelGameState{ Cast<ASpacelGameState>(this->GameState) };
-        if (!ensure(spacelGameState != nullptr)) return;
+    // register all team for scoring
+    spacelGameState->RegisterTeam();
 
-        // register all team for scoring
-        spacelGameState->RegisterTeam();
+    // change game state
+    spacelGameState->GoToInGame();
 
-        // change game state
-        spacelGameState->GoToInGame();
-
-        GetWorldTimerManager().SetTimer(this->UnlockInputHandle, this, &AFlyingGameMode::UnlockInput, this->RemainingUnlockInputTime, false);
-    }
+    GetWorldTimerManager().SetTimer(this->UnlockInputHandle, this, &AFlyingGameMode::UnlockInput, this->RemainingUnlockInputTime, false);
 }
 
 void AFlyingGameMode::UnlockInput()
@@ -480,7 +490,6 @@ void AFlyingGameMode::EndGame()
     GetWorldTimerManager().ClearTimer(this->HandleProcessTerminationHandle);
     GetWorldTimerManager().ClearTimer(this->HandleGameSessionUpdateHandle);
     GetWorldTimerManager().ClearTimer(this->SuspendBackfillHandle);
-    GetWorldTimerManager().ClearTimer(this->PreparePhaseUntilOverHandle);
     GetWorldTimerManager().ClearTimer(this->PreparePhaseUntilLockHandle);
     GetWorldTimerManager().ClearTimer(this->LeaveLevelHandle);
 
@@ -559,7 +568,6 @@ void AFlyingGameMode::HandleProcessTermination()
     if (this->ProcessTerminateState.Status)
     {
         GetWorldTimerManager().ClearTimer(this->CountDownUntilGameOverHandle);
-        GetWorldTimerManager().ClearTimer(this->PreparePhaseUntilOverHandle);
         GetWorldTimerManager().ClearTimer(this->PreparePhaseUntilLockHandle);
         GetWorldTimerManager().ClearTimer(this->HandleProcessTerminationHandle);
         GetWorldTimerManager().ClearTimer(this->HandleGameSessionUpdateHandle);
@@ -615,7 +623,6 @@ void AFlyingGameMode::HandleGameSessionUpdate()
         ASpacelGameState* spacelGameState{ Cast<ASpacelGameState>(this->GameState) };
         if (!ensure(spacelGameState != nullptr)) return;
         spacelGameState->GoToPrepare();
-        GetWorldTimerManager().SetTimer(this->PreparePhaseUntilOverHandle, this, &AFlyingGameMode::PreparePhaseUntilOver, 1.0f, true, 0.0f);
         GetWorldTimerManager().SetTimer(this->PreparePhaseUntilLockHandle, this, &AFlyingGameMode::PreparePhaseUntilLock, 1.0f, true, 0.0f);
     }
     else if(this->WaitingForPlayersToJoin)

@@ -10,6 +10,7 @@
 /**
  * 
  */
+ // DEPRECATED
 UCLASS()
 class HUB_SPACEL_API UPreparePhaseWidget : public UUserWidget
 {
@@ -57,8 +58,8 @@ public:
 	UPROPERTY(EditAnywhere)
 	class UTeamColorDataAsset* Colors { nullptr };
 
-	UPROPERTY(EditAnywhere)
-	class UTreeSkillDescDataAsset* TreeSkillDesc { nullptr };
+	//UPROPERTY(EditAnywhere)
+	//class UTreeSkillDescDataAsset* TreeSkillDesc { nullptr };
 
 private:
 	UPROPERTY()

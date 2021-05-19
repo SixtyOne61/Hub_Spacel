@@ -31,8 +31,7 @@ void AGamePlayerController::BeginPlay()
             ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld()));
             if (spacelGameState != nullptr)
             {
-                spacelGameState->OnUnlockInputDelegate.AddDynamic(this, &AGamePlayerController::StartGame);
-                spacelGameState->OnEndGameDelegate.AddDynamic(this, &AGamePlayerController::EndGame);
+                spacelGameState->OnChangeStateDelegate.AddDynamic(this, &AGamePlayerController::GameModeChangeState);
             }
 
             shipPawn->OnAddEffectDelegate.AddDynamic(this, &AGamePlayerController::OnAddEffect);
@@ -228,9 +227,16 @@ void AGamePlayerController::hideScore()
     shipPawn->OnShowScoreDelegate.Broadcast(false);
 }
 
-void AGamePlayerController::StartGame()
+void AGamePlayerController::GameModeChangeState(EGameState _state)
 {
-    this->RPCServerStartGame();
+    if (_state == EGameState::UnlockInput)
+    {
+        this->RPCServerStartGame();
+    }
+    else if (_state == EGameState::EndGame)
+    {
+        this->RPCServerEndGame();
+    }
 }
 
 void AGamePlayerController::RPCServerStartGame_Implementation()
@@ -257,10 +263,6 @@ void AGamePlayerController::RPCServerStartGame_Implementation()
     R_EnableInput = true;
 }
 
-void AGamePlayerController::EndGame()
-{
-    this->RPCServerEndGame();
-}
 void AGamePlayerController::RPCServerEndGame_Implementation()
 {
     R_EnableInput = false;

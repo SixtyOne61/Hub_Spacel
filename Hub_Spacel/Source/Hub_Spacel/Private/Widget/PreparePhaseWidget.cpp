@@ -11,7 +11,6 @@
 #include "Widget/PlayerCardWidget.h"
 #include "Widget/SelectorSKillWidget.h"
 #include "DataAsset/TeamColorDataAsset.h"
-#include "DataAsset/TreeSkillDescDataAsset.h"
 
 void UPreparePhaseWidget::NativeConstruct()
 {
@@ -40,9 +39,9 @@ void UPreparePhaseWidget::NativeConstruct()
     ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld()));
     if (spacelGameState != nullptr)
     {
-        spacelGameState->OnStartPrepareDelegate.AddDynamic(this, &UPreparePhaseWidget::StartPrepare);
-        spacelGameState->OnLockPrepareDelegate.AddDynamic(this, &UPreparePhaseWidget::LockPrepare);
-        spacelGameState->OnStartGameDelegate.AddDynamic(this, &UPreparePhaseWidget::StartGame);
+        //spacelGameState->OnStartPrepareDelegate.AddDynamic(this, &UPreparePhaseWidget::StartPrepare);
+        //spacelGameState->OnLockPrepareDelegate.AddDynamic(this, &UPreparePhaseWidget::LockPrepare);
+        //spacelGameState->OnStartGameDelegate.AddDynamic(this, &UPreparePhaseWidget::StartGame);
     }
 
     SetupOwningTeam();
@@ -55,7 +54,7 @@ void UPreparePhaseWidget::RegisterEvent()
     ASpacelPlayerState* owningPlayerState{ Cast<ASpacelPlayerState>(this->GetOwningPlayerState()) };
     if (owningPlayerState != nullptr)
     {
-        owningPlayerState->OnUpdateRemainingSkillPointDelegate.AddDynamic(this, &UPreparePhaseWidget::UpdateRemainingSkillPoint);
+        //owningPlayerState->OnUpdateRemainingSkillPointDelegate.AddDynamic(this, &UPreparePhaseWidget::UpdateRemainingSkillPoint);
         this->UpdateRemainingSkillPoint();
     }
     else
@@ -74,7 +73,7 @@ void UPreparePhaseWidget::UpdateRemainingSkillPoint()
     if (owningPlayerState != nullptr)
     {
         if (!ensure(this->RemainingSkillPointTextBlock != nullptr)) return;
-        this->RemainingSkillPointTextBlock->SetText(FText::FromString(FString::FromInt(owningPlayerState->getRemainingSkillPoint())));
+        //this->RemainingSkillPointTextBlock->SetText(FText::FromString(FString::FromInt(owningPlayerState->getRemainingSkillPoint())));
     }
 }
 
@@ -182,7 +181,7 @@ void UPreparePhaseWidget::SetupOwningTeam()
 
 void UPreparePhaseWidget::UpdateBonus(ESkillType _type, uint8 _level)
 {
-    if (this->TreeSkillDesc != nullptr)
+    /*if (this->TreeSkillDesc != nullptr)
     {
         ASpacelPlayerState* owningPlayerState = Cast<ASpacelPlayerState>(this->GetOwningPlayerState());
         if (owningPlayerState == nullptr) return;
@@ -190,7 +189,7 @@ void UPreparePhaseWidget::UpdateBonus(ESkillType _type, uint8 _level)
         FString descStr {};
         auto lb = [&](ESkillType _genType)
         {
-            uint8 level = _genType == _type ? _level : owningPlayerState->getSkillPoint(_genType);
+            uint8 level = 0;//_genType == _type ? _level : owningPlayerState->getSkillPoint(_genType);
             FDesc const& desc = this->TreeSkillDesc->getDesc(_genType);
 
             for (int i = 0; i < level; ++i)
@@ -200,13 +199,13 @@ void UPreparePhaseWidget::UpdateBonus(ESkillType _type, uint8 _level)
             }
         };
 
-        lb(ESkillType::Attack);
-        lb(ESkillType::Protection);
-        lb(ESkillType::Support);
+        //lb(ESkillType::Attack);
+        //lb(ESkillType::Protection);
+        //lb(ESkillType::Support);
 
         if (this->BonusTextBlock != nullptr)
         {
             this->BonusTextBlock->SetText(FText::FromString(descStr));
         }
-    }
+    }*/
 }

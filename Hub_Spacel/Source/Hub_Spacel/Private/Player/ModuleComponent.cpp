@@ -48,7 +48,7 @@ void UModuleComponent::BeginPlay()
         ASpacelGameState* spacelGameState{ Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld())) };
         if (spacelGameState != nullptr)
         {
-            spacelGameState->OnStartGameDelegate.AddDynamic(this, &UModuleComponent::OnStartGame);
+            spacelGameState->OnChangeStateDelegate.AddDynamic(this, &UModuleComponent::OnStartGame);
         }
     }
 
@@ -86,12 +86,14 @@ void UModuleComponent::SetMax_Implementation(int32 _maxProtection, int32 _maxSup
     this->OnUpdateCountSupportDelegate.Broadcast(this->RU_SupportLocations.Num(), m_maxSupport);
 }
 
-void UModuleComponent::OnStartGame()
+void UModuleComponent::OnStartGame(EGameState _state)
 {
-    auto lb_readXml = [](uint8 _level, USetupAttributeDataAsset* _dataAsset, TArray<FVector>& _out, FString && _name)
+    if(_state != EGameState::InGame) return;
+
+    auto lb_readXml = [](bool _isHeavy, USetupAttributeDataAsset* _dataAsset, TArray<FVector>& _out, FString && _name)
     {
         if (!ensure(_dataAsset != nullptr)) return;
-        FString const& path{ _level > 0 ? _dataAsset->HeavyPath : _dataAsset->DefaultPath };
+        FString const& path{ _isHeavy ? _dataAsset->HeavyPath : _dataAsset->DefaultPath };
 
         SimplyXml::FContainer<FVector> locationInformation{ _name };
         SimplyXml::FReader reader{ FPaths::ProjectDir() + path };
@@ -106,14 +108,14 @@ void UModuleComponent::OnStartGame()
         if (spacelPlayerState == nullptr)
         {
 #if WITH_EDITOR
-            lb_readXml(0, this->WeaponDataAsset, RU_AttackLocations, "Location");
+            lb_readXml(false, this->WeaponDataAsset, RU_AttackLocations, "Location");
             buildShip(this->WeaponMeshComponent, this->WeaponDataAsset, RU_AttackLocations);
-            lb_readXml(0, this->ProtectionDataAsset, RU_ProtectionLocations, "Location");
+            lb_readXml(false, this->ProtectionDataAsset, RU_ProtectionLocations, "Location");
             buildShip(this->ProtectionMeshComponent, this->ProtectionDataAsset, RU_ProtectionLocations);
-            lb_readXml(0, this->SupportDataAsset, RU_SupportLocations, "Location");
+            lb_readXml(false, this->SupportDataAsset, RU_SupportLocations, "Location");
             buildShip(this->SupportMeshComponent, this->SupportDataAsset, RU_SupportLocations);
 
-            lb_readXml(0, this->WeaponDataAsset, this->R_MissileLocations, "Missile");
+            lb_readXml(false, this->WeaponDataAsset, this->R_MissileLocations, "Missile");
             if (this->MissileMeshComponent != nullptr && this->R_MissileLocations.Num() != 0)
             {
                 this->MissileMeshComponent->SetRelativeLocation(this->R_MissileLocations[0]);
@@ -122,17 +124,20 @@ void UModuleComponent::OnStartGame()
         }
         else
         {
-            lb_readXml(spacelPlayerState->R_Attack, this->WeaponDataAsset, this->RU_AttackLocations, "Location");
+            uint8 lowSkillId = spacelPlayerState->getSkillId(ESkillType::Low);
+            uint8 mediumSkillId = spacelPlayerState->getSkillId(ESkillType::Medium);
+
+            lb_readXml(lowSkillId == (uint8)ESkill::FireRate, this->WeaponDataAsset, this->RU_AttackLocations, "Location");
             buildShip(this->WeaponMeshComponent, this->WeaponDataAsset, this->RU_AttackLocations);
 
-            lb_readXml(spacelPlayerState->R_Protection, this->ProtectionDataAsset, this->RU_ProtectionLocations, "Location");
+            lb_readXml(lowSkillId == (uint8)ESkill::HeavyProtection, this->ProtectionDataAsset, this->RU_ProtectionLocations, "Location");
             buildShip(this->ProtectionMeshComponent, this->ProtectionDataAsset, this->RU_ProtectionLocations);
 
-            lb_readXml(spacelPlayerState->R_Support, this->SupportDataAsset, this->RU_SupportLocations, "Location");
+            lb_readXml(lowSkillId == (uint8)ESkill::Speedy, this->SupportDataAsset, this->RU_SupportLocations, "Location");
             buildShip(this->SupportMeshComponent, this->SupportDataAsset, this->RU_SupportLocations);
             setLocationExhaustFx();
 
-            lb_readXml(spacelPlayerState->R_Attack, this->WeaponDataAsset, R_MissileLocations, "Missile");
+            lb_readXml(mediumSkillId == (uint8)ESkill::Missile, this->WeaponDataAsset, R_MissileLocations, "Missile");
             if (this->MissileMeshComponent != nullptr && this->R_MissileLocations.Num() != 0)
             {
                 this->MissileMeshComponent->SetRelativeLocation(this->R_MissileLocations[0]);

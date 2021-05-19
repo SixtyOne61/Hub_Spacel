@@ -31,16 +31,16 @@ void UPlayerCardWidget::Setup(ASpacelPlayerState* _playerState)
 
     if (this->AttackTextBlock != nullptr)
     {
-        this->AttackTextBlock->SetText(FText::FromString(FString::FromInt(_playerState->R_Attack)));
+        //this->AttackTextBlock->SetText(FText::FromString(FString::FromInt(_playerState->R_Attack)));
     }
 
     if (this->ProtectionTextBlock != nullptr)
     {
-        this->ProtectionTextBlock->SetText(FText::FromString(FString::FromInt(_playerState->R_Protection)));
+        //this->ProtectionTextBlock->SetText(FText::FromString(FString::FromInt(_playerState->R_Protection)));
     }
 
     if (this->SupportTextBlock != nullptr)
     {
-        this->SupportTextBlock->SetText(FText::FromString(FString::FromInt(_playerState->R_Support)));
+        //this->SupportTextBlock->SetText(FText::FromString(FString::FromInt(_playerState->R_Support)));
     }
 }

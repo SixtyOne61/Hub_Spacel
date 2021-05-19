@@ -20,6 +20,7 @@
 #include "Util/SimplyUI.h"
 #include "DataAsset/PlayerDataAsset.h"
 #include "DataAsset/SkillDataAsset.h"
+#include "DataAsset/UniqueSkillDataAsset.h"
 #include "DataAsset/EffectDataAsset.h"
 #include "DataAsset/TeamColorDataAsset.h"
 #include "DataAsset/DitactitialDataAsset.h"
@@ -62,9 +63,7 @@ void USpacelWidget::NativeConstruct()
     ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld()));
     if (spacelGameState != nullptr)
     {
-        spacelGameState->OnStartGameDelegate.AddDynamic(this, &USpacelWidget::StartGame);
-        spacelGameState->OnUnlockInputDelegate.AddDynamic(this, &USpacelWidget::UnlockInput);
-        spacelGameState->OnEndGameDelegate.AddDynamic(this, &USpacelWidget::EndGame);
+        spacelGameState->OnChangeStateDelegate.AddDynamic(this, &USpacelWidget::OnChangeState);
     }
 
     AShipPawn* shipPawn { this->GetOwningPlayerPawn<AShipPawn>() };
@@ -116,7 +115,7 @@ void USpacelWidget::OnStartMission(FMission const& _mission)
     if (m_currentMission.Num() == 0)
     {
         // appear mission panel
-        ShowMissionPanel();
+        BP_ShowMissionPanel();
     }
 
     m_currentMission.Add(_mission.Type);
@@ -147,66 +146,72 @@ void USpacelWidget::OnEndMission(EMission _type)
     }
 }
 
-void USpacelWidget::StartGame()
+void USpacelWidget::OnChangeState(EGameState _state)
 {
-    this->SetVisibility(ESlateVisibility::Visible);
-
-    UWorld* world{ this->GetWorld() };
-    if (!ensure(world != nullptr)) return;
-    TArray<APlayerState*> const& playerStates{ world->GetGameState()->PlayerArray };
-
-    ASpacelPlayerState* owningPlayerState{ Cast<ASpacelPlayerState>(this->GetOwningPlayerState()) };
-    if (owningPlayerState == nullptr) return;
-    FString owningPlayerTeam{ owningPlayerState->R_Team };
-
-    Team = owningPlayerTeam;
-
-    //set background color for ranking
-    if (this->TeamColorDataAsset != nullptr)
+    if (_state == EGameState::InGame)
     {
-        SetBackgroundRanking(this->TeamColorDataAsset->GetColor<FSlateColor>(Team));
-    }
+        this->SetVisibility(ESlateVisibility::Visible);
 
-    // create score array
-    if (this->ScoreWidget != nullptr)
-    {
-        this->ScoreWidget->initScoreArray();
-    }
+        UWorld* world{ this->GetWorld() };
+        if (!ensure(world != nullptr)) return;
+        TArray<APlayerState*> const& playerStates{ world->GetGameState()->PlayerArray };
 
-    int i{ 0 };
-    for (APlayerState* playerState : playerStates)
-    {
-        if (ASpacelPlayerState* spacelPlayerState = Cast<ASpacelPlayerState>(playerState))
+        ASpacelPlayerState* owningPlayerState{ Cast<ASpacelPlayerState>(this->GetOwningPlayerState()) };
+        if (owningPlayerState == nullptr) return;
+        FString owningPlayerTeam{ owningPlayerState->R_Team };
+
+        Team = owningPlayerTeam;
+
+        //set background color for ranking
+        if (this->TeamColorDataAsset != nullptr)
         {
-            if (spacelPlayerState->GetUniqueID() == owningPlayerState->GetUniqueID()) continue;
+            SetBackgroundRanking(this->TeamColorDataAsset->GetColor<FSlateColor>(Team));
+        }
 
-            if (spacelPlayerState->R_Team.Equals(owningPlayerTeam)
-                && this->AllyWidgets[i] != nullptr)
+        // create score array
+        if (this->ScoreWidget != nullptr)
+        {
+            this->ScoreWidget->initScoreArray();
+        }
+
+        int i{ 0 };
+        for (APlayerState* playerState : playerStates)
+        {
+            if (ASpacelPlayerState* spacelPlayerState = Cast<ASpacelPlayerState>(playerState))
             {
-                this->AllyWidgets[i]->setWatcher(spacelPlayerState);
-                this->AllyWidgets[i]->Visibility = ESlateVisibility::Visible;
-                ++i;
+                if (spacelPlayerState->GetUniqueID() == owningPlayerState->GetUniqueID()) continue;
+
+                if (spacelPlayerState->R_Team.Equals(owningPlayerTeam)
+                    && this->AllyWidgets[i] != nullptr)
+                {
+                    this->AllyWidgets[i]->setWatcher(spacelPlayerState);
+                    this->AllyWidgets[i]->Visibility = ESlateVisibility::Visible;
+                    ++i;
+                }
             }
         }
+
+        BP_StartGame();
+
+        // timer for start animation
+        float firstDelay = AFlyingGameMode::RemainingUnlockInputTime / 2.0f;
+        float inRate = (AFlyingGameMode::RemainingUnlockInputTime - firstDelay) / 2.0f;
+        world->GetTimerManager().SetTimer(this->RedLightAnimationHandle, this, &USpacelWidget::RedLight, inRate, true, firstDelay);
+
+        // Set up the delegate.
+        FAsyncLoadGameFromSlotDelegate LoadedDelegate;
+        // USomeUObjectClass::LoadGameDelegateFunction is a void function that takes the following parameters: const FString& SlotName, const int32 UserIndex, USaveGame* LoadedGameData
+        LoadedDelegate.BindUObject(this, &USpacelWidget::OnLoadGame);
+        UGameplayStatics::AsyncLoadGameFromSlot("Save", 0, LoadedDelegate);
     }
-
-    BP_StartGame();
-
-    // timer for start animation
-    float firstDelay = AFlyingGameMode::RemainingUnlockInputTime / 2.0f;
-    float inRate = (AFlyingGameMode::RemainingUnlockInputTime - firstDelay) / 2.0f;
-    world->GetTimerManager().SetTimer(this->RedLightAnimationHandle, this, &USpacelWidget::RedLight, inRate, true, firstDelay);
-
-    // Set up the delegate.
-    FAsyncLoadGameFromSlotDelegate LoadedDelegate;
-    // USomeUObjectClass::LoadGameDelegateFunction is a void function that takes the following parameters: const FString& SlotName, const int32 UserIndex, USaveGame* LoadedGameData
-    LoadedDelegate.BindUObject(this, &USpacelWidget::OnLoadGame);
-    UGameplayStatics::AsyncLoadGameFromSlot("Save", 0, LoadedDelegate);
-}
-
-void USpacelWidget::EndGame()
-{
-    BP_EndGame();
+    else if (_state == EGameState::UnlockInput)
+    {
+        BP_UnlockInput();
+    }
+    else if (_state == EGameState::EndGame)
+    {
+        BP_EndGame();
+    }
 }
 
 void USpacelWidget::RedLight()
@@ -220,28 +225,30 @@ void USpacelWidget::addSkill(class SkillCountDown * _skill)
     if (this->SkillBarHorizontalBox == nullptr) return;
     if(_skill == nullptr) return;
 
-    FSkill const& skill = _skill->getParam();
-    USkillWidget* skillWidget{ nullptr };
-    if (skill.SkillWidgetClass != nullptr)
+    if (UUniqueSkillDataAsset const* skill = _skill->getParam())
     {
-        FString name = "Skill";
-        name.Append(FString::FromInt((int)skill.Skill));
-        skillWidget = CreateWidget<USkillWidget, UHorizontalBox>(this->SkillBarHorizontalBox, skill.SkillWidgetClass, *name);
-        this->SkillBarHorizontalBox->AddChildToHorizontalBox(skillWidget);
-    }
-    else if (skill.WidgetName.IsValid())
-    {
-        skillWidget = SimplyUI::initUnSafeFromName<UUserWidget, USkillWidget>(this, skill.WidgetName);
-    }
+        USkillWidget* skillWidget{ nullptr };
+        if (skill->SkillWidgetClass != nullptr)
+        {
+            FString name = "Skill";
+            name.Append(FString::FromInt((int)skill->Skill));
+            skillWidget = CreateWidget<USkillWidget, UHorizontalBox>(this->SkillBarHorizontalBox, skill->SkillWidgetClass, *name);
+            this->SkillBarHorizontalBox->AddChildToHorizontalBox(skillWidget);
+        }
+        else if (skill->WidgetName.IsValid())
+        {
+            skillWidget = SimplyUI::initUnSafeFromName<UUserWidget, USkillWidget>(this, skill->WidgetName);
+        }
 
-    if (skillWidget != nullptr)
-    {
-        skillWidget->SetSkillWithKey(skill.BackgroundColorBtn, skill.IconeBtn, skill.Key.GetDisplayName(false));
-    }
+        if (skillWidget != nullptr)
+        {
+            skillWidget->SetSkillWithKey(skill->BackgroundColorBtn, skill->IconeBtn, skill->Key.GetDisplayName(false));
+        }
 
-    if (UProgressBar* progress = SimplyUI::initUnSafeFromName<UUserWidget, UProgressBar>(skillWidget, TEXT("ProgressBar_Skill")))
-    {
-        _skill->addProgressBar(progress);
+        if (UProgressBar* progress = SimplyUI::initUnSafeFromName<UUserWidget, UProgressBar>(skillWidget, TEXT("ProgressBar_Skill")))
+        {
+            _skill->addProgressBar(progress);
+        }
     }
 }
 

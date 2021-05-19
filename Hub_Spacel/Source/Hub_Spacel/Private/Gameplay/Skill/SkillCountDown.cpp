@@ -5,6 +5,7 @@
 #include "Engine/World.h"
 #include "TimerManager.h"
 #include "Gameplay/Skill/SkillBehaviour.h"
+#include "DataAsset/UniqueSkillDataAsset.h"
 #include "Components/ProgressBar.h"
 
 SkillCountDown::SkillCountDown(SkillCountDown const& _cpy)
@@ -14,7 +15,7 @@ SkillCountDown::SkillCountDown(SkillCountDown const& _cpy)
 {
     if (m_netMode == ENetMode::NM_DedicatedServer)
     {
-        m_behaviour = SkillFactory::create(m_param.Skill, m_pawn, m_netMode);
+        m_behaviour = SkillFactory::create(getSkillType(), m_pawn, m_netMode);
     }
     m_state = ECountDown::Available;
     m_state.init({ std::bind(&SkillCountDown::onAvailable, this),
@@ -25,16 +26,17 @@ SkillCountDown::SkillCountDown(SkillCountDown const& _cpy)
     m_callbackFailed = _cpy.m_callbackFailed;
 }
 
-SkillCountDown::SkillCountDown(FSkill _skill, class ACommonPawn* _pawn, ENetMode _netMode, std::function<void(ESkill)> _callbackSucced, std::function<void(ESkill, ESkillReturn)> _callbackFailed)
+SkillCountDown::SkillCountDown(UUniqueSkillDataAsset const* _skill, class ACommonPawn* _pawn, ENetMode _netMode, std::function<void(ESkill)> _callbackSucced, std::function<void(ESkill, ESkillReturn)> _callbackFailed)
     : m_netMode(_netMode)
-    , m_param(_skill)
     , m_pawn(_pawn)
     , m_callbackSucced(_callbackSucced)
     , m_callbackFailed(_callbackFailed)
 {
+    m_param = _skill;
+
     if (m_netMode == ENetMode::NM_DedicatedServer)
     {
-        m_behaviour = SkillFactory::create(m_param.Skill, m_pawn, m_netMode);
+        m_behaviour = SkillFactory::create(getSkillType(), m_pawn, m_netMode);
     }
     m_state = ECountDown::Available;
     m_state.init({ std::bind(&SkillCountDown::onAvailable, this),
@@ -46,30 +48,47 @@ SkillCountDown::~SkillCountDown()
 {
 }
 
+ESkill SkillCountDown::getSkillType() const
+{
+    if (m_param != nullptr)
+    {
+        return m_param->Skill;
+    }
+
+    ensure(false);
+    return (ESkill)0;
+}
+
 void SkillCountDown::tick(float _delta)
 {
     m_currentTime += _delta;
 
+    if (m_param == nullptr)
+    {
+        ensure(false);
+        return;
+    }
+
     if (m_state == ECountDown::Ing)
     {
-        if (m_currentTime >= m_param.FlatDuration)
+        if (m_currentTime >= m_param->FlatDuration)
         {
             m_state = ECountDown::CountDown;
         }
         else
         {
-            updatePercent(m_progressBar, m_currentTime / m_param.FlatDuration);
+            updatePercent(m_progressBar, m_currentTime / m_param->FlatDuration);
         }
     }
     else if (m_state == ECountDown::CountDown)
     {
-        if (m_currentTime >= m_param.CountDown)
+        if (m_currentTime >= m_param->CountDown)
         {
             m_state = ECountDown::Available;
         }
         else
         {
-            updatePercent(m_progressBar, 1.0f - m_currentTime / m_param.CountDown);
+            updatePercent(m_progressBar, 1.0f - m_currentTime / m_param->CountDown);
         }
     }
 }
@@ -108,13 +127,13 @@ void SkillCountDown::onIng()
         {
             if (m_callbackSucced != nullptr)
             {
-                m_callbackSucced(m_param.Skill);
+                m_callbackSucced(getSkillType());
             }
         }
         else
         {
             m_state = ECountDown::Available;
-            m_callbackFailed(m_param.Skill, returnValue);
+            m_callbackFailed(getSkillType(), returnValue);
         }
     }
 }
@@ -136,6 +155,6 @@ void SkillCountDown::use(class UWorld* _context)
     }
     else if(m_state == ECountDown::CountDown)
     {
-        m_callbackFailed(m_param.Skill, ESkillReturn::CountDown);
+        m_callbackFailed(getSkillType(), ESkillReturn::CountDown);
     }
 }

@@ -42,19 +42,16 @@ protected:
 
 protected:
 	UFUNCTION()
-	void StartGame();
+	void OnChangeState(EGameState _state);
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void BP_StartGame();
 	
-	UFUNCTION()
-	void EndGame();
-
 	UFUNCTION(BlueprintImplementableEvent)
 	void BP_EndGame();
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void UnlockInput();
+	void BP_UnlockInput();
 
 	UFUNCTION()
 	void UpdateScore();
@@ -114,7 +111,7 @@ protected:
 	void OnStartMission(FMission const& _mission);
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void ShowMissionPanel();
+	void BP_ShowMissionPanel();
 
 	UFUNCTION()
 	void OnEndMission(EMission _type);

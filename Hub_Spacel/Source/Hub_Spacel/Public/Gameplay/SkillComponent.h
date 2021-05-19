@@ -41,7 +41,7 @@ private:
 	UFUNCTION()
 	void OnMissionEnd(EMission _type);
 
-	FSkill const& getSkill(ESkill _skill) const;
+	class UUniqueSkillDataAsset const* getSkill(ESkill _skill) const;
 
 public:
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)

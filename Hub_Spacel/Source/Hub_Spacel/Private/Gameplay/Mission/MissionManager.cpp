@@ -28,7 +28,7 @@ void AMissionManager::BeginPlay()
 	{
 		if (ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld())))
 		{
-			spacelGameState->OnStartGameDelegate.AddDynamic(this, &AMissionManager::OnStartGame);
+			spacelGameState->OnChangeStateDelegate.AddDynamic(this, &AMissionManager::OnStartGame);
 		}
 
 		FMission const& mission = this->MissionDataAsset->getMission(EMission::EcartType);
@@ -65,8 +65,9 @@ void AMissionManager::Tick(float DeltaTime)
 	}
 }
 
-void AMissionManager::OnStartGame()
+void AMissionManager::OnStartGame(EGameState _state)
 {
+	if(_state != EGameState::UnlockInput) return;
 	if(this->MissionDataAsset == nullptr) return;
 
 	FMission const& firstBlood = this->MissionDataAsset->getMission(EMission::FirstBlood);

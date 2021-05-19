@@ -27,7 +27,7 @@ public:
 
 private:
 	UFUNCTION()
-	void OnStartGame();
+	void OnStartGame(EGameState _state);
 
 	void startMissionOnAllClient(FMission const& _mission) const;
 	void endMissionOnNetMulticast(FMission const& _mission) const;

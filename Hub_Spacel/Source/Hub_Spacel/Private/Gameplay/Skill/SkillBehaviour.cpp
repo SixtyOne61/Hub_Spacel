@@ -189,13 +189,14 @@ TUniquePtr<SkillBehaviour> SkillFactory::create(ESkill _skill, class ACommonPawn
         case ESkill::GiveAlly1 : return MakeUnique<SkillGiveAlly1>(_pawn, _netMode);
         case ESkill::GiveAlly2 : return MakeUnique<SkillGiveAlly2>(_pawn, _netMode);
         case ESkill::EscapeMode : return MakeUnique<SkillEscapeMode>(_pawn, _netMode);
-        case ESkill::SpecialAttack : return MakeUnique<SkillSpecialAttack>(_pawn, _netMode);
-        case ESkill::SpecialProtection: return MakeUnique<SkillSpecialProtection>(_pawn, _netMode);
-        case ESkill::SpecialSupport: return MakeUnique<SkillSpecialSupport>(_pawn, _netMode);
+        case ESkill::Missile : return MakeUnique<SkillSpecialAttack>(_pawn, _netMode);
+        case ESkill::ShieldTeam: return MakeUnique<SkillSpecialProtection>(_pawn, _netMode);
+        case ESkill::Emp: return MakeUnique<SkillSpecialSupport>(_pawn, _netMode);
         case ESkill::MetaFormAttack: return MakeUnique<SkillMetaFormAttack>(_pawn, _netMode);
         case ESkill::MetaFormProtection: return MakeUnique<SkillMetaFormProtection>(_pawn, _netMode);
         case ESkill::MetaFormSupport: return MakeUnique<SkillMetaFormSupport>(_pawn, _netMode);
         case ESkill::NinePack: return MakeUnique<SkillNinePack>(_pawn, _netMode);
+        default: ensure(false); break;
     }
 
     return nullptr;

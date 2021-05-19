@@ -21,9 +21,13 @@ ULocalPlayerActionComponent::ULocalPlayerActionComponent()
     PrimaryComponentTick.bCanEverTick = true;
 }
 
+ULocalPlayerActionComponent::~ULocalPlayerActionComponent() = default;
+
 void ULocalPlayerActionComponent::BeginPlay()
 {
     Super::BeginPlay();
+
+    m_metric = std::make_unique<LocalMetric>();
 
     if (get() && get()->SpeedLinesComponent != nullptr)
     {

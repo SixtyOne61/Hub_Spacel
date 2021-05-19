@@ -18,6 +18,8 @@
 #include "DataAsset/SetupAttributeDataAsset.h"
 #include "DataAsset/PlayerDataAsset.h"
 #include "DataAsset/TeamColorDataAsset.h"
+#include "DataAsset/SkillDataAsset.h"
+#include "DataAsset/UniqueSkillDataAsset.h"
 #include "Player/SpacelPlayerState.h"
 #include "Player/TargetActor.h"
 #include "Player/FireComponent.h"
@@ -36,36 +38,43 @@
 #include "NiagaraComponent.h"
 #include "Skill/NinePackActor.h"
 
-void AShipPawn::OnLockPrepare()
+void AShipPawn::OnChangeState(EGameState _state)
 {
-    if (this->SkillComponent != nullptr)
+    if (_state == EGameState::InGame)
     {
-        this->SkillComponent->setupSkill();
-    }
-}
+        if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
+        {
+            // add custom collision component
+            if (UCustomCollisionComponent* customCollisionComponent = NewObject<UCustomCollisionComponent>(this, "CustomCollision_00"))
+            {
+                customCollisionComponent->RegisterComponent();
+            }
 
-void AShipPawn::OnStartGame()
-{
-    // add custom collision component
-    if (UCustomCollisionComponent* customCollisionComponent = NewObject<UCustomCollisionComponent>(this, "CustomCollision_00"))
+            m_startTransform = this->GetActorTransform();
+
+            RPCClientStartGame(this->Team);
+            RPCNetMulticastStartGame(this->Team);
+        }
+    }
+    else if (_state == EGameState::UnlockInput)
     {
-        customCollisionComponent->RegisterComponent();
+        if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
+        {
+            addEffect(EEffect::Respawned);
+            FTimerDelegate timerCallback;
+            timerCallback.BindLambda([&]() { removeEffect(EEffect::Respawned); });
+
+            FTimerHandle handle;
+            this->GetWorldTimerManager().SetTimer(handle, timerCallback, 3.0f, false);
+        }
     }
-
-    m_startTransform = this->GetActorTransform();
-
-    RPCClientStartGame(this->Team);
-    RPCNetMulticastStartGame(this->Team);
-}
-
-void AShipPawn::OnUnlockInput()
-{
-    addEffect(EEffect::Respawned);
-    FTimerDelegate timerCallback;
-    timerCallback.BindLambda([&]() { removeEffect(EEffect::Respawned); });
-
-    FTimerHandle handle;
-    this->GetWorldTimerManager().SetTimer(handle, timerCallback, 3.0f, false);
+    else if (_state == EGameState::LockPrepare)
+    {
+        if (this->SkillComponent != nullptr)
+        {
+            this->SkillComponent->setupSkill();
+        }
+    }
 }
 
 void AShipPawn::RPCNetMulticastStartGame_Implementation(FName const& _team)
@@ -149,9 +158,7 @@ void AShipPawn::BeginPlay()
         ASpacelGameState* spacelGameState{ Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld())) };
         if (spacelGameState != nullptr)
         {
-            spacelGameState->OnStartGameDelegate.AddDynamic(this, &AShipPawn::OnStartGame);
-            spacelGameState->OnUnlockInputDelegate.AddDynamic(this, &AShipPawn::OnUnlockInput);
-            spacelGameState->OnLockPrepareDelegate.AddDynamic(this, &AShipPawn::OnLockPrepare);
+            spacelGameState->OnChangeStateDelegate.AddDynamic(this, &AShipPawn::OnChangeState);
             spacelGameState->OnPlayerEnterFogDelegate.AddDynamic(this, &AShipPawn::OnPlayerEnterFog);
         }
         activateComponent(this->FireComponent);
@@ -197,7 +204,7 @@ void AShipPawn::BeginPlay()
             ASpacelGameState* spacelGameState{ Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld())) };
             if (spacelGameState != nullptr)
             {
-                spacelGameState->OnLockPrepareDelegate.AddDynamic(this, &AShipPawn::OnLockPrepare);
+                spacelGameState->OnChangeStateDelegate.AddDynamic(this, &AShipPawn::OnChangeState);
             }
             UHub_SpacelGameInstance* spacelGameInstance = Cast<UHub_SpacelGameInstance>(this->GetGameInstance());
             if (!ensure(spacelGameInstance != nullptr)) return;
@@ -288,10 +295,14 @@ void AShipPawn::emp()
     {
         if(this->SkillComponent == nullptr) return;
         if(this->SkillComponent->SkillDataAsset == nullptr) return;
-        uint32 duration = this->SkillComponent->SkillDataAsset->getSKill(ESkill::SpecialSupport).FlatDuration;
-        if (ASpacelPlayerState* playerState = this->GetPlayerState<ASpacelPlayerState>())
+
+        if (UUniqueSkillDataAsset const* skillParam = this->SkillComponent->SkillDataAsset->getSKill(ESkill::Emp))
         {
-            target->emp(duration, this->Team, playerState->PlayerId);
+            uint32 duration = skillParam->FlatDuration;
+            if (ASpacelPlayerState* playerState = this->GetPlayerState<ASpacelPlayerState>())
+            {
+                target->emp(duration, this->Team, playerState->PlayerId);
+            }
         }
     }
 }
@@ -387,7 +398,7 @@ void AShipPawn::OnRep_PlayerState()
 void AShipPawn::BuildDefaultShip()
 {
 #if WITH_EDITOR
-    this->ModuleComponent->OnStartGame();
+    this->ModuleComponent->OnStartGame(EGameState::InGame);
 #endif
 }
 

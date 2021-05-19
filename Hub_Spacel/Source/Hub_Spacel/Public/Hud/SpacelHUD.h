@@ -22,12 +22,12 @@ protected:
 
 private:
 	UFUNCTION()
-	void StartGame();
+	void StartGame(EGameState _state);
 
 private:
 	UPROPERTY()
 	TSubclassOf<class UUserWidget> GameWidgetClass { nullptr };
 
 	UPROPERTY()
-	TSubclassOf<UUserWidget> PreparePhaseWidgetClass { nullptr };
+	TSubclassOf<UUserWidget> LobbyWidgetClass { nullptr };
 };

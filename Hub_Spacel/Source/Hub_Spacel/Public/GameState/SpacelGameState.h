@@ -7,12 +7,8 @@
 #include "Enum/SpacelEnum.h"
 #include "SpacelGameState.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartPrepare);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FLockPrepare);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartGame);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FUnlockInput);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FChangeState, EGameState, _state);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FScoreUpdate);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FEndGame);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FPlayerEnterFog, int32, _playerId, bool, _enter);
 
 USTRUCT()
@@ -61,6 +57,12 @@ class HUB_SPACEL_API ASpacelGameState : public AGameStateBase
 public:
 	UFUNCTION()
 	void GoToPrepare() { this->RU_GameState = (uint8)EGameState::Prepare; OnRep_StateGame(); }
+
+	UFUNCTION()
+	void GoToLockLowModule() { this->RU_GameState = (uint8)EGameState::LockLowModule; OnRep_StateGame(); }
+
+	UFUNCTION()
+	void GoToLockMediumModule() { this->RU_GameState = (uint8)EGameState::LockMediumModule; OnRep_StateGame(); }
 
 	UFUNCTION()
 	void GoToLockPrepare() { this->RU_GameState = (uint8)EGameState::LockPrepare; OnRep_StateGame(); }
@@ -114,25 +116,13 @@ public:
 	FString R_WinningTeam {};
 
 	UPROPERTY()
-	FStartPrepare OnStartPrepareDelegate {};
-
-	UPROPERTY()
-	FLockPrepare OnLockPrepareDelegate {};
-
-	UPROPERTY()
-	FStartGame OnStartGameDelegate {};
-
-	UPROPERTY()
-	FUnlockInput OnUnlockInputDelegate {};
+	FChangeState OnChangeStateDelegate {};
 
 	UPROPERTY()
 	FScoreUpdate OnScoreUpdateDelegate {};
 
 	UPROPERTY()
 	FPlayerEnterFog OnPlayerEnterFogDelegate {};
-
-	UPROPERTY()
-	FEndGame OnEndGameDelegate {};
 
 protected:
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)

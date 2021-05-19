@@ -61,7 +61,8 @@ void UFireComponent::TickComponent(float _deltaTime, ELevelTick _tickType, FActo
         // reset count down
         if (ASpacelPlayerState* spacelPlayerState = get()->GetPlayerState<ASpacelPlayerState>())
         {
-            float coef = spacelPlayerState->IsIncreaseFireRate() ? get()->PlayerDataAsset->ReduceTimeBetweenFireWithLevel : 1.0f;
+            uint8 lowSkillId = spacelPlayerState->getSkillId(ESkillType::Low);
+            float coef = lowSkillId == (uint8)ESkill::FireRate ? get()->PlayerDataAsset->ReduceTimeBetweenFireWithLevel : 1.0f;
             if (get()->hasEffect(EEffect::MetaFormAttack))
             {
                 coef = get()->PlayerDataAsset->ReduceTimeBetweenFireWithMetaForm;

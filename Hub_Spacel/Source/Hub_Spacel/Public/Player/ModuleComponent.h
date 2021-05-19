@@ -33,7 +33,7 @@ protected:
 
     /* server side */
     UFUNCTION()
-    void OnStartGame();
+    void OnStartGame(EGameState _state);
 
     UFUNCTION()
     void OnRep_Attack();

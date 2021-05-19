@@ -11,6 +11,8 @@ enum class EGameState : uint8
 {
     Undefined = 0,
     Prepare,
+    LockLowModule,
+    LockMediumModule,
     LockPrepare,
     InGame,
     UnlockInput,
@@ -50,9 +52,9 @@ UENUM(BlueprintType)
 enum class ESkillType : uint8
 {
     None UMETA(DisplayName = "None"),
-    Attack UMETA(DisplayName = "Attack"),
-    Protection UMETA(DisplayName = "Protection"),
-    Support UMETA(DisplayName = "Support")
+    Low UMETA(DisplayName = "Attack"),
+    Medium UMETA(DisplayName = "Protection"),
+    Hight UMETA(DisplayName = "Support")
 };
 
 UENUM(BlueprintType)
@@ -62,14 +64,17 @@ enum class ESkill : uint8
     RepairSupport UMETA(DisplayName = "RepairSupport"),
     GiveAlly1 UMETA(DisplayName = "GiveAlly1"),
     GiveAlly2 UMETA(DisplayName = "GiveAlly2"),
-    SpecialAttack UMETA(DisplayName = "SpecialAttack"),
-    SpecialProtection UMETA(DisplayName = "SpecialProtection"),
-    SpecialSupport UMETA(DisplayName = "SpecialSupport"),
+    Missile UMETA(DisplayName = "Missile"),
+    ShieldTeam UMETA(DisplayName = "ShieldTeam"),
+    Emp UMETA(DisplayName = "Emp"),
     EscapeMode UMETA(DisplayName = "EscapeMode"),
     MetaFormAttack UMETA(DisplayName = "MetaFormAttack"),
     MetaFormProtection UMETA(DisplayName = "MetaFormProtection"),
     MetaFormSupport UMETA(DisplayName = "MetaFormSupport"),
     NinePack UMETA(DisplayName = "NinePack"),
+    FireRate UMETA(DisplayName = "FireRate"),
+    HeavyProtection UMETA(DisplayName = "HeavyProtection"),
+    Speedy UMETA(DisplayName = "Speedy")
 };
 
 UENUM(BlueprintType, meta = (Bitflags, UseEnumValuesAsMaskValuesInEditor = "true"))
@@ -127,4 +132,10 @@ enum class EMission : uint8
     ScoreRace UMETA(DisplayName = "ScoreRace"),
     EcartType UMETA(DisplayName = "EcartType"),
     Comet UMETA(DisplayName = "Comet"),
+};
+
+UENUM(BlueprintType)
+enum class EMetric : uint8
+{
+    Fog,
 };

@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "DataAsset/SkillDataAsset.h"
 #include "Enum/SpacelEnum.h"
 #include "Util/EnumUtil.h"
 #include "Engine/EngineBaseTypes.h"
@@ -16,17 +15,17 @@ class HUB_SPACEL_API SkillCountDown
 {
 public:
 	SkillCountDown(const SkillCountDown &);
-	SkillCountDown(FSkill _skill, class ACommonPawn* _pawn, ENetMode _netMode, std::function<void(ESkill)> _callbackSucced, std::function<void(ESkill, ESkillReturn)> _callbackFailed);
+	SkillCountDown(class UUniqueSkillDataAsset const* _skill, class ACommonPawn* _pawn, ENetMode _netMode, std::function<void(ESkill)> _callbackSucced, std::function<void(ESkill, ESkillReturn)> _callbackFailed);
 	~SkillCountDown();
 
 	void use(class UWorld* _context);
 	void tick(float _delta);
-	inline FSkill const& getParam() const { return m_param; }
+	inline class UUniqueSkillDataAsset const* getParam() const { return m_param; }
 	void addProgressBar(class UProgressBar* _progressBar);
 
 	bool& inputeState() { return m_isDown; }
 
-	ESkill getSkillType() const { return m_param.Skill; }
+	ESkill getSkillType() const;
 
 private:
 	void onAvailable();
@@ -36,7 +35,7 @@ private:
 
 private:
 	ENetMode m_netMode {};
-	FSkill m_param {};
+	class UUniqueSkillDataAsset const* m_param { nullptr };
 	EnumUtil::EnumCallback<ECountDown> m_state { };
 	class ACommonPawn* m_pawn { nullptr };
 	class UProgressBar* m_progressBar { nullptr };
