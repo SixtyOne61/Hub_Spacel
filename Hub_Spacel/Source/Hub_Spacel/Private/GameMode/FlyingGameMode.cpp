@@ -11,6 +11,7 @@
 #include "JsonUtilities.h"
 #include "Util/SimplyHttpRequest.h"
 #include "Util/SimplyMath.h"
+#include "DataAsset/FlyingGameModeDataAsset.h"
 
 AFlyingGameMode::AFlyingGameMode()
 {
@@ -24,6 +25,14 @@ AFlyingGameMode::AFlyingGameMode()
 void AFlyingGameMode::BeginPlay()
 {
     Super::BeginPlay();
+
+    if(this->GameModeDataAsset != nullptr)
+    {
+        this->RemainingGameTime = this->GameModeDataAsset->RemainingGameTime;
+        this->RemainingChooseModuleTime = this->GameModeDataAsset->RemainingChooseModuleTime;
+        this->RemainingLeaveTime = this->GameModeDataAsset->RemainingLeaveTime;
+        m_nextStepTime = this->RemainingChooseModuleTime;
+    }
 
 #if WITH_GAMELIFT
     auto initSDKOutCome = Aws::GameLift::Server::InitSDK();
@@ -441,7 +450,10 @@ void AFlyingGameMode::PreparePhaseUntilLock()
 
             case 2:
                 spacelGameState->GoToLockPrepare();
-                this->RemainingChooseModuleTime /= 4.0f;
+                if(this->GameModeDataAsset != nullptr)
+                {
+                    this->RemainingChooseModuleTime = this->GameModeDataAsset->EndModuleTime;
+                }
             break;
 
             case 3:

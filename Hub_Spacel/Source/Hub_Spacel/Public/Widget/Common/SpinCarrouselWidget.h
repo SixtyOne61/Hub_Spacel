@@ -24,11 +24,16 @@ protected:
 	void NativeConstruct() override;
 	void NativeDestruct() override;
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void BP_SetDesc(FString const& _desc);
+
 	UFUNCTION(BlueprintCallable)
 	void SpinRight();
 
 	UFUNCTION(BlueprintCallable)
 	void SpinLeft();
+
+	void setDesc();
 
 protected:
 	TArray<class UItemCarrouselWidget*> Items {};

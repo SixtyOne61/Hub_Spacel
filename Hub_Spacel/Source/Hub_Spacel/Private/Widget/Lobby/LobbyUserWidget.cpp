@@ -3,6 +3,7 @@
 
 #include "LobbyUserWidget.h"
 #include "GameState/SpacelGameState.h"
+#include "GameMode/FlyingGameMode.h"
 #include "Kismet/GameplayStatics.h"
 #include "Widget/Common/SpinCarrouselWidget.h"
 #include "Widget/Common/ItemCarrouselWidget.h"
@@ -10,7 +11,9 @@
 #include "DataAsset/SkillDataAsset.h"
 #include "DataAsset/TeamColorDataAsset.h"
 #include "DataAsset/UniqueSkillDataAsset.h"
+#include "DataAsset/FlyingGameModeDataAsset.h"
 #include "Player/SpacelPlayerState.h"
+#include "Components/TextBlock.h"
 
 void ULobbyUserWidget::NativeConstruct()
 {
@@ -24,11 +27,42 @@ void ULobbyUserWidget::NativeConstruct()
     }
 
     Carrousel = SimplyUI::initSafetyFromName<UUserWidget, USpinCarrouselWidget>(this, TEXT("WBP_SpinCarrousel"));
+    TimeTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Time"));
 }
 
 void ULobbyUserWidget::NativeDestruct()
 {
+    UWorld* world{ this->GetWorld() };
+    if (!ensure(world != nullptr)) return;
+    world->GetTimerManager().ClearTimer(this->TimeHandle);
+
     Super::NativeDestruct();
+}
+
+void ULobbyUserWidget::setTimer(int _timer)
+{
+    if (!ensure(this->TimeTextBlock != nullptr)) return;
+
+    this->Time = _timer;
+    this->TimeTextBlock->SetText(FText::FromString(FString::FromInt(this->Time)));
+}
+
+void ULobbyUserWidget::SetTime()
+{
+    if (this->Time > 0)
+    {
+        --this->Time;
+        if (this->Time < 10)
+        {
+            FString str = "0";
+            str.Append(FString::FromInt(this->Time));
+            this->TimeTextBlock->SetText(FText::FromString(str));
+        }
+        else
+        {
+            this->TimeTextBlock->SetText(FText::FromString(FString::FromInt(this->Time)));
+        }
+    }
 }
 
 void ULobbyUserWidget::StartLobby(EGameState _state)
@@ -38,6 +72,15 @@ void ULobbyUserWidget::StartLobby(EGameState _state)
         SetupOwningTeam();
         // setup carrousel with low module
         setupSkill(this->LowSkill);
+        if (this->GameModeDataAsset != nullptr)
+        {
+            setTimer(this->GameModeDataAsset->RemainingChooseModuleTime);
+        }
+
+        UWorld* world{ this->GetWorld() };
+        if (!ensure(world != nullptr)) return;
+
+        world->GetTimerManager().SetTimer(TimeHandle, this, &ULobbyUserWidget::SetTime, 1.0f, true, 0.0f);
     }
     else if (_state == EGameState::LockLowModule)
     {
@@ -45,6 +88,10 @@ void ULobbyUserWidget::StartLobby(EGameState _state)
         saveSkillChoosen(this->Carrousel->getIdSelected(), ESkillType::Low);
         // setup carrousel with medium module
         setupSkill(this->MediumSkill);
+        if (this->GameModeDataAsset != nullptr)
+        {
+            setTimer(this->GameModeDataAsset->RemainingChooseModuleTime);
+        }
     }
     else if (_state == EGameState::LockMediumModule)
     {
@@ -52,11 +99,19 @@ void ULobbyUserWidget::StartLobby(EGameState _state)
         saveSkillChoosen(this->Carrousel->getIdSelected(), ESkillType::Medium);
         // setup carrousel with hight module
         setupSkill(this->HightSkill);
+        if (this->GameModeDataAsset != nullptr)
+        {
+            setTimer(this->GameModeDataAsset->RemainingChooseModuleTime);
+        }
     }
     else if (_state == EGameState::LockPrepare)
     {
         // save hight module choice
         saveSkillChoosen(this->Carrousel->getIdSelected(), ESkillType::Hight);
+        if (this->GameModeDataAsset != nullptr)
+        {
+            setTimer(this->GameModeDataAsset->EndModuleTime);
+        }
     }
     else if (_state == EGameState::InGame)
     {
@@ -74,7 +129,7 @@ void ULobbyUserWidget::setupSkill(TArray<ESkill> const& _skills)
         if (UUniqueSkillDataAsset const* skill = this->SkillDataAsset->getSKill(type))
         {
             uint8 id = (uint8)type;
-            datas.Add({ id, skill->BackgroundColorLobby });
+            datas.Add({ id, skill->BackgroundColorLobby, skill->Desc });
         }
     }
 

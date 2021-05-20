@@ -19,6 +19,7 @@ public:
 	{
 		uint8 m_id;
 		FSlateColor m_backgroundColor {};
+		FString m_text {};
 	} m_data;
 
 public:

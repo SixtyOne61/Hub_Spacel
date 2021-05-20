@@ -155,26 +155,31 @@ public:
 	FTimerHandle UnlockInputHandle {};
 
 	UPROPERTY()
-	int RemainingGameTime { 690 }; // 11'30
+	int RemainingGameTime { }; // 11'30
 
 	UPROPERTY()
-	int RemainingChooseModuleTime { 20 }; // 60
+	int RemainingChooseModuleTime { }; // 60
 
 	UPROPERTY()
 	int NbStep { 0 };
 
 	UPROPERTY()
-	int RemainingLeaveTime { 20 };
+	int RemainingLeaveTime { };
 
 	static const int RemainingUnlockInputTime { 10 };
 
-	int m_nextStepTime { RemainingChooseModuleTime };
+	int m_nextStepTime { };
 
 	UPROPERTY()
 	int SuspendBackfillTime { 45 };
 
 	UPROPERTY()
 	int MaxPlayerPerGame { 18 };
+
+protected:
+	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
+	class UFlyingGameModeDataAsset* GameModeDataAsset{ nullptr };
+
 
 private:
 	class FHttpModule* HttpModule { nullptr };

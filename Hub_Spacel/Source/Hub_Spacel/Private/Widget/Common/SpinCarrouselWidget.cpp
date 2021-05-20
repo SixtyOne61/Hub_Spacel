@@ -24,6 +24,11 @@ void USpinCarrouselWidget::NativeDestruct()
     Super::NativeDestruct();
 }
 
+void USpinCarrouselWidget::setDesc()
+{
+    BP_SetDesc(this->Items[1]->m_data.m_text);
+}
+
 void USpinCarrouselWidget::setupItems(TArray<UItemCarrouselWidget::FData> const& _data)
 {
     for (int i = 0; i < _data.Num(); ++i)
@@ -33,6 +38,8 @@ void USpinCarrouselWidget::setupItems(TArray<UItemCarrouselWidget::FData> const&
             this->Items[i]->setupItems(_data[i]);
         }
     }
+
+    setDesc();
 }
 
 void USpinCarrouselWidget::SpinRight()
@@ -52,6 +59,8 @@ void USpinCarrouselWidget::SpinRight()
             this->Items[i]->setupItems(save);
         }
     }
+
+    setDesc();
 }
 
 void USpinCarrouselWidget::SpinLeft()
@@ -71,6 +80,8 @@ void USpinCarrouselWidget::SpinLeft()
             this->Items[i]->setupItems(save);
         }
     }
+
+    setDesc();
 }
 
 uint8 USpinCarrouselWidget::getIdSelected() const

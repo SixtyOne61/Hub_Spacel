@@ -29,8 +29,12 @@ private:
 	UFUNCTION()
 	void SetupOwningTeam();
 
+	UFUNCTION()
+	void SetTime();
+
 	void setupSkill(TArray<ESkill> const& _skills);
 	void saveSkillChoosen(uint8 _id, ESkillType _type);
+	void setTimer(int _timer);
 
 protected:
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
@@ -38,6 +42,9 @@ protected:
 
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
 	class UTeamColorDataAsset* Colors { nullptr };
+
+	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
+	class UFlyingGameModeDataAsset* GameModeDataAsset { nullptr };
 
 	UPROPERTY(Category = "Setup", EditAnywhere, BlueprintReadWrite)
 	TArray<ESkill> LowSkill {};
@@ -50,4 +57,12 @@ protected:
 
 	UPROPERTY()
 	class USpinCarrouselWidget* Carrousel { nullptr };
+
+	UPROPERTY()
+	class UTextBlock* TimeTextBlock{ nullptr };
+
+	UPROPERTY()
+	FTimerHandle TimeHandle {};
+
+	int Time { 0 };
 };
