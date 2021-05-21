@@ -65,10 +65,33 @@ void ULobbyUserWidget::SetTime()
     }
 }
 
+void ULobbyUserWidget::spawnLobby3D()
+{
+    if (ASpacelPlayerState* owningPlayerState = Cast<ASpacelPlayerState>(this->GetOwningPlayerState()))
+    {
+        if (APawn* pawn = owningPlayerState->GetPawn())
+        {
+            TArray<UActorComponent*> const& actors = pawn->GetComponentsByTag(USceneComponent::StaticClass(), "Lobby");
+            if (actors.Num() != 0)
+            {
+                if (USceneComponent* comp = Cast<USceneComponent>(actors[0]))
+                {
+                    FTransform const& transform = comp->GetComponentTransform();
+                    if (AActor* actor = Cast<AActor>(UGameplayStatics::BeginDeferredActorSpawnFromClass(this->GetWorld(), this->LobbyClass, transform)))
+                    {
+                        UGameplayStatics::FinishSpawningActor(actor, transform);
+                    }
+                }
+            }
+        }
+    }
+}
+
 void ULobbyUserWidget::StartLobby(EGameState _state)
 {
     if (_state == EGameState::Prepare)
     {
+        spawnLobby3D();
         SetupOwningTeam();
         // setup carrousel with low module
         setupSkill(this->LowSkill);

@@ -32,6 +32,7 @@ private:
 	UFUNCTION()
 	void SetTime();
 
+	void spawnLobby3D();
 	void setupSkill(TArray<ESkill> const& _skills);
 	void saveSkillChoosen(uint8 _id, ESkillType _type);
 	void setTimer(int _timer);
@@ -54,6 +55,9 @@ protected:
 
 	UPROPERTY(Category = "Setup", EditAnywhere, BlueprintReadWrite)
 	TArray<ESkill> HightSkill{};
+
+	UPROPERTY(Category = "Setup", EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<class AActor> LobbyClass { nullptr };
 
 	UPROPERTY()
 	class USpinCarrouselWidget* Carrousel { nullptr };
