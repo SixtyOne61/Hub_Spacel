@@ -229,7 +229,7 @@ void AGamePlayerController::hideScore()
 
 void AGamePlayerController::GameModeChangeState(EGameState _state)
 {
-    if (_state == EGameState::UnlockInput)
+    if (_state == EGameState::InGame)
     {
         this->RPCServerStartGame();
     }

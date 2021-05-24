@@ -135,9 +135,6 @@ void ULobbyUserWidget::StartLobby(EGameState _state)
         {
             setTimer(this->GameModeDataAsset->EndModuleTime);
         }
-    }
-    else if (_state == EGameState::InGame)
-    {
         this->RemoveFromViewport();
     }
 }

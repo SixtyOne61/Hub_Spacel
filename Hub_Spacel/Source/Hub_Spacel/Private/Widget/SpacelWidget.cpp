@@ -24,6 +24,7 @@
 #include "DataAsset/EffectDataAsset.h"
 #include "DataAsset/TeamColorDataAsset.h"
 #include "DataAsset/DitactitialDataAsset.h"
+#include "DataAsset/FlyingGameModeDataAsset.h"
 #include "Widget/AllyWidget.h"
 #include "Widget/SkillWidget.h"
 #include "Widget/SkillProgressWidget.h"
@@ -148,7 +149,7 @@ void USpacelWidget::OnEndMission(EMission _type)
 
 void USpacelWidget::OnChangeState(EGameState _state)
 {
-    if (_state == EGameState::InGame)
+    if (_state == EGameState::LockPrepare)
     {
         this->SetVisibility(ESlateVisibility::Visible);
 
@@ -193,9 +194,11 @@ void USpacelWidget::OnChangeState(EGameState _state)
 
         BP_StartGame();
 
+        if(this->GameModeDataAsset == nullptr) return;
+
         // timer for start animation
-        float firstDelay = AFlyingGameMode::RemainingUnlockInputTime / 2.0f;
-        float inRate = (AFlyingGameMode::RemainingUnlockInputTime - firstDelay) / 2.0f;
+        float firstDelay = this->GameModeDataAsset->EndModuleTime / 4;
+        float inRate = (this->GameModeDataAsset->EndModuleTime - firstDelay) / 2.0f;
         world->GetTimerManager().SetTimer(this->RedLightAnimationHandle, this, &USpacelWidget::RedLight, inRate, true, firstDelay);
 
         // Set up the delegate.
@@ -204,7 +207,7 @@ void USpacelWidget::OnChangeState(EGameState _state)
         LoadedDelegate.BindUObject(this, &USpacelWidget::OnLoadGame);
         UGameplayStatics::AsyncLoadGameFromSlot("Save", 0, LoadedDelegate);
     }
-    else if (_state == EGameState::UnlockInput)
+    else if (_state == EGameState::InGame)
     {
         BP_UnlockInput();
     }

@@ -103,9 +103,6 @@ private:
 	void EndLobby();
 
 	UFUNCTION()
-	void UnlockInput();
-
-	UFUNCTION()
 	void EndGame();
 
 	UFUNCTION()
@@ -165,8 +162,6 @@ public:
 
 	UPROPERTY()
 	int RemainingLeaveTime { };
-
-	static const int RemainingUnlockInputTime { 10 };
 
 	int m_nextStepTime { };
 

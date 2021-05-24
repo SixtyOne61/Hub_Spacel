@@ -40,7 +40,7 @@
 
 void AShipPawn::OnChangeState(EGameState _state)
 {
-    if (_state == EGameState::InGame)
+    if (_state == EGameState::LockPrepare)
     {
         if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
         {
@@ -56,7 +56,7 @@ void AShipPawn::OnChangeState(EGameState _state)
             RPCNetMulticastStartGame(this->Team);
         }
     }
-    else if (_state == EGameState::UnlockInput)
+    else if (_state == EGameState::InGame)
     {
         if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
         {
@@ -447,7 +447,7 @@ void AShipPawn::kill()
 
         if (ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld())))
         {
-            if (spacelGameState->RU_GameState == (uint8)EGameState::UnlockInput)
+            if (spacelGameState->RU_GameState == (uint8)EGameState::InGame)
             {
                 spacelGameState->GoToUnlockMedium();
             }

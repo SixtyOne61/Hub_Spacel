@@ -71,9 +71,6 @@ public:
 	void GoToInGame() { this->RU_GameState = (uint8)EGameState::InGame; OnRep_StateGame(); }
 
 	UFUNCTION()
-	void GoToUnlockInput() { this->RU_GameState = (uint8)EGameState::UnlockInput; OnRep_StateGame(); }
-
-	UFUNCTION()
 	void GoToUnlockMedium() { this->RU_GameState = (uint8)EGameState::UnlockMedium; OnRep_StateGame(); }
 
 	UFUNCTION()
@@ -115,7 +112,7 @@ public:
 	UPROPERTY(Replicated)
 	FString R_WinningTeam {};
 
-	UPROPERTY()
+	UPROPERTY(BlueprintAssignable, EditAnywhere, BlueprintReadWrite)
 	FChangeState OnChangeStateDelegate {};
 
 	UPROPERTY()

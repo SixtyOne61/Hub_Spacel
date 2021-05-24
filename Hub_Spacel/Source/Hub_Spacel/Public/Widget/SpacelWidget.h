@@ -154,6 +154,9 @@ protected:
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
 	class UMissionDataAsset* MissionDataAsset { nullptr };
 
+	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
+	class UFlyingGameModeDataAsset* GameModeDataAsset{ nullptr };
+
 	UPROPERTY()
 	FTimerHandle RedLightAnimationHandle {};
 

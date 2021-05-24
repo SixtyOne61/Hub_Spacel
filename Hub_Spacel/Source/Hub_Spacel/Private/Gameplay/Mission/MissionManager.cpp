@@ -67,7 +67,7 @@ void AMissionManager::Tick(float DeltaTime)
 
 void AMissionManager::OnStartGame(EGameState _state)
 {
-	if(_state != EGameState::UnlockInput) return;
+	if(_state != EGameState::InGame) return;
 	if(this->MissionDataAsset == nullptr) return;
 
 	FMission const& firstBlood = this->MissionDataAsset->getMission(EMission::FirstBlood);

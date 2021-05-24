@@ -483,16 +483,6 @@ void AFlyingGameMode::EndLobby()
 
     // change game state
     spacelGameState->GoToInGame();
-
-    GetWorldTimerManager().SetTimer(this->UnlockInputHandle, this, &AFlyingGameMode::UnlockInput, this->RemainingUnlockInputTime, false);
-}
-
-void AFlyingGameMode::UnlockInput()
-{
-    ASpacelGameState* spacelGameState{ Cast<ASpacelGameState>(this->GameState) };
-    if (!ensure(spacelGameState != nullptr)) return;
-
-    spacelGameState->GoToUnlockInput();
 }
 
 void AFlyingGameMode::EndGame()
