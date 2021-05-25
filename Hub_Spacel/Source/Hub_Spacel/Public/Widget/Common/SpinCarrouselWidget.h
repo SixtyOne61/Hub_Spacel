@@ -20,6 +20,9 @@ public:
 
 	uint8 getIdSelected() const;
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void BP_SetTeamColor(FSlateColor _color);
+
 protected:
 	void NativeConstruct() override;
 	void NativeDestruct() override;

@@ -55,6 +55,18 @@ void AShipPawn::OnChangeState(EGameState _state)
             RPCClientStartGame(this->Team);
             RPCNetMulticastStartGame(this->Team);
         }
+
+        if (this->SkillComponent != nullptr)
+        {
+            this->SkillComponent->setupSkill();
+        }
+
+        if (this->IsLocallyControlled())
+        {
+            if (!ensure(this->SpringArmComponent != nullptr)) return;
+            this->SpringArmComponent->SetRelativeLocation(FVector::ZeroVector);
+            this->SpringArmComponent->SetRelativeRotation(m_defaultSprintArmRotator);
+        }
     }
     else if (_state == EGameState::InGame)
     {
@@ -66,13 +78,6 @@ void AShipPawn::OnChangeState(EGameState _state)
 
             FTimerHandle handle;
             this->GetWorldTimerManager().SetTimer(handle, timerCallback, 3.0f, false);
-        }
-    }
-    else if (_state == EGameState::LockPrepare)
-    {
-        if (this->SkillComponent != nullptr)
-        {
-            this->SkillComponent->setupSkill();
         }
     }
 }
@@ -209,6 +214,13 @@ void AShipPawn::BeginPlay()
             UHub_SpacelGameInstance* spacelGameInstance = Cast<UHub_SpacelGameInstance>(this->GetGameInstance());
             if (!ensure(spacelGameInstance != nullptr)) return;
             RPCServerSetPlayerName(spacelGameInstance->CustomPlayerName);
+
+            if (!ensure(this->SpringArmComponent != nullptr)) return;
+            m_defaultSprintArmRotator = this->SpringArmComponent->GetRelativeRotation();
+
+            this->SpringArmComponent->SetRelativeLocation(FVector(-10.0f, 40.0f, -60.0f));
+            FVector rot(15.0f, -25.0f, -15.0f);
+            this->SpringArmComponent->SetRelativeRotation(rot.ToOrientationRotator().Quaternion());
         }
     }
 }

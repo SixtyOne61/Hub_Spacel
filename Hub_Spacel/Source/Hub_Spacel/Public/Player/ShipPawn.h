@@ -241,4 +241,7 @@ private:
 
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
     FOnRemoveEffect OnRemoveEffectDelegate {};
+
+    // only for local player
+    FRotator m_defaultSprintArmRotator {};
 };

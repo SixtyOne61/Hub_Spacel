@@ -180,7 +180,10 @@ void ULobbyUserWidget::SetupOwningTeam()
         FString owningPlayerTeam = owningPlayerState->R_Team;
         if (this->Colors != nullptr)
         {
-            this->BP_SetupOutline(this->Colors->GetColor<FSlateColor>(owningPlayerTeam));
+            FSlateColor const& color = this->Colors->GetColor<FSlateColor>(owningPlayerTeam);
+            this->BP_SetupOutline(color);
+
+            this->Carrousel->BP_SetTeamColor(color);
         }
     }
 
