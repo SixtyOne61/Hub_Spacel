@@ -116,6 +116,9 @@ private:
     UFUNCTION(BlueprintCallable)
     void BuildDefaultShip();
 
+    UFUNCTION()
+    void BuildShip();
+
     /* target system */
     UFUNCTION(Reliable, Server)
     void RPCServerTargetPlayer(int32 _playerId, bool _lock);

@@ -32,8 +32,12 @@ private:
 	UFUNCTION()
 	void SetTime();
 
+	UFUNCTION()
+	void OnCurrentSkillChange();
+
 	void spawnLobby3D();
 	void setupSkill(TArray<ESkill> const& _skills);
+	void saveSkillChoosen();
 	void saveSkillChoosen(uint8 _id, ESkillType _type);
 	void setTimer(int _timer);
 
@@ -69,4 +73,6 @@ protected:
 	FTimerHandle TimeHandle {};
 
 	int Time { 0 };
+
+	ESkillType m_currentSkillType{};
 };

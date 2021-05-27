@@ -8,8 +8,7 @@
 #include <functional>
 #include "SpacelPlayerState.generated.h"
 
-// DEPRECATED
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FUpdateRemainingSkillPoint);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnSkillLobbyChange);
 
 /**
  * 
@@ -24,6 +23,9 @@ public:
 
     UFUNCTION(Reliable, Server)
     void RPCAddSkill(uint8 const& _id, ESkillType _type);
+
+    UFUNCTION(Unreliable, Client)
+    void RPCClientAddSkill();
 
     UFUNCTION()
     void SetTeam(FString const& _team);
@@ -55,6 +57,9 @@ public:
 
     UPROPERTY(Replicated)
     uint8 R_HightSkill {};
+
+    UPROPERTY()
+    FOnSkillLobbyChange OnSkillLobbyChangeDelegate {};
 
     FTransform PlayerStartTransform {};
 

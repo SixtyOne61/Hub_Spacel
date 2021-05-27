@@ -28,6 +28,11 @@ void ASpacelPlayerState::RPCAddSkill_Implementation(uint8 const& _id, ESkillType
     }
 }
 
+void ASpacelPlayerState::RPCClientAddSkill_Implementation()
+{
+    OnSkillLobbyChangeDelegate.Broadcast();
+}
+
 void ASpacelPlayerState::SetTeam(FString const& _team)
 {
     this->R_Team = _team;

@@ -404,6 +404,11 @@ void AShipPawn::OnRep_PlayerState()
         }
 
         setCollisionProfile(teamName);
+
+        if (this->IsLocallyControlled())
+        {
+            spacelPlayerState->OnSkillLobbyChangeDelegate.AddDynamic(this, &AShipPawn::BuildShip);
+        }
     }
 }
 
@@ -412,6 +417,11 @@ void AShipPawn::BuildDefaultShip()
 #if WITH_EDITOR
     this->ModuleComponent->OnStartGame(EGameState::InGame);
 #endif
+}
+
+void AShipPawn::BuildShip()
+{
+    this->ModuleComponent->BuildShipLobby();
 }
 
 void AShipPawn::setFire(bool _on)

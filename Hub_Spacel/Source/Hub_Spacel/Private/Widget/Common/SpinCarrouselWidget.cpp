@@ -61,6 +61,8 @@ void USpinCarrouselWidget::SpinRight()
     }
 
     setDesc();
+
+    OnCarrouselMoveDelegate.Broadcast();
 }
 
 void USpinCarrouselWidget::SpinLeft()
@@ -82,6 +84,8 @@ void USpinCarrouselWidget::SpinLeft()
     }
 
     setDesc();
+
+    OnCarrouselMoveDelegate.Broadcast();
 }
 
 uint8 USpinCarrouselWidget::getIdSelected() const

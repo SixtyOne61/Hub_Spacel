@@ -50,6 +50,9 @@ protected:
     /* set collision profile name */
     void setCollisionProfile(FString _team);
 
+    UFUNCTION()
+    void BuildShipLobby();
+
 private:
     void buildShip(class UInstancedStaticMeshComponent*& _mesh, class UStaticMeshDataAsset* _staticMesh, TArray<FVector> const& _locations);
 

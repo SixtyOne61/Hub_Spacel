@@ -7,6 +7,8 @@
 #include "Widget/Common/ItemCarrouselWidget.h"
 #include "SpinCarrouselWidget.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnCarrouselMove);
+
 /**
  * 
  */
@@ -37,6 +39,10 @@ protected:
 	void SpinLeft();
 
 	void setDesc();
+
+public:
+	UPROPERTY()
+	FOnCarrouselMove OnCarrouselMoveDelegate{};
 
 protected:
 	TArray<class UItemCarrouselWidget*> Items {};

@@ -27,6 +27,11 @@ void ULobbyUserWidget::NativeConstruct()
     }
 
     Carrousel = SimplyUI::initSafetyFromName<UUserWidget, USpinCarrouselWidget>(this, TEXT("WBP_SpinCarrousel"));
+    if (Carrousel != nullptr)
+    {
+        Carrousel->OnCarrouselMoveDelegate.AddDynamic(this, &ULobbyUserWidget::OnCurrentSkillChange);
+    }
+
     TimeTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Time"));
 }
 
@@ -104,33 +109,39 @@ void ULobbyUserWidget::StartLobby(EGameState _state)
         if (!ensure(world != nullptr)) return;
 
         world->GetTimerManager().SetTimer(TimeHandle, this, &ULobbyUserWidget::SetTime, 1.0f, true, 0.0f);
+
+        m_currentSkillType = ESkillType::Low;
     }
     else if (_state == EGameState::LockLowModule)
     {
         // save low module choice
-        saveSkillChoosen(this->Carrousel->getIdSelected(), ESkillType::Low);
+        saveSkillChoosen();
         // setup carrousel with medium module
         setupSkill(this->MediumSkill);
         if (this->GameModeDataAsset != nullptr)
         {
             setTimer(this->GameModeDataAsset->RemainingChooseModuleTime);
         }
+
+        m_currentSkillType = ESkillType::Medium;
     }
     else if (_state == EGameState::LockMediumModule)
     {
         // save medium module choice
-        saveSkillChoosen(this->Carrousel->getIdSelected(), ESkillType::Medium);
+        saveSkillChoosen();
         // setup carrousel with hight module
         setupSkill(this->HightSkill);
         if (this->GameModeDataAsset != nullptr)
         {
             setTimer(this->GameModeDataAsset->RemainingChooseModuleTime);
         }
+
+        m_currentSkillType = ESkillType::Hight;
     }
     else if (_state == EGameState::LockPrepare)
     {
         // save hight module choice
-        saveSkillChoosen(this->Carrousel->getIdSelected(), ESkillType::Hight);
+        saveSkillChoosen();
         if (this->GameModeDataAsset != nullptr)
         {
             setTimer(this->GameModeDataAsset->EndModuleTime);
@@ -154,6 +165,11 @@ void ULobbyUserWidget::setupSkill(TArray<ESkill> const& _skills)
     }
 
     this->Carrousel->setupItems(datas);
+}
+
+void ULobbyUserWidget::saveSkillChoosen()
+{
+    saveSkillChoosen(this->Carrousel->getIdSelected(), m_currentSkillType);
 }
 
 void ULobbyUserWidget::saveSkillChoosen(uint8 _id, ESkillType _type)
@@ -186,5 +202,9 @@ void ULobbyUserWidget::SetupOwningTeam()
             this->Carrousel->BP_SetTeamColor(color);
         }
     }
+}
 
+void ULobbyUserWidget::OnCurrentSkillChange()
+{
+    saveSkillChoosen();
 }

@@ -86,6 +86,48 @@ void UModuleComponent::SetMax_Implementation(int32 _maxProtection, int32 _maxSup
     this->OnUpdateCountSupportDelegate.Broadcast(this->RU_SupportLocations.Num(), m_maxSupport);
 }
 
+void UModuleComponent::BuildShipLobby()
+{
+    auto lb_readXml = [](bool _isHeavy, USetupAttributeDataAsset* _dataAsset, TArray<FVector>& _out, FString&& _name)
+    {
+        if (!ensure(_dataAsset != nullptr)) return;
+        FString const& path{ _isHeavy ? _dataAsset->HeavyPath : _dataAsset->DefaultPath };
+
+        SimplyXml::FContainer<FVector> locationInformation{ _name };
+        SimplyXml::FReader reader{ FPaths::ProjectDir() + path };
+        reader.read(locationInformation);
+
+        _out = std::move(locationInformation.Values);
+    };
+
+    if (APawn* pawn = Cast<APawn>(this->GetOwner()))
+    {
+        if (ASpacelPlayerState* spacelPlayerState = pawn->GetPlayerState<ASpacelPlayerState>())
+        {
+            uint8 lowSkillId = spacelPlayerState->getSkillId(ESkillType::Low);
+            uint8 mediumSkillId = spacelPlayerState->getSkillId(ESkillType::Medium);
+
+            lb_readXml(lowSkillId == (uint8)ESkill::FireRate, this->WeaponDataAsset, this->RU_AttackLocations, "Location");
+            buildShip(this->WeaponMeshComponent, this->WeaponDataAsset, this->RU_AttackLocations);
+
+            lb_readXml(lowSkillId == (uint8)ESkill::HeavyProtection, this->ProtectionDataAsset, this->RU_ProtectionLocations, "Location");
+            buildShip(this->ProtectionMeshComponent, this->ProtectionDataAsset, this->RU_ProtectionLocations);
+
+            lb_readXml(lowSkillId == (uint8)ESkill::Speedy, this->SupportDataAsset, this->RU_SupportLocations, "Location");
+            buildShip(this->SupportMeshComponent, this->SupportDataAsset, this->RU_SupportLocations);
+            setLocationExhaustFx();
+
+            lb_readXml(mediumSkillId == (uint8)ESkill::Missile, this->WeaponDataAsset, R_MissileLocations, "Missile");
+            if (this->MissileMeshComponent != nullptr && this->R_MissileLocations.Num() != 0)
+            {
+                this->MissileMeshComponent->SetRelativeLocation(this->R_MissileLocations[0]);
+            }
+
+            this->SetMax(this->RU_ProtectionLocations.Num(), this->RU_SupportLocations.Num());
+        }
+    }
+}
+
 void UModuleComponent::OnStartGame(EGameState _state)
 {
     if(_state != EGameState::InGame) return;
