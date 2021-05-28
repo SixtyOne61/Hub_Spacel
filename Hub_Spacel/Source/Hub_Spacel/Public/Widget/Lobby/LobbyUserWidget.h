@@ -37,8 +37,7 @@ private:
 
 	void spawnLobby3D();
 	void setupSkill(TArray<ESkill> const& _skills);
-	void saveSkillChoosen();
-	void saveSkillChoosen(uint8 _id, ESkillType _type);
+	void saveLocalSkillChoosen();
 	void setTimer(int _timer);
 
 protected:

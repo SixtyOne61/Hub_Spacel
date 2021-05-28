@@ -24,8 +24,7 @@ public:
     UFUNCTION(Reliable, Server)
     void RPCAddSkill(uint8 const& _id, ESkillType _type);
 
-    UFUNCTION(Unreliable, Client)
-    void RPCClientAddSkill();
+    void LocalAddSkill(uint8 const& _id, ESkillType _type);
 
     UFUNCTION()
     void SetTeam(FString const& _team);

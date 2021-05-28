@@ -28,8 +28,15 @@ void ASpacelPlayerState::RPCAddSkill_Implementation(uint8 const& _id, ESkillType
     }
 }
 
-void ASpacelPlayerState::RPCClientAddSkill_Implementation()
+void ASpacelPlayerState::LocalAddSkill(uint8 const& _id, ESkillType _type)
 {
+    switch (_type)
+    {
+    case ESkillType::Low: R_LowSkill = _id; break;
+    case ESkillType::Medium: R_MediumSkill = _id; break;
+    case ESkillType::Hight: R_HightSkill = _id; break;
+    }
+
     OnSkillLobbyChangeDelegate.Broadcast();
 }
 
