@@ -27,8 +27,14 @@ private:
 	UFUNCTION()
 	void OnUpdateTeam(FString const& _team);
 
+	UFUNCTION()
+	void AddEffect(EEffect _effect);
+
+	UFUNCTION()
+	void RemoveEffect(EEffect _effect);
+
 private:
-	class UMaterialInstanceDynamic* m_postProcessMaterial { nullptr };
+	class UMaterialInstanceDynamic* m_speedLineMaterial { nullptr };
 
 	std::unique_ptr<LocalMetric> m_metric { nullptr };
 };

@@ -124,7 +124,8 @@ void ACommonPawn::moveShip(float _deltaTime)
     // linear
     FVector const& linearVelocity = this->DriverMeshComponent->GetPhysicsLinearVelocity(NAME_None);
 
-    FVector newVelocity = this->DriverMeshComponent->GetForwardVector() * this->PlayerDataAsset->MaxForwardSpeed * this->RU_PercentSpeed * coefSpeed;
+    float percentSpeed = this->R_OverDrive != 0.0f ? this->R_OverDrive : this->RU_PercentSpeed;
+    FVector newVelocity = this->DriverMeshComponent->GetForwardVector() * this->PlayerDataAsset->MaxForwardSpeed * percentSpeed * coefSpeed;
     newVelocity += this->DriverMeshComponent->GetRightVector() * this->PlayerDataAsset->MaxHorizontalSpeed * this->PercentHorizontalStraf * coefSpeed;
     newVelocity += this->DriverMeshComponent->GetUpVector() * this->PlayerDataAsset->MaxVerticalSpeed * this->PercentVerticalStraf * coefSpeed;
     newVelocity = FMath::Lerp(linearVelocity, newVelocity, 0.9f);
@@ -207,5 +208,6 @@ void ACommonPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
     DOREPLIFETIME(ACommonPawn, R_Effect);
     DOREPLIFETIME(ACommonPawn, RU_PercentSpeed);
+    DOREPLIFETIME(ACommonPawn, R_OverDrive);
 }
 

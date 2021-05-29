@@ -43,6 +43,9 @@ public:
     UPROPERTY(Category = "Movement", EditAnywhere, BlueprintReadWrite)
     float MinCoefSpeed { 0.6f };
 
+    UPROPERTY(Category = "Movement", EditAnywhere, BlueprintReadWrite)
+    float CoefOverDriveValue { 1.0f };
+
     UPROPERTY(Category = "Skill", EditAnywhere, BlueprintReadWrite)
     float EscapeModeCoef { 1.5f };
 

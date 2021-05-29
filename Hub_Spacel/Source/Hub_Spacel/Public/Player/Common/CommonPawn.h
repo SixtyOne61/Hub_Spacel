@@ -134,6 +134,9 @@ protected:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = "OnRep_PercentSpeed")
     float RU_PercentSpeed { 0.0f };
 
+    UPROPERTY(Replicated)
+    float R_OverDrive{ 0.0f };
+
 	/* use by server or offline */
 	float PercentHorizontalStraf{ 0.0f };
 	float PercentVerticalStraf{ 0.0f };

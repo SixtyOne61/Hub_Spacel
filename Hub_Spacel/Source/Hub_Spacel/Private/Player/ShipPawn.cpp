@@ -765,6 +765,13 @@ void AShipPawn::behaviourAddEffect(EEffect _type)
             }
         }
     }
+    else if (_type == EEffect::Respawned)
+    {
+        if (this->PlayerDataAsset != nullptr)
+        {
+            this->R_OverDrive = this->PlayerDataAsset->CoefOverDriveValue;
+        }
+    }
 }
 
 void AShipPawn::RPCNetMulticastFxKilled_Implementation()
@@ -836,6 +843,13 @@ void AShipPawn::behaviourRemoveEffect(EEffect _type)
             }
         }
         this->FireComponent->m_target = nullptr;
+    }
+    else if (_type == EEffect::Respawned)
+    {
+        if (this->PlayerDataAsset != nullptr)
+        {
+            this->R_OverDrive = 0.0f;
+        }
     }
 }
 

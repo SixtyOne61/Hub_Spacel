@@ -29,14 +29,20 @@ void ULocalPlayerActionComponent::BeginPlay()
 
     m_metric = std::make_unique<LocalMetric>();
 
-    if (get() && get()->SpeedLinesComponent != nullptr)
+    if (ACommonPawn* pawn = get())
     {
-        m_postProcessMaterial = UMaterialInstanceDynamic::Create(get()->MaterialSpeedLines, this);
-        get()->SpeedLinesComponent->AddOrUpdateBlendable(m_postProcessMaterial);
-
-        if (get<AShipPawn>() != nullptr)
+        if (pawn->SpeedLinesComponent != nullptr)
         {
-            get<AShipPawn>()->OnLocalTeamUpdateDelegate.AddDynamic(this, &ULocalPlayerActionComponent::OnUpdateTeam);
+            m_speedLineMaterial = UMaterialInstanceDynamic::Create(pawn->MaterialSpeedLines, this);
+            pawn->SpeedLinesComponent->AddOrUpdateBlendable(m_speedLineMaterial);
+        }
+
+        if (AShipPawn* shipPawn = get<AShipPawn>())
+        {
+            shipPawn->OnLocalTeamUpdateDelegate.AddDynamic(this, &ULocalPlayerActionComponent::OnUpdateTeam);
+
+            shipPawn->OnAddEffectDelegate.AddDynamic(this, &ULocalPlayerActionComponent::AddEffect);
+            shipPawn->OnRemoveEffectDelegate.AddDynamic(this, &ULocalPlayerActionComponent::RemoveEffect);
         }
     }
 }
@@ -46,7 +52,7 @@ void ULocalPlayerActionComponent::TickComponent(float _deltaTime, ELevelTick _ti
     Super::TickComponent(_deltaTime, _tickType, _thisTickFunction);
 
     ACommonPawn* pawn = get();
-    if (m_postProcessMaterial != nullptr && pawn != nullptr && pawn->CameraComponent != nullptr)
+    if (m_speedLineMaterial != nullptr && pawn != nullptr && pawn->CameraComponent != nullptr)
     {
         float coefSpeed = FMath::Max((pawn->ModuleComponent->SupportMeshComponent->GetInstanceCount() / 9.0f), pawn->PlayerDataAsset->MinCoefSpeed);
         if (pawn->hasEffect(EEffect::MetaFormAttack) || pawn->hasEffect(EEffect::MetaFormProtection) || pawn->hasEffect(EEffect::MetaFormSupport) || pawn->hasEffect(EEffect::EscapeMode))
@@ -55,11 +61,14 @@ void ULocalPlayerActionComponent::TickComponent(float _deltaTime, ELevelTick _ti
             coefSpeed = pawn->PlayerDataAsset->EscapeModeCoef;
         }
         // set material parameter
-        float percent = FMath::Clamp(get()->RU_PercentSpeed * coefSpeed, 0.0f, 2.6f);
-        m_postProcessMaterial->SetScalarParameterValue("Weight", percent * 2);
-        m_postProcessMaterial->SetVectorParameterValue("SpeedLinesColor", FMath::Lerp(FLinearColor(1.0f, 1.0f, 1.0f, 1.0f), FLinearColor(0.0f, 0.943892f, 1.0f, 1.0f), percent));
+        float speedRef = FMath::Max(pawn->RU_PercentSpeed, pawn->R_OverDrive);
+        float percent = FMath::Clamp(speedRef * coefSpeed, 0.0f, 2.6f);
+        float multiplicator = pawn->hasEffect(EEffect::Respawned) ? 4.0f : 2.0f;
+        m_speedLineMaterial->SetScalarParameterValue("Weight", percent * multiplicator);
+        m_speedLineMaterial->SetVectorParameterValue("SpeedLinesColor", FMath::Lerp(FLinearColor(1.0f, 1.0f, 1.0f, 1.0f), FLinearColor(0.0f, 0.943892f, 1.0f, 1.0f), percent));
 
         // set fov
+        percent = FMath::Clamp(pawn->RU_PercentSpeed * coefSpeed, 0.0f, 2.6f);
         float noSmoothFov { FMath::Lerp(90.0f, 130.0f, percent) };
         float currentFov { get()->CameraComponent->FieldOfView };
         float smoothFov { FMath::Lerp(currentFov, noSmoothFov, _deltaTime) };
@@ -72,5 +81,33 @@ void ULocalPlayerActionComponent::OnUpdateTeam(FString const& _team)
     if (AMatiereManager* matiereManager = Cast<AMatiereManager>(UGameplayStatics::GetActorOfClass(this->GetWorld(), AMatiereManager::StaticClass())))
     {
         matiereManager->LocalTeam = _team;
+    }
+}
+
+void ULocalPlayerActionComponent::AddEffect(EEffect _effect)
+{
+    if (_effect == EEffect::Respawned)
+    {
+        if (ACommonPawn* pawn = get())
+        {
+            if (pawn->SpeedLinesComponent != nullptr && m_speedLineMaterial != nullptr)
+            {
+                m_speedLineMaterial->SetScalarParameterValue("GradientRadius", 0.7f);
+            }
+        }
+    }
+}
+
+void ULocalPlayerActionComponent::RemoveEffect(EEffect _effect)
+{
+    if (_effect == EEffect::Respawned)
+    {
+        if (ACommonPawn* pawn = get())
+        {
+            if (pawn->SpeedLinesComponent != nullptr && m_speedLineMaterial != nullptr)
+            {
+                m_speedLineMaterial->SetScalarParameterValue("GradientRadius", 1.0f);
+            }
+        }
     }
 }
