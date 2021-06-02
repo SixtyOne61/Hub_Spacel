@@ -37,7 +37,7 @@ bool AProjectileBase::OnHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, 
     {
         if (AShipPawn* shipPawn = Cast<AShipPawn>(_otherActor))
         {
-            shipPawn->hit(getLocalTeam(), R_PlayerIdOwner, _otherComp, _hit.Item);
+            shipPawn->hit(getLocalTeam(), R_PlayerIdOwner, _otherComp, _hit.Item, this->GetActorLocation());
         }
     }
 

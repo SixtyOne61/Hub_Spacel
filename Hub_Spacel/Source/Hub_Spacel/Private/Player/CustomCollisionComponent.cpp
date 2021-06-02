@@ -131,7 +131,8 @@ bool UCustomCollisionComponent::sweepForInstancedStaticMesh(UInstancedStaticMesh
 			&& _mesh->GetInstanceTransform(index, worldTransform, true)
 			&& sweepByProfile(hits, worldTransform.GetLocation(), _profile, shape, {Tags::Matiere, Tags::Fog, _teamTag, Tags::WorldManager }))
 		{
-			if (get<AShipPawn>()!= nullptr && get<AShipPawn>()->canTank(hits.Num()))
+			AShipPawn * shipPawn = get<AShipPawn>();
+			if (shipPawn != nullptr && shipPawn->canTank(hits.Num()))
 			{
 				// clean actor hit
 				dispatch(hits);
@@ -321,7 +322,7 @@ void UCustomCollisionComponent::hitMatiere(FVector const& _ownerLocation, FName 
 	}
 }
 
-void UCustomCollisionComponent::hit(FString const& _team, int32 _playerId, class UPrimitiveComponent* _comp, int32 _index)
+void UCustomCollisionComponent::hit(FString const& _team, int32 _playerId, class UPrimitiveComponent* _comp, int32 _index, FVector const& _otherLocation)
 {
 	if(get() == nullptr) return;
 	if(get()->ModuleComponent == nullptr) return;
@@ -364,46 +365,46 @@ void UCustomCollisionComponent::hit(FString const& _team, int32 _playerId, class
 		}
 	};
 
+	AShipPawn* shipPawn = get<AShipPawn>();
+	if(shipPawn == nullptr) return;
+
 	if (uniqueId == get()->ModuleComponent->ProtectionMeshComponent->GetUniqueID())
 	{
-		if (get<AShipPawn>() != nullptr)
+		if (!shipPawn->canTank(1))
 		{
-			if (!get<AShipPawn>()->canTank(1))
-			{
-				lb_removeInstance(get()->ModuleComponent->ProtectionMeshComponent, get()->ModuleComponent->RU_ProtectionLocations, get()->ModuleComponent->R_RemovedProtectionLocations);
-				lb_addScore(EScoreType::Hit);
-			}
+			lb_removeInstance(get()->ModuleComponent->ProtectionMeshComponent, get()->ModuleComponent->RU_ProtectionLocations, get()->ModuleComponent->R_RemovedProtectionLocations);
+			lb_addScore(EScoreType::Hit);
+
+			// for feedback
+			shipPawn->RPCClientDamageIndicator(_otherLocation);
 		}
 	}
 	else if (uniqueId == get()->ModuleComponent->SupportMeshComponent->GetUniqueID())
 	{
-		if (get<AShipPawn>() != nullptr)
+		if (!shipPawn->canTank(1))
 		{
-			if (!get<AShipPawn>()->canTank(1))
-			{
-				lb_removeInstance(get()->ModuleComponent->SupportMeshComponent, get()->ModuleComponent->RU_SupportLocations, get()->ModuleComponent->R_RemovedSupportLocations);
-				lb_addScore(EScoreType::Hit);
-			}
+			lb_removeInstance(get()->ModuleComponent->SupportMeshComponent, get()->ModuleComponent->RU_SupportLocations, get()->ModuleComponent->R_RemovedSupportLocations);
+			lb_addScore(EScoreType::Hit);
+
+			// for feedback
+			shipPawn->RPCClientDamageIndicator(_otherLocation);
 		}
 	}
 	else if (uniqueId == get()->DriverMeshComponent->GetUniqueID())
 	{
-		if (AShipPawn* pawn = get<AShipPawn>())
+		if (!shipPawn->canTank(1))
 		{
-			if (!pawn->canTank(1))
+			if (m_matiereManager.IsValid())
 			{
-				if (m_matiereManager.IsValid())
+				if (ASpacelPlayerState const* spacelPlayerState = get()->GetPlayerState<ASpacelPlayerState>())
 				{
-					if (ASpacelPlayerState const* spacelPlayerState = get()->GetPlayerState<ASpacelPlayerState>())
-					{
-						m_matiereManager.Get()->spawnMatiere(get()->DriverMeshComponent->GetComponentLocation(), spacelPlayerState->R_Team);
-					}
+					m_matiereManager.Get()->spawnMatiere(get()->DriverMeshComponent->GetComponentLocation(), spacelPlayerState->R_Team);
 				}
-
-				pawn->kill();
-				lb_addScore(EScoreType::Kill);
-				pawn->OnKill.broadcast(pawn->Team.ToString(), _team);
 			}
+
+			shipPawn->kill();
+			lb_addScore(EScoreType::Kill);
+			shipPawn->OnKill.broadcast(shipPawn->Team.ToString(), _team);
 		}
 	}
 }

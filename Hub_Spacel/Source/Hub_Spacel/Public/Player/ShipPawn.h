@@ -42,7 +42,7 @@ public:
 	// Called every frame
 	void Tick(float _deltaTime) override;
 
-    void hit(FString const& _team, int32 _playerId, class UPrimitiveComponent* _comp, int32 _index);
+    void hit(FString const& _team, int32 _playerId, class UPrimitiveComponent* _comp, int32 _index, FVector const& _otherLocation);
 
     void setLocationExhaustFx(TArray<FVector> const& _loc);
 

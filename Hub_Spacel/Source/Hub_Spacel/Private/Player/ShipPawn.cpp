@@ -558,12 +558,12 @@ void AShipPawn::OnRep_Matiere()
     }
 }
 
-void AShipPawn::hit(FString const& _team, int32 _playerId, class UPrimitiveComponent* _comp, int32 _index)
+void AShipPawn::hit(FString const& _team, int32 _playerId, class UPrimitiveComponent* _comp, int32 _index, FVector const& _otherLocation)
 {
     UCustomCollisionComponent* customCollisionComponent { Cast<UCustomCollisionComponent>(this->GetComponentByClass(UCustomCollisionComponent::StaticClass())) };
     if (customCollisionComponent != nullptr)
     {
-        customCollisionComponent->hit(_team, _playerId, _comp, _index);
+        customCollisionComponent->hit(_team, _playerId, _comp, _index, _otherLocation);
     }
 }
 
@@ -594,6 +594,8 @@ void AShipPawn::RPCClientPlayCameraShake_Implementation()
             FVector const& camLoc = this->CameraComponent->GetComponentLocation();
             playerController->ClientPlayCameraShake(this->CameraShakeClass, 1.0f, ECameraAnimPlaySpace::UserDefined, (this->GetActorLocation() - camLoc).Rotation());
         }
+
+        BP_HitIndicator();
     }
 }
 

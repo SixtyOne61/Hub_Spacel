@@ -203,6 +203,14 @@ void ACommonPawn::removeAllPlayerFocusOnMe()
     removeEffect(EEffect::Targeted);
 }
 
+void ACommonPawn::RPCClientDamageIndicator_Implementation(FVector const& _location)
+{
+    if (this->IsLocallyControlled())
+    {
+        BP_DamageIndicator(_location);
+    }
+}
+
 void ACommonPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
