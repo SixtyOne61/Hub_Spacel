@@ -35,7 +35,9 @@ private:
 	UFUNCTION()
 	void OnCurrentSkillChange();
 
-	void spawnLobby3D();
+	UFUNCTION()
+	void SpawnLobby3D();
+
 	void setupSkill(TArray<ESkill> const& _skills);
 	void saveLocalSkillChoosen();
 	void setTimer(int _timer);

@@ -70,9 +70,18 @@ void ULobbyUserWidget::SetTime()
     }
 }
 
-void ULobbyUserWidget::spawnLobby3D()
+void ULobbyUserWidget::SpawnLobby3D()
 {
-    if (ASpacelPlayerState* owningPlayerState = Cast<ASpacelPlayerState>(this->GetOwningPlayerState()))
+    ASpacelPlayerState* owningPlayerState = Cast<ASpacelPlayerState>(this->GetOwningPlayerState());
+    if (owningPlayerState == nullptr)
+    {
+        UWorld* world{ this->GetWorld() };
+        if (!ensure(world != nullptr)) return;
+
+        FTimerHandle handle;
+        world->GetTimerManager().SetTimer(handle, this, &ULobbyUserWidget::SpawnLobby3D, 0.5f, false, 0.0f);
+    }
+    else
     {
         if (APawn* pawn = owningPlayerState->GetPawn())
         {
@@ -96,7 +105,7 @@ void ULobbyUserWidget::StartLobby(EGameState _state)
 {
     if (_state == EGameState::Prepare)
     {
-        spawnLobby3D();
+        SpawnLobby3D();
         SetupOwningTeam();
         // setup carrousel with low module
         setupSkill(this->LowSkill);
