@@ -141,4 +141,19 @@ namespace SimplyMath
 
         return FRotator(quaternion);
     }
+
+    template<class T>
+    static constexpr T epsilon = static_cast<T>(0.000001);
+
+    template<class T>
+    constexpr std::enable_if_t<!std::is_floating_point_v<T>, bool> almost_egal(T const& _a, T const& _b)
+    {
+        return _a == _b;
+    }
+
+    template<class T>
+    constexpr std::enable_if_t<std::is_floating_point_v<T>, bool> almost_egal(T const& _a, T const& _b)
+    {
+        return abs(_a - _b) <= epsilon<T>;
+    }
 }
