@@ -98,6 +98,8 @@ void ULobbyUserWidget::SpawnLobby3D()
                 }
             }
         }
+
+        saveLocalSkillChoosen();
     }
 }
 
@@ -120,7 +122,6 @@ void ULobbyUserWidget::StartLobby(EGameState _state)
         world->GetTimerManager().SetTimer(TimeHandle, this, &ULobbyUserWidget::SetTime, 1.0f, true, 0.0f);
 
         m_currentSkillType = ESkillType::Low;
-        saveLocalSkillChoosen();
     }
     else if (_state == EGameState::LockLowModule)
     {
