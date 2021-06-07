@@ -192,8 +192,6 @@ void USpacelWidget::OnChangeState(EGameState _state)
             }
         }
 
-        BP_StartGame();
-
         if(this->GameModeDataAsset == nullptr) return;
 
         // timer for start animation

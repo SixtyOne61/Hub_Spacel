@@ -43,9 +43,6 @@ protected:
 protected:
 	UFUNCTION()
 	void OnChangeState(EGameState _state);
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void BP_StartGame();
 	
 	UFUNCTION(BlueprintImplementableEvent)
 	void BP_EndGame();
