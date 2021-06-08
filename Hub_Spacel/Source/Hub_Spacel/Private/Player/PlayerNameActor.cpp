@@ -13,3 +13,12 @@ void APlayerNameActor::setPlayerName(FString const& _name, FSlateColor const& _t
 		playerNameWidget->SetPlayerName(_name, _teamColor);
 	}
 }
+
+void APlayerNameActor::show(bool _show)
+{
+	if (!ensure(this->BillboardWidgetComponent != nullptr)) return;
+	if (UPlayerNameWidget* playerNameWidget = Cast<UPlayerNameWidget>(this->BillboardWidgetComponent->GetUserWidgetObject()))
+	{
+		playerNameWidget->SetVisibility(_show ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+	}
+}

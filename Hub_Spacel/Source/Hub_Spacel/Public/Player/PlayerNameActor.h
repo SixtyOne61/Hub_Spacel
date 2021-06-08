@@ -17,4 +17,5 @@ class HUB_SPACEL_API APlayerNameActor : public ABillboardActor
 
 public:
 	void setPlayerName(FString const& _name, FSlateColor const& _teamColor);
+	void show(bool _show);
 };

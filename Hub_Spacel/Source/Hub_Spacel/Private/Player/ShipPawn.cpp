@@ -537,6 +537,12 @@ void AShipPawn::RPCNetMulticastEnterFog_Implementation(int32 _playerId, bool _en
         if (ATargetActor* targetActor = Cast<ATargetActor>(this->TargetComponent->GetChildActor()))
         {
             targetActor->showTarget(!_enter);
+
+            if (!ensure(this->PlayerNameComponent != nullptr)) return;
+            if (APlayerNameActor* playerNameActor = Cast<APlayerNameActor>(this->PlayerNameComponent->GetChildActor()))
+            {
+                playerNameActor->show(!_enter);
+            }
         }
     }
 }
