@@ -15,6 +15,7 @@
 #include "Util/SimplyUI.h"
 #include "Util/SimplyHttpRequest.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetStringLibrary.h"
 #include "Player/Save/SpacelSaveGame.h"
 
 UMainMenuWidget::UMainMenuWidget(FObjectInitializer const& _objectInitializer)
@@ -504,6 +505,19 @@ void UMainMenuWidget::OnPlayerNameChange(FText const& _text)
 {
     UHub_SpacelGameInstance* spacelGameInstance = Cast<UHub_SpacelGameInstance>(this->GetGameInstance());
     if (!ensure(spacelGameInstance != nullptr)) return;
-    // set player name
-    spacelGameInstance->CustomPlayerName = _text.ToString();
+
+    FString text = _text.ToString();
+    if (text.Len() > 12)
+    {
+        text = UKismetStringLibrary::GetSubstring(text, 0, 12);
+        if (this->PlayerName != nullptr)
+        {
+            this->PlayerName->SetText(FText::FromString(text));
+        }
+    }
+    else
+    {
+        // set player name
+        spacelGameInstance->CustomPlayerName = text;
+    }
 }
