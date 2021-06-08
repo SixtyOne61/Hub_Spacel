@@ -15,6 +15,7 @@
 #include "Util/SimplyUI.h"
 #include "Util/SimplyHttpRequest.h"
 #include "Kismet/GameplayStatics.h"
+#include "Player/Save/SpacelSaveGame.h"
 
 UMainMenuWidget::UMainMenuWidget(FObjectInitializer const& _objectInitializer)
     : Super(_objectInitializer)
@@ -89,6 +90,11 @@ void UMainMenuWidget::NativeConstruct()
         loginDelegate.BindUFunction(this, "HandleLoginUrlChange");
         WebBrowser->OnUrlChanged.Add(loginDelegate);
     }
+
+    FAsyncLoadGameFromSlotDelegate LoadedDelegate;
+    // USomeUObjectClass::LoadGameDelegateFunction is a void function that takes the following parameters: const FString& SlotName, const int32 UserIndex, USaveGame* LoadedGameData
+    LoadedDelegate.BindUObject(this, &UMainMenuWidget::OnLoadGame);
+    UGameplayStatics::AsyncLoadGameFromSlot("Save", 0, LoadedDelegate);
 }
 
 void UMainMenuWidget::NativeDestruct()
@@ -98,6 +104,22 @@ void UMainMenuWidget::NativeDestruct()
 
     world->GetTimerManager().ClearTimer(this->PollMatchmakingHandle);
     world->GetTimerManager().ClearTimer(this->SetAveragePlayerLatencyHandle);
+}
+
+void UMainMenuWidget::OnLoadGame(const FString& _slotName, const int32 _userIndex, USaveGame* _loadedGameData)
+{
+    if (USpacelSaveGame* spacelSaveGame = Cast<USpacelSaveGame>(_loadedGameData))
+    {
+        if (UHub_SpacelGameInstance* spacelGameInstance = Cast<UHub_SpacelGameInstance>(this->GetGameInstance()))
+        {
+            // Set data on the savegame object.
+            spacelGameInstance->CustomPlayerName = spacelSaveGame->PlayerName;
+            if (this->PlayerName != nullptr)
+            {
+                this->PlayerName->SetText(FText::FromString(spacelGameInstance->CustomPlayerName));
+            }
+        }
+    }
 }
 
 void UMainMenuWidget::HandleLoginUrlChange()
@@ -439,6 +461,16 @@ void UMainMenuWidget::onPollMatchmakingReceived(FHttpRequestPtr _request, FHttpR
             FString levelName { ipAddress + ":" + port };
             FString const& options { "?PlayerSessionId=" + playerSessionId + "?PlayerId=" + playerId };
             //UE_LOG(LogTemp, Warning, TEXT("options : %s"), *options);
+
+            // save player name
+            if (USpacelSaveGame* saveGameInstance = Cast<USpacelSaveGame>(UGameplayStatics::CreateSaveGameObject(USpacelSaveGame::StaticClass())))
+            {
+                // Set data on the savegame object.
+                saveGameInstance->PlayerName = spacelGameInstance->CustomPlayerName;
+
+                // Start async save process.
+                UGameplayStatics::AsyncSaveGameToSlot(saveGameInstance, "Save", 0);
+            }
 
             UGameplayStatics::OpenLevel(world, FName(*levelName), false, options);
         }

@@ -304,16 +304,11 @@ void USpacelWidget::ShowDidactitial()
                 // save information
                 if(USpacelSaveGame* saveGameInstance = Cast<USpacelSaveGame>(UGameplayStatics::CreateSaveGameObject(USpacelSaveGame::StaticClass())))
                 {
-                    // Set up the (optional) delegate.
-                    FAsyncSaveGameToSlotDelegate savedDelegate;
-                    // USomeUObjectClass::SaveGameDelegateFunction is a void function that takes the following parameters: const FString& SlotName, const int32 UserIndex, bool bSuccess
-                    //savedDelegate.BindUObject(this, &USomeUObjectClass::SaveGameDelegateFunction);
-
                     // Set data on the savegame object.
                     saveGameInstance->HasSeeDitactitial = true;
 
                     // Start async save process.
-                    UGameplayStatics::AsyncSaveGameToSlot(saveGameInstance, "Save", 0, savedDelegate);
+                    UGameplayStatics::AsyncSaveGameToSlot(saveGameInstance, "Save", 0);
                 }
                 return;
             }

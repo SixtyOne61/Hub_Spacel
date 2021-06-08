@@ -3,5 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Player/Save/SpacelSaveGame.h"
 
 DECLARE_LOG_CATEGORY_EXTERN(LogFlying, Log, All);
