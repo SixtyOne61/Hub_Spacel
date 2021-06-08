@@ -687,6 +687,12 @@ void AShipPawn::RPCClientAddEffect_Implementation(EEffect _effect)
 {
     OnAddEffectDelegate.Broadcast(_effect);
     BP_FxAddEffect(_effect);
+
+    if (_effect == EEffect::BackToGame)
+    {
+        // TO DO Text system
+        OnSendInfoPlayerDelegate.Broadcast("Didn't you seriously want to quit?");
+    }
 }
 
 void AShipPawn::RPCClientRemoveEffect_Implementation(EEffect _effect)
