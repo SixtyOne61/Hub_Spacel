@@ -59,6 +59,7 @@ public:
     void behaviourRemoveEffect(EEffect _type);
 
     void launchMissile();
+    void spawnKatyusha();
     void emp();
     void emp(uint32 _duration, FName const& _team, int32 _playerId);
     ESkillReturn giveMatiereToAlly(uint8 _id);
@@ -108,6 +109,9 @@ protected:
 
     UFUNCTION(BlueprintImplementableEvent)
     void BP_FxRemoveEffect(EEffect _effect);
+
+    UFUNCTION(BlueprintImplementableEvent)
+    void BP_InitFireComponent();
 
 private:
     void OnRep_PlayerState() override;

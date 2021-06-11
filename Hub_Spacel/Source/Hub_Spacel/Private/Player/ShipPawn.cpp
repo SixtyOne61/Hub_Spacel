@@ -300,6 +300,12 @@ void AShipPawn::launchMissile()
     this->FireComponent->launchMissile(this->ModuleComponent->MissileMeshComponent->GetComponentTransform());
 }
 
+void AShipPawn::spawnKatyusha()
+{
+    if (!ensure(this->FireComponent != nullptr)) return;
+    this->FireComponent->spawnKatyusha();
+}
+
 void AShipPawn::emp()
 {
     if(this->FireComponent == nullptr) return;

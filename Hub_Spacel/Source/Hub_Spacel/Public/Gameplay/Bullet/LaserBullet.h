@@ -14,22 +14,13 @@ class HUB_SPACEL_API ALaserBullet : public AProjectileBase
 public:
 	ALaserBullet();
 
-    /* override */
-    void applyHit(TArray<int32>& _instance) override;
-
 protected:
 	// Called when the game starts or when spawned
 	void BeginPlay() override;
 
-    bool OnHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit) override;
-
-private:
-	UFUNCTION()
-	void OnComponentHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit);
-
 protected:
-	UPROPERTY(EditAnywhere, Category = "Collision")
-	class USphereComponent* ProjectileCollisionComponent{ nullptr };
+	UPROPERTY(EditAnywhere, Category = "Default")
+	class UProjectileMovementComponent* ProjectileMovementComponent{ nullptr };
 
 	UPROPERTY(EditAnywhere)
 	class UTeamColorDataAsset* Colors{ nullptr };

@@ -4,15 +4,16 @@
 #include "Missile.h"
 #include "Net/UnrealNetwork.h"
 #include "Util/SimplyMath.h"
+#include "Util/Tag.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Components/SphereComponent.h"
+#include "Misc/DateTime.h"
+#include "Kismet/GameplayStatics.h"
+#include "DataAsset/HomingMissileDataAsset.h"
 
 AMissile::AMissile()
     : AProjectileBase()
 {
-    ProjectileCollisionComponent = CreateDefaultSubobject<USphereComponent>(TEXT("ProjectileCollision"));
-    RootComponent = ProjectileCollisionComponent;
-
     PrimaryActorTick.bCanEverTick = true;
 }
 
@@ -26,70 +27,97 @@ void AMissile::BeginPlay()
 
     if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
     {
-        m_isSeekPlayer = false;
+        if (this->DataAsset == nullptr) return;
+
+        this->R_IsSeekPlayer = false;
         FTimerHandle handle;
-        this->GetWorldTimerManager().SetTimer(handle, this, &AMissile::Seek, 0.2f, false);
-        if (!ensure(ProjectileCollisionComponent != nullptr)) return;
-        this->ProjectileCollisionComponent->OnComponentHit.AddDynamic(this, &AMissile::OnComponentHit);
+        this->GetWorldTimerManager().SetTimer(handle, this, &AMissile::Seek, this->DataAsset->TimeBeforeLock, false);
     }
 }
 
 void AMissile::Seek()
 {
-    m_isSeekPlayer = true;
+    this->R_IsSeekPlayer = true;
 }
 
 void AMissile::Tick(float _deltaTime)
 {
     Super::Tick(_deltaTime);
+
+    if(this->DataAsset == nullptr) return;
+
     if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
     {
-        if (m_isSeekPlayer)
+        if (this->R_IsSeekPlayer)
         {
-            FlyToTarget();
+            if (this->Target == nullptr)
+            {
+                this->Destroy();
+            }
+        }
+    }
+
+    if (this->Target != nullptr)
+    {
+        FVector dir = this->GetActorForwardVector();
+        FVector const& actorLocation = this->GetActorLocation();
+        float speed = this->DataAsset->SpeedPreLock;
+        if (this->R_IsSeekPlayer)
+        {
+            FVector const& targetLocation = this->Target->GetActorLocation();
+            dir = (targetLocation - actorLocation).GetSafeNormal();
+            speed = this->DataAsset->SpeedAfterLock;
+        }
+
+        FVector const& currentLocation = actorLocation;
+        FVector nextLocation = currentLocation + dir * speed * _deltaTime;
+        this->SetActorLocation(nextLocation);
+    }
+
+    if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
+    {
+        int64 syncTime = FDateTime::Now().ToUnixTimestamp();
+        RPCNetMulticastSync(syncTime, this->GetActorLocation());
+    }
+}
+
+void AMissile::RPCNetMulticastTarget_Implementation(FName const& _targetName)
+{
+    if (this->GetNetMode() == ENetMode::NM_DedicatedServer) return;
+
+    TArray<AActor*> out;
+    UGameplayStatics::GetAllActorsWithTag(this->GetWorld(), Tags::Player, out);
+
+    for (auto actor : out)
+    {
+        if (actor != nullptr)
+        {
+            if (actor->GetFName() == _targetName)
+            {
+                this->Target = actor;
+                break;
+            }
         }
     }
 }
 
-void AMissile::OnComponentHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit)
+void AMissile::RPCNetMulticastSync_Implementation(int64 _syncPoint, FVector const& _location)
 {
-    this->OnHit(_hitComp, _otherActor, _otherComp, _normalImpulse, _hit);
-}
-
-bool AMissile::OnHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit)
-{
-    if (Super::OnHit(_hitComp, _otherActor, _otherComp, _normalImpulse, _hit))
-    {
-        TArray<int32> instance {_hit.Item};
-        applyHit(instance);
-        return true;
-    }
-    return false;
-}
-
-void AMissile::applyHit(TArray<int32>& _instance)
-{
-    Super::applyHit(_instance);
-    this->Destroy();
-}
-
-void AMissile::FlyToTarget()
-{
-    if (this->Target == nullptr)
-    {
-        this->Destroy();
-        return;
-    }
-
-    FVector dir = (this->Target->GetActorLocation() - this->GetActorLocation()).GetSafeNormal();
-    this->SetActorRotation(dir.ToOrientationQuat());
-    this->ProjectileMovementComponent->Velocity = dir * this->ProjectileMovementComponent->InitialSpeed;
+    int time = FDateTime::Now().ToUnixTimestamp();
+    // TO DO predic
+    this->SetActorLocation(_location);
 }
 
 void AMissile::OnTargetEffect(EEffect _type)
 {
-    if (_type == EEffect::Fog || _type == EEffect::MetaFormSupport)
+    if (_type == EEffect::Fog || _type == EEffect::MetaFormSupport || _type == EEffect::Killed)
     {
         this->Destroy();
     }
+}
+
+void AMissile::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+    DOREPLIFETIME(AMissile, R_IsSeekPlayer);
 }

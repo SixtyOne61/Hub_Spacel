@@ -180,6 +180,15 @@ void SkillMetaFormSupport::onEnd()
     }
 }
 
+ESkillReturn SkillKatyusha::onStart()
+{
+    if (get<AShipPawn>() == nullptr) return ESkillReturn::InternError;
+    if (!get<AShipPawn>()->hasEffect(EEffect::TargetLock)) return ESkillReturn::Unavailable;
+
+    get<AShipPawn>()->spawnKatyusha();
+    return ESkillReturn::Success;
+}
+
 TUniquePtr<SkillBehaviour> SkillFactory::create(ESkill _skill, class ACommonPawn* _pawn, ENetMode _netMode)
 {
     switch (_skill)
@@ -196,6 +205,7 @@ TUniquePtr<SkillBehaviour> SkillFactory::create(ESkill _skill, class ACommonPawn
         case ESkill::MetaFormProtection: return MakeUnique<SkillMetaFormProtection>(_pawn, _netMode);
         case ESkill::MetaFormSupport: return MakeUnique<SkillMetaFormSupport>(_pawn, _netMode);
         case ESkill::NinePack: return MakeUnique<SkillNinePack>(_pawn, _netMode);
+        case ESkill::Katyusha: return MakeUnique<SkillKatyusha>(_pawn, _netMode);
         default: ensure(false); break;
     }
 

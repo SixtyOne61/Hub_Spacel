@@ -85,11 +85,23 @@ void USpacelWidget::NativeConstruct()
         shipPawn->OnStartMissionDelegate.AddDynamic(this, &USpacelWidget::OnStartMission);
         shipPawn->OnEndMissionDelegate.AddDynamic(this, &USpacelWidget::OnEndMission);
 
+        RegisterPlayerState();
+    }
+}
+
+void USpacelWidget::RegisterPlayerState()
+{
+    if(AShipPawn* shipPawn = this->GetOwningPlayerPawn<AShipPawn>())
+    {
         if (ASpacelPlayerState* playerState = shipPawn->GetPlayerState<ASpacelPlayerState>())
         {
             playerState->OnAddSkillUniqueDelegate = std::bind(&USpacelWidget::addSkill, this, std::placeholders::_1);
+            return;
         }
     }
+
+    FTimerHandle handle;
+    this->GetWorld()->GetTimerManager().SetTimer(handle, this, &USpacelWidget::RegisterPlayerState, 1.0f, false);
 }
 
 void USpacelWidget::NativeDestruct()

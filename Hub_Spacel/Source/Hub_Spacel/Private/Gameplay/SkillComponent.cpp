@@ -33,7 +33,18 @@ void USkillComponent::setupSkill()
     m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::GiveAlly1), get(), mode, callbackSucced, callbackFailed));
     m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::GiveAlly2), get(), mode, callbackSucced, callbackFailed));
     m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::NinePack), get(), mode, callbackSucced, callbackFailed));
+    m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::Katyusha), get(), mode, callbackSucced, callbackFailed));
 
+    SetDelegateForPlayerState();
+
+    if (AShipPawn* pawn = get<AShipPawn>())
+    {
+        pawn->OnEndMissionDelegate.AddDynamic(this, &USkillComponent::OnMissionEnd);
+    }
+}
+
+void USkillComponent::SetDelegateForPlayerState()
+{
     if (ASpacelPlayerState* spacelPlayerState = Cast<ASpacelPlayerState>(get()->GetPlayerState()))
     {
         if (spacelPlayerState->OnAddSkillUniqueDelegate != nullptr)
@@ -44,10 +55,10 @@ void USkillComponent::setupSkill()
             }
         }
     }
-
-    if (AShipPawn* pawn = get<AShipPawn>())
+    else
     {
-        pawn->OnEndMissionDelegate.AddDynamic(this, &USkillComponent::OnMissionEnd);
+        FTimerHandle handle;
+        this->GetWorld()->GetTimerManager().SetTimer(handle, this, &USkillComponent::SetDelegateForPlayerState, 1.0f, false, 0.0f);
     }
 }
 

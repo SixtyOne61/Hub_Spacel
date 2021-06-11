@@ -2,6 +2,7 @@
 
 
 #include "ProjectileBase.h"
+#include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "GameFramework/GameStateBase.h"
 #include "GameFramework/PlayerState.h"
@@ -15,15 +16,36 @@ AProjectileBase::AProjectileBase()
     // Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
     PrimaryActorTick.bCanEverTick = false;
 
-    ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovement"));
+    ProjectileCollisionComponent = CreateDefaultSubobject<USphereComponent>(TEXT("ProjectileCollision"));
+    RootComponent = ProjectileCollisionComponent;
 }
 
 void AProjectileBase::BeginPlay()
 {
     Super::BeginPlay();
 
+    if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
+    {
+        if (!ensure(ProjectileCollisionComponent != nullptr)) return;
+        this->ProjectileCollisionComponent->OnComponentHit.AddDynamic(this, &AProjectileBase::OnComponentHit);
+    }
+
     // spawn fx fire
     //UNiagaraFunctionLibrary::SpawnSystemAtLocation(this->GetWorld(), this->FireFx, this->GetActorLocation(), this->GetActorRotation());
+}
+
+void AProjectileBase::applyHit(TArray<int32>& _instance)
+{
+    Super::applyHit(_instance);
+    this->Destroy();
+}
+
+void AProjectileBase::OnComponentHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit)
+{
+    if (this->OnHit(_hitComp, _otherActor, _otherComp, _normalImpulse, _hit))
+    {
+        this->Destroy();
+    }
 }
 
 bool AProjectileBase::OnHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit)

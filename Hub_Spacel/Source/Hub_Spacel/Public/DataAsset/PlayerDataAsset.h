@@ -58,6 +58,9 @@ public:
     UPROPERTY(Category = "Fire", EditAnywhere, BlueprintReadOnly)
     TSubclassOf<class AActor> MissileClass;
 
+    UPROPERTY(Category = "Fire", EditAnywhere, BlueprintReadOnly)
+    TSubclassOf<class AActor> KatyushaClass;
+
     UPROPERTY(Category = "Fire", EditAnywhere, BlueprintReadWrite)
     float TimeBetweenFire = 0.3f;
 

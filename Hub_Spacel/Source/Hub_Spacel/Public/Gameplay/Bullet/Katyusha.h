@@ -4,28 +4,21 @@
 
 #include "CoreMinimal.h"
 #include "Gameplay/Bullet/ProjectileBase.h"
-#include "Enum/SpacelEnum.h"
-#include "Missile.generated.h"
+#include "katyusha.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class HUB_SPACEL_API AMissile : public AProjectileBase
+class HUB_SPACEL_API AKatyusha : public AProjectileBase
 {
 	GENERATED_BODY()
 	
 	friend class UFireComponent;
 
 public:
-	AMissile();
-	virtual ~AMissile();
-
-	UFUNCTION()
-	void OnTargetEffect(EEffect _type);
-
-	UFUNCTION(Reliable, NetMulticast)
-	void RPCNetMulticastTarget(FName const& _targetName);
+	AKatyusha();
+	virtual ~AKatyusha();
 
 protected:
 	void BeginPlay() override;
@@ -38,13 +31,13 @@ private:
 	UFUNCTION()
 	void Seek();
 
-private:
+protected:
 	UPROPERTY(EditAnywhere)
-	class UHomingMissileDataAsset* DataAsset { nullptr };
+	class UHomingMissileDataAsset* DataAsset{ nullptr };
 
-	UPROPERTY()
-	class AActor* Target { nullptr };
+	UPROPERTY(EditAnywhere, Category = "Setup")
+	FVector TargetLocation {};
 
 	UPROPERTY(Replicated)
-	bool R_IsSeekPlayer { false };
+	bool R_IsSeek{ false };
 };

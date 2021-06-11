@@ -164,6 +164,17 @@ public:
 	void onEndCountDown() override {};
 };
 
+class HUB_SPACEL_API SkillKatyusha : public SkillBehaviour
+{
+	using SkillBehaviour::SkillBehaviour;
+public:
+	virtual ~SkillKatyusha() {}
+
+	ESkillReturn onStart() override;
+	void onEnd() override {};
+	void onEndCountDown() override {};
+};
+
 class HUB_SPACEL_API SkillFactory
 {
 public:

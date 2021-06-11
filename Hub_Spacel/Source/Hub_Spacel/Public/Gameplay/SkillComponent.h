@@ -26,6 +26,9 @@ public:
 protected:
 	void TickComponent(float _deltaTime, ELevelTick _tickType, FActorComponentTickFunction* _thisTickFunction) override;
 
+	UFUNCTION()
+	void SetDelegateForPlayerState();
+
 private:
 	void setupSkill();
 

@@ -73,7 +73,8 @@ enum class ESkill : uint8
     NinePack UMETA(DisplayName = "NinePack"),
     FireRate UMETA(DisplayName = "FireRate"),
     HeavyProtection UMETA(DisplayName = "HeavyProtection"),
-    Speedy UMETA(DisplayName = "Speedy")
+    Speedy UMETA(DisplayName = "Speedy"),
+    Katyusha UMETA(DisplayName = "Katyusha")
 };
 
 UENUM(BlueprintType, meta = (Bitflags, UseEnumValuesAsMaskValuesInEditor = "true"))

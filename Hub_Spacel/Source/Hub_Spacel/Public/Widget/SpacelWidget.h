@@ -40,7 +40,6 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Setup")
 	void SetRanking(uint8 _rank);
 
-protected:
 	UFUNCTION()
 	void OnChangeState(EGameState _state);
 	
@@ -134,6 +133,9 @@ protected:
 	void OnLoadGame(const FString& _slotName, const int32 _userIndex, class USaveGame* _loadedGameData);
 
 	void addSkill(class SkillCountDown * _skill);
+
+	UFUNCTION()
+	void RegisterPlayerState();
 
 protected:
 	UPROPERTY(EditAnywhere)
