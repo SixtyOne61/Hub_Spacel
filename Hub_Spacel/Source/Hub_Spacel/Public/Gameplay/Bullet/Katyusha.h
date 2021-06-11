@@ -35,8 +35,8 @@ protected:
 	UPROPERTY(EditAnywhere)
 	class UHomingMissileDataAsset* DataAsset{ nullptr };
 
-	UPROPERTY(EditAnywhere, Category = "Setup")
-	FVector TargetLocation {};
+	UPROPERTY(Replicated, EditAnywhere, Category = "Setup")
+	FVector R_TargetLocation {};
 
 	UPROPERTY(Replicated)
 	bool R_IsSeek{ false };

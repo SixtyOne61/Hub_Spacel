@@ -42,7 +42,7 @@ void AKatyusha::Tick(float _deltaTime)
     float speed = this->DataAsset->SpeedPreLock;
     if (this->R_IsSeek)
     {
-        dir = (this->TargetLocation - actorLocation).GetSafeNormal();
+        dir = (this->R_TargetLocation - actorLocation).GetSafeNormal();
         speed = this->DataAsset->SpeedAfterLock;
     }
 
@@ -72,6 +72,7 @@ void AKatyusha::RPCNetMulticastSync_Implementation(int64 _syncPoint, FVector con
 void AKatyusha::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+    DOREPLIFETIME(AKatyusha, R_TargetLocation);
     DOREPLIFETIME(AKatyusha, R_IsSeek);
 }
 
