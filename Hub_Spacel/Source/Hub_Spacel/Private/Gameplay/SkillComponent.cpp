@@ -75,14 +75,10 @@ void USkillComponent::OnMissionEnd(EMission _type)
         auto callbackSucced = std::bind(&USkillComponent::RPCClientSucced, this, std::placeholders::_1);
         auto callbackFailed = std::bind(&USkillComponent::RPCClientFailed, this, std::placeholders::_1, std::placeholders::_2);
 
-        // last in first out so 3 - 4
-        TArray<FKey> defaultKeyboard = this->DefaultKeyboard;
-
-        auto lb = [&](ESkillType _skilltype, FKey _key)
+        auto lb = [&](ESkillType _skilltype)
         {
             ESkill skill = (ESkill)spacelPlayerState->getSkillId(_skilltype);
             UUniqueSkillDataAsset* skillParam = this->SkillDataAsset->getSKill(skill);
-            skillParam->Key = _key;
             m_skills.Add(MakeUnique<SkillCountDown>(skillParam, get(), mode, callbackSucced, callbackFailed));
 
             if (spacelPlayerState->OnAddSkillUniqueDelegate != nullptr)
@@ -93,11 +89,11 @@ void USkillComponent::OnMissionEnd(EMission _type)
 
         if (_type == EMission::FirstBlood)
         {
-            lb(ESkillType::Medium, this->DefaultKeyboard[0]);
+            lb(ESkillType::Medium);
         }
         else if (_type == EMission::ScoreRace)
         {
-            lb(ESkillType::Hight, this->DefaultKeyboard[1]);
+            lb(ESkillType::Hight);
         }
     }
 }

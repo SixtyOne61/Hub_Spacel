@@ -25,6 +25,7 @@
 #include "DataAsset/TeamColorDataAsset.h"
 #include "DataAsset/DitactitialDataAsset.h"
 #include "DataAsset/FlyingGameModeDataAsset.h"
+#include "DataAsset/KeyDataAsset.h"
 #include "Widget/AllyWidget.h"
 #include "Widget/SkillWidget.h"
 #include "Widget/SkillProgressWidget.h"
@@ -253,9 +254,9 @@ void USpacelWidget::addSkill(class SkillCountDown * _skill)
             skillWidget = SimplyUI::initUnSafeFromName<UUserWidget, USkillWidget>(this, skill->WidgetName);
         }
 
-        if (skillWidget != nullptr)
+        if (skillWidget != nullptr && this->KeyDataAsset != nullptr)
         {
-            skillWidget->SetSkillWithKey(skill->BackgroundColorBtn, skill->IconeBtn, skill->Key.GetDisplayName(false));
+            skillWidget->BP_Setup(skill->BackgroundColorBtn, skill->IconeBtn, this->KeyDataAsset->get(skill->Key));
         }
 
         if (UProgressBar* progress = SimplyUI::initUnSafeFromName<UUserWidget, UProgressBar>(skillWidget, TEXT("ProgressBar_Skill")))

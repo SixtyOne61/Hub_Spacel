@@ -50,10 +50,6 @@ public:
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
 	class USkillDataAsset* SkillDataAsset{ nullptr };
 
-	// temp need setup input
-	UPROPERTY(Category = "Setup", EditAnywhere, BlueprintReadWrite)
-	TArray<FKey> DefaultKeyboard {};
-
 private:
 	TArray<TUniquePtr<SkillCountDown>> m_skills {};
 };
