@@ -92,7 +92,7 @@ void ULocalPlayerActionComponent::AddEffect(EEffect _effect)
         {
             if (pawn->SpeedLinesComponent != nullptr && m_speedLineMaterial != nullptr)
             {
-                m_speedLineMaterial->SetScalarParameterValue("GradientRadius", 0.7f);
+                m_speedLineMaterial->SetScalarParameterValue("GradientRadius", 0.93f);
             }
         }
     }

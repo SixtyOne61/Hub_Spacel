@@ -55,4 +55,7 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	FString Desc {};
+
+	UPROPERTY(EditAnywhere)
+	FString Title {};
 };
