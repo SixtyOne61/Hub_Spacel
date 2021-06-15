@@ -35,6 +35,7 @@
 #include "Util/SimplyMath.h"
 #include "TimerManager.h"
 #include "Gameplay/SkillComponent.h"
+#include "Gameplay/Skill/PostProcessInvisible.h"
 #include "NiagaraComponent.h"
 #include "Skill/NinePackActor.h"
 
@@ -704,6 +705,19 @@ void AShipPawn::RPCClientAddEffect_Implementation(EEffect _effect)
     {
         // TO DO Text system
         OnSendInfoPlayerDelegate.Broadcast("Didn't you seriously want to quit?");
+    }
+    else if (_effect == EEffect::MetaFormSupport)
+    {
+        if (this->PlayerDataAsset != nullptr)
+        {
+            FTransform const& transform = this->GetActorTransform();
+            if (APostProcessInvisible* actor = Cast<APostProcessInvisible>(UGameplayStatics::BeginDeferredActorSpawnFromClass(this->GetWorld(), this->PlayerDataAsset->MetaSupportPostProcessClass, transform)))
+            {
+                OnRemoveEffectDelegate.AddDynamic(actor, &APostProcessInvisible::OnRemoveEffect);
+                UGameplayStatics::FinishSpawningActor(actor, transform);
+                actor->AttachToActor(this, FAttachmentTransformRules(EAttachmentRule::KeepWorld, true));
+            }
+        }
     }
 }
 

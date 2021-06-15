@@ -91,6 +91,9 @@ public:
     UPROPERTY(Category = "Skill", EditAnywhere, BlueprintReadWrite)
     TSubclassOf<class AActor> NinePackClass { nullptr };
 
+    UPROPERTY(Category = "Skill", EditAnywhere, BlueprintReadOnly)
+    TSubclassOf<class AActor> MetaSupportPostProcessClass;
+
     UPROPERTY(Category = "Farm", EditAnywhere, BlueprintReadWrite)
     int NbAsteroideForMatiere{};
 };
