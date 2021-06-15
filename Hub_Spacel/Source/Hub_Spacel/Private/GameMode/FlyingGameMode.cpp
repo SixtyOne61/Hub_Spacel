@@ -442,6 +442,8 @@ void AFlyingGameMode::PreparePhaseUntilLock()
         {
             case 0:
                 spacelGameState->GoToLockLowModule();
+                // register all team for scoring
+                spacelGameState->RegisterTeam();
             break;
 
             case 1:
@@ -475,14 +477,11 @@ void AFlyingGameMode::EndLobby()
 {
     GetWorldTimerManager().SetTimer(this->CountDownUntilGameOverHandle, this, &AFlyingGameMode::CountDownUntilGameOver, 1.0f, true, 0.0f);
 
-    ASpacelGameState* spacelGameState{ Cast<ASpacelGameState>(this->GameState) };
-    if (!ensure(spacelGameState != nullptr)) return;
-
-    // register all team for scoring
-    spacelGameState->RegisterTeam();
-
-    // change game state
-    spacelGameState->GoToInGame();
+    if(ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(this->GameState))
+    {
+        // change game state
+        spacelGameState->GoToInGame();
+    }
 }
 
 void AFlyingGameMode::EndGame()
