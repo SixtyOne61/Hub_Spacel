@@ -157,6 +157,7 @@ void UFireComponent::SpawnKatyusha()
             AActor* actor = Cast<AActor>(UGameplayStatics::BeginDeferredActorSpawnFromClass(this->GetWorld(), dataAsset->KatyushaClass, m_nextKatyushaTransform));
             if (AKatyusha* katyusha = Cast<AKatyusha>(actor))
             {
+                katyusha->AttachToActor(this->GetOwner(), FAttachmentTransformRules(EAttachmentRule::KeepWorld, true));
                 katyusha->R_TargetLocation = m_target->GetActorLocation();
                 katyusha->R_Team = shipPawn->Team;
 
