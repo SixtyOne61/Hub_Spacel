@@ -73,12 +73,6 @@ void AMissile::Tick(float _deltaTime)
         FVector nextLocation = currentLocation + dir * speed * _deltaTime;
         this->SetActorLocation(nextLocation);
     }
-
-    if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
-    {
-        int64 syncTime = FDateTime::Now().ToUnixTimestamp();
-        RPCNetMulticastSync(syncTime, this->GetActorLocation());
-    }
 }
 
 void AMissile::RPCNetMulticastTarget_Implementation(FName const& _targetName)
@@ -99,13 +93,6 @@ void AMissile::RPCNetMulticastTarget_Implementation(FName const& _targetName)
             }
         }
     }
-}
-
-void AMissile::RPCNetMulticastSync_Implementation(int64 _syncPoint, FVector const& _location)
-{
-    int time = FDateTime::Now().ToUnixTimestamp();
-    // TO DO predic
-    this->SetActorLocation(_location);
 }
 
 void AMissile::OnTargetEffect(EEffect _type)

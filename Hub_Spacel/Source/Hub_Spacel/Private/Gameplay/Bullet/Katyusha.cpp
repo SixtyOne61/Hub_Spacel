@@ -46,8 +46,7 @@ void AKatyusha::Tick(float _deltaTime)
         speed = this->DataAsset->SpeedAfterLock;
     }
 
-    FVector const& currentLocation = actorLocation;
-    FVector nextLocation = currentLocation + dir * speed * _deltaTime;
+    FVector nextLocation = actorLocation + dir * speed * _deltaTime;
     this->SetActorLocation(nextLocation);
 
     if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
@@ -60,14 +59,27 @@ void AKatyusha::Tick(float _deltaTime)
 void AKatyusha::Seek()
 {
     this->R_IsSeek = true;
-    this->DetachFromActor(FDetachmentTransformRules(EDetachmentRule::KeepWorld, true));
+    //this->DetachFromActor(FDetachmentTransformRules(EDetachmentRule::KeepWorld, true));
 }
 
-void AKatyusha::RPCNetMulticastSync_Implementation(int64 _syncPoint, FVector const& _location)
+void AKatyusha::RPCNetMulticastSync_Implementation(int64 _syncPoint, FVector_NetQuantize const& _location)
 {
-    int time = FDateTime::Now().ToUnixTimestamp();
-    // TO DO predic
-    this->SetActorLocation(_location);
+    if (this->DataAsset == nullptr) return;
+
+    int64 time = FDateTime::Now().ToUnixTimestamp();
+    // readjust location with sync time
+    int64 deltaTime = time - _syncPoint;
+
+    FVector dir = this->GetActorForwardVector();
+    float speed = this->DataAsset->SpeedPreLock;
+    if (this->R_IsSeek)
+    {
+        dir = (this->R_TargetLocation - _location).GetSafeNormal();
+        speed = this->DataAsset->SpeedAfterLock;
+    }
+
+    FVector nextLocation = _location + dir * speed * deltaTime;
+    this->SetActorLocation(nextLocation);
 }
 
 void AKatyusha::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

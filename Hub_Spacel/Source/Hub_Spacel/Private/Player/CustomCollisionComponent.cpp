@@ -217,16 +217,22 @@ void UCustomCollisionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 				// find team, if exist, of killer then broadcast event
 				for (auto const& hit : hits)
 				{
-					for (FName const& tag : hit.GetActor()->Tags)
+					if (AActor* actor = hit.GetActor())
 					{
-						FString stag = tag.ToString();
-						if (stag.Contains("Team:"))
+						if (!actor->IsPendingKill())
 						{
-							TArray<FString> out;
-							stag.ParseIntoArray(out, TEXT(":"), true);
-							if (out.Num() == 2)
+							for (FName const& tag : actor->Tags)
 							{
-								pawn->OnKill.broadcast(pawn->Team.ToString(), *out[1]);
+								FString stag = tag.ToString();
+								if (stag.Contains("Team:"))
+								{
+									TArray<FString> out;
+									stag.ParseIntoArray(out, TEXT(":"), true);
+									if (out.Num() == 2)
+									{
+										pawn->OnKill.broadcast(pawn->Team.ToString(), *out[1]);
+									}
+								}
 							}
 						}
 					}

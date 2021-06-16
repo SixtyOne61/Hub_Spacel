@@ -25,7 +25,7 @@ protected:
 	void Tick(float _deltaTime) override;
 
 	UFUNCTION(UnReliable, NetMulticast)
-	void RPCNetMulticastSync(int64 _syncPoint, FVector const& _location);
+	void RPCNetMulticastSync(int64 _syncPoint, FVector_NetQuantize const& _location);
 
 private:
 	UFUNCTION()

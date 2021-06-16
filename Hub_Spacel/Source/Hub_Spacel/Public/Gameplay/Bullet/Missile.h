@@ -31,9 +31,6 @@ protected:
 	void BeginPlay() override;
 	void Tick(float _deltaTime) override;
 
-	UFUNCTION(UnReliable, NetMulticast)
-	void RPCNetMulticastSync(int64 _syncPoint, FVector const& _location);
-
 private:
 	UFUNCTION()
 	void Seek();
