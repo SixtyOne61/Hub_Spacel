@@ -580,7 +580,7 @@ void AShipPawn::hit(FString const& _team, int32 _playerId, class UPrimitiveCompo
     }
 }
 
-void AShipPawn::setLocationExhaustFx(TArray<FVector> const& _loc)
+void AShipPawn::setLocationExhaustFx(TArray<FVector_NetQuantize> const& _loc)
 {
     if (this->ExhaustFxComponent == nullptr)
     {

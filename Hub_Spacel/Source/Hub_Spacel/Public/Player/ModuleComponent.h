@@ -54,7 +54,7 @@ protected:
     void BuildShipLobby();
 
 private:
-    void buildShip(class UInstancedStaticMeshComponent*& _mesh, class UStaticMeshDataAsset* _staticMesh, TArray<FVector> const& _locations);
+    void buildShip(class UInstancedStaticMeshComponent*& _mesh, class UStaticMeshDataAsset* _staticMesh, TArray<FVector_NetQuantize> const& _locations);
 
     /* call ship pawn owner for set location of exhaust */
     void setLocationExhaustFx();
@@ -95,25 +95,25 @@ public:
 
 private:
     UPROPERTY(ReplicatedUsing = "OnRep_Attack")
-    TArray<FVector> RU_AttackLocations{};
+    TArray<FVector_NetQuantize> RU_AttackLocations{};
 
     UPROPERTY(Replicated)
-    TArray<FVector> R_RemovedAttackLocations{};
+    TArray<FVector_NetQuantize> R_RemovedAttackLocations{};
 
     UPROPERTY(ReplicatedUsing = "OnRep_Protection")
-    TArray<FVector> RU_ProtectionLocations{};
+    TArray<FVector_NetQuantize> RU_ProtectionLocations{};
 
     UPROPERTY(Replicated)
-    TArray<FVector> R_RemovedProtectionLocations{};
+    TArray<FVector_NetQuantize> R_RemovedProtectionLocations{};
 
     UPROPERTY(ReplicatedUsing = "OnRep_Support")
-    TArray<FVector> RU_SupportLocations{};
+    TArray<FVector_NetQuantize> RU_SupportLocations{};
 
     UPROPERTY(Replicated)
-    TArray<FVector> R_RemovedSupportLocations{};
+    TArray<FVector_NetQuantize> R_RemovedSupportLocations{};
 
     UPROPERTY(Replicated)
-    TArray<FVector> R_MissileLocations {};
+    TArray<FVector_NetQuantize> R_MissileLocations {};
 
     /* max protection and support cube */
     int32 m_maxProtection { -1 };

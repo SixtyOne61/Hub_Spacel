@@ -33,5 +33,5 @@ private:
 	/* repair support */
 	ESkillReturn onRepairSupport();
 
-	ESkillReturn repair(TArray<FVector> & _removedLocations, TArray<FVector> & _locations, std::function<void(void)> _onRep, int _minMatiere, int _effect);
+	ESkillReturn repair(TArray<FVector_NetQuantize> & _removedLocations, TArray<FVector_NetQuantize> & _locations, std::function<void(void)> _onRep, int _minMatiere, int _effect);
 };

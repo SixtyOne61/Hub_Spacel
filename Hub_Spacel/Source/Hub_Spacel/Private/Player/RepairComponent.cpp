@@ -61,7 +61,7 @@ ESkillReturn URepairComponent::onRepairSupport()
     return ESkillReturn::InternError;
 }
 
-ESkillReturn URepairComponent::repair(TArray<FVector>& _removedLocations, TArray<FVector>& _locations, std::function<void(void)> _onRep, int _minMatiere, int _effect)
+ESkillReturn URepairComponent::repair(TArray<FVector_NetQuantize>& _removedLocations, TArray<FVector_NetQuantize>& _locations, std::function<void(void)> _onRep, int _minMatiere, int _effect)
 {
     if (_removedLocations.Num() != 0)
     {

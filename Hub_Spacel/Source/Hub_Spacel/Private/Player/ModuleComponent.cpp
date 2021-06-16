@@ -88,7 +88,7 @@ void UModuleComponent::SetMax_Implementation(int32 _maxProtection, int32 _maxSup
 
 void UModuleComponent::BuildShipLobby()
 {
-    auto lb_readXml = [](bool _isHeavy, USetupAttributeDataAsset* _dataAsset, TArray<FVector>& _out, FString&& _name)
+    auto lb_readXml = [](bool _isHeavy, USetupAttributeDataAsset* _dataAsset, TArray<FVector_NetQuantize>& _out, FString&& _name)
     {
         if (!ensure(_dataAsset != nullptr)) return;
         FString const& path{ _isHeavy ? _dataAsset->HeavyPath : _dataAsset->DefaultPath };
@@ -97,7 +97,11 @@ void UModuleComponent::BuildShipLobby()
         SimplyXml::FReader reader{ FPaths::ProjectDir() + path };
         reader.read(locationInformation);
 
-        _out = std::move(locationInformation.Values);
+        _out.Empty();
+        for (FVector loc : locationInformation.Values)
+        {
+            _out.Add(loc);
+        }
     };
 
     if (APawn* pawn = Cast<APawn>(this->GetOwner()))
@@ -132,7 +136,7 @@ void UModuleComponent::OnStartGame(EGameState _state)
 {
     if(_state != EGameState::InGame) return;
 
-    auto lb_readXml = [](bool _isHeavy, USetupAttributeDataAsset* _dataAsset, TArray<FVector>& _out, FString && _name)
+    auto lb_readXml = [](bool _isHeavy, USetupAttributeDataAsset* _dataAsset, TArray<FVector_NetQuantize>& _out, FString && _name)
     {
         if (!ensure(_dataAsset != nullptr)) return;
         FString const& path{ _isHeavy ? _dataAsset->HeavyPath : _dataAsset->DefaultPath };
@@ -141,7 +145,11 @@ void UModuleComponent::OnStartGame(EGameState _state)
         SimplyXml::FReader reader{ FPaths::ProjectDir() + path };
         reader.read(locationInformation);
 
-        _out = std::move(locationInformation.Values);
+        _out.Empty();
+        for (FVector loc : locationInformation.Values)
+        {
+            _out.Add(loc);
+        }
     };
 
     if (APawn* pawn = Cast<APawn>(this->GetOwner()))
@@ -190,7 +198,7 @@ void UModuleComponent::OnStartGame(EGameState _state)
     }
 }
 
-void UModuleComponent::buildShip(UInstancedStaticMeshComponent*& _mesh, UStaticMeshDataAsset* _staticMesh, TArray<FVector> const& _locations)
+void UModuleComponent::buildShip(UInstancedStaticMeshComponent*& _mesh, UStaticMeshDataAsset* _staticMesh, TArray<FVector_NetQuantize> const& _locations)
 {
     if (_mesh && _staticMesh)
     {
@@ -232,7 +240,7 @@ void UModuleComponent::setCollisionProfile(FString _team)
 
 void UModuleComponent::kill()
 {
-    auto lb = [](TArray<FVector>& _out, TArray<FVector>& _in)
+    auto lb = [](TArray<FVector_NetQuantize>& _out, TArray<FVector_NetQuantize>& _in)
     {
         _out.Append(_in);
         _in.Empty();
@@ -249,7 +257,7 @@ void UModuleComponent::kill()
 
 void UModuleComponent::restarted()
 {
-    auto lb = [](TArray<FVector>& _out, TArray<FVector>& _in)
+    auto lb = [](TArray<FVector_NetQuantize>& _out, TArray<FVector_NetQuantize>& _in)
     {
         _out.Append(_in);
         _in.Empty();

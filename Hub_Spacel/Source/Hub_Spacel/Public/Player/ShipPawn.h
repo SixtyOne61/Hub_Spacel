@@ -44,7 +44,7 @@ public:
 
     void hit(FString const& _team, int32 _playerId, class UPrimitiveComponent* _comp, int32 _index, FVector const& _otherLocation);
 
-    void setLocationExhaustFx(TArray<FVector> const& _loc);
+    void setLocationExhaustFx(TArray<FVector_NetQuantize> const& _loc);
 
     float getPercentProtection() const;
     float getPercentSupport() const;
