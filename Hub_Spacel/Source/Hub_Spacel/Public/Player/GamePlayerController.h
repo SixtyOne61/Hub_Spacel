@@ -26,7 +26,7 @@ public:
 private:
 	/* network */
 	UFUNCTION(Reliable, Server)
-	void RPCServerUpdateMouseLocation(FVector const& _loc, FVector const& _dir, FVector const& _hitLoc);
+	void RPCServerUpdateMouseLocation(FVector_NetQuantize100 const& _loc, FVector_NetQuantize100 const& _dir, FVector_NetQuantize100 const& _hitLoc);
 
 	UFUNCTION(Reliable, Server)
 	void RPCServerForward(float _val);

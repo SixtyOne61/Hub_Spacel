@@ -59,7 +59,6 @@ void AKatyusha::Tick(float _deltaTime)
 void AKatyusha::Seek()
 {
     this->R_IsSeek = true;
-    //this->DetachFromActor(FDetachmentTransformRules(EDetachmentRule::KeepWorld, true));
 }
 
 void AKatyusha::RPCNetMulticastSync_Implementation(int64 _syncPoint, FVector_NetQuantize const& _location)

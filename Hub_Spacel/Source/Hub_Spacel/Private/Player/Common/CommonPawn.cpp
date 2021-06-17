@@ -203,7 +203,7 @@ void ACommonPawn::removeAllPlayerFocusOnMe()
     removeEffect(EEffect::Targeted);
 }
 
-void ACommonPawn::RPCClientDamageIndicator_Implementation(FVector const& _location)
+void ACommonPawn::RPCClientDamageIndicator_Implementation(FVector_NetQuantize const& _location)
 {
     if (this->IsLocallyControlled())
     {

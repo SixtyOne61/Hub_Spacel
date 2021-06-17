@@ -166,7 +166,8 @@ void UCustomCollisionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if (get() == nullptr && !initShipPawnOwner()) return;
+	ACommonPawn* commonPawn = get();
+	if (commonPawn == nullptr && !initShipPawnOwner()) return;
 	if (get()->DriverMeshComponent == nullptr) return;
 	if (get()->hasEffect(EEffect::Killed)) return;
 
@@ -175,9 +176,9 @@ void UCustomCollisionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 	UWorld* world{ this->GetWorld() };
 	if (!ensure(world != nullptr)) return;
 
-	/* check if ship hit something */
+	// check if ship hit something
 
-	FVector const& ownerLocation { get()->GetActorLocation() };
+	FVector const& ownerLocation { commonPawn->GetActorLocation() };
 
 	// add matiere if we hit it
 	hitMatiere(ownerLocation, profileCollision);
@@ -321,9 +322,12 @@ void UCustomCollisionComponent::hitMatiere(FVector const& _ownerLocation, FName 
 			});
 
 		// make event for add matiere like updateMatiere for decrease or increase matiere
-		if (get<AShipPawn>() != nullptr && addMatiere != int{})
+		if (AShipPawn* pawn = get<AShipPawn>())
 		{
-			get<AShipPawn>()->OnUpdateMatiereDelegate.Broadcast(addMatiere);
+			if (addMatiere != int{})
+			{
+				pawn->OnUpdateMatiereDelegate.Broadcast(addMatiere);
+			}
 		}
 	}
 }
@@ -337,6 +341,9 @@ void UCustomCollisionComponent::hit(FString const& _team, int32 _playerId, class
 	if(get()->DriverMeshComponent == nullptr) return;
 
 	uint32 uniqueId { _comp->GetUniqueID() };
+
+	AShipPawn* shipPawn = get<AShipPawn>();
+	if (shipPawn == nullptr) return;
 
 	auto lb_removeInstance = [&](UInstancedStaticMeshComponent*& _mesh, TArray<FVector_NetQuantize>& _replicated, TArray<FVector_NetQuantize>& _removeReplicated)
 	{
@@ -352,9 +359,7 @@ void UCustomCollisionComponent::hit(FString const& _team, int32 _playerId, class
 		{
 			// manage item hits
 			_mesh->RemoveInstance(_index);
-			// TO DO Check if it's better to make this in temp array
-			// for make only one batch for replication
-			FVector const& location = localTransform.GetLocation();
+			FVector_NetQuantize const& location = localTransform.GetLocation();
 			_replicated.Remove(location);
 			_removeReplicated.Add(location);
 		}
@@ -371,30 +376,30 @@ void UCustomCollisionComponent::hit(FString const& _team, int32 _playerId, class
 		}
 	};
 
-	AShipPawn* shipPawn = get<AShipPawn>();
-	if(shipPawn == nullptr) return;
+	auto lb_generic = [&](UInstancedStaticMeshComponent*& _mesh, TArray<FVector_NetQuantize>& _replicated, TArray<FVector_NetQuantize>& _removeReplicated)
+	{
+		if (!shipPawn->canTank(1))
+		{
+			lb_removeInstance(_mesh, _replicated, _removeReplicated);
+			lb_addScore(EScoreType::Hit);
+
+			// for feedback
+			shipPawn->RPCClientDamageIndicator(_otherLocation);
+		}
+	};
+
 
 	if (uniqueId == get()->ModuleComponent->ProtectionMeshComponent->GetUniqueID())
 	{
-		if (!shipPawn->canTank(1))
-		{
-			lb_removeInstance(get()->ModuleComponent->ProtectionMeshComponent, get()->ModuleComponent->RU_ProtectionLocations, get()->ModuleComponent->R_RemovedProtectionLocations);
-			lb_addScore(EScoreType::Hit);
-
-			// for feedback
-			shipPawn->RPCClientDamageIndicator(_otherLocation);
-		}
+		lb_generic(shipPawn->ModuleComponent->ProtectionMeshComponent,
+					shipPawn->ModuleComponent->RU_ProtectionLocations,
+					shipPawn->ModuleComponent->R_RemovedProtectionLocations);
 	}
 	else if (uniqueId == get()->ModuleComponent->SupportMeshComponent->GetUniqueID())
 	{
-		if (!shipPawn->canTank(1))
-		{
-			lb_removeInstance(get()->ModuleComponent->SupportMeshComponent, get()->ModuleComponent->RU_SupportLocations, get()->ModuleComponent->R_RemovedSupportLocations);
-			lb_addScore(EScoreType::Hit);
-
-			// for feedback
-			shipPawn->RPCClientDamageIndicator(_otherLocation);
-		}
+		lb_generic(shipPawn->ModuleComponent->SupportMeshComponent,
+			shipPawn->ModuleComponent->RU_SupportLocations,
+			shipPawn->ModuleComponent->R_RemovedSupportLocations);
 	}
 	else if (uniqueId == get()->DriverMeshComponent->GetUniqueID())
 	{

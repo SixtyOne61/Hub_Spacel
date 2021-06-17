@@ -40,7 +40,7 @@ public:
     void removeAllPlayerFocusOnMe();
 
     UFUNCTION(UnReliable, Client)
-    void RPCClientDamageIndicator(FVector const& _location);
+    void RPCClientDamageIndicator(FVector_NetQuantize const& _location);
 
     UFUNCTION(BlueprintImplementableEvent)
     void BP_DamageIndicator(FVector const& _location);
