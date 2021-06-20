@@ -209,10 +209,8 @@ void UCustomCollisionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 		FVector const& redZoneLocation = get()->DriverMeshComponent->GetComponentLocation();
 		if (sweepByProfile(hits, redZoneLocation, profileCollision, redZoneShape, { Tags::Matiere, Tags::Fog, *tagTeam, Tags::WorldManager }))
 		{
-			dispatch(hits);
 			if (!pawn->canTank(hits.Num()))
 			{
-				pawn->kill();
 				addScore(hits, EScoreType::Kill);
 
 				// find team, if exist, of killer then broadcast event
@@ -262,8 +260,10 @@ void UCustomCollisionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 					}
 				}
 
-				return; // break flow
+				pawn->kill();
 			}
+
+			dispatch(hits);
 		}
 	}
 }
@@ -413,9 +413,10 @@ void UCustomCollisionComponent::hit(FString const& _team, int32 _playerId, class
 				}
 			}
 
-			shipPawn->kill();
 			lb_addScore(EScoreType::Kill);
 			shipPawn->OnKill.broadcast(shipPawn->Team.ToString(), _team);
+
+			shipPawn->kill();
 		}
 	}
 }
