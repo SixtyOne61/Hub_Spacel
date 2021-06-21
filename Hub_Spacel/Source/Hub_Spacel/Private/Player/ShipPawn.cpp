@@ -360,7 +360,7 @@ ESkillReturn AShipPawn::giveMatiereToAlly(uint8 _id)
                         {
                             if (AShipPawn* allyPawn = spacelPlayerState->GetPawn<AShipPawn>())
                             {
-                                int value = FMath::Min(this->PlayerDataAsset->MaxGiveMatiere, this->RU_Matiere);
+                                int value = FMath::Min((int)this->PlayerDataAsset->MaxGiveMatiere, (int)this->RU_Matiere);
                                 allyPawn->addMatiere(value);
 
                                 addMatiere(value * -1);
@@ -918,7 +918,7 @@ void AShipPawn::addMatiere(int32 _val)
     RPCClientFxAddMatiere(_val);
 }
 
-void AShipPawn::RPCClientFxAddMatiere_Implementation(int32 _val)
+void AShipPawn::RPCClientFxAddMatiere_Implementation(int8 _val)
 {
     BP_FxAddMatiere(_val);
 }

@@ -180,7 +180,7 @@ private:
     void RPCNetMulticastFxNinePack();
 
     UFUNCTION(UnReliable, NetMulticast)
-    void RPCClientFxAddMatiere(int32 _val);
+    void RPCClientFxAddMatiere(int8 _val);
 
     UFUNCTION(UnReliable, NetMulticast)
     void RPCNetMulticastFxKilled();
@@ -211,10 +211,10 @@ public:
 
 protected:
     UPROPERTY(ReplicatedUsing = "OnRep_Matiere")
-    int32 RU_Matiere { 0 };
+    int16 RU_Matiere { 0 };
 
     UPROPERTY(Replicated)
-    int32 R_ShieldLife { 0 };
+    int8 R_ShieldLife { 0 };
 
     UPROPERTY(Replicated)
     bool R_HasBoostWall { false };
