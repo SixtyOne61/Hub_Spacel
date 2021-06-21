@@ -55,10 +55,10 @@ private:
 	int R_ChunckSize {};
 
 	UPROPERTY(Replicated)
-	int32 R_CubeSize {};
+	int16 R_CubeSize {};
 
 	UPROPERTY(ReplicatedUsing = "OnRep_RemoveInstance")
-	TArray<int32> RU_RemoveIndex {};
+	TArray<int16> RU_RemoveIndex {};
 
 	// only use on client
 	int m_countRemovedIndex {};
