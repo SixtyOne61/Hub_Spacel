@@ -168,10 +168,10 @@ void UCustomCollisionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 
 	ACommonPawn* commonPawn = get();
 	if (commonPawn == nullptr && !initShipPawnOwner()) return;
-	if (get()->DriverMeshComponent == nullptr) return;
-	if (get()->hasEffect(EEffect::Killed)) return;
+	if (commonPawn->DriverMeshComponent == nullptr) return;
+	if (commonPawn->hasEffect(EEffect::Killed)) return;
 
-	FName const& profileCollision = get()->DriverMeshComponent->GetCollisionProfileName();
+	FName const& profileCollision = commonPawn->DriverMeshComponent->GetCollisionProfileName();
 
 	UWorld* world{ this->GetWorld() };
 	if (!ensure(world != nullptr)) return;
@@ -188,82 +188,86 @@ void UCustomCollisionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 	TArray<FHitResult> hits;
 	if (sweepByProfile(hits, ownerLocation, profileCollision, { FCollisionShape::MakeBox({400, 350, 200}) }))
 	{
-		FVector const& scale = get()->GetTransform().GetScale3D();
-		AShipPawn* pawn = get<AShipPawn>();
-		if(pawn == nullptr) return;
-		FString tagTeam = "Team:" + get()->Team.ToString();
+		FVector const& scale = commonPawn->GetTransform().GetScale3D();
+		if (AShipPawn* pawn = get<AShipPawn>())
+		{
+			FString tagTeam = "Team:" + pawn->Team.ToString();
 
-		FName prot = get()->ModuleComponent->ProtectionMeshComponent->GetCollisionProfileName();
-		// for each module, we need to check each instance
-		if (sweepForInstancedStaticMesh(get()->ModuleComponent->ProtectionMeshComponent, get()->ModuleComponent->RU_ProtectionLocations, get()->ModuleComponent->R_RemovedProtectionLocations, scale, profileCollision, *tagTeam))
-		{
-			pawn->RPCClientPlayCameraShake();
-		}
-		if (sweepForInstancedStaticMesh(get()->ModuleComponent->SupportMeshComponent, get()->ModuleComponent->RU_SupportLocations, get()->ModuleComponent->R_RemovedSupportLocations, scale, profileCollision, *tagTeam))
-		{
-			pawn->RPCClientPlayCameraShake();
-		}
-
-		// end check red zone
-		FCollisionShape redZoneShape = createCollisionShapeWithLocalBounds<UStaticMeshComponent>(get()->DriverMeshComponent, scale);
-		FVector const& redZoneLocation = get()->DriverMeshComponent->GetComponentLocation();
-		if (sweepByProfile(hits, redZoneLocation, profileCollision, redZoneShape, { Tags::Matiere, Tags::Fog, *tagTeam, Tags::WorldManager }))
-		{
-			if (!pawn->canTank(hits.Num()))
+			if (UModuleComponent* moduleComponent = pawn->ModuleComponent)
 			{
-				addScore(hits, EScoreType::Kill);
-
-				// find team, if exist, of killer then broadcast event
-				for (auto const& hit : hits)
+				FName prot = moduleComponent->ProtectionMeshComponent->GetCollisionProfileName();
+				// for each module, we need to check each instance
+				if (sweepForInstancedStaticMesh(moduleComponent->ProtectionMeshComponent, moduleComponent->RU_ProtectionLocations, moduleComponent->R_RemovedProtectionLocations, scale, profileCollision, *tagTeam))
 				{
-					if (AActor* actor = hit.GetActor())
+					pawn->RPCClientPlayCameraShake();
+				}
+				if (sweepForInstancedStaticMesh(moduleComponent->SupportMeshComponent, moduleComponent->RU_SupportLocations, moduleComponent->R_RemovedSupportLocations, scale, profileCollision, *tagTeam))
+				{
+					pawn->RPCClientPlayCameraShake();
+				}
+
+				// end check red zone
+				FCollisionShape redZoneShape = createCollisionShapeWithLocalBounds<UStaticMeshComponent>(get()->DriverMeshComponent, scale);
+				FVector const& redZoneLocation = pawn->DriverMeshComponent->GetComponentLocation();
+				if (sweepByProfile(hits, redZoneLocation, profileCollision, redZoneShape, { Tags::Matiere, Tags::Fog, *tagTeam, Tags::WorldManager }))
+				{
+					if (!pawn->canTank(hits.Num()))
 					{
-						if (!actor->IsPendingKill())
+						addScore(hits, EScoreType::Kill);
+
+						// find team, if exist, of killer then broadcast event
+						for (auto const& hit : hits)
 						{
-							for (FName const& tag : actor->Tags)
+							if (AActor* actor = hit.GetActor())
 							{
-								FString stag = tag.ToString();
-								if (stag.Contains("Team:"))
+								if (!actor->IsPendingKill())
 								{
-									TArray<FString> out;
-									stag.ParseIntoArray(out, TEXT(":"), true);
-									if (out.Num() == 2)
+									for (FName const& tag : actor->Tags)
 									{
-										pawn->OnKill.broadcast(pawn->Team.ToString(), *out[1]);
+										FString stag = tag.ToString();
+										if (stag.Contains("Team:"))
+										{
+											TArray<FString> out;
+											stag.ParseIntoArray(out, TEXT(":"), true);
+											if (out.Num() == 2)
+											{
+												pawn->OnKill.broadcast(pawn->Team.ToString(), *out[1]);
+											}
+										}
 									}
 								}
 							}
 						}
-					}
-				}
 
-				// spawn matiere
-				if (m_matiereManager.IsValid())
-				{
-					// check if we have team player in hits
-					for (FHitResult const& hit : hits)
-					{
-						if (hit.Actor.IsValid())
+						// spawn matiere
+						if (m_matiereManager.IsValid())
 						{
-							for (FName const& name : hit.Actor->Tags)
+							// check if we have team player in hits
+							for (FHitResult const& hit : hits)
 							{
-								if (name.ToString().Contains("Team"))
+								if (hit.Actor.IsValid())
 								{
-									if (ASpacelPlayerState const* spacelPlayerState = get()->GetPlayerState<ASpacelPlayerState>())
+									for (FName const& name : hit.Actor->Tags)
 									{
-										m_matiereManager.Get()->spawnMatiere(get()->GetActorLocation(), spacelPlayerState->R_Team);
-										return; //break flow
+										if (name.ToString().Contains("Team"))
+										{
+											if (ASpacelPlayerState const* spacelPlayerState = get()->GetPlayerState<ASpacelPlayerState>())
+											{
+												m_matiereManager.Get()->spawnMatiere(get()->GetActorLocation(), spacelPlayerState->R_Team);
+												return; //break flow
+											}
+										}
 									}
 								}
 							}
 						}
-					}
-				}
 
-				pawn->kill();
+						pawn->kill();
+					}
+
+					dispatch(hits);
+				}
 			}
-
-			dispatch(hits);
 		}
 	}
 }
@@ -334,16 +338,15 @@ void UCustomCollisionComponent::hitMatiere(FVector const& _ownerLocation, FName 
 
 void UCustomCollisionComponent::hit(FString const& _team, int32 _playerId, class UPrimitiveComponent* _comp, int32 _index, FVector const& _otherLocation)
 {
-	if(get() == nullptr) return;
-	if(get()->ModuleComponent == nullptr) return;
-	if(get()->ModuleComponent->ProtectionMeshComponent == nullptr) return;
-	if(get()->ModuleComponent->SupportMeshComponent == nullptr) return;
-	if(get()->DriverMeshComponent == nullptr) return;
+	AShipPawn* shipPawn = get<AShipPawn>();
+	if(shipPawn == nullptr) return;
+	UModuleComponent* moduleComponent = shipPawn->ModuleComponent;
+	if(moduleComponent == nullptr) return;
+	if(moduleComponent->ProtectionMeshComponent == nullptr) return;
+	if(moduleComponent->SupportMeshComponent == nullptr) return;
+	if(shipPawn->DriverMeshComponent == nullptr) return;
 
 	uint32 uniqueId { _comp->GetUniqueID() };
-
-	AShipPawn* shipPawn = get<AShipPawn>();
-	if (shipPawn == nullptr) return;
 
 	auto lb_removeInstance = [&](UInstancedStaticMeshComponent*& _mesh, TArray<FVector_NetQuantize>& _replicated, TArray<FVector_NetQuantize>& _removeReplicated)
 	{
@@ -391,15 +394,15 @@ void UCustomCollisionComponent::hit(FString const& _team, int32 _playerId, class
 
 	if (uniqueId == get()->ModuleComponent->ProtectionMeshComponent->GetUniqueID())
 	{
-		lb_generic(shipPawn->ModuleComponent->ProtectionMeshComponent,
-					shipPawn->ModuleComponent->RU_ProtectionLocations,
-					shipPawn->ModuleComponent->R_RemovedProtectionLocations);
+		lb_generic(moduleComponent->ProtectionMeshComponent,
+					moduleComponent->RU_ProtectionLocations,
+					moduleComponent->R_RemovedProtectionLocations);
 	}
 	else if (uniqueId == get()->ModuleComponent->SupportMeshComponent->GetUniqueID())
 	{
-		lb_generic(shipPawn->ModuleComponent->SupportMeshComponent,
-			shipPawn->ModuleComponent->RU_SupportLocations,
-			shipPawn->ModuleComponent->R_RemovedSupportLocations);
+		lb_generic(moduleComponent->SupportMeshComponent,
+					moduleComponent->RU_SupportLocations,
+					moduleComponent->R_RemovedSupportLocations);
 	}
 	else if (uniqueId == get()->DriverMeshComponent->GetUniqueID())
 	{
@@ -409,7 +412,7 @@ void UCustomCollisionComponent::hit(FString const& _team, int32 _playerId, class
 			{
 				if (ASpacelPlayerState const* spacelPlayerState = get()->GetPlayerState<ASpacelPlayerState>())
 				{
-					m_matiereManager.Get()->spawnMatiere(get()->DriverMeshComponent->GetComponentLocation(), spacelPlayerState->R_Team);
+					m_matiereManager.Get()->spawnMatiere(shipPawn->DriverMeshComponent->GetComponentLocation(), spacelPlayerState->R_Team);
 				}
 			}
 

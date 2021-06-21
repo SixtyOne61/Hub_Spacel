@@ -274,12 +274,12 @@ void UModuleComponent::restarted()
 
 float UModuleComponent::getPercentProtection() const
 {
-    return (float)this->RU_ProtectionLocations.Num() / ((float)(this->RU_ProtectionLocations.Num() + this->R_RemovedProtectionLocations.Num()));
+    return (float)this->RU_ProtectionLocations.Num() / m_maxProtection;
 }
 
 float UModuleComponent::getPercentSupport() const
 {
-    return (float)this->RU_SupportLocations.Num() / ((float)(this->RU_SupportLocations.Num() + this->R_RemovedSupportLocations.Num()));
+    return (float)this->RU_SupportLocations.Num() / m_maxSupport;
 }
 
 void UModuleComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
