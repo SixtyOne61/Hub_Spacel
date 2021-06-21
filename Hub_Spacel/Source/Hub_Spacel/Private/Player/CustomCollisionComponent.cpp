@@ -197,11 +197,11 @@ void UCustomCollisionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 			{
 				FName prot = moduleComponent->ProtectionMeshComponent->GetCollisionProfileName();
 				// for each module, we need to check each instance
-				if (sweepForInstancedStaticMesh(moduleComponent->ProtectionMeshComponent, moduleComponent->RU_ProtectionLocations, moduleComponent->R_RemovedProtectionLocations, scale, profileCollision, *tagTeam))
+				if (sweepForInstancedStaticMesh(moduleComponent->ProtectionMeshComponent, moduleComponent->RU_ProtectionLocations, moduleComponent->RemovedProtectionLocations, scale, profileCollision, *tagTeam))
 				{
 					pawn->RPCClientPlayCameraShake();
 				}
-				if (sweepForInstancedStaticMesh(moduleComponent->SupportMeshComponent, moduleComponent->RU_SupportLocations, moduleComponent->R_RemovedSupportLocations, scale, profileCollision, *tagTeam))
+				if (sweepForInstancedStaticMesh(moduleComponent->SupportMeshComponent, moduleComponent->RU_SupportLocations, moduleComponent->RemovedSupportLocations, scale, profileCollision, *tagTeam))
 				{
 					pawn->RPCClientPlayCameraShake();
 				}
@@ -396,13 +396,13 @@ void UCustomCollisionComponent::hit(FString const& _team, int32 _playerId, class
 	{
 		lb_generic(moduleComponent->ProtectionMeshComponent,
 					moduleComponent->RU_ProtectionLocations,
-					moduleComponent->R_RemovedProtectionLocations);
+					moduleComponent->RemovedProtectionLocations);
 	}
 	else if (uniqueId == get()->ModuleComponent->SupportMeshComponent->GetUniqueID())
 	{
 		lb_generic(moduleComponent->SupportMeshComponent,
 					moduleComponent->RU_SupportLocations,
-					moduleComponent->R_RemovedSupportLocations);
+					moduleComponent->RemovedSupportLocations);
 	}
 	else if (uniqueId == get()->DriverMeshComponent->GetUniqueID())
 	{

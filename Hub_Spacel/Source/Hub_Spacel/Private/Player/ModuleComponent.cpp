@@ -246,9 +246,9 @@ void UModuleComponent::kill()
         _in.Empty();
     };
 
-    lb(this->R_RemovedProtectionLocations, this->RU_ProtectionLocations);
-    lb(this->R_RemovedSupportLocations, this->RU_SupportLocations);
-    lb(this->R_RemovedAttackLocations, this->RU_AttackLocations);
+    lb(this->RemovedProtectionLocations, this->RU_ProtectionLocations);
+    lb(this->RemovedSupportLocations, this->RU_SupportLocations);
+    lb(this->RemovedAttackLocations, this->RU_AttackLocations);
 
     OnRep_Attack();
     OnRep_Protection();
@@ -263,9 +263,9 @@ void UModuleComponent::restarted()
         _in.Empty();
     };
 
-    lb(this->RU_ProtectionLocations, this->R_RemovedProtectionLocations);
-    lb(this->RU_SupportLocations, this->R_RemovedSupportLocations);
-    lb(this->RU_AttackLocations, this->R_RemovedAttackLocations);
+    lb(this->RU_ProtectionLocations, this->RemovedProtectionLocations);
+    lb(this->RU_SupportLocations, this->RemovedSupportLocations);
+    lb(this->RU_AttackLocations, this->RemovedAttackLocations);
 
     OnRep_Attack();
     OnRep_Protection();
@@ -288,8 +288,5 @@ void UModuleComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
     DOREPLIFETIME(UModuleComponent, RU_AttackLocations);
     DOREPLIFETIME(UModuleComponent, RU_ProtectionLocations);
     DOREPLIFETIME(UModuleComponent, RU_SupportLocations);
-    DOREPLIFETIME(UModuleComponent, R_RemovedProtectionLocations);
-    DOREPLIFETIME(UModuleComponent, R_RemovedSupportLocations);
-    DOREPLIFETIME(UModuleComponent, R_RemovedAttackLocations);
     DOREPLIFETIME(UModuleComponent, R_MissileLocations);
 }

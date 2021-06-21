@@ -97,20 +97,20 @@ private:
     UPROPERTY(ReplicatedUsing = "OnRep_Attack")
     TArray<FVector_NetQuantize> RU_AttackLocations{};
 
-    UPROPERTY(Replicated)
-    TArray<FVector_NetQuantize> R_RemovedAttackLocations{};
+    UPROPERTY()
+    TArray<FVector_NetQuantize> RemovedAttackLocations{};
 
     UPROPERTY(ReplicatedUsing = "OnRep_Protection")
     TArray<FVector_NetQuantize> RU_ProtectionLocations{};
 
-    UPROPERTY(Replicated)
-    TArray<FVector_NetQuantize> R_RemovedProtectionLocations{};
+    UPROPERTY()
+    TArray<FVector_NetQuantize> RemovedProtectionLocations{};
 
     UPROPERTY(ReplicatedUsing = "OnRep_Support")
     TArray<FVector_NetQuantize> RU_SupportLocations{};
 
-    UPROPERTY(Replicated)
-    TArray<FVector_NetQuantize> R_RemovedSupportLocations{};
+    UPROPERTY()
+    TArray<FVector_NetQuantize> RemovedSupportLocations{};
 
     UPROPERTY(Replicated)
     TArray<FVector_NetQuantize> R_MissileLocations {};

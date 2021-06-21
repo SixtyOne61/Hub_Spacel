@@ -41,7 +41,7 @@ ESkillReturn URepairComponent::onRepairProtection()
         {
             int min = get<AShipPawn>()->PlayerDataAsset->ProtectionRatioMatiere;
             int effect = get<AShipPawn>()->PlayerDataAsset->ProtectionRatioEffect;
-            return repair(get()->ModuleComponent->R_RemovedProtectionLocations, get()->ModuleComponent->RU_ProtectionLocations, std::bind(&UModuleComponent::OnRep_Protection, get()->ModuleComponent), min, effect);
+            return repair(get()->ModuleComponent->RemovedProtectionLocations, get()->ModuleComponent->RU_ProtectionLocations, std::bind(&UModuleComponent::OnRep_Protection, get()->ModuleComponent), min, effect);
         }
     }
     return ESkillReturn::InternError;
@@ -55,7 +55,7 @@ ESkillReturn URepairComponent::onRepairSupport()
         {
             int min = get<AShipPawn>()->PlayerDataAsset->SupportRatioMatiere;
             int effect = get<AShipPawn>()->PlayerDataAsset->SupportRatioEffect;
-            return repair(get()->ModuleComponent->R_RemovedSupportLocations, get()->ModuleComponent->RU_SupportLocations, std::bind(&UModuleComponent::OnRep_Support, get()->ModuleComponent), min, effect);
+            return repair(get()->ModuleComponent->RemovedSupportLocations, get()->ModuleComponent->RU_SupportLocations, std::bind(&UModuleComponent::OnRep_Support, get()->ModuleComponent), min, effect);
         }
     }
     return ESkillReturn::InternError;
