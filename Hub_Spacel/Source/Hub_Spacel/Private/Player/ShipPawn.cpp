@@ -719,12 +719,35 @@ void AShipPawn::RPCClientAddEffect_Implementation(EEffect _effect)
             }
         }
     }
+    else if (_effect == EEffect::MetaFormAttack)
+    {
+        if (UModuleComponent* moduleComponent = this->ModuleComponent)
+        {
+            if (UInstancedStaticMeshComponent* weaponMeshComponent = this->ModuleComponent->WeaponMeshComponent)
+            {
+                weaponMeshComponent->SetScalarParameterValueOnMaterials("Edge sharp max", 0.0f);
+                weaponMeshComponent->SetScalarParameterValueOnMaterials("Glow", 1200.0f);
+            }
+        }
+    }
 }
 
 void AShipPawn::RPCClientRemoveEffect_Implementation(EEffect _effect)
 {
     OnRemoveEffectDelegate.Broadcast(_effect);
     BP_FxRemoveEffect(_effect);
+
+    if (_effect == EEffect::MetaFormAttack)
+    {
+        if (UModuleComponent* moduleComponent = this->ModuleComponent)
+        {
+            if (UInstancedStaticMeshComponent* weaponMeshComponent = this->ModuleComponent->WeaponMeshComponent)
+            {
+                weaponMeshComponent->SetScalarParameterValueOnMaterials("Edge sharp max", 550.0f);
+                weaponMeshComponent->SetScalarParameterValueOnMaterials("Glow", 800.0f);
+            }
+        }
+    }
 }
 
 void AShipPawn::RPCClientStartMission_Implementation(FMission const& _mission)
