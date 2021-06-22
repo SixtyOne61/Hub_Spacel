@@ -108,8 +108,7 @@ void UFireComponent::launchMissile(FTransform const _transform) const
         AActor* actor = Cast<AActor>(UGameplayStatics::BeginDeferredActorSpawnFromClass(this->GetWorld(), get()->PlayerDataAsset->MissileClass, _transform));
         if (AMissile* missile = Cast<AMissile>(actor))
         {
-            missile->Target = m_target;
-            missile->RPCNetMulticastTarget(m_target->GetFName());
+            missile->R_Target = m_target;
 
             missile->R_Team = get()->Team;
             if (get<AShipPawn>() != nullptr)

@@ -24,9 +24,6 @@ public:
 	UFUNCTION()
 	void OnTargetEffect(EEffect _type);
 
-	UFUNCTION(Reliable, NetMulticast)
-	void RPCNetMulticastTarget(FName const& _targetName);
-
 protected:
 	void BeginPlay() override;
 	void Tick(float _deltaTime) override;
@@ -39,8 +36,8 @@ private:
 	UPROPERTY(EditAnywhere)
 	class UHomingMissileDataAsset* DataAsset { nullptr };
 
-	UPROPERTY()
-	class AActor* Target { nullptr };
+	UPROPERTY(Replicated)
+	class AActor* R_Target { nullptr };
 
 	UPROPERTY(Replicated)
 	bool R_IsSeekPlayer { false };

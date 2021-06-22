@@ -40,6 +40,7 @@ void AMissile::Seek()
     this->R_IsSeekPlayer = true;
 }
 
+#include "Engine.h"
 void AMissile::Tick(float _deltaTime)
 {
     Super::Tick(_deltaTime);
@@ -50,21 +51,21 @@ void AMissile::Tick(float _deltaTime)
     {
         if (this->R_IsSeekPlayer)
         {
-            if (this->Target == nullptr)
+            if (this->R_Target == nullptr)
             {
                 this->Destroy();
             }
         }
     }
 
-    if (this->Target != nullptr)
+    if (this->R_Target != nullptr)
     {
         FVector dir = this->GetActorForwardVector();
         FVector const& actorLocation = this->GetActorLocation();
         float speed = this->DataAsset->SpeedPreLock;
         if (this->R_IsSeekPlayer)
         {
-            FVector const& targetLocation = this->Target->GetActorLocation();
+            FVector const& targetLocation = this->R_Target->GetActorLocation();
             dir = (targetLocation - actorLocation).GetSafeNormal();
             speed = this->DataAsset->SpeedAfterLock;
         }
@@ -73,25 +74,10 @@ void AMissile::Tick(float _deltaTime)
         FVector nextLocation = currentLocation + dir * speed * _deltaTime;
         this->SetActorLocation(nextLocation);
     }
-}
-
-void AMissile::RPCNetMulticastTarget_Implementation(FName const& _targetName)
-{
-    if (this->GetNetMode() == ENetMode::NM_DedicatedServer) return;
-
-    TArray<AActor*> out;
-    UGameplayStatics::GetAllActorsWithTag(this->GetWorld(), Tags::Player, out);
-
-    for (auto actor : out)
+    else
     {
-        if (actor != nullptr)
-        {
-            if (actor->GetFName() == _targetName)
-            {
-                this->Target = actor;
-                break;
-            }
-        }
+        if (GEngine)
+            GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Target null"));
     }
 }
 
@@ -106,5 +92,6 @@ void AMissile::OnTargetEffect(EEffect _type)
 void AMissile::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+    DOREPLIFETIME(AMissile, R_Target);
     DOREPLIFETIME(AMissile, R_IsSeekPlayer);
 }
