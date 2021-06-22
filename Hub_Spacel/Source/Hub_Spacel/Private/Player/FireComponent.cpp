@@ -103,24 +103,27 @@ void UFireComponent::spawnBullet(FTransform const& _transform) const
 
 void UFireComponent::launchMissile(FTransform const _transform) const
 {
-    AActor* actor = Cast<AActor>(UGameplayStatics::BeginDeferredActorSpawnFromClass(this->GetWorld(), get()->PlayerDataAsset->MissileClass, _transform));
-    if (AMissile* missile = Cast<AMissile>(actor))
+    if (m_target != nullptr && !m_target->IsPendingKill())
     {
-        missile->Target = m_target;
-        missile->RPCNetMulticastTarget(m_target->GetFName());
-
-        missile->R_Team = get()->Team;
-        if (get<AShipPawn>() != nullptr)
+        AActor* actor = Cast<AActor>(UGameplayStatics::BeginDeferredActorSpawnFromClass(this->GetWorld(), get()->PlayerDataAsset->MissileClass, _transform));
+        if (AMissile* missile = Cast<AMissile>(actor))
         {
-            get<AShipPawn>()->OnAddEffectDelegate.AddDynamic(missile, &AMissile::OnTargetEffect);
-        }
+            missile->Target = m_target;
+            missile->RPCNetMulticastTarget(m_target->GetFName());
 
-        UGameplayStatics::FinishSpawningActor(missile, _transform);
-        setupProjectile(missile);
+            missile->R_Team = get()->Team;
+            if (get<AShipPawn>() != nullptr)
+            {
+                get<AShipPawn>()->OnAddEffectDelegate.AddDynamic(missile, &AMissile::OnTargetEffect);
+            }
 
-        if (AShipPawn* shipPawn = get<AShipPawn>())
-        {
-            shipPawn->RPCNetMulticastFxFireMissile();
+            UGameplayStatics::FinishSpawningActor(missile, _transform);
+            setupProjectile(missile);
+
+            if (AShipPawn* shipPawn = get<AShipPawn>())
+            {
+                shipPawn->RPCNetMulticastFxFireMissile();
+            }
         }
     }
 }
@@ -154,23 +157,26 @@ void UFireComponent::SpawnKatyusha()
     {
         if (UPlayerDataAsset* dataAsset = shipPawn->PlayerDataAsset)
         {
-            AActor* actor = Cast<AActor>(UGameplayStatics::BeginDeferredActorSpawnFromClass(this->GetWorld(), dataAsset->KatyushaClass, m_nextKatyushaTransform));
-            if (AKatyusha* katyusha = Cast<AKatyusha>(actor))
+            if (m_target != nullptr && !m_target->IsPendingKill())
             {
-                katyusha->AttachToActor(this->GetOwner(), FAttachmentTransformRules(EAttachmentRule::KeepWorld, true));
-                katyusha->R_TargetLocation = m_target->GetActorLocation();
-                katyusha->R_Team = shipPawn->Team;
-
-                UGameplayStatics::FinishSpawningActor(katyusha, m_nextKatyushaTransform);
-                setupProjectile(katyusha);
-
-                --m_nbKatyusha;
-                if (m_nbKatyusha >= 0 && m_nbKatyusha < DummyKatyushaLocations.Num() && DummyKatyushaLocations[m_nbKatyusha] != nullptr)
+                AActor* actor = Cast<AActor>(UGameplayStatics::BeginDeferredActorSpawnFromClass(this->GetWorld(), dataAsset->KatyushaClass, m_nextKatyushaTransform));
+                if (AKatyusha* katyusha = Cast<AKatyusha>(actor))
                 {
-                    m_nextKatyushaTransform = DummyKatyushaLocations[m_nbKatyusha]->GetComponentTransform();
+                    katyusha->AttachToActor(this->GetOwner(), FAttachmentTransformRules(EAttachmentRule::KeepWorld, true));
+                    katyusha->R_TargetLocation = m_target->GetActorLocation();
+                    katyusha->R_Team = shipPawn->Team;
 
-                    FTimerHandle handle;
-                    this->GetWorld()->GetTimerManager().SetTimer(handle, this, &UFireComponent::SpawnKatyusha, 0.2f, false);
+                    UGameplayStatics::FinishSpawningActor(katyusha, m_nextKatyushaTransform);
+                    setupProjectile(katyusha);
+
+                    --m_nbKatyusha;
+                    if (m_nbKatyusha >= 0 && m_nbKatyusha < DummyKatyushaLocations.Num() && DummyKatyushaLocations[m_nbKatyusha] != nullptr)
+                    {
+                        m_nextKatyushaTransform = DummyKatyushaLocations[m_nbKatyusha]->GetComponentTransform();
+
+                        FTimerHandle handle;
+                        this->GetWorld()->GetTimerManager().SetTimer(handle, this, &UFireComponent::SpawnKatyusha, 0.2f, false);
+                    }
                 }
             }
         }
