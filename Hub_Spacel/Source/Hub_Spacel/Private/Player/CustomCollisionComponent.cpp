@@ -213,8 +213,7 @@ void UCustomCollisionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 				{
 					if (!pawn->canTank(hits.Num()))
 					{
-						addScore(hits, EScoreType::Kill);
-
+						bool first = true;
 						// find team, if exist, of killer then broadcast event
 						for (auto const& hit : hits)
 						{
@@ -222,6 +221,12 @@ void UCustomCollisionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 							{
 								if (!actor->IsPendingKill())
 								{
+									if (first) // only one player mark point
+									{
+										addScore({hit}, EScoreType::Kill);
+										first = false;
+									}
+
 									for (FName const& tag : actor->Tags)
 									{
 										FString stag = tag.ToString();
@@ -406,7 +411,7 @@ void UCustomCollisionComponent::hit(FString const& _team, int32 _playerId, class
 	}
 	else if (uniqueId == get()->DriverMeshComponent->GetUniqueID())
 	{
-		if (!shipPawn->canTank(1))
+		if (!shipPawn->canTank(1) && !shipPawn->hasEffect(EEffect::Killed))
 		{
 			if (m_matiereManager.IsValid())
 			{
