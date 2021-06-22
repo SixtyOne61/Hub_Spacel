@@ -14,7 +14,7 @@ APostProcessInvisible::APostProcessInvisible()
 // Called when the game starts or when spawned
 void APostProcessInvisible::OnRemoveEffect(EEffect _effect)
 {
-	if (_effect == EEffect::MetaFormSupport || _effect == EEffect::Killed)
+	if (_effect == Effect || _effect == EEffect::Killed)
 	{
 		this->DetachFromActor(FDetachmentTransformRules(EDetachmentRule::KeepWorld, true));
 		this->Destroy();

@@ -18,4 +18,6 @@ public:
 
 	UFUNCTION()
 	void OnRemoveEffect(EEffect _effect);
+
+	EEffect Effect;
 };

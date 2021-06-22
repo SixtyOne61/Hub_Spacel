@@ -713,6 +713,7 @@ void AShipPawn::RPCClientAddEffect_Implementation(EEffect _effect)
             FTransform const& transform = this->GetActorTransform();
             if (APostProcessInvisible* actor = Cast<APostProcessInvisible>(UGameplayStatics::BeginDeferredActorSpawnFromClass(this->GetWorld(), this->PlayerDataAsset->MetaSupportPostProcessClass, transform)))
             {
+                actor->Effect = _effect;
                 OnRemoveEffectDelegate.AddDynamic(actor, &APostProcessInvisible::OnRemoveEffect);
                 UGameplayStatics::FinishSpawningActor(actor, transform);
                 actor->AttachToActor(this, FAttachmentTransformRules(EAttachmentRule::KeepWorld, true));
@@ -727,6 +728,20 @@ void AShipPawn::RPCClientAddEffect_Implementation(EEffect _effect)
             {
                 weaponMeshComponent->SetScalarParameterValueOnMaterials("Edge sharp max", 0.0f);
                 weaponMeshComponent->SetScalarParameterValueOnMaterials("Glow", 1200.0f);
+            }
+        }
+    }
+    else if (_effect == EEffect::Emp)
+    {
+        if (this->PlayerDataAsset != nullptr)
+        {
+            FTransform const& transform = this->GetActorTransform();
+            if (APostProcessInvisible* actor = Cast<APostProcessInvisible>(UGameplayStatics::BeginDeferredActorSpawnFromClass(this->GetWorld(), this->PlayerDataAsset->EmpPostProcessClass, transform)))
+            {
+                actor->Effect = _effect;
+                OnRemoveEffectDelegate.AddDynamic(actor, &APostProcessInvisible::OnRemoveEffect);
+                UGameplayStatics::FinishSpawningActor(actor, transform);
+                actor->AttachToActor(this, FAttachmentTransformRules(EAttachmentRule::KeepWorld, true));
             }
         }
     }
