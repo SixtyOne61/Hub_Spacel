@@ -55,6 +55,9 @@ private:
 	/* call for add score to game state */
 	void addScore(TArray<FHitResult> const& _hits, EScoreType _type) const;
 
+	void killersProcess(TArray<FHitResult> const& _hits);
+	void spawnMatiere();
+
 private:
 	/* matiere manager */
 	TWeakObjectPtr<class AMatiereManager> m_matiereManager{};

@@ -213,65 +213,68 @@ void UCustomCollisionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 				{
 					if (!pawn->canTank(hits.Num()))
 					{
-						bool first = true;
-						// find team, if exist, of killer then broadcast event
-						for (auto const& hit : hits)
-						{
-							if (AActor* actor = hit.GetActor())
-							{
-								if (!actor->IsPendingKill())
-								{
-									if (first) // only one player mark point
-									{
-										addScore({hit}, EScoreType::Kill);
-										first = false;
-									}
-
-									for (FName const& tag : actor->Tags)
-									{
-										FString stag = tag.ToString();
-										if (stag.Contains("Team:"))
-										{
-											TArray<FString> out;
-											stag.ParseIntoArray(out, TEXT(":"), true);
-											if (out.Num() == 2)
-											{
-												pawn->OnKill.broadcast(pawn->Team.ToString(), *out[1]);
-											}
-										}
-									}
-								}
-							}
-						}
+						killersProcess(hits);
 
 						// spawn matiere
-						if (m_matiereManager.IsValid())
-						{
-							// check if we have team player in hits
-							for (FHitResult const& hit : hits)
-							{
-								if (hit.Actor.IsValid())
-								{
-									for (FName const& name : hit.Actor->Tags)
-									{
-										if (name.ToString().Contains("Team"))
-										{
-											if (ASpacelPlayerState const* spacelPlayerState = get()->GetPlayerState<ASpacelPlayerState>())
-											{
-												m_matiereManager.Get()->spawnMatiere(get()->GetActorLocation(), spacelPlayerState->R_Team);
-												return; //break flow
-											}
-										}
-									}
-								}
-							}
-						}
-
+						spawnMatiere();
+						
 						pawn->kill();
 					}
 
 					dispatch(hits);
 				}
+			}
+		}
+	}
+}
+
+void UCustomCollisionComponent::killersProcess(TArray<FHitResult> const& _hits)
+{
+	if (AShipPawn* pawn = get<AShipPawn>())
+	{
+		bool isScored = false;
+		// find team, if exist, of killer then broadcast event
+		for (auto const& hit : _hits)
+		{
+			if (AActor* actor = hit.GetActor())
+			{
+				if (!actor->IsPendingKill())
+				{
+					for (FName const& tag : actor->Tags)
+					{
+						FString stag = tag.ToString();
+						if (stag.Contains("Team:"))
+						{
+							TArray<FString> out;
+							stag.ParseIntoArray(out, TEXT(":"), true);
+							if (out.Num() == 2)
+							{
+								pawn->OnKill.broadcast(pawn->Team.ToString(), *out[1]);
+
+								if (!isScored)
+								{
+									addScore({ hit }, EScoreType::Kill);
+									isScored = true;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+void UCustomCollisionComponent::spawnMatiere()
+{
+	// spawn matiere
+	if (m_matiereManager.IsValid())
+	{
+		if (APawn* pawn = get<APawn>())
+		{
+			if (ASpacelPlayerState const* spacelPlayerState = pawn->GetPlayerState<ASpacelPlayerState>())
+			{
+				m_matiereManager.Get()->spawnMatiere(pawn->GetActorLocation(), spacelPlayerState->R_Team);
 			}
 		}
 	}
