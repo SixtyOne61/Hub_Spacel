@@ -749,6 +749,23 @@ void AShipPawn::RPCClientAddEffect_Implementation(EEffect _effect)
             }
         }
     }
+    else if (_effect == EEffect::Killed)
+    {
+        m_countDownRespawn = 10;
+        CountDownRespawn();
+    }
+}
+
+void AShipPawn::CountDownRespawn()
+{
+    OnSendInfoPlayerDelegate.Broadcast("Rebuilding... " + FString::FromInt(m_countDownRespawn));
+    --m_countDownRespawn;
+
+    if (m_countDownRespawn > 0)
+    {
+        FTimerHandle handle;
+        this->GetWorldTimerManager().SetTimer(handle, this, &AShipPawn::CountDownRespawn, 1.0f, false);
+    }
 }
 
 void AShipPawn::RPCClientRemoveEffect_Implementation(EEffect _effect)
