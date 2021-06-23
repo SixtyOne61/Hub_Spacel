@@ -131,6 +131,7 @@ void ACommonPawn::moveShip(float _deltaTime)
     newVelocity = FMath::Lerp(linearVelocity, newVelocity, 0.9f);
 
     this->DriverMeshComponent->SetPhysicsLinearVelocity(newVelocity);
+    this->DriverMeshComponent->SetPhysicsAngularVelocityInDegrees(FVector::ZeroVector);
 }
 
 bool ACommonPawn::hasEffect(EEffect _type)

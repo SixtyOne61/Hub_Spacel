@@ -63,7 +63,7 @@ void ULocalPlayerActionComponent::TickComponent(float _deltaTime, ELevelTick _ti
         // set material parameter
         float speedRef = FMath::Max(pawn->RU_PercentSpeed, pawn->R_OverDrive);
         float percent = FMath::Clamp(speedRef * coefSpeed, 0.0f, 2.6f);
-        float multiplicator = pawn->hasEffect(EEffect::Respawned) ? 4.0f : 2.0f;
+        float multiplicator = pawn->hasEffect(EEffect::StartGame) ? 4.0f : 2.0f;
         m_speedLineMaterial->SetScalarParameterValue("Weight", percent * multiplicator);
         m_speedLineMaterial->SetVectorParameterValue("SpeedLinesColor", FMath::Lerp(FLinearColor(1.0f, 1.0f, 1.0f, 1.0f), FLinearColor(0.0f, 0.943892f, 1.0f, 1.0f), percent));
 
@@ -86,7 +86,7 @@ void ULocalPlayerActionComponent::OnUpdateTeam(FString const& _team)
 
 void ULocalPlayerActionComponent::AddEffect(EEffect _effect)
 {
-    if (_effect == EEffect::Respawned)
+    if (_effect == EEffect::StartGame)
     {
         if (ACommonPawn* pawn = get())
         {
@@ -110,7 +110,7 @@ void ULocalPlayerActionComponent::AddEffect(EEffect _effect)
 
 void ULocalPlayerActionComponent::RemoveEffect(EEffect _effect)
 {
-    if (_effect == EEffect::Respawned)
+    if (_effect == EEffect::StartGame)
     {
         if (ACommonPawn* pawn = get())
         {

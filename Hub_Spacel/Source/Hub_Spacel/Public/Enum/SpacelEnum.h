@@ -106,6 +106,7 @@ enum class EEffect : uint8
     MetaFormSupport UMETA(DisplayName = "MetaFormSupport"),
     Respawned UMETA(DisplayName = "Respawned"),
     Targeted UMETA(DisplayName = "Targeted"),
+    StartGame UMETA(DisplayName = "StartGame"),
 };
 
 UENUM(BlueprintType)

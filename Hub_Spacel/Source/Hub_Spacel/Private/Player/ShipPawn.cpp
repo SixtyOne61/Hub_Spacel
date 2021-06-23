@@ -53,8 +53,6 @@ void AShipPawn::OnChangeState(EGameState _state)
 
             RPCClientStartGame(this->Team);
             RPCNetMulticastStartGame(this->Team);
-
-            StartTransform.SetScale3D(this->GetActorScale3D());
         }
 
         if (this->SkillComponent != nullptr)
@@ -73,9 +71,9 @@ void AShipPawn::OnChangeState(EGameState _state)
     {
         if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
         {
-            addEffect(EEffect::Respawned);
+            addEffect(EEffect::StartGame);
             FTimerDelegate timerCallback;
-            timerCallback.BindLambda([&]() { removeEffect(EEffect::Respawned); });
+            timerCallback.BindLambda([&]() { removeEffect(EEffect::StartGame); });
 
             FTimerHandle handle;
             this->GetWorldTimerManager().SetTimer(handle, timerCallback, 3.0f, false);
@@ -463,6 +461,7 @@ void AShipPawn::kill()
         FTimerHandle handle;
         this->GetWorldTimerManager().SetTimer(handle, this, &AShipPawn::Restarted, 1.0f, false, 10.0f);
 
+        this->DriverMeshComponent->SetPhysicsAngularVelocityInDegrees(FVector::ZeroVector);
         // disable collision
         setCollisionProfile("NoCollision");
 
@@ -472,7 +471,7 @@ void AShipPawn::kill()
         removeAllPlayerFocusOnMe();
 
         // replace actor to spawn
-        this->SetActorTransform(StartTransform, false, nullptr, ETeleportType::ResetPhysics);
+        this->SetActorLocationAndRotation(StartTransform.GetLocation(), StartTransform.GetRotation());
         this->DriverMeshComponent->SetPhysicsLinearVelocity(FVector::ZeroVector);
 
         this->RU_Matiere = 0;
@@ -651,7 +650,7 @@ bool AShipPawn::canTank(int32 _val)
         lb_addScore(_val);
         return true;
     }
-    else if (hasEffect(EEffect::Respawned))
+    else if (hasEffect(EEffect::Respawned) || hasEffect(EEffect::StartGame))
     {
         return true;
     }
@@ -858,7 +857,7 @@ void AShipPawn::behaviourAddEffect(EEffect _type)
             }
         }
     }
-    else if (_type == EEffect::Respawned)
+    else if (_type == EEffect::StartGame)
     {
         if (this->PlayerDataAsset != nullptr)
         {
@@ -937,7 +936,7 @@ void AShipPawn::behaviourRemoveEffect(EEffect _type)
         }
         this->FireComponent->m_target = nullptr;
     }
-    else if (_type == EEffect::Respawned)
+    else if (_type == EEffect::StartGame)
     {
         if (this->PlayerDataAsset != nullptr)
         {

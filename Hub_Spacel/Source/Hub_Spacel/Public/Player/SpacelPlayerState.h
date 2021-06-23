@@ -60,7 +60,5 @@ public:
     UPROPERTY()
     FOnSkillLobbyChange OnSkillLobbyChangeDelegate {};
 
-    FTransform PlayerStartTransform {};
-
     std::function<void(class SkillCountDown*)> OnAddSkillUniqueDelegate { nullptr };
 };
