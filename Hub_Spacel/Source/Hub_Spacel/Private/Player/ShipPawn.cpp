@@ -51,10 +51,10 @@ void AShipPawn::OnChangeState(EGameState _state)
                 customCollisionComponent->RegisterComponent();
             }
 
-            m_startTransform = this->GetActorTransform();
-
             RPCClientStartGame(this->Team);
             RPCNetMulticastStartGame(this->Team);
+
+            StartTransform.SetScale3D(this->GetActorScale3D());
         }
 
         if (this->SkillComponent != nullptr)
@@ -392,8 +392,11 @@ void AShipPawn::Tick(float _deltaTime)
 
     if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
     {
-        // move ship
-        moveShip(_deltaTime);
+        if (!hasEffect(EEffect::Killed))
+        {
+            // move ship
+            moveShip(_deltaTime);
+        }
     }
 }
 
@@ -469,7 +472,8 @@ void AShipPawn::kill()
         removeAllPlayerFocusOnMe();
 
         // replace actor to spawn
-        this->SetActorTransform(m_startTransform);
+        this->SetActorTransform(StartTransform, false, nullptr, ETeleportType::ResetPhysics);
+        this->DriverMeshComponent->SetPhysicsLinearVelocity(FVector::ZeroVector);
 
         this->RU_Matiere = 0;
         OnRep_Matiere();

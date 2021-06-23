@@ -40,7 +40,6 @@ void AMissile::Seek()
     this->R_IsSeekPlayer = true;
 }
 
-#include "Engine.h"
 void AMissile::Tick(float _deltaTime)
 {
     Super::Tick(_deltaTime);
@@ -73,11 +72,6 @@ void AMissile::Tick(float _deltaTime)
         FVector const& currentLocation = actorLocation;
         FVector nextLocation = currentLocation + dir * speed * _deltaTime;
         this->SetActorLocation(nextLocation);
-    }
-    else
-    {
-        if (GEngine)
-            GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Target null"));
     }
 }
 

@@ -222,7 +222,8 @@ protected:
     FName m_lastTeamEmp {};
     int32 m_lastPlayerIdEmp {};
 
-    FTransform m_startTransform {};
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FTransform StartTransform {};
 
     // use by server
     int m_nbAsteroideFarm {0};
