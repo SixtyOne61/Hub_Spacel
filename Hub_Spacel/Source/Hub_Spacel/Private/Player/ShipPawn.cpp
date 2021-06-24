@@ -79,6 +79,16 @@ void AShipPawn::OnChangeState(EGameState _state)
             this->GetWorldTimerManager().SetTimer(handle, timerCallback, 3.0f, false);
         }
     }
+    else if (_state == EGameState::EndGame)
+    {
+        if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
+        {
+            setFire(false);
+            this->GetWorldTimerManager().ClearAllTimersForObject(this);
+            this->DriverMeshComponent->SetPhysicsLinearVelocity(FVector::ZeroVector);
+            this->DriverMeshComponent->SetPhysicsAngularVelocityInDegrees(FVector::ZeroVector);
+        }
+    }
 }
 
 void AShipPawn::RPCNetMulticastStartGame_Implementation(FName const& _team)
