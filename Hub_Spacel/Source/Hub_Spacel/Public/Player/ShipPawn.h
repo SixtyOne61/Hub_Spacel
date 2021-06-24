@@ -74,14 +74,13 @@ public:
     void farmAsteroide();
     ESkillReturn spawnNinePack();
 
-    UFUNCTION(Reliable, Client)
-    void RPCClientStartMission(FMission const& _mission);
-
-    UFUNCTION(Reliable, Client)
-    void RPCClientEndMission(FMission const& _mission);
+    void endMission(FMission const& _mission);
 
     UFUNCTION(Reliable, NetMulticast)
-    void RPCNetMulticastEndMission(FMission const& _mission);
+    void RPCNetMulticastEndMission(EMission _type);
+
+    UFUNCTION(Reliable, Client)
+    void RPCClientStartMission(FMission const& _mission);
 
     void boostWall();
 

@@ -52,7 +52,7 @@ void AMissionManager::Tick(float DeltaTime)
 					mission->tick(DeltaTime, this->GetWorld());
 					if (mission->m_isEnd)
 					{
-						endMissionOnNetMulticast(mission->m_mission);
+						endMissionOnAllClient(mission->m_mission);
 					}
 				}
 			}
@@ -87,7 +87,7 @@ void AMissionManager::OnStartGame(EGameState _state)
 	FTimerDelegate timerCallbackScoreRace;
 	timerCallbackScoreRace.BindLambda([&]() {
 		FMission const& mission = this->MissionDataAsset->getMission(EMission::ScoreRace);
-		m_openMission.Add(MakeUnique<MissionFirstBlood>(mission));
+		m_openMission.Add(MakeUnique<MissionRaceScore>(mission));
 		startMissionOnAllClient(this->MissionDataAsset->getMission(EMission::ScoreRace)); });
 	
 	FTimerHandle handleScoreRace;
@@ -112,7 +112,7 @@ void AMissionManager::startMissionOnAllClient(FMission const& _mission) const
 	}
 }
 
-void AMissionManager::endMissionOnNetMulticast(FMission const& _mission) const
+void AMissionManager::endMissionOnAllClient(FMission const& _mission) const
 {
 	UWorld const* world{ this->GetWorld() };
 	if (!ensure(world != nullptr)) return;
@@ -120,11 +120,13 @@ void AMissionManager::endMissionOnNetMulticast(FMission const& _mission) const
 	if (ASpacelGameState* gameState = world->GetGameState<ASpacelGameState>())
 	{
 		TArray<APlayerState*> playerStates = gameState->PlayerArray;
-		for (auto* playerState : playerStates)
+		auto* client = playerStates[1];
+		//for (auto* client : playerStates)
 		{
-			if (AShipPawn* shipPawn = playerState->GetPawn<AShipPawn>())
+			if (AShipPawn* shipPawn = client->GetPawn<AShipPawn>())
 			{
-				shipPawn->RPCNetMulticastEndMission(_mission);
+				shipPawn->endMission(_mission);
+				return;
 			}
 		}
 	}

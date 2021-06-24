@@ -22,7 +22,7 @@ public:
     void BeginPlay() override;
 
     UFUNCTION(Reliable, Server)
-    void RPCAddSkill(uint8 const& _id, ESkillType _type);
+    void RPCServerAddSkill(uint8 const& _id, ESkillType _type);
 
     void LocalAddSkill(uint8 const& _id, ESkillType _type);
 

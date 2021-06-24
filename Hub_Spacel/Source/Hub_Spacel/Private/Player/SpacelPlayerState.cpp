@@ -18,7 +18,7 @@ void ASpacelPlayerState::BeginPlay()
 #endif
 }
 
-void ASpacelPlayerState::RPCAddSkill_Implementation(uint8 const& _id, ESkillType _type)
+void ASpacelPlayerState::RPCServerAddSkill_Implementation(uint8 const& _id, ESkillType _type)
 {
     switch (_type)
     {

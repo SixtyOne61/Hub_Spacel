@@ -128,7 +128,7 @@ void ULobbyUserWidget::StartLobby(EGameState _state)
         // save low module choice
         if (ASpacelPlayerState* owningPlayerState = Cast<ASpacelPlayerState>(this->GetOwningPlayerState()))
         {
-            owningPlayerState->RPCAddSkill(this->Carrousel->getIdSelected(), m_currentSkillType);
+            owningPlayerState->RPCServerAddSkill(this->Carrousel->getIdSelected(), m_currentSkillType);
         }
 
         // setup carrousel with medium module
@@ -145,7 +145,7 @@ void ULobbyUserWidget::StartLobby(EGameState _state)
         // save medium module choice
         if (ASpacelPlayerState* owningPlayerState = Cast<ASpacelPlayerState>(this->GetOwningPlayerState()))
         {
-            owningPlayerState->RPCAddSkill(this->Carrousel->getIdSelected(), m_currentSkillType);
+            owningPlayerState->RPCServerAddSkill(this->Carrousel->getIdSelected(), m_currentSkillType);
         }
 
         // setup carrousel with hight module
@@ -162,7 +162,7 @@ void ULobbyUserWidget::StartLobby(EGameState _state)
         // save hight module choice
         if (ASpacelPlayerState* owningPlayerState = Cast<ASpacelPlayerState>(this->GetOwningPlayerState()))
         {
-            owningPlayerState->RPCAddSkill(this->Carrousel->getIdSelected(), m_currentSkillType);
+            owningPlayerState->RPCServerAddSkill(this->Carrousel->getIdSelected(), m_currentSkillType);
         }
 
         if (this->GameModeDataAsset != nullptr)

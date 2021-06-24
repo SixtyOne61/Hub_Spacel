@@ -66,7 +66,7 @@ void USkillComponent::OnMissionEnd(EMission _type)
 {
     if(_type != EMission::FirstBlood && _type != EMission::ScoreRace) return;
 
-    if (ASpacelPlayerState* spacelPlayerState = Cast<ASpacelPlayerState>(get()->GetPlayerState()))
+    if (ASpacelPlayerState* spacelPlayerState = get()->GetPlayerState<ASpacelPlayerState>())
     {
         if (this->SkillDataAsset == nullptr) return;
 
