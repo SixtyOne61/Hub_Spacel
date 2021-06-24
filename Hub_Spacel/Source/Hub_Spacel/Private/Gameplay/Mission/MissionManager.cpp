@@ -120,8 +120,7 @@ void AMissionManager::endMissionOnAllClient(FMission const& _mission) const
 	if (ASpacelGameState* gameState = world->GetGameState<ASpacelGameState>())
 	{
 		TArray<APlayerState*> playerStates = gameState->PlayerArray;
-		auto* client = playerStates[1];
-		//for (auto* client : playerStates)
+		for (auto* client : playerStates)
 		{
 			if (AShipPawn* shipPawn = client->GetPawn<AShipPawn>())
 			{

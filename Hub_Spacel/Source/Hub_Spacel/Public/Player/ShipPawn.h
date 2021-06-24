@@ -257,4 +257,7 @@ private:
 
     // count time when respawn
     int8 m_countDownRespawn {};
+
+    // false when endgame appear
+    bool m_endGame { false };
 };

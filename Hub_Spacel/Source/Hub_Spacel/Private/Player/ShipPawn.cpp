@@ -89,6 +89,7 @@ void AShipPawn::OnChangeState(EGameState _state)
             this->GetWorldTimerManager().ClearAllTimersForObject(this);
             this->DriverMeshComponent->SetPhysicsLinearVelocity(FVector::ZeroVector);
             this->DriverMeshComponent->SetPhysicsAngularVelocityInDegrees(FVector::ZeroVector);
+            m_endGame = true;
         }
     }
 }
@@ -402,7 +403,7 @@ void AShipPawn::Tick(float _deltaTime)
 
     if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
     {
-        if (!hasEffect(EEffect::Killed))
+        if (!hasEffect(EEffect::Killed) && !m_endGame)
         {
             // move ship
             moveShip(_deltaTime);
