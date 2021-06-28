@@ -11,6 +11,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FChangeState, EGameState, _state);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FScoreUpdate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FPlayerEnterFog, int32, _playerId, bool, _enter);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStartMission, EMission, _type);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnStartMissionTwoParam, EMission, _type, FName const&, _team);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEndMission, EMission, _type);
 
 USTRUCT()
@@ -104,6 +105,9 @@ public:
 	void RPCNetMulticastStartMission(EMission _type);
 
 	UFUNCTION(Reliable, NetMulticast)
+	void RPCNetMulticastStartMissionTwoParam(EMission _type, FName _team);
+
+	UFUNCTION(Reliable, NetMulticast)
 	void RPCNetMulticastEndMission(EMission _type);
 
 protected:
@@ -131,6 +135,9 @@ public:
 
 	UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
 	FOnStartMission OnStartMissionDelegate {};
+
+	UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
+	FOnStartMissionTwoParam OnStartMissionTwoParamDelegate {};
 
 	UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
 	FOnEndMission OnEndMissionDelegate {};

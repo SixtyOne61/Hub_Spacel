@@ -70,6 +70,7 @@ void USpacelWidget::NativeConstruct()
         spacelGameState->OnChangeStateDelegate.AddDynamic(this, &USpacelWidget::OnChangeState);
         // mission
         spacelGameState->OnStartMissionDelegate.AddDynamic(this, &USpacelWidget::OnStartMission);
+        spacelGameState->OnStartMissionTwoParamDelegate.AddDynamic(this, &USpacelWidget::OnStartMissionTwoParam);
         spacelGameState->OnEndMissionDelegate.AddDynamic(this, &USpacelWidget::OnEndMission);
     }
 
@@ -97,8 +98,6 @@ void USpacelWidget::RegisterPlayerState()
     {
         if (ASpacelPlayerState* playerState = shipPawn->GetPlayerState<ASpacelPlayerState>())
         {
-            DebugScreenMessage::Message(50.0f, "Register player state " + FString::FromInt(shipPawn->GetUniqueID()), FColor::Yellow);
-
             playerState->OnAddSkillUniqueDelegate = std::bind(&USpacelWidget::addSkill, this, std::placeholders::_1);
             return;
         }
@@ -125,6 +124,14 @@ void USpacelWidget::NativeTick(const FGeometry& _myGeometry, float _deltaTime)
 {
     Super::NativeTick(_myGeometry, _deltaTime);
     UpdateScore();
+}
+
+void USpacelWidget::OnStartMissionTwoParam(EMission _type, FName const& _team)
+{
+    if (*this->Team == _team)
+    {
+        OnStartMission(_type);
+    }
 }
 
 void USpacelWidget::OnStartMission(EMission _type)

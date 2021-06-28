@@ -66,18 +66,15 @@ void MissionEcartType::tick(float _deltaTime, UWorld* _world)
                 m_mission.Team = bestTeam;
                 m_loosingTeam = worstTeam;
 
+                spacelGameState->RPCNetMulticastStartMissionTwoParam(m_mission.Type, *worstTeam);
+
                 // find player of this team
                 TArray<APlayerState*> playerStates = spacelGameState->PlayerArray;
                 for (auto* playerState : playerStates)
                 {
                     if (AShipPawn* shipPawn = playerState->GetPawn<AShipPawn>())
                     {
-                        if (shipPawn->Team == *worstTeam)
-                        {
-                            // TO DO
-                            //shipPawn->RPCClientStartMission(m_mission);
-                        }
-                        else
+                        if (shipPawn->Team != *worstTeam)
                         {
                             shipPawn->OnKill.add(std::bind(&MissionEcartType::onKill, this, std::placeholders::_1, std::placeholders::_2));
                         }
