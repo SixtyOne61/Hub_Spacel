@@ -29,8 +29,8 @@ private:
 	UFUNCTION()
 	void OnStartGame(EGameState _state);
 
-	void startMissionOnAllClient(FMission const& _mission) const;
-	void endMissionOnAllClient(FMission const& _mission) const;
+	void startMission(FMission const& _mission) const;
+	void endMission(FMission const& _mission) const;
 
 	void startMissionComet();
 

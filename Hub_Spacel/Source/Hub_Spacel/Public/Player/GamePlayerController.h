@@ -68,15 +68,6 @@ private:
 	void kill();
 	void restarted();
 
-	UFUNCTION()
-	void OnAddEffect(EEffect _effect);
-
-	UFUNCTION()
-	void OnRemoveEffect(EEffect _effect);
-
-	UFUNCTION(Reliable, Server)
-	void RPCServerPossess();
-
 	bool isAvailable() const;
 
 protected:

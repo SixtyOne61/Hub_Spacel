@@ -140,6 +140,16 @@ void ASpacelGameState::BeginPlay()
     Super::BeginPlay();
 }
 
+void ASpacelGameState::RPCNetMulticastStartMission_Implementation(EMission _type)
+{
+    OnStartMissionDelegate.Broadcast(_type);
+}
+
+void ASpacelGameState::RPCNetMulticastEndMission_Implementation(EMission _type)
+{
+    OnEndMissionDelegate.Broadcast(_type);
+}
+
 void ASpacelGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);

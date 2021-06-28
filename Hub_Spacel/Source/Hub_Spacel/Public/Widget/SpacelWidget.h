@@ -104,7 +104,7 @@ protected:
 	void OnRespawn();
 
 	UFUNCTION()
-	void OnStartMission(FMission const& _mission);
+	void OnStartMission(EMission _type);
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void BP_ShowMissionPanel();

@@ -10,6 +10,8 @@
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FChangeState, EGameState, _state);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FScoreUpdate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FPlayerEnterFog, int32, _playerId, bool, _enter);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStartMission, EMission, _type);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEndMission, EMission, _type);
 
 USTRUCT()
 struct HUB_SPACEL_API FTeamLocation
@@ -98,6 +100,12 @@ public:
 	UFUNCTION()
 	inline EGameState GetState() const { return (EGameState)this->RU_GameState; }
 
+	UFUNCTION(Reliable, NetMulticast)
+	void RPCNetMulticastStartMission(EMission _type);
+
+	UFUNCTION(Reliable, NetMulticast)
+	void RPCNetMulticastEndMission(EMission _type);
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -120,6 +128,12 @@ public:
 
 	UPROPERTY()
 	FPlayerEnterFog OnPlayerEnterFogDelegate {};
+
+	UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
+	FOnStartMission OnStartMissionDelegate {};
+
+	UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
+	FOnEndMission OnEndMissionDelegate {};
 
 protected:
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)

@@ -74,7 +74,8 @@ void MissionEcartType::tick(float _deltaTime, UWorld* _world)
                     {
                         if (shipPawn->Team == *worstTeam)
                         {
-                            shipPawn->RPCClientStartMission(m_mission);
+                            // TO DO
+                            //shipPawn->RPCClientStartMission(m_mission);
                         }
                         else
                         {

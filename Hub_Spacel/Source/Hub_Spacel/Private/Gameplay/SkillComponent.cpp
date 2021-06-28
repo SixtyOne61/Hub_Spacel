@@ -10,6 +10,7 @@
 #include "DataAsset/SkillDataAsset.h"
 #include "DataAsset/UniqueSkillDataAsset.h"
 #include <functional>
+#include "Util/DebugScreenMessage.h"
 
 USkillComponent::USkillComponent()
     : UPlayerActorComponent()
@@ -37,9 +38,12 @@ void USkillComponent::setupSkill()
 
     SetDelegateForPlayerState();
 
-    if (AShipPawn* pawn = get<AShipPawn>())
+    UWorld const* world{ this->GetWorld() };
+    if (!ensure(world != nullptr)) return;
+
+    if (ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(world->GetGameState()))
     {
-        pawn->OnEndMissionDelegate.AddDynamic(this, &USkillComponent::OnMissionEnd);
+        spacelGameState->OnEndMissionDelegate.AddDynamic(this, &USkillComponent::OnMissionEnd);
     }
 }
 
@@ -64,9 +68,9 @@ void USkillComponent::SetDelegateForPlayerState()
 
 void USkillComponent::OnMissionEnd(EMission _type)
 {
-    if(_type != EMission::FirstBlood && _type != EMission::ScoreRace) return;
+    if (_type != EMission::FirstBlood && _type != EMission::ScoreRace) return;
 
-    if (ASpacelPlayerState* spacelPlayerState = get()->GetPlayerState<ASpacelPlayerState>())
+    if (ASpacelPlayerState* spacelPlayerState = Cast<ASpacelPlayerState>(get()->GetPlayerState()))
     {
         if (this->SkillDataAsset == nullptr) return;
 

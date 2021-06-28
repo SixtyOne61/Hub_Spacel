@@ -26,6 +26,7 @@
 #include "DataAsset/DitactitialDataAsset.h"
 #include "DataAsset/FlyingGameModeDataAsset.h"
 #include "DataAsset/KeyDataAsset.h"
+#include "DataAsset/MissionDataAsset.h"
 #include "Widget/AllyWidget.h"
 #include "Widget/SkillWidget.h"
 #include "Widget/SkillProgressWidget.h"
@@ -36,6 +37,7 @@
 #include "Factory/SpacelFactory.h"
 #include "Styling/SlateColor.h"
 #include "GameMode/FlyingGameMode.h"
+#include "Util/DebugScreenMessage.h"
 
 void USpacelWidget::NativeConstruct()
 {
@@ -66,6 +68,9 @@ void USpacelWidget::NativeConstruct()
     if (spacelGameState != nullptr)
     {
         spacelGameState->OnChangeStateDelegate.AddDynamic(this, &USpacelWidget::OnChangeState);
+        // mission
+        spacelGameState->OnStartMissionDelegate.AddDynamic(this, &USpacelWidget::OnStartMission);
+        spacelGameState->OnEndMissionDelegate.AddDynamic(this, &USpacelWidget::OnEndMission);
     }
 
     AShipPawn* shipPawn { this->GetOwningPlayerPawn<AShipPawn>() };
@@ -82,10 +87,6 @@ void USpacelWidget::NativeConstruct()
 
         shipPawn->OnSendInfoPlayerDelegate.AddDynamic(this, &USpacelWidget::OnSendInfoPlayer);
 
-        // mission
-        shipPawn->OnStartMissionDelegate.AddDynamic(this, &USpacelWidget::OnStartMission);
-        shipPawn->OnEndMissionDelegate.AddDynamic(this, &USpacelWidget::OnEndMission);
-
         RegisterPlayerState();
     }
 }
@@ -96,6 +97,8 @@ void USpacelWidget::RegisterPlayerState()
     {
         if (ASpacelPlayerState* playerState = shipPawn->GetPlayerState<ASpacelPlayerState>())
         {
+            DebugScreenMessage::Message(50.0f, "Register player state " + FString::FromInt(shipPawn->GetUniqueID()), FColor::Yellow);
+
             playerState->OnAddSkillUniqueDelegate = std::bind(&USpacelWidget::addSkill, this, std::placeholders::_1);
             return;
         }
@@ -124,20 +127,22 @@ void USpacelWidget::NativeTick(const FGeometry& _myGeometry, float _deltaTime)
     UpdateScore();
 }
 
-void USpacelWidget::OnStartMission(FMission const& _mission)
+void USpacelWidget::OnStartMission(EMission _type)
 {
+    if(this->MissionDataAsset == nullptr) return;
+
     if (m_currentMission.Num() == 0)
     {
         // appear mission panel
         BP_ShowMissionPanel();
     }
 
-    m_currentMission.Add(_mission.Type);
+    m_currentMission.Add(_type);
 
     UMissionPanelUserWidget* panelMission = SimplyUI::initSafetyFromName<UUserWidget, UMissionPanelUserWidget>(this, TEXT("WBP_Mission"));
     if (panelMission != nullptr)
     {
-        panelMission->addMission(_mission);
+        panelMission->addMission(this->MissionDataAsset->getMission(_type));
     }
 }
 

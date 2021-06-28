@@ -33,32 +33,8 @@ void AGamePlayerController::BeginPlay()
             {
                 spacelGameState->OnChangeStateDelegate.AddDynamic(this, &AGamePlayerController::GameModeChangeState);
             }
-
-            shipPawn->OnAddEffectDelegate.AddDynamic(this, &AGamePlayerController::OnAddEffect);
-            shipPawn->OnRemoveEffectDelegate.AddDynamic(this, &AGamePlayerController::OnRemoveEffect);
         }
     }
-}
-
-void AGamePlayerController::OnAddEffect(EEffect _effect)
-{
-    if (_effect == EEffect::Killed)
-    {
-        this->UnPossess();
-    }
-}
-
-void AGamePlayerController::OnRemoveEffect(EEffect _effect)
-{
-    if (_effect == EEffect::Killed)
-    {
-        RPCServerPossess();
-    }
-}
-
-void AGamePlayerController::RPCServerPossess_Implementation()
-{
-    this->Possess(this->LinkPawn);
 }
 
 void AGamePlayerController::Tick(float _deltaTime)

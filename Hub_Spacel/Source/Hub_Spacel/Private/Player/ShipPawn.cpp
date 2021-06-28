@@ -38,7 +38,6 @@
 #include "Gameplay/Skill/PostProcessInvisible.h"
 #include "NiagaraComponent.h"
 #include "Skill/NinePackActor.h"
-#include "Engine.h"
 
 void AShipPawn::OnChangeState(EGameState _state)
 {
@@ -796,27 +795,6 @@ void AShipPawn::RPCClientRemoveEffect_Implementation(EEffect _effect)
             }
         }
     }
-}
-
-void AShipPawn::endMission(FMission const& _mission)
-{
-    if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
-    {
-        RPCNetMulticastEndMission(_mission.Type);
-    }
-}
-
-void AShipPawn::RPCNetMulticastEndMission_Implementation(EMission _type)
-{
-    if (this->SkillComponent != nullptr && this->SkillComponent->bIsActive)
-    {
-        OnEndMissionDelegate.Broadcast(_type);
-    }
-}
-
-void AShipPawn::RPCClientStartMission_Implementation(FMission const& _mission)
-{
-    OnStartMissionDelegate.Broadcast(_mission);
 }
 
 void AShipPawn::behaviourAddEffect(EEffect _type)
