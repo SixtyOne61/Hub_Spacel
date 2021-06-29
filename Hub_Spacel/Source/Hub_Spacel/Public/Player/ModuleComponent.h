@@ -33,7 +33,7 @@ protected:
 
     /* server side */
     UFUNCTION()
-    void OnStartGame();
+    void OnStartGame(EGameState _state);
 
     UFUNCTION()
     void OnRep_Attack();
@@ -50,8 +50,11 @@ protected:
     /* set collision profile name */
     void setCollisionProfile(FString _team);
 
+    UFUNCTION()
+    void BuildShipLobby();
+
 private:
-    void buildShip(class UInstancedStaticMeshComponent*& _mesh, class UStaticMeshDataAsset* _staticMesh, TArray<FVector> const& _locations);
+    void buildShip(class UInstancedStaticMeshComponent*& _mesh, class UStaticMeshDataAsset* _staticMesh, TArray<FVector_NetQuantize> const& _locations);
 
     /* call ship pawn owner for set location of exhaust */
     void setLocationExhaustFx();
@@ -92,25 +95,25 @@ public:
 
 private:
     UPROPERTY(ReplicatedUsing = "OnRep_Attack")
-    TArray<FVector> RU_AttackLocations{};
+    TArray<FVector_NetQuantize> RU_AttackLocations{};
 
-    UPROPERTY(Replicated)
-    TArray<FVector> R_RemovedAttackLocations{};
+    UPROPERTY()
+    TArray<FVector_NetQuantize> RemovedAttackLocations{};
 
     UPROPERTY(ReplicatedUsing = "OnRep_Protection")
-    TArray<FVector> RU_ProtectionLocations{};
+    TArray<FVector_NetQuantize> RU_ProtectionLocations{};
 
-    UPROPERTY(Replicated)
-    TArray<FVector> R_RemovedProtectionLocations{};
+    UPROPERTY()
+    TArray<FVector_NetQuantize> RemovedProtectionLocations{};
 
     UPROPERTY(ReplicatedUsing = "OnRep_Support")
-    TArray<FVector> RU_SupportLocations{};
+    TArray<FVector_NetQuantize> RU_SupportLocations{};
+
+    UPROPERTY()
+    TArray<FVector_NetQuantize> RemovedSupportLocations{};
 
     UPROPERTY(Replicated)
-    TArray<FVector> R_RemovedSupportLocations{};
-
-    UPROPERTY(Replicated)
-    TArray<FVector> R_MissileLocations {};
+    TArray<FVector_NetQuantize> R_MissileLocations {};
 
     /* max protection and support cube */
     int32 m_maxProtection { -1 };

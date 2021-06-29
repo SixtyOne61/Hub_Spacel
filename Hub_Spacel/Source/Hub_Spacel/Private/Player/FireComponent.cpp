@@ -13,6 +13,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Gameplay/Bullet/Missile.h"
+#include "Gameplay/Bullet/Katyusha.h"
 
 // Sets default values for this component's properties
 UFireComponent::UFireComponent()
@@ -61,7 +62,8 @@ void UFireComponent::TickComponent(float _deltaTime, ELevelTick _tickType, FActo
         // reset count down
         if (ASpacelPlayerState* spacelPlayerState = get()->GetPlayerState<ASpacelPlayerState>())
         {
-            float coef = spacelPlayerState->IsIncreaseFireRate() ? get()->PlayerDataAsset->ReduceTimeBetweenFireWithLevel : 1.0f;
+            uint8 lowSkillId = spacelPlayerState->getSkillId(ESkillType::Low);
+            float coef = lowSkillId == (uint8)ESkill::FireRate ? get()->PlayerDataAsset->ReduceTimeBetweenFireWithLevel : 1.0f;
             if (get()->hasEffect(EEffect::MetaFormAttack))
             {
                 coef = get()->PlayerDataAsset->ReduceTimeBetweenFireWithMetaForm;
@@ -91,23 +93,92 @@ void UFireComponent::spawnBullet(FTransform const& _transform) const
         laser->R_Team = get()->Team;
         UGameplayStatics::FinishSpawningActor(laser, _transform);
         setupProjectile(laser);
+
+        if (AShipPawn* shipPawn = get<AShipPawn>())
+        {
+            shipPawn->RPCNetMulticastFxFireBullet();
+        }
     }
 }
 
 void UFireComponent::launchMissile(FTransform const _transform) const
 {
-    AActor* actor = Cast<AActor>(UGameplayStatics::BeginDeferredActorSpawnFromClass(this->GetWorld(), get()->PlayerDataAsset->MissileClass, _transform));
-    if (AMissile* missile = Cast<AMissile>(actor))
+    if (m_target != nullptr && !m_target->IsPendingKill())
     {
-        missile->Target = m_target;
-        missile->R_Team = get()->Team;
-        if (get<AShipPawn>() != nullptr)
+        AActor* actor = Cast<AActor>(UGameplayStatics::BeginDeferredActorSpawnFromClass(this->GetWorld(), get()->PlayerDataAsset->MissileClass, _transform));
+        if (AMissile* missile = Cast<AMissile>(actor))
         {
-            get<AShipPawn>()->OnAddEffectDelegate.AddDynamic(missile, &AMissile::OnTargetEffect);
-        }
+            missile->R_Target = m_target;
 
-        UGameplayStatics::FinishSpawningActor(missile, _transform);
-        setupProjectile(missile);
+            missile->R_Team = get()->Team;
+            if (get<AShipPawn>() != nullptr)
+            {
+                get<AShipPawn>()->OnAddEffectDelegate.AddDynamic(missile, &AMissile::OnTargetEffect);
+            }
+
+            UGameplayStatics::FinishSpawningActor(missile, _transform);
+            setupProjectile(missile);
+
+            if (AShipPawn* shipPawn = get<AShipPawn>())
+            {
+                shipPawn->RPCNetMulticastFxFireMissile();
+            }
+        }
+    }
+}
+
+void UFireComponent::BeginPlay()
+{
+    Super::BeginPlay();
+    if (this->GetNetMode() != ENetMode::NM_DedicatedServer) return;
+
+    if (AShipPawn* shipPawn = get<AShipPawn>())
+    {
+        shipPawn->BP_InitFireComponent();
+    }
+}
+
+void UFireComponent::spawnKatyusha()
+{
+    if (this->GetNetMode() != ENetMode::NM_DedicatedServer) return;
+
+    m_nbKatyusha = DummyKatyushaLocations.Num() - 1;
+    if (m_nbKatyusha < DummyKatyushaLocations.Num() && DummyKatyushaLocations[m_nbKatyusha] != nullptr)
+    {
+        m_nextKatyushaTransform = DummyKatyushaLocations[m_nbKatyusha]->GetComponentTransform();
+        SpawnKatyusha();
+    }
+}
+
+void UFireComponent::SpawnKatyusha()
+{
+    if (AShipPawn* shipPawn = get<AShipPawn>())
+    {
+        if (UPlayerDataAsset* dataAsset = shipPawn->PlayerDataAsset)
+        {
+            if (m_target != nullptr && !m_target->IsPendingKill())
+            {
+                AActor* actor = Cast<AActor>(UGameplayStatics::BeginDeferredActorSpawnFromClass(this->GetWorld(), dataAsset->KatyushaClass, m_nextKatyushaTransform));
+                if (AKatyusha* katyusha = Cast<AKatyusha>(actor))
+                {
+                    katyusha->AttachToActor(this->GetOwner(), FAttachmentTransformRules(EAttachmentRule::KeepWorld, true));
+                    katyusha->R_TargetLocation = m_target->GetActorLocation();
+                    katyusha->R_Team = shipPawn->Team;
+
+                    UGameplayStatics::FinishSpawningActor(katyusha, m_nextKatyushaTransform);
+                    setupProjectile(katyusha);
+
+                    --m_nbKatyusha;
+                    if (m_nbKatyusha >= 0 && m_nbKatyusha < DummyKatyushaLocations.Num() && DummyKatyushaLocations[m_nbKatyusha] != nullptr)
+                    {
+                        m_nextKatyushaTransform = DummyKatyushaLocations[m_nbKatyusha]->GetComponentTransform();
+
+                        FTimerHandle handle;
+                        this->GetWorld()->GetTimerManager().SetTimer(handle, this, &UFireComponent::SpawnKatyusha, 0.2f, false);
+                    }
+                }
+            }
+        }
     }
 }
 

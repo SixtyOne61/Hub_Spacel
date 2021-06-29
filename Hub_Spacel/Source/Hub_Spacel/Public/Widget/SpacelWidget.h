@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "SpacelEnum.h"
+#include "DataAsset/MissionDataAsset.h"
 #include "SpacelWidget.generated.h"
 
 /**
@@ -39,9 +40,14 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Setup")
 	void SetRanking(uint8 _rank);
 
-protected:
 	UFUNCTION()
-	void StartGame();
+	void OnChangeState(EGameState _state);
+	
+	UFUNCTION(BlueprintImplementableEvent)
+	void BP_EndGame();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void BP_UnlockInput();
 
 	UFUNCTION()
 	void UpdateScore();
@@ -64,8 +70,11 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void UpdatePercent(class UProgressBar* _progressBar, class UTextBlock* _text, int32 _value, int32 _max);
 
+	UFUNCTION()
+	void RedLight();
+
 	UFUNCTION(BlueprintImplementableEvent)
-	void StartGameFx();
+	void BP_RedLight(int32 _level);
 
 	UFUNCTION()
 	void ShowDidactitial();
@@ -94,6 +103,21 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnRespawn();
 
+	UFUNCTION()
+	void OnStartMission(EMission _type);
+
+	UFUNCTION()
+	void OnStartMissionTwoParam(EMission _type, FName const& _team);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void BP_ShowMissionPanel();
+
+	UFUNCTION()
+	void OnEndMission(EMission _type);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void HideMissionPanel();
+
 	template<class T>
 	void setVisibility(T* _widget, bool _show)
 	{
@@ -111,9 +135,17 @@ protected:
 
 	void OnLoadGame(const FString& _slotName, const int32 _userIndex, class USaveGame* _loadedGameData);
 
+	void addSkill(class SkillCountDown * _skill);
+
+	UFUNCTION()
+	void RegisterPlayerState();
+
 protected:
 	UPROPERTY(EditAnywhere)
 	class UEffectDataAsset* EffectDataAsset { nullptr };
+
+	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
+	class UKeyDataAsset* KeyDataAsset{ nullptr };
 
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
 	class UTeamColorDataAsset* TeamColorDataAsset{ nullptr };
@@ -123,6 +155,15 @@ protected:
 	
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
 	class UDitactitialDataAsset* RandomTipsDataAsset { nullptr };
+
+	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
+	class UMissionDataAsset* MissionDataAsset { nullptr };
+
+	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
+	class UFlyingGameModeDataAsset* GameModeDataAsset{ nullptr };
+
+	UPROPERTY()
+	FTimerHandle RedLightAnimationHandle {};
 
 private:
 	UPROPERTY(EditAnywhere)
@@ -164,4 +205,7 @@ private:
 	FString Team {};
 
 	int32 m_nextTipsId { 0 };
+	int8 m_currentIdRedLight { 0 };
+
+	TSet<EMission> m_currentMission {};
 };

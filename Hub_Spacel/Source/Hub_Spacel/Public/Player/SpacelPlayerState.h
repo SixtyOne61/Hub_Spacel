@@ -5,9 +5,10 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerState.h"
 #include "Enum/SpacelEnum.h"
+#include <functional>
 #include "SpacelPlayerState.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FUpdateRemainingSkillPoint);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnSkillLobbyChange);
 
 /**
  * 
@@ -17,40 +18,25 @@ class HUB_SPACEL_API ASpacelPlayerState : public APlayerState
 {
 	GENERATED_BODY()
 
-    friend class USelectorSkillWidget;
-    friend class UPreparePhaseWidget;
-
 public:
     void BeginPlay() override;
 
-    inline uint8 getRemainingSkillPoint() const { return RemainingSkillPoint; }
-
-    uint8 getSkillPoint(ESkillType const& _type) const;
-
     UFUNCTION(Reliable, Server)
-    void RPCSetSkillPoint(ESkillType const& _type, uint8 _value);
+    void RPCServerAddSkill(uint8 const& _id, ESkillType _type);
 
-    bool IsIncreaseFireRate() const { return R_Attack > 0; }
+    void LocalAddSkill(uint8 const& _id, ESkillType _type);
 
     UFUNCTION()
     void SetTeam(FString const& _team);
 
-private:
-    void setRemainingSkillPoint(uint8 && _val);
+    uint8 getSkillId(ESkillType _type) const;
 
+private:
     /* for call set collision profile on pawn */
     UFUNCTION()
     void WaitPawnCreation();
 	
 public:
-    static constexpr uint8 MaxSkillPoint { 4 };
-    static constexpr uint8 MaxSkillPointType { 3 };
-
-    /* event */
-
-    UPROPERTY(BlueprintAssignable)
-    FUpdateRemainingSkillPoint OnUpdateRemainingSkillPointDelegate {};
-
     /* Network */
 
     UPROPERTY()
@@ -63,17 +49,16 @@ public:
     FString R_Team { "Team 1" };
 
     UPROPERTY(Replicated)
-    uint8 R_Attack {};
+    uint8 R_LowSkill {};
 
     UPROPERTY(Replicated)
-    uint8 R_Protection {};
+    uint8 R_MediumSkill {};
 
     UPROPERTY(Replicated)
-    uint8 R_Support {};
+    uint8 R_HightSkill {};
 
-    FTransform PlayerStartTransform {};
-
-private:
     UPROPERTY()
-    uint8 RemainingSkillPoint { MaxSkillPoint };
+    FOnSkillLobbyChange OnSkillLobbyChangeDelegate {};
+
+    std::function<void(class SkillCountDown*)> OnAddSkillUniqueDelegate { nullptr };
 };

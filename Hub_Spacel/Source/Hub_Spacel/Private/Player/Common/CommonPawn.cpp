@@ -124,12 +124,14 @@ void ACommonPawn::moveShip(float _deltaTime)
     // linear
     FVector const& linearVelocity = this->DriverMeshComponent->GetPhysicsLinearVelocity(NAME_None);
 
-    FVector newVelocity = this->DriverMeshComponent->GetForwardVector() * this->PlayerDataAsset->MaxForwardSpeed * this->RU_PercentSpeed * coefSpeed;
+    float percentSpeed = this->R_OverDrive != 0.0f ? this->R_OverDrive : this->RU_PercentSpeed;
+    FVector newVelocity = this->DriverMeshComponent->GetForwardVector() * this->PlayerDataAsset->MaxForwardSpeed * percentSpeed * coefSpeed;
     newVelocity += this->DriverMeshComponent->GetRightVector() * this->PlayerDataAsset->MaxHorizontalSpeed * this->PercentHorizontalStraf * coefSpeed;
     newVelocity += this->DriverMeshComponent->GetUpVector() * this->PlayerDataAsset->MaxVerticalSpeed * this->PercentVerticalStraf * coefSpeed;
     newVelocity = FMath::Lerp(linearVelocity, newVelocity, 0.9f);
 
     this->DriverMeshComponent->SetPhysicsLinearVelocity(newVelocity);
+    this->DriverMeshComponent->SetPhysicsAngularVelocityInDegrees(FVector::ZeroVector);
 }
 
 bool ACommonPawn::hasEffect(EEffect _type)
@@ -202,10 +204,19 @@ void ACommonPawn::removeAllPlayerFocusOnMe()
     removeEffect(EEffect::Targeted);
 }
 
+void ACommonPawn::RPCClientDamageIndicator_Implementation(FVector_NetQuantize const& _location)
+{
+    if (this->IsLocallyControlled())
+    {
+        BP_DamageIndicator(_location);
+    }
+}
+
 void ACommonPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
     DOREPLIFETIME(ACommonPawn, R_Effect);
     DOREPLIFETIME(ACommonPawn, RU_PercentSpeed);
+    DOREPLIFETIME(ACommonPawn, R_OverDrive);
 }
 

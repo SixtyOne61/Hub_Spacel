@@ -26,7 +26,7 @@ public:
 private:
 	/* network */
 	UFUNCTION(Reliable, Server)
-	void RPCServerUpdateMouseLocation(FVector const& _loc, FVector const& _dir, FVector const& _hitLoc);
+	void RPCServerUpdateMouseLocation(FVector_NetQuantize100 const& _loc, FVector_NetQuantize100 const& _dir, FVector_NetQuantize100 const& _hitLoc);
 
 	UFUNCTION(Reliable, Server)
 	void RPCServerForward(float _val);
@@ -46,6 +46,9 @@ private:
 	UFUNCTION(Reliable, Server)
 	void RPCServerStartGame();
 
+	UFUNCTION(Reliable, Server)
+	void RPCServerEndGame();
+
 	/* input callback */
 	void forward(float _value) override;
 	void horizontalStraf(float _value) override;
@@ -60,19 +63,10 @@ private:
 
 	/* from event */
 	UFUNCTION()
-	void StartGame();
+	void GameModeChangeState(EGameState _state);
 
 	void kill();
 	void restarted();
-
-	UFUNCTION()
-	void OnAddEffect(EEffect _effect);
-
-	UFUNCTION()
-	void OnRemoveEffect(EEffect _effect);
-
-	UFUNCTION(Reliable, Server)
-	void RPCServerPossess();
 
 	bool isAvailable() const;
 

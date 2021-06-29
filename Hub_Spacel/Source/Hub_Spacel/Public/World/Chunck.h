@@ -55,10 +55,12 @@ private:
 	int R_ChunckSize {};
 
 	UPROPERTY(Replicated)
-	int32 R_CubeSize {};
+	int16 R_CubeSize {};
 
+	// TO DO : optim remove this, we can just have an rpc with index, and save remove index on server side.
+	// on start, ask server (find how ask / reply to a specific client) and server reply with full remove index for reconnection
 	UPROPERTY(ReplicatedUsing = "OnRep_RemoveInstance")
-	TArray<int32> RU_RemoveIndex {};
+	TArray<int16> RU_RemoveIndex {};
 
 	// only use on client
 	int m_countRemovedIndex {};

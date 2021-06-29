@@ -100,13 +100,16 @@ private:
 	void PreparePhaseUntilLock();
 
 	UFUNCTION()
-	void PreparePhaseUntilOver();
+	void EndLobby();
 
 	UFUNCTION()
 	void EndGame();
 
 	UFUNCTION()
 	void PickAWinningTeam();
+
+	UFUNCTION()
+	void LeaveLevel();
 
 	UFUNCTION()
 	void HandleProcessTermination();
@@ -131,6 +134,9 @@ public:
 	FTimerHandle EndGameHandle {};
 
 	UPROPERTY()
+	FTimerHandle LeaveLevelHandle {};
+
+	UPROPERTY()
 	FTimerHandle HandleProcessTerminationHandle {};
 
 	UPROPERTY()
@@ -140,24 +146,35 @@ public:
 	FTimerHandle SuspendBackfillHandle {};
 
 	UPROPERTY()
-	FTimerHandle PreparePhaseUntilOverHandle {};
-
-	UPROPERTY()
 	FTimerHandle PreparePhaseUntilLockHandle {};
 
 	UPROPERTY()
-	int RemainingGameTime { 690 }; // 11'30
+	FTimerHandle UnlockInputHandle {};
 
 	UPROPERTY()
-	int RemainingPrepareTime { 60 }; // 60
+	int RemainingGameTime { }; // 11'30
 
-	int m_lockTime { RemainingPrepareTime  - 5 };
+	UPROPERTY()
+	int RemainingChooseModuleTime { }; // 60
+
+	UPROPERTY()
+	int NbStep { 0 };
+
+	UPROPERTY()
+	int RemainingLeaveTime { };
+
+	int m_nextStepTime { };
 
 	UPROPERTY()
 	int SuspendBackfillTime { 45 };
 
 	UPROPERTY()
 	int MaxPlayerPerGame { 18 };
+
+protected:
+	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
+	class UFlyingGameModeDataAsset* GameModeDataAsset{ nullptr };
+
 
 private:
 	class FHttpModule* HttpModule { nullptr };

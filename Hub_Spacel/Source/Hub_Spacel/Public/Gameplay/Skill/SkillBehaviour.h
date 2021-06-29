@@ -15,7 +15,7 @@ public:
 	SkillBehaviour(class ACommonPawn* _pawn, ENetMode _netMode);
 	virtual ~SkillBehaviour() {}
 
-	virtual bool onStart() { return true; }
+	virtual ESkillReturn onStart() { return ESkillReturn::Unavailable; }
 	virtual void onEnd() = 0;
 	virtual void onEndCountDown() = 0;
 
@@ -35,7 +35,7 @@ class HUB_SPACEL_API SkillNinePack : public SkillBehaviour
 public:
 	virtual ~SkillNinePack() {}
 
-	bool onStart() override;
+	ESkillReturn onStart() override;
 	void onEnd() override {};
 	void onEndCountDown() override {};
 };
@@ -46,7 +46,7 @@ class HUB_SPACEL_API SkillRepairProtection : public SkillBehaviour
 public:
 	virtual ~SkillRepairProtection() {}
 
-	bool onStart() override;
+	ESkillReturn onStart() override;
 	void onEnd() override {};
 	void onEndCountDown() override {};
 };
@@ -57,7 +57,7 @@ class HUB_SPACEL_API SkillRepairSupport : public SkillBehaviour
 public:
 	virtual ~SkillRepairSupport() {}
 
-	bool onStart() override;
+	ESkillReturn onStart() override;
 	void onEnd() override {};
 	void onEndCountDown() override {};
 };
@@ -68,7 +68,7 @@ class HUB_SPACEL_API SkillGiveAlly1 : public SkillBehaviour
 public:
 	virtual ~SkillGiveAlly1() {}
 
-	bool onStart() override;
+	ESkillReturn onStart() override;
 	void onEnd() override {};
 	void onEndCountDown() override {};
 };
@@ -79,7 +79,7 @@ class HUB_SPACEL_API SkillGiveAlly2 : public SkillBehaviour
 public:
 	virtual ~SkillGiveAlly2() {}
 
-	bool onStart() override;
+	ESkillReturn onStart() override;
 	void onEnd() override {};
 	void onEndCountDown() override {};
 };
@@ -90,7 +90,7 @@ class HUB_SPACEL_API SkillEscapeMode : public SkillBehaviour
 public:
 	virtual ~SkillEscapeMode() {}
 
-	bool onStart() override;
+	ESkillReturn onStart() override;
 	void onEnd() override;
 	void onEndCountDown() override;
 };
@@ -101,7 +101,7 @@ class HUB_SPACEL_API SkillSpecialAttack : public SkillBehaviour
 public:
 	virtual ~SkillSpecialAttack() {}
 
-	bool onStart() override;
+	ESkillReturn onStart() override;
 	void onEnd() override {};
 	void onEndCountDown() override {};
 };
@@ -112,7 +112,7 @@ class HUB_SPACEL_API SkillSpecialProtection : public SkillBehaviour
 public:
 	virtual ~SkillSpecialProtection() {}
 
-	bool onStart() override;
+	ESkillReturn onStart() override;
 	void onEnd() override;
 	void onEndCountDown() override {};
 
@@ -126,7 +126,7 @@ class HUB_SPACEL_API SkillSpecialSupport : public SkillBehaviour
 public:
 	virtual ~SkillSpecialSupport() {}
 
-	bool onStart() override;
+	ESkillReturn onStart() override;
 	void onEnd() override {};
 	void onEndCountDown() override {};
 };
@@ -137,7 +137,7 @@ class HUB_SPACEL_API SkillMetaFormAttack : public SkillBehaviour
 public:
 	virtual ~SkillMetaFormAttack() {}
 
-	bool onStart() override;
+	ESkillReturn onStart() override;
 	void onEnd() override;
 	void onEndCountDown() override {};
 };
@@ -148,7 +148,7 @@ class HUB_SPACEL_API SkillMetaFormProtection : public SkillBehaviour
 public:
 	virtual ~SkillMetaFormProtection() {}
 
-	bool onStart() override;
+	ESkillReturn onStart() override;
 	void onEnd() override;
 	void onEndCountDown() override {};
 };
@@ -159,8 +159,19 @@ class HUB_SPACEL_API SkillMetaFormSupport : public SkillBehaviour
 public:
 	virtual ~SkillMetaFormSupport() {}
 
-	bool onStart() override;
+	ESkillReturn onStart() override;
 	void onEnd() override;
+	void onEndCountDown() override {};
+};
+
+class HUB_SPACEL_API SkillKatyusha : public SkillBehaviour
+{
+	using SkillBehaviour::SkillBehaviour;
+public:
+	virtual ~SkillKatyusha() {}
+
+	ESkillReturn onStart() override;
+	void onEnd() override {};
 	void onEndCountDown() override {};
 };
 

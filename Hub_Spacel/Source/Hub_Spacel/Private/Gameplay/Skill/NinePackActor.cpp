@@ -26,18 +26,36 @@ void ANinePackActor::BeginPlay()
 	
 	if (!ensure(this->Voxels != nullptr)) return;
 
-	this->Voxels->AddInstance(FTransform(FVector(0.0f, -83.0f, -83.0f)));
-	this->Voxels->AddInstance(FTransform(FVector(0.0f, 0.0f, -83.0f)));
-	this->Voxels->AddInstance(FTransform(FVector(0.0f, 83.0f, -83.0f)));
+	this->Voxels->AddInstance(FTransform(FVector(0.0f, -123.0f, -123.0f)));
+	this->Voxels->AddInstance(FTransform(FVector(0.0f, -43.0f, -123.0f)));
+	this->Voxels->AddInstance(FTransform(FVector(0.0f, 43.0f, -123.0f)));
+	this->Voxels->AddInstance(FTransform(FVector(0.0f, 123.0f, -123.0f)));
 
-	this->Voxels->AddInstance(FTransform(FVector(0.0f, -83.0f, 0.0f)));
-	this->Voxels->AddInstance(FTransform(FVector(0.0f, 0.0f, 0.0f)));
-	this->Voxels->AddInstance(FTransform(FVector(0.0f, 83.0f, 0.0f)));
+	this->Voxels->AddInstance(FTransform(FVector(0.0f, -123.0f, -43.0f)));
+	this->Voxels->AddInstance(FTransform(FVector(0.0f, -43.0f, -43.0f)));
+	this->Voxels->AddInstance(FTransform(FVector(0.0f, 43.0f, -43.0f)));
+	this->Voxels->AddInstance(FTransform(FVector(0.0f, 123.0f, -43.0f)));
 
-	this->Voxels->AddInstance(FTransform(FVector(0.0f, -83.0f, 83.0f)));
-	this->Voxels->AddInstance(FTransform(FVector(0.0f, 0.0f, 83.0f)));
-	this->Voxels->AddInstance(FTransform(FVector(0.0f, 83.0f, 83.0f)));
+	this->Voxels->AddInstance(FTransform(FVector(0.0f, -123.0f, 43.0f)));
+	this->Voxels->AddInstance(FTransform(FVector(0.0f, -43.0f, 43.0f)));
+	this->Voxels->AddInstance(FTransform(FVector(0.0f, 43.0f, 43.0f)));
+	this->Voxels->AddInstance(FTransform(FVector(0.0f, 123.0f, 43.0f)));
 
+	this->Voxels->AddInstance(FTransform(FVector(0.0f, -123.0f, 123.0f)));
+	this->Voxels->AddInstance(FTransform(FVector(0.0f, -43.0f, 123.0f)));
+	this->Voxels->AddInstance(FTransform(FVector(0.0f, 43.0f, 123.0f)));
+	this->Voxels->AddInstance(FTransform(FVector(0.0f, 123.0f, 123.0f)));
+
+	this->Voxels->AddInstance(FTransform(FVector(-86.0f, 0.0f, 0.0f)));
+
+	if (this->R_IsBoost)
+	{
+		this->Voxels->AddInstance(FTransform(FVector(-172.0f, -43.0f, -43.0f)));
+		this->Voxels->AddInstance(FTransform(FVector(-172.0f, -43.0f, 43.0f)));
+		this->Voxels->AddInstance(FTransform(FVector(-172.0f, 43.0f, -43.0f)));
+		this->Voxels->AddInstance(FTransform(FVector(-172.0f, 43.0f, 43.0f)));
+	}
+	// to do collision with asteroid && when this mission is triggered (timer)
 	// server side
 	if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
 	{
@@ -98,4 +116,5 @@ void ANinePackActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(ANinePackActor, RU_RemoveIndex);
+	DOREPLIFETIME(ANinePackActor, R_IsBoost);
 }

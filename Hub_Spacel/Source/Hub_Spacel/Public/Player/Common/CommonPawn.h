@@ -8,6 +8,7 @@
 #include "CommonPawn.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSendInfoPlayer, FString const&, _text);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHitFeedback, TArray<FHitResult> const&, _hits);
 
 UCLASS()
 class HUB_SPACEL_API ACommonPawn : public APawn
@@ -37,6 +38,15 @@ public:
     void addPlayerFocusOnMe(int32 _playerId);
     void removePlayerFocusOnMe(int32 _playerId);
     void removeAllPlayerFocusOnMe();
+
+    UFUNCTION(UnReliable, Client)
+    void RPCClientDamageIndicator(FVector_NetQuantize const& _location);
+
+    UFUNCTION(BlueprintImplementableEvent)
+    void BP_DamageIndicator(FVector const& _location);
+
+    UFUNCTION(BlueprintImplementableEvent)
+    void BP_HitIndicator();
 
 protected:
 	// Called when the game starts or when spawned
@@ -133,6 +143,9 @@ protected:
     /* current percent speed value 0.0f - 1.0f */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = "OnRep_PercentSpeed")
     float RU_PercentSpeed { 0.0f };
+
+    UPROPERTY(Replicated)
+    float R_OverDrive{ 0.0f };
 
 	/* use by server or offline */
 	float PercentHorizontalStraf{ 0.0f };

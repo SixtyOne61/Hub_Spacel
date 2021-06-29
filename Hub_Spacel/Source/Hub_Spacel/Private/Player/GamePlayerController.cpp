@@ -31,34 +31,10 @@ void AGamePlayerController::BeginPlay()
             ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld()));
             if (spacelGameState != nullptr)
             {
-                spacelGameState->OnStartGameDelegate.AddDynamic(this, &AGamePlayerController::StartGame);
+                spacelGameState->OnChangeStateDelegate.AddDynamic(this, &AGamePlayerController::GameModeChangeState);
             }
-
-            shipPawn->OnAddEffectDelegate.AddDynamic(this, &AGamePlayerController::OnAddEffect);
-            shipPawn->OnRemoveEffectDelegate.AddDynamic(this, &AGamePlayerController::OnRemoveEffect);
         }
     }
-}
-
-void AGamePlayerController::OnAddEffect(EEffect _effect)
-{
-    if (_effect == EEffect::Killed)
-    {
-        this->UnPossess();
-    }
-}
-
-void AGamePlayerController::OnRemoveEffect(EEffect _effect)
-{
-    if (_effect == EEffect::Killed)
-    {
-        RPCServerPossess();
-    }
-}
-
-void AGamePlayerController::RPCServerPossess_Implementation()
-{
-    this->Possess(this->LinkPawn);
 }
 
 void AGamePlayerController::Tick(float _deltaTime)
@@ -103,7 +79,7 @@ void AGamePlayerController::Tick(float _deltaTime)
     }
 }
 
-void AGamePlayerController::RPCServerUpdateMouseLocation_Implementation(FVector const& _loc, FVector const& _dir, FVector const& _hitLoc)
+void AGamePlayerController::RPCServerUpdateMouseLocation_Implementation(FVector_NetQuantize100 const& _loc, FVector_NetQuantize100 const& _dir, FVector_NetQuantize100 const& _hitLoc)
 {
     if (isAvailable())
     {
@@ -227,9 +203,16 @@ void AGamePlayerController::hideScore()
     shipPawn->OnShowScoreDelegate.Broadcast(false);
 }
 
-void AGamePlayerController::StartGame()
+void AGamePlayerController::GameModeChangeState(EGameState _state)
 {
-    this->RPCServerStartGame();
+    if (_state == EGameState::InGame)
+    {
+        this->RPCServerStartGame();
+    }
+    else if (_state == EGameState::EndGame)
+    {
+        this->RPCServerEndGame();
+    }
 }
 
 void AGamePlayerController::RPCServerStartGame_Implementation()
@@ -254,6 +237,11 @@ void AGamePlayerController::RPCServerStartGame_Implementation()
     lb_init(shipPawn->PlayerDataAsset->FlightAttitudeInput, m_data.m_flightAttitude);
 
     R_EnableInput = true;
+}
+
+void AGamePlayerController::RPCServerEndGame_Implementation()
+{
+    R_EnableInput = false;
 }
 
 void AGamePlayerController::kill()

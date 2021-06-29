@@ -10,7 +10,7 @@
 ASpacelHUD::ASpacelHUD()
 {
     GameWidgetClass = SpacelFactory::FindClass<UUserWidget>(TEXT("/Game/Blueprint/UI/Widgets/WBP_Game"));
-    PreparePhaseWidgetClass = SpacelFactory::FindClass<UUserWidget>(TEXT("/Game/Blueprint/UI/Widgets/WBP_PreparePhase"));
+    LobbyWidgetClass = SpacelFactory::FindClass<UUserWidget>(TEXT("/Game/Blueprint/UI/Widgets/Lobby/WBP_Lobby"));
 }
 
 void ASpacelHUD::BeginPlay()
@@ -26,26 +26,29 @@ void ASpacelHUD::BeginPlay()
     playerController->bShowMouseCursor = true;
 
     // add user widget to viewport
-    SpacelFactory::createWidget<UUserWidget>(world, this->PreparePhaseWidgetClass, false);
+    SpacelFactory::createWidget<UUserWidget>(world, this->LobbyWidgetClass, false);
     SpacelFactory::createWidget<UUserWidget>(world, this->GameWidgetClass, false);
 
     ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld()));
     if (spacelGameState != nullptr)
     {
-        spacelGameState->OnStartGameDelegate.AddDynamic(this, &ASpacelHUD::StartGame);
+        spacelGameState->OnChangeStateDelegate.AddDynamic(this, &ASpacelHUD::StartGame);
     }
 }
 
-void ASpacelHUD::StartGame()
+void ASpacelHUD::StartGame(EGameState _state)
 {
-    UWorld* world = this->GetWorld();
-    if (!ensure(world != nullptr)) return;
+    if (_state == EGameState::InGame)
+    {
+        UWorld* world = this->GetWorld();
+        if (!ensure(world != nullptr)) return;
 
-    APlayerController* playerController = world->GetFirstPlayerController();
-    if (!ensure(playerController != nullptr)) return;
+        APlayerController* playerController = world->GetFirstPlayerController();
+        if (!ensure(playerController != nullptr)) return;
 
-    playerController->bShowMouseCursor = false;
-    FInputModeGameAndUI mode{};
-    mode.SetLockMouseToViewportBehavior(EMouseLockMode::LockAlways);
-    playerController->SetInputMode(mode);
+        playerController->bShowMouseCursor = false;
+        FInputModeGameAndUI mode{};
+        mode.SetLockMouseToViewportBehavior(EMouseLockMode::LockAlways);
+        playerController->SetInputMode(mode);
+    }
 }

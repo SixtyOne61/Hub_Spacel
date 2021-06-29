@@ -20,17 +20,24 @@
 #include "Util/SimplyUI.h"
 #include "DataAsset/PlayerDataAsset.h"
 #include "DataAsset/SkillDataAsset.h"
+#include "DataAsset/UniqueSkillDataAsset.h"
 #include "DataAsset/EffectDataAsset.h"
 #include "DataAsset/TeamColorDataAsset.h"
 #include "DataAsset/DitactitialDataAsset.h"
+#include "DataAsset/FlyingGameModeDataAsset.h"
+#include "DataAsset/KeyDataAsset.h"
+#include "DataAsset/MissionDataAsset.h"
 #include "Widget/AllyWidget.h"
 #include "Widget/SkillWidget.h"
 #include "Widget/SkillProgressWidget.h"
 #include "Widget/EffectWidget.h"
 #include "Widget/ScoreUserWidget.h"
 #include "Widget/TutorialUserWidget.h"
+#include "Widget/MissionPanelUserWidget.h"
 #include "Factory/SpacelFactory.h"
 #include "Styling/SlateColor.h"
+#include "GameMode/FlyingGameMode.h"
+#include "Util/DebugScreenMessage.h"
 
 void USpacelWidget::NativeConstruct()
 {
@@ -60,7 +67,11 @@ void USpacelWidget::NativeConstruct()
     ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld()));
     if (spacelGameState != nullptr)
     {
-        spacelGameState->OnStartGameDelegate.AddDynamic(this, &USpacelWidget::StartGame);
+        spacelGameState->OnChangeStateDelegate.AddDynamic(this, &USpacelWidget::OnChangeState);
+        // mission
+        spacelGameState->OnStartMissionDelegate.AddDynamic(this, &USpacelWidget::OnStartMission);
+        spacelGameState->OnStartMissionTwoParamDelegate.AddDynamic(this, &USpacelWidget::OnStartMissionTwoParam);
+        spacelGameState->OnEndMissionDelegate.AddDynamic(this, &USpacelWidget::OnEndMission);
     }
 
     AShipPawn* shipPawn { this->GetOwningPlayerPawn<AShipPawn>() };
@@ -76,7 +87,24 @@ void USpacelWidget::NativeConstruct()
         shipPawn->OnRemoveEffectDelegate.AddDynamic(this, &USpacelWidget::OnRemoveEffect);
 
         shipPawn->OnSendInfoPlayerDelegate.AddDynamic(this, &USpacelWidget::OnSendInfoPlayer);
+
+        RegisterPlayerState();
     }
+}
+
+void USpacelWidget::RegisterPlayerState()
+{
+    if(AShipPawn* shipPawn = this->GetOwningPlayerPawn<AShipPawn>())
+    {
+        if (ASpacelPlayerState* playerState = shipPawn->GetPlayerState<ASpacelPlayerState>())
+        {
+            playerState->OnAddSkillUniqueDelegate = std::bind(&USpacelWidget::addSkill, this, std::placeholders::_1);
+            return;
+        }
+    }
+
+    FTimerHandle handle;
+    this->GetWorld()->GetTimerManager().SetTimer(handle, this, &USpacelWidget::RegisterPlayerState, 1.0f, false);
 }
 
 void USpacelWidget::NativeDestruct()
@@ -98,99 +126,163 @@ void USpacelWidget::NativeTick(const FGeometry& _myGeometry, float _deltaTime)
     UpdateScore();
 }
 
-void USpacelWidget::StartGame()
+void USpacelWidget::OnStartMissionTwoParam(EMission _type, FName const& _team)
 {
-    this->SetVisibility(ESlateVisibility::Visible);
-
-    UWorld* world{ this->GetWorld() };
-    if (!ensure(world != nullptr)) return;
-    TArray<APlayerState*> const& playerStates{ world->GetGameState()->PlayerArray };
-
-    ASpacelPlayerState* owningPlayerState{ Cast<ASpacelPlayerState>(this->GetOwningPlayerState()) };
-    if (owningPlayerState == nullptr) return;
-    FString owningPlayerTeam{ owningPlayerState->R_Team };
-
-    Team = owningPlayerTeam;
-
-    //set background color for ranking
-    if (this->TeamColorDataAsset != nullptr)
+    if (*this->Team == _team)
     {
-        SetBackgroundRanking(this->TeamColorDataAsset->GetColor<FSlateColor>(Team));
+        OnStartMission(_type);
+    }
+}
+
+void USpacelWidget::OnStartMission(EMission _type)
+{
+    if(this->MissionDataAsset == nullptr) return;
+
+    if (m_currentMission.Num() == 0)
+    {
+        // appear mission panel
+        BP_ShowMissionPanel();
     }
 
-    // create score array
-    if (this->ScoreWidget != nullptr)
-    {
-        this->ScoreWidget->initScoreArray();
-    }
+    m_currentMission.Add(_type);
 
-    int i{ 0 };
-    for (APlayerState* playerState : playerStates)
+    UMissionPanelUserWidget* panelMission = SimplyUI::initSafetyFromName<UUserWidget, UMissionPanelUserWidget>(this, TEXT("WBP_Mission"));
+    if (panelMission != nullptr)
     {
-        if (ASpacelPlayerState* spacelPlayerState = Cast<ASpacelPlayerState>(playerState))
+        panelMission->addMission(this->MissionDataAsset->getMission(_type));
+    }
+}
+
+void USpacelWidget::OnEndMission(EMission _type)
+{
+    if (m_currentMission.Contains(_type))
+    {
+        m_currentMission.Remove(_type);
+
+        if (m_currentMission.Num() == 0)
         {
-            if (spacelPlayerState->GetUniqueID() == owningPlayerState->GetUniqueID()) continue;
+            // hide mission panel
+            HideMissionPanel();
+        }
 
-            if (spacelPlayerState->R_Team.Equals(owningPlayerTeam)
-                && this->AllyWidgets[i] != nullptr)
-            {
-                this->AllyWidgets[i]->setWatcher(spacelPlayerState);
-                this->AllyWidgets[i]->Visibility = ESlateVisibility::Visible;
-                ++i;
-            }
+        if (UMissionPanelUserWidget* panelMission = SimplyUI::initSafetyFromName<UUserWidget, UMissionPanelUserWidget>(this, TEXT("WBP_Mission")))
+        {
+            panelMission->removeMission(_type);
         }
     }
+}
 
-    // create skill bar
+void USpacelWidget::OnChangeState(EGameState _state)
+{
+    if (_state == EGameState::LockPrepare)
+    {
+        this->SetVisibility(ESlateVisibility::Visible);
+
+        UWorld* world{ this->GetWorld() };
+        if (!ensure(world != nullptr)) return;
+        TArray<APlayerState*> const& playerStates{ world->GetGameState()->PlayerArray };
+
+        ASpacelPlayerState* owningPlayerState{ Cast<ASpacelPlayerState>(this->GetOwningPlayerState()) };
+        if (owningPlayerState == nullptr) return;
+        FString owningPlayerTeam{ owningPlayerState->R_Team };
+
+        Team = owningPlayerTeam;
+
+        //set background color for ranking
+        if (this->TeamColorDataAsset != nullptr)
+        {
+            SetBackgroundRanking(this->TeamColorDataAsset->GetColor<FSlateColor>(Team));
+        }
+
+        // create score array
+        if (this->ScoreWidget != nullptr)
+        {
+            this->ScoreWidget->initScoreArray();
+        }
+
+        int i{ 0 };
+        for (APlayerState* playerState : playerStates)
+        {
+            if (ASpacelPlayerState* spacelPlayerState = Cast<ASpacelPlayerState>(playerState))
+            {
+                if (spacelPlayerState->GetUniqueID() == owningPlayerState->GetUniqueID()) continue;
+
+                if (spacelPlayerState->R_Team.Equals(owningPlayerTeam)
+                    && this->AllyWidgets[i] != nullptr)
+                {
+                    this->AllyWidgets[i]->setWatcher(spacelPlayerState);
+                    this->AllyWidgets[i]->Visibility = ESlateVisibility::Visible;
+                    ++i;
+                }
+            }
+        }
+
+        if(this->GameModeDataAsset == nullptr) return;
+
+        // timer for start animation
+        float firstDelay = this->GameModeDataAsset->EndModuleTime / 4;
+        float inRate = (this->GameModeDataAsset->EndModuleTime - firstDelay) / 2.0f;
+        world->GetTimerManager().SetTimer(this->RedLightAnimationHandle, this, &USpacelWidget::RedLight, inRate, true, firstDelay);
+
+        // Set up the delegate.
+        FAsyncLoadGameFromSlotDelegate LoadedDelegate;
+        // USomeUObjectClass::LoadGameDelegateFunction is a void function that takes the following parameters: const FString& SlotName, const int32 UserIndex, USaveGame* LoadedGameData
+        LoadedDelegate.BindUObject(this, &USpacelWidget::OnLoadGame);
+        UGameplayStatics::AsyncLoadGameFromSlot("Save", 0, LoadedDelegate);
+    }
+    else if (_state == EGameState::InGame)
+    {
+        BP_UnlockInput();
+    }
+    else if (_state == EGameState::EndGame)
+    {
+        BP_EndGame();
+    }
+}
+
+void USpacelWidget::RedLight()
+{
+    BP_RedLight(m_currentIdRedLight);
+    ++m_currentIdRedLight;
+}
+
+void USpacelWidget::addSkill(class SkillCountDown * _skill)
+{
     if (this->SkillBarHorizontalBox == nullptr) return;
-    if (AShipPawn* shipPawn = this->GetOwningPlayerPawn<AShipPawn>())
+    if(_skill == nullptr) return;
+
+    if (UUniqueSkillDataAsset const* skill = _skill->getParam())
     {
-        if(shipPawn->SkillComponent == nullptr) return;
-        TArray<TUniquePtr<SkillCountDown>> const& skills = shipPawn->SkillComponent->getSkills();
-        uint8 id {1};
-        for (auto const& skillPtr : skills)
+        USkillWidget* skillWidget{ nullptr };
+        if (skill->SkillWidgetClass != nullptr)
         {
-            FSkill const& skill = skillPtr.Get()->getParam();
-            USkillWidget* skillWidget { nullptr };
-            if (skill.SkillWidgetClass != nullptr)
-            {
-                FString name = "Skill";
-                name.Append(FString::FromInt((int)skill.Skill));
-                skillWidget = CreateWidget<USkillWidget, UHorizontalBox>(this->SkillBarHorizontalBox, skill.SkillWidgetClass, *name);
-                this->SkillBarHorizontalBox->AddChildToHorizontalBox(skillWidget);
-            }
-            else if(skill.WidgetName.IsValid())
-            {
-                skillWidget = SimplyUI::initUnSafeFromName<UUserWidget, USkillWidget>(this, skill.WidgetName);
-            }
+            FString name = "Skill";
+            name.Append(FString::FromInt((int)skill->Skill));
+            skillWidget = CreateWidget<USkillWidget, UHorizontalBox>(this->SkillBarHorizontalBox, skill->SkillWidgetClass, *name);
+            this->SkillBarHorizontalBox->AddChildToHorizontalBox(skillWidget);
+        }
+        else if (skill->WidgetName.IsValid())
+        {
+            skillWidget = SimplyUI::initUnSafeFromName<UUserWidget, USkillWidget>(this, skill->WidgetName);
+        }
 
-            if (skillWidget != nullptr)
-            {
-                skillWidget->SetSkillWithKey(skill.BackgroundColorBtn, skill.IconeBtn, skill.Key.GetDisplayName(false));
-            }
+        if (skillWidget != nullptr && this->KeyDataAsset != nullptr)
+        {
+            skillWidget->BP_Setup(skill->BackgroundColorBtn, skill->IconeBtn, this->KeyDataAsset->get(skill->Key));
+        }
 
-            if (UProgressBar* progress = SimplyUI::initUnSafeFromName<UUserWidget, UProgressBar>(skillWidget, TEXT("ProgressBar_Skill")))
-            {
-                skillPtr->addProgressBar(progress);
-            }
-            ++id;
+        if (UProgressBar* progress = SimplyUI::initUnSafeFromName<UUserWidget, UProgressBar>(skillWidget, TEXT("ProgressBar_Skill")))
+        {
+            _skill->addProgressBar(progress);
         }
     }
-
-    StartGameFx();
-
-    // Set up the delegate.
-    FAsyncLoadGameFromSlotDelegate LoadedDelegate;
-    // USomeUObjectClass::LoadGameDelegateFunction is a void function that takes the following parameters: const FString& SlotName, const int32 UserIndex, USaveGame* LoadedGameData
-    LoadedDelegate.BindUObject(this, &USpacelWidget::OnLoadGame);
-    UGameplayStatics::AsyncLoadGameFromSlot("Save", 0, LoadedDelegate);
 }
 
 void USpacelWidget::OnLoadGame(const FString& _slotName, const int32 _userIndex, USaveGame* _loadedGameData)
 {
     USpacelSaveGame* save = Cast<USpacelSaveGame>(_loadedGameData);
 
-    //if (save == nullptr || !save->HasSeeDitactitial)
+    if (save == nullptr || !save->HasSeeDitactitial)
     {
         UWorld* world{ this->GetWorld() };
         if (!ensure(world != nullptr)) return;
@@ -198,10 +290,10 @@ void USpacelWidget::OnLoadGame(const FString& _slotName, const int32 _userIndex,
         // Start didactitial
         world->GetTimerManager().SetTimer(ShowDitactitialHandle, this, &USpacelWidget::ShowDidactitial, 10.0f, true, 1.0f);
     }
-    //else
-    //{
-    //    ShowRandomTips();
-    //}
+    else
+    {
+        ShowRandomTips();
+    }
 }
 
 void USpacelWidget::ShowRandomTips()
@@ -237,16 +329,11 @@ void USpacelWidget::ShowDidactitial()
                 // save information
                 if(USpacelSaveGame* saveGameInstance = Cast<USpacelSaveGame>(UGameplayStatics::CreateSaveGameObject(USpacelSaveGame::StaticClass())))
                 {
-                    // Set up the (optional) delegate.
-                    FAsyncSaveGameToSlotDelegate savedDelegate;
-                    // USomeUObjectClass::SaveGameDelegateFunction is a void function that takes the following parameters: const FString& SlotName, const int32 UserIndex, bool bSuccess
-                    //savedDelegate.BindUObject(this, &USomeUObjectClass::SaveGameDelegateFunction);
-
                     // Set data on the savegame object.
                     saveGameInstance->HasSeeDitactitial = true;
 
                     // Start async save process.
-                    UGameplayStatics::AsyncSaveGameToSlot(saveGameInstance, "Save", 0, savedDelegate);
+                    UGameplayStatics::AsyncSaveGameToSlot(saveGameInstance, "Save", 0);
                 }
                 return;
             }

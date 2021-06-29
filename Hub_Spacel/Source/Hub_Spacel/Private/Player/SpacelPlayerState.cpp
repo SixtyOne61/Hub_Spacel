@@ -18,32 +18,26 @@ void ASpacelPlayerState::BeginPlay()
 #endif
 }
 
-void ASpacelPlayerState::setRemainingSkillPoint(uint8 && _val)
-{
-    this->RemainingSkillPoint = _val;
-    this->OnUpdateRemainingSkillPointDelegate.Broadcast();
-}
-
-uint8 ASpacelPlayerState::getSkillPoint(ESkillType const& _type) const
+void ASpacelPlayerState::RPCServerAddSkill_Implementation(uint8 const& _id, ESkillType _type)
 {
     switch (_type)
     {
-        case ESkillType::Attack: return this->R_Attack;
-        case ESkillType::Protection: return this->R_Protection;
-        case ESkillType::Support: return this->R_Support;
-        default: ensure(true); return 0;
+        case ESkillType::Low: R_LowSkill = _id; break;
+        case ESkillType::Medium: R_MediumSkill = _id; break;
+        case ESkillType::Hight: R_HightSkill = _id; break;
     }
 }
 
-void ASpacelPlayerState::RPCSetSkillPoint_Implementation(ESkillType const& _type, uint8 _value)
+void ASpacelPlayerState::LocalAddSkill(uint8 const& _id, ESkillType _type)
 {
     switch (_type)
     {
-        case ESkillType::Attack: this->R_Attack = _value; return;
-        case ESkillType::Protection: this->R_Protection = _value; return;
-        case ESkillType::Support: this->R_Support = _value; return;
-        default: ensure(true); return;
+    case ESkillType::Low: R_LowSkill = _id; break;
+    case ESkillType::Medium: R_MediumSkill = _id; break;
+    case ESkillType::Hight: R_HightSkill = _id; break;
     }
+
+    OnSkillLobbyChangeDelegate.Broadcast();
 }
 
 void ASpacelPlayerState::SetTeam(FString const& _team)
@@ -70,12 +64,25 @@ void ASpacelPlayerState::WaitPawnCreation()
     }
 }
 
+uint8 ASpacelPlayerState::getSkillId(ESkillType _type) const
+{
+    switch (_type)
+    {
+    case ESkillType::Low: return R_LowSkill;
+    case ESkillType::Medium: return R_MediumSkill;
+    case ESkillType::Hight: return R_HightSkill;
+    }
+
+    ensure(false);
+    return -1;
+}
+
 void ASpacelPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
     DOREPLIFETIME(ASpacelPlayerState, R_Team);
-    DOREPLIFETIME(ASpacelPlayerState, R_Attack);
-    DOREPLIFETIME(ASpacelPlayerState, R_Protection);
-    DOREPLIFETIME(ASpacelPlayerState, R_Support);
+    DOREPLIFETIME(ASpacelPlayerState, R_LowSkill);
+    DOREPLIFETIME(ASpacelPlayerState, R_MediumSkill);
+    DOREPLIFETIME(ASpacelPlayerState, R_HightSkill);
 }

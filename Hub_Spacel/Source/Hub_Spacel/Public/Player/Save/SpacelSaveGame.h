@@ -15,6 +15,17 @@ class HUB_SPACEL_API USpacelSaveGame : public USaveGame
 	GENERATED_BODY()
 	
 public:
+	USpacelSaveGame();
+
 	UPROPERTY(VisibleAnywhere, Category = Basic)
 	bool HasSeeDitactitial { false };
+
+	UPROPERTY(VisibleAnywhere, Category = Basic)
+	FString PlayerName;
+
+	UPROPERTY(VisibleAnywhere, Category = Basic)
+	FString SaveSlotName;
+
+	UPROPERTY(VisibleAnywhere, Category = Basic)
+	uint32 UserIndex;
 };

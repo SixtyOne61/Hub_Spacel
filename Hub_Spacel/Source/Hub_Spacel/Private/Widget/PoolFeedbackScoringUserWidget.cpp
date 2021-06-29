@@ -54,13 +54,11 @@ void UPoolFeedbackScoringUserWidget::OnScored(EScoreType _type, int32 _value)
                 {
                     panelSlot->SetPosition(mousePosition);
                     widget->StartAnim(value);
+
+                    BP_OnScored(_type);
                 }
             }
         }
-    }
-    else
-    {
-        this->AvailableWidget.Empty();
     }
 }
 

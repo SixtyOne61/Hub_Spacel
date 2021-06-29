@@ -25,7 +25,7 @@ UCLASS()
 class HUB_SPACEL_API UDitactitialDataAsset : public UDataAsset
 {
 	GENERATED_BODY()
-	
+
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<FDitactitial> Tips {};

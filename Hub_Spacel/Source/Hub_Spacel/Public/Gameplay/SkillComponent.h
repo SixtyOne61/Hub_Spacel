@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Player/PlayerActorComponent.h"
 #include "Gameplay/Skill/SkillCountDown.h"
+#include "Enum/SpacelEnum.h"
 #include "SkillComponent.generated.h"
 
 /**
@@ -25,6 +26,9 @@ public:
 protected:
 	void TickComponent(float _deltaTime, ELevelTick _tickType, FActorComponentTickFunction* _thisTickFunction) override;
 
+	UFUNCTION()
+	void SetDelegateForPlayerState();
+
 private:
 	void setupSkill();
 
@@ -35,15 +39,16 @@ private:
 	void RPCClientSucced(ESkill _skill);
 
 	UFUNCTION(Reliable, Client)
-	void RPCClientFailed(ESkill _skill);
+	void RPCClientFailed(ESkill _skill, ESkillReturn _returnValue);
+
+	UFUNCTION()
+	void OnMissionEnd(EMission _type);
+
+	class UUniqueSkillDataAsset const* getSkill(ESkill _skill) const;
 
 public:
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
 	class USkillDataAsset* SkillDataAsset{ nullptr };
-
-	// temp need setup input
-	UPROPERTY(Category = "Setup", EditAnywhere, BlueprintReadWrite)
-	TArray<FKey> DefaultKeyboard {};
 
 private:
 	TArray<TUniquePtr<SkillCountDown>> m_skills {};

@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "Player/PlayerActorComponent.h"
+#include "Gameplay/Metric/LocalMetric.h"
+#include <memory>
 #include "LocalPlayerActionComponent.generated.h"
 
 /**
@@ -16,6 +18,7 @@ class HUB_SPACEL_API ULocalPlayerActionComponent : public UPlayerActorComponent
 	
 public:
 	ULocalPlayerActionComponent();
+	~ULocalPlayerActionComponent();
 
 	void BeginPlay() override;
 	void TickComponent(float _deltaTime, ELevelTick _tickType, FActorComponentTickFunction* _thisTickFunction) override;
@@ -24,6 +27,14 @@ private:
 	UFUNCTION()
 	void OnUpdateTeam(FString const& _team);
 
+	UFUNCTION()
+	void AddEffect(EEffect _effect);
+
+	UFUNCTION()
+	void RemoveEffect(EEffect _effect);
+
 private:
-	class UMaterialInstanceDynamic* m_postProcessMaterial { nullptr };
+	class UMaterialInstanceDynamic* m_speedLineMaterial { nullptr };
+
+	std::unique_ptr<LocalMetric> m_metric { nullptr };
 };

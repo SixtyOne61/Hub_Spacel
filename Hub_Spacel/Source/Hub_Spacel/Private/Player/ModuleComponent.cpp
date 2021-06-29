@@ -48,7 +48,7 @@ void UModuleComponent::BeginPlay()
         ASpacelGameState* spacelGameState{ Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld())) };
         if (spacelGameState != nullptr)
         {
-            spacelGameState->OnStartGameDelegate.AddDynamic(this, &UModuleComponent::OnStartGame);
+            spacelGameState->OnChangeStateDelegate.AddDynamic(this, &UModuleComponent::OnStartGame);
         }
     }
 
@@ -86,53 +86,42 @@ void UModuleComponent::SetMax_Implementation(int32 _maxProtection, int32 _maxSup
     this->OnUpdateCountSupportDelegate.Broadcast(this->RU_SupportLocations.Num(), m_maxSupport);
 }
 
-void UModuleComponent::OnStartGame()
+void UModuleComponent::BuildShipLobby()
 {
-    auto lb_readXml = [](uint8 _level, USetupAttributeDataAsset* _dataAsset, TArray<FVector>& _out, FString && _name)
+    auto lb_readXml = [](bool _isHeavy, USetupAttributeDataAsset* _dataAsset, TArray<FVector_NetQuantize>& _out, FString&& _name)
     {
         if (!ensure(_dataAsset != nullptr)) return;
-        FString const& path{ _level > 0 ? _dataAsset->HeavyPath : _dataAsset->DefaultPath };
+        FString const& path{ _isHeavy ? _dataAsset->HeavyPath : _dataAsset->DefaultPath };
 
         SimplyXml::FContainer<FVector> locationInformation{ _name };
         SimplyXml::FReader reader{ FPaths::ProjectDir() + path };
         reader.read(locationInformation);
 
-        _out = std::move(locationInformation.Values);
+        _out.Empty();
+        for (FVector loc : locationInformation.Values)
+        {
+            _out.Add(loc);
+        }
     };
 
     if (APawn* pawn = Cast<APawn>(this->GetOwner()))
     {
-        ASpacelPlayerState* spacelPlayerState = pawn->GetPlayerState<ASpacelPlayerState>();
-        if (spacelPlayerState == nullptr)
+        if (ASpacelPlayerState* spacelPlayerState = pawn->GetPlayerState<ASpacelPlayerState>())
         {
-#if WITH_EDITOR
-            lb_readXml(0, this->WeaponDataAsset, RU_AttackLocations, "Location");
-            buildShip(this->WeaponMeshComponent, this->WeaponDataAsset, RU_AttackLocations);
-            lb_readXml(0, this->ProtectionDataAsset, RU_ProtectionLocations, "Location");
-            buildShip(this->ProtectionMeshComponent, this->ProtectionDataAsset, RU_ProtectionLocations);
-            lb_readXml(0, this->SupportDataAsset, RU_SupportLocations, "Location");
-            buildShip(this->SupportMeshComponent, this->SupportDataAsset, RU_SupportLocations);
+            uint8 lowSkillId = spacelPlayerState->getSkillId(ESkillType::Low);
+            uint8 mediumSkillId = spacelPlayerState->getSkillId(ESkillType::Medium);
 
-            lb_readXml(0, this->WeaponDataAsset, this->R_MissileLocations, "Missile");
-            if (this->MissileMeshComponent != nullptr && this->R_MissileLocations.Num() != 0)
-            {
-                this->MissileMeshComponent->SetRelativeLocation(this->R_MissileLocations[0]);
-            }
-#endif // WITH_EDITOR
-        }
-        else
-        {
-            lb_readXml(spacelPlayerState->R_Attack, this->WeaponDataAsset, this->RU_AttackLocations, "Location");
+            lb_readXml(lowSkillId == (uint8)ESkill::FireRate, this->WeaponDataAsset, this->RU_AttackLocations, "Location");
             buildShip(this->WeaponMeshComponent, this->WeaponDataAsset, this->RU_AttackLocations);
 
-            lb_readXml(spacelPlayerState->R_Protection, this->ProtectionDataAsset, this->RU_ProtectionLocations, "Location");
+            lb_readXml(lowSkillId == (uint8)ESkill::HeavyProtection, this->ProtectionDataAsset, this->RU_ProtectionLocations, "Location");
             buildShip(this->ProtectionMeshComponent, this->ProtectionDataAsset, this->RU_ProtectionLocations);
 
-            lb_readXml(spacelPlayerState->R_Support, this->SupportDataAsset, this->RU_SupportLocations, "Location");
+            lb_readXml(lowSkillId == (uint8)ESkill::Speedy, this->SupportDataAsset, this->RU_SupportLocations, "Location");
             buildShip(this->SupportMeshComponent, this->SupportDataAsset, this->RU_SupportLocations);
             setLocationExhaustFx();
 
-            lb_readXml(spacelPlayerState->R_Attack, this->WeaponDataAsset, R_MissileLocations, "Missile");
+            lb_readXml(mediumSkillId == (uint8)ESkill::Missile, this->WeaponDataAsset, R_MissileLocations, "Missile");
             if (this->MissileMeshComponent != nullptr && this->R_MissileLocations.Num() != 0)
             {
                 this->MissileMeshComponent->SetRelativeLocation(this->R_MissileLocations[0]);
@@ -143,7 +132,73 @@ void UModuleComponent::OnStartGame()
     }
 }
 
-void UModuleComponent::buildShip(UInstancedStaticMeshComponent*& _mesh, UStaticMeshDataAsset* _staticMesh, TArray<FVector> const& _locations)
+void UModuleComponent::OnStartGame(EGameState _state)
+{
+    if(_state != EGameState::InGame) return;
+
+    auto lb_readXml = [](bool _isHeavy, USetupAttributeDataAsset* _dataAsset, TArray<FVector_NetQuantize>& _out, FString && _name)
+    {
+        if (!ensure(_dataAsset != nullptr)) return;
+        FString const& path{ _isHeavy ? _dataAsset->HeavyPath : _dataAsset->DefaultPath };
+
+        SimplyXml::FContainer<FVector> locationInformation{ _name };
+        SimplyXml::FReader reader{ FPaths::ProjectDir() + path };
+        reader.read(locationInformation);
+
+        _out.Empty();
+        for (FVector loc : locationInformation.Values)
+        {
+            _out.Add(loc);
+        }
+    };
+
+    if (APawn* pawn = Cast<APawn>(this->GetOwner()))
+    {
+        ASpacelPlayerState* spacelPlayerState = pawn->GetPlayerState<ASpacelPlayerState>();
+        if (spacelPlayerState == nullptr)
+        {
+#if WITH_EDITOR
+            lb_readXml(false, this->WeaponDataAsset, RU_AttackLocations, "Location");
+            buildShip(this->WeaponMeshComponent, this->WeaponDataAsset, RU_AttackLocations);
+            lb_readXml(false, this->ProtectionDataAsset, RU_ProtectionLocations, "Location");
+            buildShip(this->ProtectionMeshComponent, this->ProtectionDataAsset, RU_ProtectionLocations);
+            lb_readXml(false, this->SupportDataAsset, RU_SupportLocations, "Location");
+            buildShip(this->SupportMeshComponent, this->SupportDataAsset, RU_SupportLocations);
+
+            lb_readXml(false, this->WeaponDataAsset, this->R_MissileLocations, "Missile");
+            if (this->MissileMeshComponent != nullptr && this->R_MissileLocations.Num() != 0)
+            {
+                this->MissileMeshComponent->SetRelativeLocation(this->R_MissileLocations[0]);
+            }
+#endif // WITH_EDITOR
+        }
+        else
+        {
+            uint8 lowSkillId = spacelPlayerState->getSkillId(ESkillType::Low);
+            uint8 mediumSkillId = spacelPlayerState->getSkillId(ESkillType::Medium);
+
+            lb_readXml(lowSkillId == (uint8)ESkill::FireRate, this->WeaponDataAsset, this->RU_AttackLocations, "Location");
+            buildShip(this->WeaponMeshComponent, this->WeaponDataAsset, this->RU_AttackLocations);
+
+            lb_readXml(lowSkillId == (uint8)ESkill::HeavyProtection, this->ProtectionDataAsset, this->RU_ProtectionLocations, "Location");
+            buildShip(this->ProtectionMeshComponent, this->ProtectionDataAsset, this->RU_ProtectionLocations);
+
+            lb_readXml(lowSkillId == (uint8)ESkill::Speedy, this->SupportDataAsset, this->RU_SupportLocations, "Location");
+            buildShip(this->SupportMeshComponent, this->SupportDataAsset, this->RU_SupportLocations);
+            setLocationExhaustFx();
+
+            lb_readXml(mediumSkillId == (uint8)ESkill::Missile, this->WeaponDataAsset, R_MissileLocations, "Missile");
+            if (this->MissileMeshComponent != nullptr && this->R_MissileLocations.Num() != 0)
+            {
+                this->MissileMeshComponent->SetRelativeLocation(this->R_MissileLocations[0]);
+            }
+
+            this->SetMax(this->RU_ProtectionLocations.Num(), this->RU_SupportLocations.Num());
+        }
+    }
+}
+
+void UModuleComponent::buildShip(UInstancedStaticMeshComponent*& _mesh, UStaticMeshDataAsset* _staticMesh, TArray<FVector_NetQuantize> const& _locations)
 {
     if (_mesh && _staticMesh)
     {
@@ -185,15 +240,15 @@ void UModuleComponent::setCollisionProfile(FString _team)
 
 void UModuleComponent::kill()
 {
-    auto lb = [](TArray<FVector>& _out, TArray<FVector>& _in)
+    auto lb = [](TArray<FVector_NetQuantize>& _out, TArray<FVector_NetQuantize>& _in)
     {
         _out.Append(_in);
         _in.Empty();
     };
 
-    lb(this->R_RemovedProtectionLocations, this->RU_ProtectionLocations);
-    lb(this->R_RemovedSupportLocations, this->RU_SupportLocations);
-    lb(this->R_RemovedAttackLocations, this->RU_AttackLocations);
+    lb(this->RemovedProtectionLocations, this->RU_ProtectionLocations);
+    lb(this->RemovedSupportLocations, this->RU_SupportLocations);
+    lb(this->RemovedAttackLocations, this->RU_AttackLocations);
 
     OnRep_Attack();
     OnRep_Protection();
@@ -202,15 +257,15 @@ void UModuleComponent::kill()
 
 void UModuleComponent::restarted()
 {
-    auto lb = [](TArray<FVector>& _out, TArray<FVector>& _in)
+    auto lb = [](TArray<FVector_NetQuantize>& _out, TArray<FVector_NetQuantize>& _in)
     {
         _out.Append(_in);
         _in.Empty();
     };
 
-    lb(this->RU_ProtectionLocations, this->R_RemovedProtectionLocations);
-    lb(this->RU_SupportLocations, this->R_RemovedSupportLocations);
-    lb(this->RU_AttackLocations, this->R_RemovedAttackLocations);
+    lb(this->RU_ProtectionLocations, this->RemovedProtectionLocations);
+    lb(this->RU_SupportLocations, this->RemovedSupportLocations);
+    lb(this->RU_AttackLocations, this->RemovedAttackLocations);
 
     OnRep_Attack();
     OnRep_Protection();
@@ -219,12 +274,12 @@ void UModuleComponent::restarted()
 
 float UModuleComponent::getPercentProtection() const
 {
-    return (float)this->RU_ProtectionLocations.Num() / ((float)(this->RU_ProtectionLocations.Num() + this->R_RemovedProtectionLocations.Num()));
+    return (float)this->RU_ProtectionLocations.Num() / m_maxProtection;
 }
 
 float UModuleComponent::getPercentSupport() const
 {
-    return (float)this->RU_SupportLocations.Num() / ((float)(this->RU_SupportLocations.Num() + this->R_RemovedSupportLocations.Num()));
+    return (float)this->RU_SupportLocations.Num() / m_maxSupport;
 }
 
 void UModuleComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -233,8 +288,5 @@ void UModuleComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
     DOREPLIFETIME(UModuleComponent, RU_AttackLocations);
     DOREPLIFETIME(UModuleComponent, RU_ProtectionLocations);
     DOREPLIFETIME(UModuleComponent, RU_SupportLocations);
-    DOREPLIFETIME(UModuleComponent, R_RemovedProtectionLocations);
-    DOREPLIFETIME(UModuleComponent, R_RemovedSupportLocations);
-    DOREPLIFETIME(UModuleComponent, R_RemovedAttackLocations);
     DOREPLIFETIME(UModuleComponent, R_MissileLocations);
 }

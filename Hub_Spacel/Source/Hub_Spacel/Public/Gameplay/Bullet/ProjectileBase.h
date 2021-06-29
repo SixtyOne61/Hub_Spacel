@@ -17,6 +17,9 @@ class HUB_SPACEL_API AProjectileBase : public ADestroyActor
 public:
 	AProjectileBase();
 
+	/* override */
+	void applyHit(TArray<int32>& _instance) override;
+
 protected:
 	// Called when the game starts or when spawned
 	void BeginPlay() override;
@@ -25,9 +28,12 @@ protected:
 
 	FString getLocalTeam() const;
 
+	UFUNCTION()
+	void OnComponentHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit);
+
 public:
-	UPROPERTY(EditAnywhere, Category = "Default")
-	class UProjectileMovementComponent* ProjectileMovementComponent{ nullptr };
+	UPROPERTY(EditAnywhere, Category = "Collision")
+	class USphereComponent* ProjectileCollisionComponent{ nullptr };
 
 	UPROPERTY(Replicated)
 	FName R_Team {};

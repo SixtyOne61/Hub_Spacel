@@ -23,7 +23,7 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	//
-	void hit(FString const& _team, int32 _playerId, class UPrimitiveComponent* _comp, int32 _index);
+	void hit(FString const& _team, int32 _playerId, class UPrimitiveComponent* _comp, int32 _index, FVector const& _otherLocation);
 
 private:
 	/* return true if we find something and fill param */
@@ -32,6 +32,9 @@ private:
 
 	/* manage if we hit matiere */
 	void hitMatiere(FVector const& _ownerLocation, FName const& _profileCollision) const;
+
+	/* manage if we hit mission */
+	void hitMission(FVector const& _ownerLocation, FName const& _profileCollision) const;
 
 	/* create collision shape */
 	template<class T>
@@ -47,10 +50,13 @@ private:
 	void dispatch(TArray<FHitResult> const& _items) const;
 
 	/* check for each instance, can spawn matiere */
-	bool sweepForInstancedStaticMesh(class UInstancedStaticMeshComponent*& _mesh, TArray<FVector>& _replicated, TArray<FVector>& _removeReplicated, FVector const& _scale, FName const& _profile, FName const& _teamTag);
+	bool sweepForInstancedStaticMesh(class UInstancedStaticMeshComponent*& _mesh, TArray<FVector_NetQuantize>& _replicated, TArray<FVector_NetQuantize>& _removeReplicated, FVector const& _scale, FName const& _profile, FName const& _teamTag);
 
 	/* call for add score to game state */
 	void addScore(TArray<FHitResult> const& _hits, EScoreType _type) const;
+
+	void killersProcess(TArray<FHitResult> const& _hits);
+	void spawnMatiere();
 
 private:
 	/* matiere manager */

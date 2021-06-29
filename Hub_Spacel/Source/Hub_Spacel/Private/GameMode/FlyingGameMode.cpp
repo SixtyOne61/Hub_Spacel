@@ -11,14 +11,10 @@
 #include "JsonUtilities.h"
 #include "Util/SimplyHttpRequest.h"
 #include "Util/SimplyMath.h"
+#include "DataAsset/FlyingGameModeDataAsset.h"
 
 AFlyingGameMode::AFlyingGameMode()
 {
-#if WITH_EDITOR
-    RemainingPrepareTime = 10;
-    m_lockTime = RemainingPrepareTime - 5;
-#endif
-
     UTextReaderComponent* textReader = CreateDefaultSubobject<UTextReaderComponent>(TEXT("TextReaderComponent"));
     if (!ensure(textReader != nullptr)) return;
     ApiUrl = textReader->ReadFile("Urls/ApiUrl.txt");
@@ -29,6 +25,14 @@ AFlyingGameMode::AFlyingGameMode()
 void AFlyingGameMode::BeginPlay()
 {
     Super::BeginPlay();
+
+    if(this->GameModeDataAsset != nullptr)
+    {
+        this->RemainingGameTime = this->GameModeDataAsset->RemainingGameTime;
+        this->RemainingChooseModuleTime = this->GameModeDataAsset->RemainingChooseModuleTime;
+        this->RemainingLeaveTime = this->GameModeDataAsset->RemainingLeaveTime;
+        m_nextStepTime = this->RemainingChooseModuleTime;
+    }
 
 #if WITH_GAMELIFT
     auto initSDKOutCome = Aws::GameLift::Server::InitSDK();
@@ -228,9 +232,7 @@ void AFlyingGameMode::BeginPlay()
     ASpacelGameState* spacelGameState{ Cast<ASpacelGameState>(this->GameState) };
     if (!ensure(spacelGameState != nullptr)) return;
     spacelGameState->GoToPrepare();
-    GetWorldTimerManager().SetTimer(this->PreparePhaseUntilOverHandle, this, &AFlyingGameMode::PreparePhaseUntilOver, 1.0f, true, 0.0f);
     GetWorldTimerManager().SetTimer(this->PreparePhaseUntilLockHandle, this, &AFlyingGameMode::PreparePhaseUntilLock, 1.0f, true, 0.0f);
-
 #endif
 
     TArray<AActor*> out {};
@@ -427,37 +429,56 @@ void AFlyingGameMode::CountDownUntilGameOver()
 
 void AFlyingGameMode::PreparePhaseUntilLock()
 {
-    if(m_lockTime > 0)
+    if(m_nextStepTime > 0)
     {
-        m_lockTime--;
+        m_nextStepTime--;
     }
     else
     {
-        GetWorldTimerManager().ClearTimer(this->PreparePhaseUntilLockHandle);
         ASpacelGameState* spacelGameState{ Cast<ASpacelGameState>(this->GameState) };
         if (!ensure(spacelGameState != nullptr)) return;
-        spacelGameState->GoToLockPrepare();
+
+        switch(NbStep)
+        {
+            case 0:
+                spacelGameState->GoToLockLowModule();
+                // register all team for scoring
+                spacelGameState->RegisterTeam();
+            break;
+
+            case 1:
+                spacelGameState->GoToLockMediumModule();
+            break;
+
+            case 2:
+                spacelGameState->GoToLockPrepare();
+                if(this->GameModeDataAsset != nullptr)
+                {
+                    this->RemainingChooseModuleTime = this->GameModeDataAsset->EndModuleTime;
+                }
+            break;
+
+            case 3:
+                GetWorldTimerManager().ClearTimer(this->PreparePhaseUntilLockHandle);
+                EndLobby();
+            break;
+
+            default:
+                ensure(false);
+            break;
+        }
+
+        m_nextStepTime = this->RemainingChooseModuleTime;
+        ++NbStep;
     }
 }
 
-void AFlyingGameMode::PreparePhaseUntilOver()
+void AFlyingGameMode::EndLobby()
 {
-    if (this->RemainingPrepareTime > 0)
+    GetWorldTimerManager().SetTimer(this->CountDownUntilGameOverHandle, this, &AFlyingGameMode::CountDownUntilGameOver, 1.0f, true, 0.0f);
+
+    if(ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(this->GameState))
     {
-        this->RemainingPrepareTime--;
-    }
-    else
-    {
-        GetWorldTimerManager().ClearTimer(this->PreparePhaseUntilOverHandle);
-
-        GetWorldTimerManager().SetTimer(this->CountDownUntilGameOverHandle, this, &AFlyingGameMode::CountDownUntilGameOver, 1.0f, true, 0.0f);
-
-        ASpacelGameState* spacelGameState{ Cast<ASpacelGameState>(this->GameState) };
-        if (!ensure(spacelGameState != nullptr)) return;
-
-        // register all team for scoring
-        spacelGameState->RegisterTeam();
-
         // change game state
         spacelGameState->GoToInGame();
     }
@@ -470,8 +491,8 @@ void AFlyingGameMode::EndGame()
     GetWorldTimerManager().ClearTimer(this->HandleProcessTerminationHandle);
     GetWorldTimerManager().ClearTimer(this->HandleGameSessionUpdateHandle);
     GetWorldTimerManager().ClearTimer(this->SuspendBackfillHandle);
-    GetWorldTimerManager().ClearTimer(this->PreparePhaseUntilOverHandle);
     GetWorldTimerManager().ClearTimer(this->PreparePhaseUntilLockHandle);
+    GetWorldTimerManager().ClearTimer(this->LeaveLevelHandle);
 
 #if WITH_GAMELIFT
     Aws::GameLift::Server::TerminateGameSession();
@@ -480,41 +501,66 @@ void AFlyingGameMode::EndGame()
 #endif
 }
 
-void AFlyingGameMode::PickAWinningTeam()
+void AFlyingGameMode::LeaveLevel()
 {
-#if WITH_GAMELIFT
-    ASpacelGameState* spacelGameState { Cast<ASpacelGameState>(this->GameState) };
-    if (spacelGameState != nullptr)
+    this->RemainingLeaveTime--;
+
+    ASpacelGameState* spacelGameState{ Cast<ASpacelGameState>(this->GameState) };
+    if (!ensure(spacelGameState != nullptr)) return;
+    // format time
+    int min = this->RemainingLeaveTime / 60;
+    int sec = this->RemainingLeaveTime % 60;
+    FString minStr = min < 10 ? "0" + FString::FromInt(min) : FString::FromInt(min);
+    FString secStr = sec < 10 ? "0" + FString::FromInt(sec) : FString::FromInt(sec);
+    spacelGameState->R_LatestEvent = minStr + ":" + secStr;
+
+    if(this->RemainingLeaveTime <= 0)
     {
-        spacelGameState->R_LatestEvent = "GameEnded";
+        GetWorldTimerManager().ClearTimer(this->LeaveLevelHandle);
 
-        spacelGameState->R_WinningTeam = spacelGameState->GetBestTeam();
-
-        TSharedPtr<FJsonObject> requestObj { MakeShareable(new FJsonObject) };
-        requestObj->SetStringField("winningTeam", spacelGameState->R_WinningTeam);
-
-        auto getGameSessionIdOutcome { Aws::GameLift::Server::GetGameSessionId() };
-        if (getGameSessionIdOutcome.IsSuccess())
+#if WITH_GAMELIFT
+        if (spacelGameState != nullptr)
         {
-            requestObj->SetStringField("gameSessionId", getGameSessionIdOutcome.GetResult());
+            spacelGameState->R_LatestEvent = "GameEnded";
 
-            FString requestBody {};
-            TSharedRef<TJsonWriter<>> writer { TJsonWriterFactory<>::Create(&requestBody) };
-            if (FJsonSerializer::Serialize(requestObj.ToSharedRef(), writer))
+            spacelGameState->R_WinningTeam = spacelGameState->GetBestTeam();
+
+            TSharedPtr<FJsonObject> requestObj{ MakeShareable(new FJsonObject) };
+            requestObj->SetStringField("winningTeam", spacelGameState->R_WinningTeam);
+
+            auto getGameSessionIdOutcome{ Aws::GameLift::Server::GetGameSessionId() };
+            if (getGameSessionIdOutcome.IsSuccess())
             {
-                SimplyHttpRequest::processRequest(this->HttpModule, this, 
-                    &AFlyingGameMode::onRecordMatchResultResponseReceive,
-                    this->ApiUrl + "/recordmatchresult", "POST",
-                    TArray<FString> {"Authorization", this->ServerPassword, "Content-Type", "application/json"},
-                    requestBody);
-                // early return, no need to set timer in this case (and the only case)
-                return;
+                requestObj->SetStringField("gameSessionId", getGameSessionIdOutcome.GetResult());
+
+                FString requestBody{};
+                TSharedRef<TJsonWriter<>> writer{ TJsonWriterFactory<>::Create(&requestBody) };
+                if (FJsonSerializer::Serialize(requestObj.ToSharedRef(), writer))
+                {
+                    SimplyHttpRequest::processRequest(this->HttpModule, this,
+                        &AFlyingGameMode::onRecordMatchResultResponseReceive,
+                        this->ApiUrl + "/recordmatchresult", "POST",
+                        TArray<FString> {"Authorization", this->ServerPassword, "Content-Type", "application/json"},
+                        requestBody);
+                    // early return, no need to set timer in this case (and the only case)
+                    return;
+                }
             }
         }
-    }
-    // something wrong
-    GetWorldTimerManager().SetTimer(this->EndGameHandle, this, &AFlyingGameMode::EndGame, 1.0f, false, 5.0f);
+        // something wrong
+        GetWorldTimerManager().SetTimer(this->EndGameHandle, this, &AFlyingGameMode::EndGame, 1.0f, false, 5.0f);
 #endif
+    }
+}
+
+
+void AFlyingGameMode::PickAWinningTeam()
+{
+    ASpacelGameState* spacelGameState{ Cast<ASpacelGameState>(this->GameState) };
+    if (!ensure(spacelGameState != nullptr)) return;
+    spacelGameState->GoToEndGame();
+
+    GetWorldTimerManager().SetTimer(this->LeaveLevelHandle, this, &AFlyingGameMode::LeaveLevel, 1.0f, true, 0.0f);
 }
 
 void AFlyingGameMode::HandleProcessTermination()
@@ -522,7 +568,6 @@ void AFlyingGameMode::HandleProcessTermination()
     if (this->ProcessTerminateState.Status)
     {
         GetWorldTimerManager().ClearTimer(this->CountDownUntilGameOverHandle);
-        GetWorldTimerManager().ClearTimer(this->PreparePhaseUntilOverHandle);
         GetWorldTimerManager().ClearTimer(this->PreparePhaseUntilLockHandle);
         GetWorldTimerManager().ClearTimer(this->HandleProcessTerminationHandle);
         GetWorldTimerManager().ClearTimer(this->HandleGameSessionUpdateHandle);
@@ -578,7 +623,6 @@ void AFlyingGameMode::HandleGameSessionUpdate()
         ASpacelGameState* spacelGameState{ Cast<ASpacelGameState>(this->GameState) };
         if (!ensure(spacelGameState != nullptr)) return;
         spacelGameState->GoToPrepare();
-        GetWorldTimerManager().SetTimer(this->PreparePhaseUntilOverHandle, this, &AFlyingGameMode::PreparePhaseUntilOver, 1.0f, true, 0.0f);
         GetWorldTimerManager().SetTimer(this->PreparePhaseUntilLockHandle, this, &AFlyingGameMode::PreparePhaseUntilLock, 1.0f, true, 0.0f);
     }
     else if(this->WaitingForPlayersToJoin)

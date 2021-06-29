@@ -2,17 +2,18 @@
 
 
 #include "SkillDataAsset.h"
+#include "DataAsset/UniqueSkillDataAsset.h"
 
-FSkill USkillDataAsset::getSKill(ESkill _type) const
+UUniqueSkillDataAsset * USkillDataAsset::getSKill(ESkill _type)
 {
-    for (FSkill const& skill : this->Skills)
+    for (UUniqueSkillDataAsset * skill : this->Skills)
     {
-        if (skill.Skill == _type)
+        if (skill->Skill == _type)
         {
             return skill;
         }
     }
 
     ensure(false);
-    return FSkill();
+    return nullptr;
 }

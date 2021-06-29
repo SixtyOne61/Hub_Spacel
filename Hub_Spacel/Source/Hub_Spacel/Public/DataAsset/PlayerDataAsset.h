@@ -43,6 +43,9 @@ public:
     UPROPERTY(Category = "Movement", EditAnywhere, BlueprintReadWrite)
     float MinCoefSpeed { 0.6f };
 
+    UPROPERTY(Category = "Movement", EditAnywhere, BlueprintReadWrite)
+    float CoefOverDriveValue { 1.0f };
+
     UPROPERTY(Category = "Skill", EditAnywhere, BlueprintReadWrite)
     float EscapeModeCoef { 1.5f };
 
@@ -54,6 +57,9 @@ public:
 
     UPROPERTY(Category = "Fire", EditAnywhere, BlueprintReadOnly)
     TSubclassOf<class AActor> MissileClass;
+
+    UPROPERTY(Category = "Fire", EditAnywhere, BlueprintReadOnly)
+    TSubclassOf<class AActor> KatyushaClass;
 
     UPROPERTY(Category = "Fire", EditAnywhere, BlueprintReadWrite)
     float TimeBetweenFire = 0.3f;
@@ -84,6 +90,12 @@ public:
 
     UPROPERTY(Category = "Skill", EditAnywhere, BlueprintReadWrite)
     TSubclassOf<class AActor> NinePackClass { nullptr };
+
+    UPROPERTY(Category = "Skill", EditAnywhere, BlueprintReadOnly)
+    TSubclassOf<class AActor> MetaSupportPostProcessClass;
+
+    UPROPERTY(Category = "Skill", EditAnywhere, BlueprintReadOnly)
+    TSubclassOf<class AActor> EmpPostProcessClass;
 
     UPROPERTY(Category = "Farm", EditAnywhere, BlueprintReadWrite)
     int NbAsteroideForMatiere{};

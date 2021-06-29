@@ -46,6 +46,9 @@ private:
 	UFUNCTION()
 	void OnPlayerNameChange(FText const& _text);
 
+	UFUNCTION()
+	void OnLoadGame(const FString& _slotName, const int32 _userIndex, USaveGame* _loadedGameData);
+
 public:
 	UPROPERTY()
 	FTimerHandle SetAveragePlayerLatencyHandle {};

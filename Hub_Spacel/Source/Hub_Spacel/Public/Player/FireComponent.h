@@ -19,16 +19,25 @@ public:
 	// Sets default values for this component's properties
 	UFireComponent();
 
+	void BeginPlay() override;
+
 	// Called every frame
 	void TickComponent(float _deltaTime, ELevelTick _tickType, FActorComponentTickFunction* _thisTickFunction) override;
 
 private:
 	void spawnBullet(FTransform const& _transform) const;
 	void launchMissile(FTransform const _transform) const;
+	void spawnKatyusha();
 
 	void setupProjectile(AActor* _projectile) const;
 
-private:
+	UFUNCTION()
+	void SpawnKatyusha();
+
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Setup")
+	TArray<USceneComponent*> DummyKatyushaLocations {};
+
 	/* use only on server, say if we are in fire */
 	Util::Optional<bool> m_isFire{ };
 
@@ -37,6 +46,12 @@ private:
 
 	/* fire point location */
 	int32 m_fireIndex{ };
+
+	/* nb katyusha to spawn */
+	int8 m_nbKatyusha { 0 };
+
+	/* next transform */
+	FTransform m_nextKatyushaTransform {};
 
 	/* current targeted actor */
 	class AActor* m_target{ nullptr };

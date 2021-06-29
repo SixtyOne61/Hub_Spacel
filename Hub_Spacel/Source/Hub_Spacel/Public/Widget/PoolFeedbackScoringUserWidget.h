@@ -18,6 +18,9 @@ class HUB_SPACEL_API UPoolFeedbackScoringUserWidget : public UUserWidget
 protected:
 	void NativeConstruct() override;
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void BP_OnScored(EScoreType _type);
+
 private:
 	UFUNCTION()
 	void OnScored(EScoreType _type, int32 _value);

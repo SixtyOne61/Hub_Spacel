@@ -7,6 +7,7 @@
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "Util/Tag.h"
+#include "DataAsset/MatiereDataAsset.h"
 #include <functional>
 
 int32 getId(FString const& _team)
@@ -71,7 +72,7 @@ void AMatiereManager::Tick(float _deltaTime)
 {
 	Super::Tick(_deltaTime);
 
-	auto lb_remove = [](class UInstancedStaticMeshComponent* _comp, TSet<int32>& _index, TArray<FVector>& _loc)
+	auto lb_remove = [](class UInstancedStaticMeshComponent* _comp, TSet<int32>& _index, TArray<FVector_NetQuantize>& _loc)
 	{
 		if (!ensure(_comp != nullptr)) return;
 		if (_index.Num() == 0) return;
@@ -94,7 +95,7 @@ void AMatiereManager::Tick(float _deltaTime)
 		_index.Empty();
 	};
 
-	const TArray<TArray<FVector>*> instance{ &this->RU_InstanceTeam1,
+	const TArray<TArray<FVector_NetQuantize>*> instance{ &this->RU_InstanceTeam1,
 		&this->RU_InstanceTeam2,
 		&this->RU_InstanceTeam3,
 		&this->RU_InstanceTeam4,
@@ -116,7 +117,10 @@ int AMatiereManager::depopulate(class UInstancedStaticMeshComponent* _comp, FHit
 	if (_comp->GetInstanceTransform(_hit.Item, world, true))
 	{
 		_index.Add(_hit.Item);
-		return 1;
+		if (this->MatiereDataAsset != nullptr)
+		{
+			return this->MatiereDataAsset->NbMatterGiveByCube;
+		}
 	}
 	return 0;
 }
@@ -126,13 +130,6 @@ int AMatiereManager::hit(FHitResult const& _hit, FString const& _team)
 	int ret = 0;
 
 	int32 id{ getId(_team) };
-
-	const TArray<TArray<FVector>*> instance{ &this->RU_InstanceTeam1,
-		&this->RU_InstanceTeam2,
-		&this->RU_InstanceTeam3,
-		&this->RU_InstanceTeam4,
-		&this->RU_InstanceTeam5,
-		&this->RU_InstanceTeam6 };
 
 	static TArray<FString> teamNames = { "Team 1", "Team 2", "Team 3", "Team 4", "Team 5", "Team 6" };
 
@@ -149,7 +146,7 @@ void AMatiereManager::spawnMatiere(FVector const& _location, FString const& _tea
 {
 	int32 id { getId(_team) };
 
-	const TArray<TArray<FVector>*> instance { &this->RU_InstanceTeam1,
+	const TArray<TArray<FVector_NetQuantize>*> instance { &this->RU_InstanceTeam1,
 		&this->RU_InstanceTeam2,
 		&this->RU_InstanceTeam3,
 		&this->RU_InstanceTeam4,
@@ -170,11 +167,11 @@ void AMatiereManager::spawnMatiere(FVector const& _location, FString const& _tea
 	}
 }
 
-void AMatiereManager::populate(class UInstancedStaticMeshComponent* _comp, TArray<FVector> const& _loc)
+void AMatiereManager::populate(class UInstancedStaticMeshComponent* _comp, TArray<FVector_NetQuantize> const& _loc)
 {
 	if (!ensure(_comp != nullptr)) return;
 	_comp->ClearInstances();
-	for (FVector const& location : _loc)
+	for (auto const& location : _loc)
 	{
 		_comp->AddInstance(FTransform{ location });
 	}
@@ -182,7 +179,7 @@ void AMatiereManager::populate(class UInstancedStaticMeshComponent* _comp, TArra
 
 void AMatiereManager::genericOnRep(FString const& _team)
 {
-	const TArray<TArray<FVector>*> instance{ &this->RU_InstanceTeam1,
+	const TArray<TArray<FVector_NetQuantize>*> instance{ &this->RU_InstanceTeam1,
 			&this->RU_InstanceTeam2,
 			&this->RU_InstanceTeam3,
 			&this->RU_InstanceTeam4,

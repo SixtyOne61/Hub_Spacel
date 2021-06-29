@@ -21,34 +21,24 @@ public:
 	AMissile();
 	virtual ~AMissile();
 
-	/* override */
-	void applyHit(TArray<int32>& _instance) override;
-
 	UFUNCTION()
 	void OnTargetEffect(EEffect _type);
 
 protected:
 	void BeginPlay() override;
 	void Tick(float _deltaTime) override;
-	bool OnHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit) override;
-
-	UFUNCTION()
-	void OnComponentHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit);
 
 private:
-	UFUNCTION()
-	void FlyToTarget();
-
 	UFUNCTION()
 	void Seek();
 
-protected:
-	UPROPERTY(EditAnywhere, Category = "Collision")
-	class USphereComponent* ProjectileCollisionComponent{ nullptr };
-
 private:
-	UPROPERTY()
-	class AActor* Target { nullptr };
+	UPROPERTY(EditAnywhere)
+	class UHomingMissileDataAsset* DataAsset { nullptr };
 
-	bool m_isSeekPlayer { false };
+	UPROPERTY(Replicated)
+	class AActor* R_Target { nullptr };
+
+	UPROPERTY(Replicated)
+	bool R_IsSeekPlayer { false };
 };

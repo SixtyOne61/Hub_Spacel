@@ -11,8 +11,23 @@ enum class EGameState : uint8
 {
     Undefined = 0,
     Prepare,
+    LockLowModule,
+    LockMediumModule,
     LockPrepare,
-    InGame
+    InGame,
+    UnlockMedium,
+    UnlockUltimate,
+    EndGame,
+};
+
+UENUM(BlueprintType)
+enum class ESkillReturn : uint8
+{
+    InternError,
+    Success,
+    CountDown,
+    Unavailable,
+    NoMater,
 };
 
 UENUM(BlueprintType)
@@ -36,9 +51,9 @@ UENUM(BlueprintType)
 enum class ESkillType : uint8
 {
     None UMETA(DisplayName = "None"),
-    Attack UMETA(DisplayName = "Attack"),
-    Protection UMETA(DisplayName = "Protection"),
-    Support UMETA(DisplayName = "Support")
+    Low UMETA(DisplayName = "Attack"),
+    Medium UMETA(DisplayName = "Protection"),
+    Hight UMETA(DisplayName = "Support")
 };
 
 UENUM(BlueprintType)
@@ -48,14 +63,18 @@ enum class ESkill : uint8
     RepairSupport UMETA(DisplayName = "RepairSupport"),
     GiveAlly1 UMETA(DisplayName = "GiveAlly1"),
     GiveAlly2 UMETA(DisplayName = "GiveAlly2"),
-    SpecialAttack UMETA(DisplayName = "SpecialAttack"),
-    SpecialProtection UMETA(DisplayName = "SpecialProtection"),
-    SpecialSupport UMETA(DisplayName = "SpecialSupport"),
+    Missile UMETA(DisplayName = "Missile"),
+    ShieldTeam UMETA(DisplayName = "ShieldTeam"),
+    Emp UMETA(DisplayName = "Emp"),
     EscapeMode UMETA(DisplayName = "EscapeMode"),
     MetaFormAttack UMETA(DisplayName = "MetaFormAttack"),
     MetaFormProtection UMETA(DisplayName = "MetaFormProtection"),
     MetaFormSupport UMETA(DisplayName = "MetaFormSupport"),
     NinePack UMETA(DisplayName = "NinePack"),
+    FireRate UMETA(DisplayName = "FireRate"),
+    HeavyProtection UMETA(DisplayName = "HeavyProtection"),
+    Speedy UMETA(DisplayName = "Speedy"),
+    Katyusha UMETA(DisplayName = "Katyusha")
 };
 
 UENUM(BlueprintType, meta = (Bitflags, UseEnumValuesAsMaskValuesInEditor = "true"))
@@ -87,6 +106,7 @@ enum class EEffect : uint8
     MetaFormSupport UMETA(DisplayName = "MetaFormSupport"),
     Respawned UMETA(DisplayName = "Respawned"),
     Targeted UMETA(DisplayName = "Targeted"),
+    StartGame UMETA(DisplayName = "StartGame"),
 };
 
 UENUM(BlueprintType)
@@ -104,4 +124,19 @@ enum class EScoreType : uint8
     Hit UMETA(DisplayName = "Hit"),
     Tank UMETA(DisplayName = "Tank"),
     Emp UMETA(DisplayName = "Emp")
+};
+
+UENUM(BlueprintType)
+enum class EMission : uint8
+{
+    FirstBlood UMETA(DisplayName = "FirstBlood"),
+    ScoreRace UMETA(DisplayName = "ScoreRace"),
+    EcartType UMETA(DisplayName = "EcartType"),
+    Comet UMETA(DisplayName = "Comet"),
+};
+
+UENUM(BlueprintType)
+enum class EMetric : uint8
+{
+    Fog,
 };

@@ -18,6 +18,8 @@
 #include "DataAsset/SetupAttributeDataAsset.h"
 #include "DataAsset/PlayerDataAsset.h"
 #include "DataAsset/TeamColorDataAsset.h"
+#include "DataAsset/SkillDataAsset.h"
+#include "DataAsset/UniqueSkillDataAsset.h"
 #include "Player/SpacelPlayerState.h"
 #include "Player/TargetActor.h"
 #include "Player/FireComponent.h"
@@ -33,35 +35,62 @@
 #include "Util/SimplyMath.h"
 #include "TimerManager.h"
 #include "Gameplay/SkillComponent.h"
+#include "Gameplay/Skill/PostProcessInvisible.h"
 #include "NiagaraComponent.h"
+#include "Skill/NinePackActor.h"
 
-void AShipPawn::OnLockPrepare()
+void AShipPawn::OnChangeState(EGameState _state)
 {
-    if (this->SkillComponent != nullptr)
+    if (_state == EGameState::LockPrepare)
     {
-        this->SkillComponent->setupSkill();
-    }
-}
+        if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
+        {
+            // add custom collision component
+            if (UCustomCollisionComponent* customCollisionComponent = NewObject<UCustomCollisionComponent>(this, "CustomCollision_00"))
+            {
+                customCollisionComponent->RegisterComponent();
+            }
 
-void AShipPawn::OnStartGame()
-{
-    // add custom collision component
-    if (UCustomCollisionComponent* customCollisionComponent = NewObject<UCustomCollisionComponent>(this, "CustomCollision_00"))
+            // TO DO : we can remove client start game rpc, and add it in netmulticaststartgame
+            RPCClientStartGame(this->Team);
+            RPCNetMulticastStartGame(this->Team);
+        }
+
+        if (this->SkillComponent != nullptr)
+        {
+            this->SkillComponent->setupSkill();
+        }
+
+        if (this->IsLocallyControlled())
+        {
+            if (!ensure(this->SpringArmComponent != nullptr)) return;
+            this->SpringArmComponent->SetRelativeLocation(FVector::ZeroVector);
+            this->SpringArmComponent->SetRelativeRotation(m_defaultSprintArmRotator);
+        }
+    }
+    else if (_state == EGameState::InGame)
     {
-        customCollisionComponent->RegisterComponent();
+        if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
+        {
+            addEffect(EEffect::StartGame);
+            FTimerDelegate timerCallback;
+            timerCallback.BindLambda([&]() { removeEffect(EEffect::StartGame); });
+
+            FTimerHandle handle;
+            this->GetWorldTimerManager().SetTimer(handle, timerCallback, 3.0f, false);
+        }
     }
-
-    m_startTransform = this->GetActorTransform();
-
-    RPCClientStartGame(this->Team);
-    RPCNetMulticastStartGame(this->Team);
-
-    addEffect(EEffect::Respawned);
-    FTimerDelegate timerCallback;
-    timerCallback.BindLambda([&]() { removeEffect(EEffect::Respawned); });
-
-    FTimerHandle handle;
-    this->GetWorldTimerManager().SetTimer(handle, timerCallback, 3.0f, false);
+    else if (_state == EGameState::EndGame)
+    {
+        if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
+        {
+            setFire(false);
+            this->GetWorldTimerManager().ClearAllTimersForObject(this);
+            this->DriverMeshComponent->SetPhysicsLinearVelocity(FVector::ZeroVector);
+            this->DriverMeshComponent->SetPhysicsAngularVelocityInDegrees(FVector::ZeroVector);
+            m_endGame = true;
+        }
+    }
 }
 
 void AShipPawn::RPCNetMulticastStartGame_Implementation(FName const& _team)
@@ -116,6 +145,23 @@ void AShipPawn::RPCClientStartGame_Implementation(FName const& _team)
     }
 
     this->Team = _team;
+
+    BP_OnStartGame();
+}
+
+void AShipPawn::RPCNetMulticastFxFireBullet_Implementation()
+{
+    BP_FxFireBullet();
+}
+
+void AShipPawn::RPCNetMulticastFxFireMissile_Implementation()
+{
+    BP_FxFireMissile();
+}
+
+void AShipPawn::RPCNetMulticastFxNinePack_Implementation()
+{
+    BP_FxSpawnNinePacks();
 }
 
 // Called when the game starts or when spawned
@@ -128,8 +174,7 @@ void AShipPawn::BeginPlay()
         ASpacelGameState* spacelGameState{ Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld())) };
         if (spacelGameState != nullptr)
         {
-            spacelGameState->OnStartGameDelegate.AddDynamic(this, &AShipPawn::OnStartGame);
-            spacelGameState->OnLockPrepareDelegate.AddDynamic(this, &AShipPawn::OnLockPrepare);
+            spacelGameState->OnChangeStateDelegate.AddDynamic(this, &AShipPawn::OnChangeState);
             spacelGameState->OnPlayerEnterFogDelegate.AddDynamic(this, &AShipPawn::OnPlayerEnterFog);
         }
         activateComponent(this->FireComponent);
@@ -175,11 +220,18 @@ void AShipPawn::BeginPlay()
             ASpacelGameState* spacelGameState{ Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld())) };
             if (spacelGameState != nullptr)
             {
-                spacelGameState->OnLockPrepareDelegate.AddDynamic(this, &AShipPawn::OnLockPrepare);
+                spacelGameState->OnChangeStateDelegate.AddDynamic(this, &AShipPawn::OnChangeState);
             }
             UHub_SpacelGameInstance* spacelGameInstance = Cast<UHub_SpacelGameInstance>(this->GetGameInstance());
             if (!ensure(spacelGameInstance != nullptr)) return;
             RPCServerSetPlayerName(spacelGameInstance->CustomPlayerName);
+
+            if (!ensure(this->SpringArmComponent != nullptr)) return;
+            m_defaultSprintArmRotator = this->SpringArmComponent->GetRelativeRotation();
+
+            this->SpringArmComponent->SetRelativeLocation(FVector(-10.0f, 40.0f, -60.0f));
+            FVector rot(15.0f, -25.0f, -15.0f);
+            this->SpringArmComponent->SetRelativeRotation(rot.ToOrientationRotator().Quaternion());
         }
     }
 }
@@ -259,6 +311,12 @@ void AShipPawn::launchMissile()
     this->FireComponent->launchMissile(this->ModuleComponent->MissileMeshComponent->GetComponentTransform());
 }
 
+void AShipPawn::spawnKatyusha()
+{
+    if (!ensure(this->FireComponent != nullptr)) return;
+    this->FireComponent->spawnKatyusha();
+}
+
 void AShipPawn::emp()
 {
     if(this->FireComponent == nullptr) return;
@@ -266,10 +324,14 @@ void AShipPawn::emp()
     {
         if(this->SkillComponent == nullptr) return;
         if(this->SkillComponent->SkillDataAsset == nullptr) return;
-        uint32 duration = this->SkillComponent->SkillDataAsset->getSKill(ESkill::SpecialSupport).FlatDuration;
-        if (ASpacelPlayerState* playerState = this->GetPlayerState<ASpacelPlayerState>())
+
+        if (UUniqueSkillDataAsset const* skillParam = this->SkillComponent->SkillDataAsset->getSKill(ESkill::Emp))
         {
-            target->emp(duration, this->Team, playerState->PlayerId);
+            uint32 duration = skillParam->FlatDuration;
+            if (ASpacelPlayerState* playerState = this->GetPlayerState<ASpacelPlayerState>())
+            {
+                target->emp(duration, this->Team, playerState->PlayerId);
+            }
         }
     }
 }
@@ -283,10 +345,10 @@ void AShipPawn::emp(uint32 _duration, FName const& _team, int32 _playerId)
     this->GetWorldTimerManager().SetTimer(handle, this, &AShipPawn::CleanEmp, _duration, false);
 }
 
-bool AShipPawn::giveMatiereToAlly(uint8 _id)
+ESkillReturn AShipPawn::giveMatiereToAlly(uint8 _id)
 {
-    if(this->RU_Matiere <= 0) return false;
-    if(this->PlayerDataAsset == nullptr) return false;
+    if(this->RU_Matiere <= 0) return ESkillReturn::NoMater;
+    if(this->PlayerDataAsset == nullptr) return ESkillReturn::InternError;
 
     if (ASpacelPlayerState* localSpacelPlayerState = GetPlayerState<ASpacelPlayerState>())
     {
@@ -308,11 +370,11 @@ bool AShipPawn::giveMatiereToAlly(uint8 _id)
                         {
                             if (AShipPawn* allyPawn = spacelPlayerState->GetPawn<AShipPawn>())
                             {
-                                int value = FMath::Min(this->PlayerDataAsset->MaxGiveMatiere, this->RU_Matiere);
+                                int value = FMath::Min((int)this->PlayerDataAsset->MaxGiveMatiere, (int)this->RU_Matiere);
                                 allyPawn->addMatiere(value);
 
                                 addMatiere(value * -1);
-                                return true;
+                                return ESkillReturn::Success;
                             }
                         }
                         ++i;
@@ -322,7 +384,7 @@ bool AShipPawn::giveMatiereToAlly(uint8 _id)
         }
     }
 
-    return false;
+    return ESkillReturn::InternError;
 }
 
 void AShipPawn::CleanEmp()
@@ -340,8 +402,11 @@ void AShipPawn::Tick(float _deltaTime)
 
     if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
     {
-        // move ship
-        moveShip(_deltaTime);
+        if (!hasEffect(EEffect::Killed) && !m_endGame)
+        {
+            // move ship
+            moveShip(_deltaTime);
+        }
     }
 }
 
@@ -359,14 +424,24 @@ void AShipPawn::OnRep_PlayerState()
         }
 
         setCollisionProfile(teamName);
+
+        if (this->IsLocallyControlled())
+        {
+            spacelPlayerState->OnSkillLobbyChangeDelegate.AddDynamic(this, &AShipPawn::BuildShip);
+        }
     }
 }
 
 void AShipPawn::BuildDefaultShip()
 {
 #if WITH_EDITOR
-    this->ModuleComponent->OnStartGame();
+    this->ModuleComponent->OnStartGame(EGameState::InGame);
 #endif
+}
+
+void AShipPawn::BuildShip()
+{
+    this->ModuleComponent->BuildShipLobby();
 }
 
 void AShipPawn::setFire(bool _on)
@@ -398,6 +473,7 @@ void AShipPawn::kill()
         FTimerHandle handle;
         this->GetWorldTimerManager().SetTimer(handle, this, &AShipPawn::Restarted, 1.0f, false, 10.0f);
 
+        this->DriverMeshComponent->SetPhysicsAngularVelocityInDegrees(FVector::ZeroVector);
         // disable collision
         setCollisionProfile("NoCollision");
 
@@ -407,10 +483,19 @@ void AShipPawn::kill()
         removeAllPlayerFocusOnMe();
 
         // replace actor to spawn
-        this->SetActorTransform(m_startTransform);
+        this->SetActorLocationAndRotation(StartTransform.GetLocation(), StartTransform.GetRotation());
+        this->DriverMeshComponent->SetPhysicsLinearVelocity(FVector::ZeroVector);
 
         this->RU_Matiere = 0;
         OnRep_Matiere();
+
+        if (ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld())))
+        {
+            if (spacelGameState->RU_GameState == (uint8)EGameState::InGame)
+            {
+                spacelGameState->GoToUnlockMedium();
+            }
+        }
     }
 }
 
@@ -474,6 +559,12 @@ void AShipPawn::RPCNetMulticastEnterFog_Implementation(int32 _playerId, bool _en
         if (ATargetActor* targetActor = Cast<ATargetActor>(this->TargetComponent->GetChildActor()))
         {
             targetActor->showTarget(!_enter);
+
+            if (!ensure(this->PlayerNameComponent != nullptr)) return;
+            if (APlayerNameActor* playerNameActor = Cast<APlayerNameActor>(this->PlayerNameComponent->GetChildActor()))
+            {
+                playerNameActor->show(!_enter);
+            }
         }
     }
 }
@@ -495,16 +586,16 @@ void AShipPawn::OnRep_Matiere()
     }
 }
 
-void AShipPawn::hit(FString const& _team, int32 _playerId, class UPrimitiveComponent* _comp, int32 _index)
+void AShipPawn::hit(FString const& _team, int32 _playerId, class UPrimitiveComponent* _comp, int32 _index, FVector const& _otherLocation)
 {
     UCustomCollisionComponent* customCollisionComponent { Cast<UCustomCollisionComponent>(this->GetComponentByClass(UCustomCollisionComponent::StaticClass())) };
     if (customCollisionComponent != nullptr)
     {
-        customCollisionComponent->hit(_team, _playerId, _comp, _index);
+        customCollisionComponent->hit(_team, _playerId, _comp, _index, _otherLocation);
     }
 }
 
-void AShipPawn::setLocationExhaustFx(TArray<FVector> const& _loc)
+void AShipPawn::setLocationExhaustFx(TArray<FVector_NetQuantize> const& _loc)
 {
     if (this->ExhaustFxComponent == nullptr)
     {
@@ -531,6 +622,8 @@ void AShipPawn::RPCClientPlayCameraShake_Implementation()
             FVector const& camLoc = this->CameraComponent->GetComponentLocation();
             playerController->ClientPlayCameraShake(this->CameraShakeClass, 1.0f, ECameraAnimPlaySpace::UserDefined, (this->GetActorLocation() - camLoc).Rotation());
         }
+
+        BP_HitIndicator();
     }
 }
 
@@ -546,6 +639,11 @@ float AShipPawn::getPercentSupport() const
     if (this->ModuleComponent == nullptr) return 0.0f;
 
     return this->ModuleComponent->getPercentSupport();
+}
+
+void AShipPawn::boostWall()
+{
+    this->R_HasBoostWall = true;
 }
 
 bool AShipPawn::canTank(int32 _val)
@@ -564,7 +662,7 @@ bool AShipPawn::canTank(int32 _val)
         lb_addScore(_val);
         return true;
     }
-    else if (hasEffect(EEffect::Respawned))
+    else if (hasEffect(EEffect::Respawned) || hasEffect(EEffect::StartGame))
     {
         return true;
     }
@@ -616,11 +714,87 @@ void AShipPawn::RPCNetMulticastEnterHidding_Implementation(int32 _playerId, bool
 void AShipPawn::RPCClientAddEffect_Implementation(EEffect _effect)
 {
     OnAddEffectDelegate.Broadcast(_effect);
+    BP_FxAddEffect(_effect);
+
+    if (_effect == EEffect::BackToGame)
+    {
+        // TO DO Text system
+        OnSendInfoPlayerDelegate.Broadcast("Didn't you seriously want to quit?");
+    }
+    else if (_effect == EEffect::MetaFormSupport)
+    {
+        if (this->PlayerDataAsset != nullptr)
+        {
+            FTransform const& transform = this->GetActorTransform();
+            if (APostProcessInvisible* actor = Cast<APostProcessInvisible>(UGameplayStatics::BeginDeferredActorSpawnFromClass(this->GetWorld(), this->PlayerDataAsset->MetaSupportPostProcessClass, transform)))
+            {
+                actor->Effect = _effect;
+                OnRemoveEffectDelegate.AddDynamic(actor, &APostProcessInvisible::OnRemoveEffect);
+                UGameplayStatics::FinishSpawningActor(actor, transform);
+                actor->AttachToActor(this, FAttachmentTransformRules(EAttachmentRule::KeepWorld, true));
+            }
+        }
+    }
+    else if (_effect == EEffect::MetaFormAttack)
+    {
+        if (UModuleComponent* moduleComponent = this->ModuleComponent)
+        {
+            if (UInstancedStaticMeshComponent* weaponMeshComponent = this->ModuleComponent->WeaponMeshComponent)
+            {
+                weaponMeshComponent->SetScalarParameterValueOnMaterials("Edge sharp max", 0.0f);
+                weaponMeshComponent->SetScalarParameterValueOnMaterials("Glow", 1200.0f);
+            }
+        }
+    }
+    else if (_effect == EEffect::Emp)
+    {
+        if (this->PlayerDataAsset != nullptr)
+        {
+            FTransform const& transform = this->GetActorTransform();
+            if (APostProcessInvisible* actor = Cast<APostProcessInvisible>(UGameplayStatics::BeginDeferredActorSpawnFromClass(this->GetWorld(), this->PlayerDataAsset->EmpPostProcessClass, transform)))
+            {
+                actor->Effect = _effect;
+                OnRemoveEffectDelegate.AddDynamic(actor, &APostProcessInvisible::OnRemoveEffect);
+                UGameplayStatics::FinishSpawningActor(actor, transform);
+                actor->AttachToActor(this, FAttachmentTransformRules(EAttachmentRule::KeepWorld, true));
+            }
+        }
+    }
+    else if (_effect == EEffect::Killed)
+    {
+        m_countDownRespawn = 10;
+        CountDownRespawn();
+    }
+}
+
+void AShipPawn::CountDownRespawn()
+{
+    OnSendInfoPlayerDelegate.Broadcast("Rebuilding... " + FString::FromInt(m_countDownRespawn));
+    --m_countDownRespawn;
+
+    if (m_countDownRespawn > 0)
+    {
+        FTimerHandle handle;
+        this->GetWorldTimerManager().SetTimer(handle, this, &AShipPawn::CountDownRespawn, 1.0f, false);
+    }
 }
 
 void AShipPawn::RPCClientRemoveEffect_Implementation(EEffect _effect)
 {
     OnRemoveEffectDelegate.Broadcast(_effect);
+    BP_FxRemoveEffect(_effect);
+
+    if (_effect == EEffect::MetaFormAttack)
+    {
+        if (UModuleComponent* moduleComponent = this->ModuleComponent)
+        {
+            if (UInstancedStaticMeshComponent* weaponMeshComponent = this->ModuleComponent->WeaponMeshComponent)
+            {
+                weaponMeshComponent->SetScalarParameterValueOnMaterials("Edge sharp max", 550.0f);
+                weaponMeshComponent->SetScalarParameterValueOnMaterials("Glow", 800.0f);
+            }
+        }
+    }
 }
 
 void AShipPawn::behaviourAddEffect(EEffect _type)
@@ -645,6 +819,11 @@ void AShipPawn::behaviourAddEffect(EEffect _type)
                 spacelGameState->OnPlayerEnterFogDelegate.Broadcast(playerState->PlayerId, true);
             }
         }
+
+        if (_type == EEffect::Killed)
+        {
+            RPCNetMulticastFxKilled();
+        }
     }
     else if (_type == EEffect::Emp)
     {
@@ -655,6 +834,11 @@ void AShipPawn::behaviourAddEffect(EEffect _type)
     }
     else if (_type == EEffect::BackToGame)
     {
+        if (this->FireComponent != nullptr)
+        {
+            this->FireComponent->m_isFire = false;
+        }
+
         FTimerHandle handle;
         this->GetWorldTimerManager().SetTimer(handle, this, &AShipPawn::BackToGame, 1.0f, false);
     }
@@ -670,6 +854,18 @@ void AShipPawn::behaviourAddEffect(EEffect _type)
             }
         }
     }
+    else if (_type == EEffect::StartGame)
+    {
+        if (this->PlayerDataAsset != nullptr)
+        {
+            this->R_OverDrive = this->PlayerDataAsset->CoefOverDriveValue;
+        }
+    }
+}
+
+void AShipPawn::RPCNetMulticastFxKilled_Implementation()
+{
+    BP_FxKilled();
 }
 
 void AShipPawn::BackToGame()
@@ -737,6 +933,13 @@ void AShipPawn::behaviourRemoveEffect(EEffect _type)
         }
         this->FireComponent->m_target = nullptr;
     }
+    else if (_type == EEffect::StartGame)
+    {
+        if (this->PlayerDataAsset != nullptr)
+        {
+            this->R_OverDrive = 0.0f;
+        }
+    }
 }
 
 void AShipPawn::RPCClientFeedbackScore_Implementation(EScoreType _type, int16 _value)
@@ -744,28 +947,35 @@ void AShipPawn::RPCClientFeedbackScore_Implementation(EScoreType _type, int16 _v
     OnFeedbackScoreDelegate.Broadcast(_type, _value);
 }
 
-bool AShipPawn::onRepairProtection()
+ESkillReturn AShipPawn::onRepairProtection()
 {
     if (this->RepairComponent != nullptr)
     {
         return this->RepairComponent->onRepairProtection();
     }
-    return false;
+    return ESkillReturn::InternError;
 }
 
-bool AShipPawn::onRepairSupport()
+ESkillReturn AShipPawn::onRepairSupport()
 {
     if (this->RepairComponent != nullptr)
     {
         return this->RepairComponent->onRepairSupport();
     }
-    return false;
+    return ESkillReturn::InternError;
 }
 
 void AShipPawn::addMatiere(int32 _val)
 {
     this->RU_Matiere += _val;
     OnRep_Matiere();
+
+    RPCClientFxAddMatiere(_val);
+}
+
+void AShipPawn::RPCClientFxAddMatiere_Implementation(int8 _val)
+{
+    BP_FxAddMatiere(_val);
 }
 
 void AShipPawn::farmAsteroide()
@@ -781,7 +991,7 @@ void AShipPawn::farmAsteroide()
     }
 }
 
-bool AShipPawn::spawnNinePack()
+ESkillReturn AShipPawn::spawnNinePack()
 {
     if (this->PlayerDataAsset != nullptr)
     {
@@ -795,14 +1005,23 @@ bool AShipPawn::spawnNinePack()
                 if (USceneComponent* comp = Cast<USceneComponent>(actors[0]))
                 {
                     FTransform const& tr = comp->GetComponentTransform();
-                    AActor* actor = Cast<AActor>(UGameplayStatics::BeginDeferredActorSpawnFromClass(GetWorld(), this->PlayerDataAsset->NinePackClass, tr));
-                    UGameplayStatics::FinishSpawningActor(actor, tr);
-                    return true;
+                    ANinePackActor* ninePackActor = Cast<ANinePackActor>(UGameplayStatics::BeginDeferredActorSpawnFromClass(GetWorld(), this->PlayerDataAsset->NinePackClass, tr));
+                    if (ninePackActor != nullptr)
+                    {
+                        ninePackActor->R_IsBoost = this->R_HasBoostWall;
+                    }
+                    UGameplayStatics::FinishSpawningActor(ninePackActor, tr);
+                    RPCNetMulticastFxNinePack();
+                    return ESkillReturn::Success;
                 }
             }
         }
+        else
+        {
+            return ESkillReturn::NoMater;
+        }
     }
-    return false;
+    return ESkillReturn::InternError;
 }
 
 void AShipPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetimeProps) const
@@ -811,5 +1030,6 @@ void AShipPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetim
     DOREPLIFETIME(AShipPawn, RU_Matiere);
     DOREPLIFETIME(AShipPawn, R_ShieldLife);
     DOREPLIFETIME(AShipPawn, R_Effect);
+    DOREPLIFETIME(AShipPawn, R_HasBoostWall);
 }
 

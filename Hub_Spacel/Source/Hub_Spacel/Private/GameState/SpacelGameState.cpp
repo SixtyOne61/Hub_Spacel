@@ -7,26 +7,11 @@
 #include "Net/UnrealNetwork.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerStart.h"
+#include "DataAsset/GameStateDataAsset.h"
 
 void ASpacelGameState::OnRep_StateGame()
 {
-    switch (this->RU_GameState)
-    {
-    case (uint8)EGameState::Prepare:
-        OnStartPrepareDelegate.Broadcast();
-        break;
-
-    case (uint8)EGameState::LockPrepare:
-        OnLockPrepareDelegate.Broadcast();
-        break;
-
-    case (uint8)EGameState::InGame:
-        OnStartGameDelegate.Broadcast();
-        break;
-
-    default:
-        break;
-    }
+    OnChangeStateDelegate.Broadcast((EGameState)this->RU_GameState);
 }
 
 FString ASpacelGameState::GetBestTeam() const
@@ -45,34 +30,48 @@ FString ASpacelGameState::GetBestTeam() const
     return teamName;
 }
 
+FString ASpacelGameState::GetWorstTeam() const
+{
+    TOptional<int32> val{};
+    FString teamName{};
+    for (FScore const& score : this->R_Scores)
+    {
+        if (!val.IsSet() || score.Score < val.GetValue())
+        {
+            val = score.Score;
+            teamName = score.Team;
+        }
+    }
+
+    return teamName;
+}
+
+int32 ASpacelGameState::GetScore(FString const& _team) const
+{
+    for (FScore const& score : this->R_Scores)
+    {
+        if (score.Team == _team)
+        {
+            return score.Score;
+        }
+    }
+
+    ensure(false);
+    return 0;
+}
+
 void ASpacelGameState::AddScore(FString const& _team, int32 _playerId, EScoreType _type)
 {
+    if (this->GameStateDataAsset == nullptr) return;
+
     uint16 scoreValue = 0;
     for (FScore& score : this->R_Scores)
     {
         if (score.Team == _team)
         {
-            switch (_type)
-            {
-            case EScoreType::Hit:
-                score.Score += 5;
-                scoreValue = 5;
-                break;
-
-            case EScoreType::Kill:
-                score.Score += 300;
-                scoreValue = 300;
-                break;
-
-            case EScoreType::Tank:
-                score.Score += 10;
-                scoreValue = 10;
-                break;
-
-            case EScoreType::Emp:
-                score.Score += 30;
-                scoreValue = 30;
-            }
+            int32 delta = this->GameStateDataAsset->getScore(_type);
+            score.Score += delta;
+            scoreValue = delta;
         }
     }
 
@@ -97,6 +96,18 @@ void ASpacelGameState::AddScore(FString const& _team, int32 _playerId, EScoreTyp
     for (int i = 0; i < _nb; ++i)
     {
         AddScore(_team, _playerId, _type);
+    }
+}
+
+void ASpacelGameState::AddScore(FString const& _team, int32 _value)
+{
+    uint16 scoreValue = 0;
+    for (FScore& score : this->R_Scores)
+    {
+        if (score.Team == _team)
+        {
+            score.Score += _value;
+        }
     }
 }
 
@@ -127,6 +138,21 @@ void ASpacelGameState::RegisterTeam()
 void ASpacelGameState::BeginPlay()
 {
     Super::BeginPlay();
+}
+
+void ASpacelGameState::RPCNetMulticastStartMission_Implementation(EMission _type)
+{
+    OnStartMissionDelegate.Broadcast(_type);
+}
+
+void ASpacelGameState::RPCNetMulticastStartMissionTwoParam_Implementation(EMission _type, FName _team)
+{
+    OnStartMissionTwoParamDelegate.Broadcast(_type, _team);
+}
+
+void ASpacelGameState::RPCNetMulticastEndMission_Implementation(EMission _type)
+{
+    OnEndMissionDelegate.Broadcast(_type);
 }
 
 void ASpacelGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

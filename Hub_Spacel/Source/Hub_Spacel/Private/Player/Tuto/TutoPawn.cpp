@@ -57,7 +57,7 @@ void ATutoPawn::BeginPlay()
         }
     }
 
-    this->ModuleComponent->OnStartGame();
+    //this->ModuleComponent->OnStartGame();
 }
 
 // Called every frame
