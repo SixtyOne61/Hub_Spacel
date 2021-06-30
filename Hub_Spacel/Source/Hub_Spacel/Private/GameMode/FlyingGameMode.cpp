@@ -12,6 +12,7 @@
 #include "Util/SimplyHttpRequest.h"
 #include "Util/SimplyMath.h"
 #include "DataAsset/FlyingGameModeDataAsset.h"
+#include "DataAsset/EditorHackDataAsset.h"
 
 AFlyingGameMode::AFlyingGameMode()
 {
@@ -30,6 +31,13 @@ void AFlyingGameMode::BeginPlay()
     {
         this->RemainingGameTime = this->GameModeDataAsset->RemainingGameTime;
         this->RemainingChooseModuleTime = this->GameModeDataAsset->RemainingChooseModuleTime;
+#if WITH_EDITOR
+        if (HackDataAsset != nullptr && HackDataAsset->UseHack)
+        {
+            RemainingChooseModuleTime = HackDataAsset->ChooseModuleTime;
+        }
+#endif
+
         this->RemainingLeaveTime = this->GameModeDataAsset->RemainingLeaveTime;
         m_nextStepTime = this->RemainingChooseModuleTime;
     }

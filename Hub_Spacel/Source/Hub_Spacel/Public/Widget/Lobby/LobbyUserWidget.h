@@ -52,6 +52,9 @@ protected:
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
 	class UFlyingGameModeDataAsset* GameModeDataAsset { nullptr };
 
+	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
+	class UEditorHackDataAsset* HackDataAsset{ nullptr };
+
 	UPROPERTY(Category = "Setup", EditAnywhere, BlueprintReadWrite)
 	TArray<ESkill> LowSkill {};
 

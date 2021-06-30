@@ -20,6 +20,7 @@
 #include "DataAsset/TeamColorDataAsset.h"
 #include "DataAsset/SkillDataAsset.h"
 #include "DataAsset/UniqueSkillDataAsset.h"
+#include "DataAsset/EditorHackDataAsset.h"
 #include "Player/SpacelPlayerState.h"
 #include "Player/TargetActor.h"
 #include "Player/FireComponent.h"
@@ -78,6 +79,15 @@ void AShipPawn::OnChangeState(EGameState _state)
 
             FTimerHandle handle;
             this->GetWorldTimerManager().SetTimer(handle, timerCallback, 3.0f, false);
+        }
+        else
+        {
+#if WITH_EDITOR
+            if (HackDataAsset != nullptr && HackDataAsset->UseHack)
+            {
+                this->BuildDefaultShip();
+            }
+#endif
         }
     }
     else if (_state == EGameState::EndGame)

@@ -175,6 +175,8 @@ protected:
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
 	class UFlyingGameModeDataAsset* GameModeDataAsset{ nullptr };
 
+	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
+	class UEditorHackDataAsset* HackDataAsset { nullptr };
 
 private:
 	class FHttpModule* HttpModule { nullptr };

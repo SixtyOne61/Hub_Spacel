@@ -12,6 +12,7 @@
 #include "DataAsset/TeamColorDataAsset.h"
 #include "DataAsset/UniqueSkillDataAsset.h"
 #include "DataAsset/FlyingGameModeDataAsset.h"
+#include "DataAsset/EditorHackDataAsset.h"
 #include "Player/SpacelPlayerState.h"
 #include "Components/TextBlock.h"
 
@@ -128,7 +129,14 @@ void ULobbyUserWidget::StartLobby(EGameState _state)
         // save low module choice
         if (ASpacelPlayerState* owningPlayerState = Cast<ASpacelPlayerState>(this->GetOwningPlayerState()))
         {
-            owningPlayerState->RPCServerAddSkill(this->Carrousel->getIdSelected(), m_currentSkillType);
+            uint8 id = this->Carrousel->getIdSelected();
+#if WITH_EDITOR
+            if (HackDataAsset != nullptr && HackDataAsset->UseHack)
+            {
+                id = (uint8)HackDataAsset->LowSkillId;
+            }
+#endif
+            owningPlayerState->RPCServerAddSkill(id, m_currentSkillType);
         }
 
         // setup carrousel with medium module
@@ -145,7 +153,14 @@ void ULobbyUserWidget::StartLobby(EGameState _state)
         // save medium module choice
         if (ASpacelPlayerState* owningPlayerState = Cast<ASpacelPlayerState>(this->GetOwningPlayerState()))
         {
-            owningPlayerState->RPCServerAddSkill(this->Carrousel->getIdSelected(), m_currentSkillType);
+            uint8 id = this->Carrousel->getIdSelected();
+#if WITH_EDITOR
+            if (HackDataAsset != nullptr && HackDataAsset->UseHack)
+            {
+                id = (uint8)HackDataAsset->MediumSkillId;
+            }
+#endif
+            owningPlayerState->RPCServerAddSkill(id, m_currentSkillType);
         }
 
         // setup carrousel with hight module
@@ -162,7 +177,14 @@ void ULobbyUserWidget::StartLobby(EGameState _state)
         // save hight module choice
         if (ASpacelPlayerState* owningPlayerState = Cast<ASpacelPlayerState>(this->GetOwningPlayerState()))
         {
-            owningPlayerState->RPCServerAddSkill(this->Carrousel->getIdSelected(), m_currentSkillType);
+            uint8 id = this->Carrousel->getIdSelected();
+#if WITH_EDITOR
+            if (HackDataAsset != nullptr && HackDataAsset->UseHack)
+            {
+                id = (uint8)HackDataAsset->HightSkillId;
+            }
+#endif
+            owningPlayerState->RPCServerAddSkill(id, m_currentSkillType);
         }
 
         if (this->GameModeDataAsset != nullptr)
