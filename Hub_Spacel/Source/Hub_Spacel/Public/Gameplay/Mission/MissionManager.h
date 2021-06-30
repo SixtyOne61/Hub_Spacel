@@ -38,6 +38,9 @@ public:
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
 	class UMissionDataAsset* MissionDataAsset{ nullptr };
 
+	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
+	class UEditorHackDataAsset* HackDataAsset{ nullptr };
+
 	UPROPERTY(Category = "Sub class", EditAnywhere, BlueprintReadWrite)
 	TSubclassOf<class AComet> CometClass { nullptr };
 

@@ -30,4 +30,7 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	ESkill HightSkillId { ESkill::MetaFormSupport };
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool MissionSucceedImmediately { true };
 };

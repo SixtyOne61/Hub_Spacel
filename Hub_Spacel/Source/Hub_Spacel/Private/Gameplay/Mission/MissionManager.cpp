@@ -9,6 +9,7 @@
 #include "Gameplay/Mission/MissionBehaviour.h"
 #include "Gameplay/Mission/Comet.h"
 #include "Util/Tag.h"
+#include "DataAsset/EditorHackDataAsset.h"
 #include <functional>
 
 // Sets default values
@@ -59,6 +60,19 @@ void AMissionManager::Tick(float DeltaTime)
 
 			_missions.RemoveAll([](auto& _mission) { return _mission->m_isEnd; });
 		};
+
+#if WITH_EDITOR
+		if (HackDataAsset != nullptr && HackDataAsset->UseHack && HackDataAsset->MissionSucceedImmediately)
+		{
+			for (auto& mission : m_openMission)
+			{
+				if (mission.IsValid())
+				{
+					mission->end();
+				}
+			}
+		}
+#endif
 		
 		lb(m_openMission);
 		lb(m_silenceMission);
