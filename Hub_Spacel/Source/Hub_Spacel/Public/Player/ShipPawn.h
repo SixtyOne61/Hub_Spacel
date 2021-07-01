@@ -189,9 +189,6 @@ private:
     void CountDownRespawn();
 
 public:
-    UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
-    class UEditorHackDataAsset* HackDataAsset{ nullptr };
-
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
     FOnFeedbackScore OnFeedbackScoreDelegate {};
 

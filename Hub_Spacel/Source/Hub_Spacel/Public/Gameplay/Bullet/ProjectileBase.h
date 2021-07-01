@@ -39,7 +39,7 @@ public:
 	FName R_Team {};
 
 	UPROPERTY(Replicated)
-	int32 R_PlayerIdOwner {};
+	int32 PlayerIdOwner {};
 
 protected:
 	UPROPERTY(EditAnywhere)

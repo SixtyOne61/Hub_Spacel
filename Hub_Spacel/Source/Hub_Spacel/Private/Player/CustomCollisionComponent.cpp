@@ -450,7 +450,7 @@ void UCustomCollisionComponent::addScore(TArray<FHitResult> const& _hits, EScore
 					TTuple<int32, FString> playerInfo;
 					if (AProjectileBase* projectileBase = Cast<AProjectileBase>(hit.GetActor()))
 					{
-						playerInfo.Key = projectileBase->R_PlayerIdOwner;
+						playerInfo.Key = projectileBase->PlayerIdOwner;
 					}
 
 					for (FName const& tag : hit.GetActor()->Tags)

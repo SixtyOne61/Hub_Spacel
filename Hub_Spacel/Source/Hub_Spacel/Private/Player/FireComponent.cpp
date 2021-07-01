@@ -210,7 +210,7 @@ void UFireComponent::setupProjectile(AActor* _projectile) const
     {
         if (AProjectileBase* projectileBase = Cast<AProjectileBase>(_projectile))
         {
-            projectileBase->R_PlayerIdOwner = spacelPlayerState->PlayerId;
+            projectileBase->PlayerIdOwner = spacelPlayerState->PlayerId;
         }
     }
 }
