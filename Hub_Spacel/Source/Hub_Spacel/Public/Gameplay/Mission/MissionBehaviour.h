@@ -13,9 +13,10 @@ class HUB_SPACEL_API MissionBehaviour
 	friend class AMissionManager;
 
 public:
-	MissionBehaviour(FMission const& _mission) : m_mission (_mission) {};
+	MissionBehaviour(FMission const& _mission) : m_mission (_mission) { start(); };
 	virtual ~MissionBehaviour() {};
 
+	virtual void start() {};
 	virtual void tick(float _deltaTime, UWorld* _world) = 0;
 	virtual void end() { m_isEnd = true; };
 
@@ -69,6 +70,7 @@ private:
 
 class HUB_SPACEL_API MissionComet : public MissionBehaviour
 {
+	// TO DO override start and spawn comet on start
 	using MissionBehaviour::MissionBehaviour;
 
 public:
@@ -78,4 +80,13 @@ public:
 
 	int m_nbComet { 0 };
 	TSet<FString> m_teams {};
+};
+
+class HUB_SPACEL_API MissionPirate : public MissionBehaviour
+{
+	using MissionBehaviour::MissionBehaviour;
+
+public:
+	void start() override;
+	void tick(float _deltaTime, UWorld* _world) override {};
 };

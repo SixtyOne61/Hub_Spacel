@@ -136,3 +136,8 @@ void MissionComet::onCometDestroy(FString const& _team)
     m_nbComet--;
     m_teams.Add(_team);
 }
+
+void MissionPirate::start()
+{
+
+}

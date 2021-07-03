@@ -7,6 +7,7 @@
 #include "DataAsset/PirateDataAsset.h"
 #include "Util/SimplyXml.h"
 #include "Util/Tag.h"
+#include "Util/DebugScreenMessage.h"
 
 // Sets default values
 APirate::APirate()
@@ -19,8 +20,6 @@ APirate::APirate()
 
 	Voxels = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Voxels"));
 	Voxels->SetupAttachment(RedCube);
-
-	Tags.Add(Tags::BlockingActor);
 }
 
 // Called when the game starts or when spawned
@@ -47,27 +46,24 @@ void APirate::BeginPlay()
 void APirate::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-}
-
-void APirate::applyHit(TArray<int32>& _instance)
-{
-
-}
-
-void APirate::hit(class AShipPawn* _pawn, FString const& _team)
-{
-
 }
 
 void APirate::OnVoxelsHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit)
 {
-
+    RPCNetMulticastHit(_hit.Item);
 }
 
 void APirate::OnRedCubeHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit)
 {
+    this->Destroy();
+}
 
+void APirate::RPCNetMulticastHit_Implementation(int32 _index)
+{
+    if (this->Voxels != nullptr)
+    {
+        this->Voxels->RemoveInstance(_index);
+    }
 }
 
 void APirate::BuildShip()

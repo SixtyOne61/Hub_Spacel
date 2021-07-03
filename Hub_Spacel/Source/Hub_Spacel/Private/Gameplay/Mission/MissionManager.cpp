@@ -30,10 +30,29 @@ void AMissionManager::BeginPlay()
 		if (ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld())))
 		{
 			spacelGameState->OnChangeStateDelegate.AddDynamic(this, &AMissionManager::OnStartGame);
+			spacelGameState->OnAskMissionDelegate.AddDynamic(this, &AMissionManager::OnAskMission);
 		}
 
 		FMission const& mission = this->MissionDataAsset->getMission(EMission::EcartType);
 		m_silenceMission.Add(MakeUnique<MissionEcartType>(mission));
+	}
+}
+
+void AMissionManager::OnAskMission(EMission _missionId)
+{
+	switch (_missionId)
+	{
+		case EMission::Pirate:
+		{
+			FMission const& mission = this->MissionDataAsset->getMission(EMission::Pirate);
+			m_openMission.Add(MakeUnique<MissionPirate>(mission));
+			startMission(this->MissionDataAsset->getMission(EMission::Pirate));
+			break;
+		}
+
+		default:
+			ensure(false);
+		break;
 	}
 }
 

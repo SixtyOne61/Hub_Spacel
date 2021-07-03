@@ -18,9 +18,6 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	void applyHit(TArray<int32>& _instance);
-	void hit(class AShipPawn* _pawn, FString const& _team) override;
-
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -32,6 +29,9 @@ protected:
 
 	UFUNCTION()
 	void OnRedCubeHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit);
+
+	UFUNCTION(Reliable, NetMulticast)
+	void RPCNetMulticastHit(int32 _index);
 
 protected:
 	UPROPERTY(EditAnywhere)
