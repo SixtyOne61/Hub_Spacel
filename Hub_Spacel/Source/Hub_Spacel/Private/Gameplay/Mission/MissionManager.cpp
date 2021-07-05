@@ -46,7 +46,7 @@ void AMissionManager::OnAskMission(EMission _missionId)
 		{
 			FMission const& mission = this->MissionDataAsset->getMission(EMission::Pirate);
 			m_openMission.Add(MakeUnique<MissionPirate>(mission));
-			startMission(this->MissionDataAsset->getMission(EMission::Pirate));
+			startMission(mission);
 			break;
 		}
 

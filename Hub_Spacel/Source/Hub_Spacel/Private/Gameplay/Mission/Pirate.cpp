@@ -8,6 +8,7 @@
 #include "Util/SimplyXml.h"
 #include "Util/Tag.h"
 #include "Util/DebugScreenMessage.h"
+#include "Gameplay/Bullet/ProjectileBase.h"
 
 // Sets default values
 APirate::APirate()
@@ -55,7 +56,17 @@ void APirate::OnVoxelsHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UP
 
 void APirate::OnRedCubeHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit)
 {
-    this->Destroy();
+    if (_otherActor != nullptr)
+    {
+        if (AProjectileBase* projectile = Cast<AProjectileBase>(_otherActor))
+        {
+            if (OnKilledUniqueDelegate != nullptr)
+            {
+                OnKilledUniqueDelegate(projectile->R_Team);
+                this->Destroy();
+            }
+        }
+    }
 }
 
 void APirate::RPCNetMulticastHit_Implementation(int32 _index)

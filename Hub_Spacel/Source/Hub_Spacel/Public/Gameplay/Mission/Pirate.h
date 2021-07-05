@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Gameplay/Mission/MissionActor.h"
+#include <functional>
 #include "Pirate.generated.h"
 
 UCLASS()
@@ -11,6 +12,8 @@ class HUB_SPACEL_API APirate : public AMissionActor
 {
 	GENERATED_BODY()
 	
+	friend class MissionPirate;
+
 public:	
 	// Sets default values for this actor's properties
 	APirate();
@@ -42,4 +45,6 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, Category = "Component")
 	class UStaticMeshComponent* RedCube { nullptr };
+
+	std::function<void(FName const&)> OnKilledUniqueDelegate { nullptr };
 };

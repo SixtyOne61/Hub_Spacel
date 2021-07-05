@@ -29,6 +29,9 @@ struct HUB_SPACEL_API FMission
 
 	UPROPERTY(EditAnywhere)
 	FString Team {};
+
+	UPROPERTY(EditAnywhere)
+	class UParamMissionDataAsset* Param { nullptr };
 };
 
 /**

@@ -72,7 +72,7 @@ public:
 	void GoToLockPrepare() { this->RU_GameState = (uint8)EGameState::LockPrepare; OnRep_StateGame(); }
 
 	UFUNCTION()
-	void GoToInGame() { this->RU_GameState = (uint8)EGameState::InGame; OnRep_StateGame(); }
+	void GoToInGame() { this->RU_GameState = (uint8)EGameState::InGame; OnRep_StateGame(); registerMission(); }
 
 	UFUNCTION()
 	void GoToUnlockMedium() { this->RU_GameState = (uint8)EGameState::UnlockMedium; OnRep_StateGame(); }
@@ -113,6 +113,11 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+
+	void registerMission();
+
+	UFUNCTION()
+	void FirstMission();
 
 private:
 	UFUNCTION()
