@@ -29,17 +29,17 @@ void AMissionManager::BeginPlay()
 	{
 		if (ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld())))
 		{
-			spacelGameState->OnChangeStateDelegate.AddDynamic(this, &AMissionManager::OnStartGame);
 			spacelGameState->OnAskMissionDelegate.AddDynamic(this, &AMissionManager::OnAskMission);
 		}
 
-		FMission const& mission = this->MissionDataAsset->getMission(EMission::EcartType);
-		m_silenceMission.Add(MakeUnique<MissionEcartType>(mission));
+		OnAskMission(EMission::EcartType);
 	}
 }
 
 void AMissionManager::OnAskMission(EMission _missionId)
 {
+	if(this->MissionDataAsset == nullptr) return;
+
 	switch (_missionId)
 	{
 		case EMission::Pirate:
@@ -47,6 +47,45 @@ void AMissionManager::OnAskMission(EMission _missionId)
 			FMission const& mission = this->MissionDataAsset->getMission(EMission::Pirate);
 			m_openMission.Add(MakeUnique<MissionPirate>(mission));
 			startMission(mission);
+			break;
+		}
+
+		case EMission::EcartType:
+		{
+			FMission const& mission = this->MissionDataAsset->getMission(EMission::EcartType);
+			m_silenceMission.Add(MakeUnique<MissionEcartType>(mission));
+			break;
+		}
+
+		case EMission::FirstBlood:
+		{
+			FMission const& firstBlood = this->MissionDataAsset->getMission(EMission::FirstBlood);
+
+			// start mission first blood with delay
+			FTimerDelegate timerCallbackFirstBlood;
+			timerCallbackFirstBlood.BindLambda([&]() {
+				FMission const& mission = this->MissionDataAsset->getMission(EMission::FirstBlood);
+				m_openMission.Add(MakeUnique<MissionFirstBlood>(mission));
+				startMission(m_openMission.Last()->m_mission); });
+
+			FTimerHandle handleFirstBlood;
+			this->GetWorldTimerManager().SetTimer(handleFirstBlood, timerCallbackFirstBlood, firstBlood.ConditionValue, false);
+			break;
+		}
+
+		case EMission::ScoreRace:
+		{
+			FMission const& scoreRace = this->MissionDataAsset->getMission(EMission::ScoreRace);
+
+			// start mission score race with delay
+			FTimerDelegate timerCallbackScoreRace;
+			timerCallbackScoreRace.BindLambda([&]() {
+				FMission const& mission = this->MissionDataAsset->getMission(EMission::ScoreRace);
+				m_openMission.Add(MakeUnique<MissionRaceScore>(mission));
+				startMission(this->MissionDataAsset->getMission(EMission::ScoreRace)); });
+
+			FTimerHandle handleScoreRace;
+			this->GetWorldTimerManager().SetTimer(handleScoreRace, timerCallbackScoreRace, scoreRace.ConditionValue, false);
 			break;
 		}
 
@@ -96,35 +135,6 @@ void AMissionManager::Tick(float DeltaTime)
 		lb(m_openMission);
 		lb(m_silenceMission);
 	}
-}
-
-void AMissionManager::OnStartGame(EGameState _state)
-{
-	if(_state != EGameState::InGame) return;
-	if(this->MissionDataAsset == nullptr) return;
-
-	FMission const& firstBlood = this->MissionDataAsset->getMission(EMission::FirstBlood);
-	FMission const& scoreRace = this->MissionDataAsset->getMission(EMission::ScoreRace);
-
-	// start mission first blood with delay
-	FTimerDelegate timerCallbackFirstBlood;
-	timerCallbackFirstBlood.BindLambda([&]() {
-		FMission const& mission = this->MissionDataAsset->getMission(EMission::FirstBlood);
-		m_openMission.Add(MakeUnique<MissionFirstBlood>(mission));
-		startMission(m_openMission.Last()->m_mission); });
-
-	FTimerHandle handleFirstBlood;
-	this->GetWorldTimerManager().SetTimer(handleFirstBlood, timerCallbackFirstBlood, firstBlood.ConditionValue, false);
-
-	// start mission score race with delay
-	FTimerDelegate timerCallbackScoreRace;
-	timerCallbackScoreRace.BindLambda([&]() {
-		FMission const& mission = this->MissionDataAsset->getMission(EMission::ScoreRace);
-		m_openMission.Add(MakeUnique<MissionRaceScore>(mission));
-		startMission(this->MissionDataAsset->getMission(EMission::ScoreRace)); });
-	
-	FTimerHandle handleScoreRace;
-	this->GetWorldTimerManager().SetTimer(handleScoreRace, timerCallbackScoreRace, scoreRace.ConditionValue, false);
 }
 
 void AMissionManager::startMission(FMission const& _mission) const

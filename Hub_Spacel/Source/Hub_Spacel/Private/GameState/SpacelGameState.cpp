@@ -160,8 +160,11 @@ void ASpacelGameState::registerMission()
     if (this->GameStateDataAsset != nullptr)
     {
         FTimerHandle handle;
-        this->GetWorldTimerManager().SetTimer(handle, this, &ASpacelGameState::FirstMission, this->GameStateDataAsset->TimerFirstMission, false, 0.0f);
+        this->GetWorldTimerManager().SetTimer(handle, this, &ASpacelGameState::FirstMission, 1.0f, false, this->GameStateDataAsset->TimerFirstMission);
     }
+
+    OnAskMissionDelegate.Broadcast(EMission::FirstBlood);
+    OnAskMissionDelegate.Broadcast(EMission::ScoreRace);
 }
 
 void ASpacelGameState::FirstMission()
