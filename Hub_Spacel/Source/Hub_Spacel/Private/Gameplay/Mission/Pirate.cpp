@@ -19,8 +19,11 @@ APirate::APirate()
 	RedCube = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("RedCube"));
 	RootComponent = RedCube;
 
-	Voxels = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Voxels"));
-	Voxels->SetupAttachment(RedCube);
+    Base = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Base"));
+    Base->SetupAttachment(RedCube);
+
+    Addon = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Addon"));
+    Addon->SetupAttachment(RedCube);
 }
 
 // Called when the game starts or when spawned
@@ -32,9 +35,13 @@ void APirate::BeginPlay()
 
 	if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
 	{
-        if (this->Voxels != nullptr)
+        if (this->Base != nullptr)
         {
-            this->Voxels->OnComponentHit.AddDynamic(this, &APirate::OnVoxelsHit);
+            this->Base->OnComponentHit.AddDynamic(this, &APirate::OnVoxelsHit);
+        }
+        if (this->Addon != nullptr)
+        {
+            this->Addon->OnComponentHit.AddDynamic(this, &APirate::OnVoxelsHit);
         }
         if (this->RedCube != nullptr)
         {
@@ -51,7 +58,14 @@ void APirate::Tick(float DeltaTime)
 
 void APirate::OnVoxelsHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit)
 {
-    RPCNetMulticastHit(_hit.Item);
+    if (this->Base != nullptr && this->Base->GetUniqueID() == _hitComp->GetUniqueID())
+    {
+        RPCNetMulticastHit(_hit.Item, (uint8)EComponentType::Base);
+    }
+    else if (this->Addon != nullptr && this->Addon->GetUniqueID() == _hitComp->GetUniqueID())
+    {
+        RPCNetMulticastHit(_hit.Item, (uint8)EComponentType::Addon);
+    }
 }
 
 void APirate::OnRedCubeHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit)
@@ -63,41 +77,51 @@ void APirate::OnRedCubeHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, U
             if (OnKilledUniqueDelegate != nullptr)
             {
                 OnKilledUniqueDelegate(projectile->R_Team);
-                this->Destroy();
             }
         }
     }
+    this->Destroy();
 }
 
-void APirate::RPCNetMulticastHit_Implementation(int32 _index)
+void APirate::RPCNetMulticastHit_Implementation(int32 _index, uint8 _type)
 {
-    if (this->Voxels != nullptr)
+    if (this->Base != nullptr && _type == (uint8)EComponentType::Base)
     {
-        this->Voxels->RemoveInstance(_index);
+        this->Base->RemoveInstance(_index);
+    }
+    else if (this->Addon != nullptr && _type == (uint8)EComponentType::Addon)
+    {
+        this->Addon->RemoveInstance(_index);
     }
 }
 
 void APirate::BuildShip()
 {
     if(this->DataAsset == nullptr) return;
-    if(this->Voxels == nullptr) return;
 
-    SimplyXml::FContainer<FVector> locationInformation { "Location" };
-    SimplyXml::FReader reader { FPaths::ProjectDir() + this->DataAsset->XmlPath };
-    reader.read(locationInformation);
-
-    this->Voxels->ClearInstances();
-    TArray<FVector> locations;
-    for (FVector loc : locationInformation.Values)
+    auto lb = [&](FString&& _name, UInstancedStaticMeshComponent* _comp)
     {
-        locations.Add(loc);
-    }
+        if(_comp == nullptr) return;
+        SimplyXml::FContainer<FVector> locationInformation{ _name };
+        SimplyXml::FReader reader{ FPaths::ProjectDir() + this->DataAsset->XmlPath };
+        reader.read(locationInformation);
 
-    this->Voxels->SetEnableGravity(false);
-    for (auto const& loc : locations)
-    {
-        FTransform voxelTransform{};
-        voxelTransform.SetLocation(loc);
-        this->Voxels->AddInstance(voxelTransform);
-    }
+        _comp->ClearInstances();
+        TArray<FVector> locations;
+        for (FVector loc : locationInformation.Values)
+        {
+            locations.Add(loc);
+        }
+
+        _comp->SetEnableGravity(false);
+        for (auto const& loc : locations)
+        {
+            FTransform voxelTransform{};
+            voxelTransform.SetLocation(loc);
+            _comp->AddInstance(voxelTransform);
+        }
+    };
+
+    lb("Base", this->Base);
+    lb("Addon", this->Addon);
 }
