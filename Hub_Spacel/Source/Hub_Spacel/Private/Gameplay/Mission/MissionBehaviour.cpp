@@ -164,7 +164,30 @@ void MissionPirate::start(class UWorld* _world)
     }
 }
 
+void MissionPirate::tick(float _deltaTime, UWorld* _world)
+{
+    MissionBehaviour::tick(_deltaTime, _world);
+    if (m_team != "")
+    {
+        if (ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(_world->GetGameState()))
+        {
+            TArray<APlayerState*> playerStates = spacelGameState->PlayerArray;
+            for (auto* playerState : playerStates)
+            {
+                if (AShipPawn* shipPawn = playerState->GetPawn<AShipPawn>())
+                {
+                    if (shipPawn->Team == m_team)
+                    {
+                        shipPawn->boostPassive(m_mission.Type, m_mission.RewardValue);
+                    }
+                }
+            }
+        }
+        end();
+    }
+}
+
 void MissionPirate::onKill(FName const& _team)
 {
-    end();
+    m_team = _team;
 }

@@ -94,6 +94,10 @@ class HUB_SPACEL_API MissionPirate : public MissionBehaviour
 
 public:
 	void start(class UWorld* _world) override;
+	void tick(float _deltaTime, UWorld* _world) override;
 
 	void onKill(FName const& _team);
+
+private:
+	FName m_team { "" };
 };

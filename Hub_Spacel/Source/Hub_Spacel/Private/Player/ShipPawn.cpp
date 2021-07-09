@@ -646,7 +646,16 @@ float AShipPawn::getPercentSupport() const
 
 void AShipPawn::boostWall()
 {
-    this->R_HasBoostWall = true;
+}
+
+void AShipPawn::boostPassive(EMission _type, int32 _rewardValue)
+{
+    switch (_type)
+    {
+        case EMission::Pirate:
+            m_bonusFireRate = _rewardValue;
+        break;
+    }
 }
 
 bool AShipPawn::canTank(int32 _val)
@@ -1009,10 +1018,6 @@ ESkillReturn AShipPawn::spawnNinePack()
                 {
                     FTransform const& tr = comp->GetComponentTransform();
                     ANinePackActor* ninePackActor = Cast<ANinePackActor>(UGameplayStatics::BeginDeferredActorSpawnFromClass(GetWorld(), this->PlayerDataAsset->NinePackClass, tr));
-                    if (ninePackActor != nullptr)
-                    {
-                        ninePackActor->R_IsBoost = this->R_HasBoostWall;
-                    }
                     UGameplayStatics::FinishSpawningActor(ninePackActor, tr);
                     RPCNetMulticastFxNinePack();
                     return ESkillReturn::Success;
@@ -1033,6 +1038,5 @@ void AShipPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetim
     DOREPLIFETIME(AShipPawn, RU_Matiere);
     DOREPLIFETIME(AShipPawn, R_ShieldLife);
     DOREPLIFETIME(AShipPawn, R_Effect);
-    DOREPLIFETIME(AShipPawn, R_HasBoostWall);
 }
 
