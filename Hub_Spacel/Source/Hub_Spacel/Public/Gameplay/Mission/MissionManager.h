@@ -32,17 +32,12 @@ private:
 	void startMission(FMission const& _mission) const;
 	void endMission(FMission const& _mission) const;
 
-	void startMissionComet();
-
 public:
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
 	class UMissionDataAsset* MissionDataAsset{ nullptr };
 
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
 	class UEditorHackDataAsset* HackDataAsset{ nullptr };
-
-	UPROPERTY(Category = "Sub class", EditAnywhere, BlueprintReadWrite)
-	TSubclassOf<class AComet> CometClass { nullptr };
 
 	TArray<TUniquePtr<MissionBehaviour>> m_openMission;
 	TArray<TUniquePtr<MissionSilence>> m_silenceMission;

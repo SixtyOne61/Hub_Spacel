@@ -9,7 +9,7 @@ namespace Tags
     static const FName BlockingActor { "BlockingActor" };
     static const FName WorldManager { "WorldManager" };
     static const FName Asteroide { "Asteroide" };
-    static const FName PointStartComet { "CometStart" };
     static const FName Mission { "Mission" };
-    static const FName Pirate { "Pirate" };
+    static const FName StartPirate { "StartPirate" };
+    static const FName StartComet{ "StartComet" };
 }

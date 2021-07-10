@@ -46,6 +46,6 @@ void AComet::hit(AShipPawn * _pawn, FString const& _team)
 		{
 			_pawn->kill();
 		}
-		m_onIntercep.broadcast(_team);
+		OnIntercepDelegate.broadcast(_team);
 	}
 }

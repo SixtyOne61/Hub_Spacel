@@ -16,13 +16,23 @@ public:
 	MissionBehaviour(FMission const& _mission) : m_mission (_mission) { };
 	virtual ~MissionBehaviour() {};
 
-	virtual void start(class UWorld* _world) {};
+	virtual void start(class UWorld* _world) { m_isStart = true; };
 	virtual void tick(float _deltaTime, UWorld* _world)
 	{
 		if (!m_isStart)
 		{
 			start(_world);
-			m_isStart = true;
+		}
+		else
+		{
+			if (m_mission.DurationValue != 0.0f)
+			{
+				m_timer += _deltaTime;
+				if (m_timer >= m_mission.DurationValue)
+				{
+					end();
+				}
+			}
 		}
 	}
 	virtual void end() { m_isEnd = true; };
@@ -33,6 +43,7 @@ protected:
 private:
 	bool m_isStart{ false };
 	bool m_isEnd { false };
+	float m_timer { 0.0f };
 };
 
 class HUB_SPACEL_API MissionFirstBlood : public MissionBehaviour
@@ -71,7 +82,6 @@ private:
 private:
 	FString m_loosingTeam {};
 	bool m_killDone { false };
-	float m_timer { 0.0f };
 };
 
 class HUB_SPACEL_API MissionComet : public MissionBehaviour
@@ -80,10 +90,12 @@ class HUB_SPACEL_API MissionComet : public MissionBehaviour
 	using MissionBehaviour::MissionBehaviour;
 
 public:
+	void start(class UWorld* _world) override;
 	void tick(float _deltaTime, UWorld* _world) override;
 
 	void onCometDestroy(FString const& _team);
 
+private:
 	int m_nbComet { 0 };
 	TSet<FString> m_teams {};
 };

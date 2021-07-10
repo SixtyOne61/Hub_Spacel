@@ -644,16 +644,16 @@ float AShipPawn::getPercentSupport() const
     return this->ModuleComponent->getPercentSupport();
 }
 
-void AShipPawn::boostWall()
-{
-}
-
 void AShipPawn::boostPassive(EMission _type, int32 _rewardValue)
 {
     switch (_type)
     {
         case EMission::Pirate:
             m_bonusFireRate = _rewardValue;
+        break;
+
+        case EMission::Comet:
+            m_bonusCountDown = _rewardValue;
         break;
     }
 }

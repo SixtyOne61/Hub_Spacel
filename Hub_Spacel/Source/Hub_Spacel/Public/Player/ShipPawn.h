@@ -72,7 +72,6 @@ public:
     void farmAsteroide();
     ESkillReturn spawnNinePack();
 
-    void boostWall(); // TO DO deprecated
     void boostPassive(EMission _type, int32 _rewardValue);
 
 protected:
@@ -215,8 +214,9 @@ protected:
     // use by local client for feedback
     int32 m_lastMatiere {0};
 
-    // if we have fire rate bonus, value != 0
+    // if we have bonus, value != 0
     uint8 m_bonusFireRate { 0 };
+    uint8 m_bonusCountDown { 0 };
 
 private:
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")

@@ -25,3 +25,13 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TSubclassOf<class AActor> PirateClass;
 };
+
+UCLASS()
+class HUB_SPACEL_API UParamCometDataAsset : public UParamMissionDataAsset
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<class AComet> CometClass{ nullptr };
+};

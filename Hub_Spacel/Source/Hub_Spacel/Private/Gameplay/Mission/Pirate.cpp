@@ -74,10 +74,7 @@ void APirate::OnRedCubeHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, U
     {
         if (AProjectileBase* projectile = Cast<AProjectileBase>(_otherActor))
         {
-            if (OnKilledUniqueDelegate != nullptr)
-            {
-                OnKilledUniqueDelegate(projectile->R_Team);
-            }
+            OnKilledDelegate.broadcast(projectile->R_Team);
         }
     }
     this->Destroy();

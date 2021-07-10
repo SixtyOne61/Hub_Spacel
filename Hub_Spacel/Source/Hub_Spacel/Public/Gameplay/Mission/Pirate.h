@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Gameplay/Mission/MissionActor.h"
-#include <functional>
+#include "Util/SpacelEvent.h"
 #include "Pirate.generated.h"
 
 UCLASS()
@@ -55,5 +55,5 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = "Component")
 	class UStaticMeshComponent* RedCube { nullptr };
 
-	std::function<void(FName const&)> OnKilledUniqueDelegate { nullptr };
+	Util::Event<FName const&> OnKilledDelegate { };
 };

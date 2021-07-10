@@ -159,18 +159,22 @@ void ASpacelGameState::registerMission()
 {
     if (this->GameStateDataAsset != nullptr)
     {
-        FTimerHandle handle;
-        this->GetWorldTimerManager().SetTimer(handle, this, &ASpacelGameState::FirstMission, 1.0f, false, this->GameStateDataAsset->TimerFirstMission);
+        for (auto timer : this->GameStateDataAsset->TimerMissions)
+        {
+            FTimerHandle handle;
+            this->GetWorldTimerManager().SetTimer(handle, this, &ASpacelGameState::CallMission, 1.0f, false, timer);
+        }
     }
 
     OnAskMissionDelegate.Broadcast(EMission::FirstBlood);
     OnAskMissionDelegate.Broadcast(EMission::ScoreRace);
 }
 
-void ASpacelGameState::FirstMission()
+void ASpacelGameState::CallMission()
 {
-    // TO DO
-    OnAskMissionDelegate.Broadcast(EMission::Pirate);
+    int32 id = FMath::RandRange(0, RandomMissions.Num() - 1);
+    OnAskMissionDelegate.Broadcast(RandomMissions[id]);
+    RandomMissions.RemoveAt(id);
 }
 
 void ASpacelGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

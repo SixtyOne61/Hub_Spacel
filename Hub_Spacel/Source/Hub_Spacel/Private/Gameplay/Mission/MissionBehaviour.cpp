@@ -4,6 +4,7 @@
 #include "MissionBehaviour.h"
 #include "GameState/SpacelGameState.h"
 #include "Gameplay/Mission/Pirate.h"
+#include "Gameplay/Mission/Comet.h"
 #include "Player/SpacelPlayerState.h"
 #include "Player/ShipPawn.h"
 #include "DataAsset/ParamMissionDataAsset.h"
@@ -56,6 +57,8 @@ void MissionEcartType::start(UWorld* _world)
 
         if (bestTeamScore - worstTeamScore > m_mission.ConditionValue)
         {
+            MissionSilence::start(_world);
+
             m_mission.Team = bestTeam;
             m_loosingTeam = worstTeam;
 
@@ -88,12 +91,6 @@ void MissionEcartType::tick(float _deltaTime, UWorld* _world)
         }
         end();
     }
-
-    m_timer += _deltaTime;
-    if (m_timer >= m_mission.DurationValue)
-    {
-        end();
-    }
 }
 
 void MissionEcartType::onKill(FString const& _victim, FString const& _killer)
@@ -101,6 +98,63 @@ void MissionEcartType::onKill(FString const& _victim, FString const& _killer)
     if (_victim == m_mission.Team && _killer == m_loosingTeam)
     {
         m_killDone = true;
+    }
+}
+
+void MissionComet::start(class UWorld* _world)
+{
+    MissionBehaviour::start(_world);
+    if (UParamCometDataAsset* param = Cast<UParamCometDataAsset>(m_mission.Param))
+    {
+        // find start position
+        TArray<AActor*> starts{};
+        UGameplayStatics::GetAllActorsWithTag(_world, Tags::StartComet, starts);
+
+        // spawn actor
+        int32 index = FMath::RandRange(0, starts.Num() - 1);
+        if (starts[index] == nullptr) return;
+
+        FTransform transform = starts[index]->GetActorTransform();
+        FVector const& baseLocation = transform.GetLocation();
+
+        TArray<FVector> scales{
+            FVector { 20.0f, 3.0f, 5.0f },
+            FVector { 7.0f, 5.0f, 1.0f },
+            FVector { 1.0f, 1.0f, 1.0f },
+            FVector { 11.0f, 4.0f, 4.0f }
+        };
+
+        TArray<FVector> delta
+        {
+            FVector { 860.0f, 860.0f, 860.0f },
+            FVector { -640.0f, 180.0f, 440.0f },
+            FVector { 0.0, -440.0f, -1200.0f },
+            FVector { -600.0f, -800.0f, -330.0f }
+        };
+
+        transform.SetScale3D(FVector{ 30.0f, 7.0f, 7.0f });
+
+        for (int i = 0; i < 5; ++i)
+        {
+            if (AComet* comet = _world->SpawnActorDeferred<AComet>(param->CometClass, transform))
+            {
+                m_nbComet++;
+                comet->InitialLifeSpan = m_mission.DurationValue;
+                comet->OnIntercepDelegate.add(std::bind(&MissionComet::onCometDestroy, this, std::placeholders::_1));
+
+                comet->FinishSpawning(transform);
+            }
+
+            if (scales.Num() > 0 && delta.Num() > 0)
+            {
+                int32 randScaleIndex = FMath::RandRange(0, scales.Num() - 1);
+                transform.SetScale3D(scales[randScaleIndex]);
+
+                int32 randDeltaIndex = FMath::RandRange(0, delta.Num() - 1);
+                transform.SetTranslation(baseLocation + delta[randDeltaIndex]);
+                delta.RemoveAt(randDeltaIndex);
+            }
+        }
     }
 }
 
@@ -120,7 +174,7 @@ void MissionComet::tick(float _deltaTime, UWorld* _world)
                     {
                         if (shipPawn->Team == *team)
                         {
-                            shipPawn->boostWall();
+                            shipPawn->boostPassive(m_mission.Type, m_mission.RewardValue);
                         }
                     }
                 }
@@ -143,10 +197,11 @@ void MissionComet::onCometDestroy(FString const& _team)
 
 void MissionPirate::start(class UWorld* _world)
 {
+    MissionBehaviour::start(_world);
     if (UParamPirateDataAsset* param = Cast<UParamPirateDataAsset>(m_mission.Param))
     {
         TArray<AActor*> out;
-        UGameplayStatics::GetAllActorsWithTag(_world, Tags::Pirate, out);
+        UGameplayStatics::GetAllActorsWithTag(_world, Tags::StartPirate, out);
 
         if (out.Num() != 0 && out[0] != nullptr)
         {
@@ -156,7 +211,7 @@ void MissionPirate::start(class UWorld* _world)
                 actor->InitialLifeSpan = m_mission.DurationValue;
                 if (APirate* pirate = Cast<APirate>(actor))
                 {
-                    pirate->OnKilledUniqueDelegate = std::bind(&MissionPirate::onKill, this, std::placeholders::_1);
+                    pirate->OnKilledDelegate.add(std::bind(&MissionPirate::onKill, this, std::placeholders::_1));
                 }
                 UGameplayStatics::FinishSpawningActor(actor, transform);
             }
