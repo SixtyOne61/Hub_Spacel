@@ -68,7 +68,7 @@ void UFireComponent::TickComponent(float _deltaTime, ELevelTick _tickType, FActo
             {
                 coef = get()->PlayerDataAsset->ReduceTimeBetweenFireWithMetaForm;
             }
-            m_fireCountDown = get()->PlayerDataAsset->TimeBetweenFire * coef;
+            m_fireCountDown = get()->PlayerDataAsset->TimeBetweenFire * coef * ((100.0f - get<AShipPawn>()->m_bonusFireRate) / 100.0f);
         }
         else
         {

@@ -45,4 +45,7 @@ public:
 public:
 	UPROPERTY(EditAnywhere)
 	TArray<FScoreByType> Scores;
+
+	UPROPERTY(EditAnywhere)
+	int TimerFirstMission { 100 };
 };

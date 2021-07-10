@@ -6,10 +6,12 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "GameFramework/GameStateBase.h"
 #include "GameFramework/PlayerState.h"
+#include "GameState/SpacelGameState.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Util/Tag.h"
 #include "Player/ShipPawn.h"
 #include "Net/UnrealNetwork.h"
+#include "Kismet/GameplayStatics.h"
 
 AProjectileBase::AProjectileBase()
 {
@@ -79,6 +81,14 @@ bool AProjectileBase::OnHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, 
                     }
                 }
             }
+        }
+    }
+
+    if (_otherActor->ActorHasTag(Tags::Mission))
+    {
+        if (ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld())))
+        {
+            spacelGameState->AddScore(getLocalTeam(), PlayerIdOwner, EScoreType::Hit);
         }
     }
 

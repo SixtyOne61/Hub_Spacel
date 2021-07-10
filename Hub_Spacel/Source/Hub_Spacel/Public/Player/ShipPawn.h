@@ -72,7 +72,8 @@ public:
     void farmAsteroide();
     ESkillReturn spawnNinePack();
 
-    void boostWall();
+    void boostWall(); // TO DO deprecated
+    void boostPassive(EMission _type, int32 _rewardValue);
 
 protected:
     UFUNCTION(BlueprintImplementableEvent)
@@ -202,9 +203,6 @@ protected:
     UPROPERTY(Replicated)
     int8 R_ShieldLife { 0 };
 
-    UPROPERTY(Replicated)
-    bool R_HasBoostWall { false };
-
     FName m_lastTeamEmp {};
     int32 m_lastPlayerIdEmp {};
 
@@ -216,6 +214,9 @@ protected:
 
     // use by local client for feedback
     int32 m_lastMatiere {0};
+
+    // if we have fire rate bonus, value != 0
+    uint8 m_bonusFireRate { 0 };
 
 private:
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")

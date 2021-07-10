@@ -133,6 +133,7 @@ enum class EMission : uint8
     ScoreRace UMETA(DisplayName = "ScoreRace"),
     EcartType UMETA(DisplayName = "EcartType"),
     Comet UMETA(DisplayName = "Comet"),
+    Pirate UMETA(DisplayName = "Pirate"),
 };
 
 UENUM(BlueprintType)

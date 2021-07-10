@@ -13,6 +13,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FPlayerEnterFog, int32, _playerId, 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStartMission, EMission, _type);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnStartMissionTwoParam, EMission, _type, FName const&, _team);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEndMission, EMission, _type);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAskMission, EMission, _type);
 
 USTRUCT()
 struct HUB_SPACEL_API FTeamLocation
@@ -71,7 +72,7 @@ public:
 	void GoToLockPrepare() { this->RU_GameState = (uint8)EGameState::LockPrepare; OnRep_StateGame(); }
 
 	UFUNCTION()
-	void GoToInGame() { this->RU_GameState = (uint8)EGameState::InGame; OnRep_StateGame(); }
+	void GoToInGame() { this->RU_GameState = (uint8)EGameState::InGame; OnRep_StateGame(); registerMission(); }
 
 	UFUNCTION()
 	void GoToUnlockMedium() { this->RU_GameState = (uint8)EGameState::UnlockMedium; OnRep_StateGame(); }
@@ -113,6 +114,11 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+	void registerMission();
+
+	UFUNCTION()
+	void FirstMission();
+
 private:
 	UFUNCTION()
 	void OnRep_StateGame();
@@ -141,6 +147,9 @@ public:
 
 	UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
 	FOnEndMission OnEndMissionDelegate {};
+
+	UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
+	FOnAskMission OnAskMissionDelegate {};
 
 protected:
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)

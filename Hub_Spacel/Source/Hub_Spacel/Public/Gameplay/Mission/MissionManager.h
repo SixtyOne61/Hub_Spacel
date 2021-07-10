@@ -27,7 +27,7 @@ public:
 
 private:
 	UFUNCTION()
-	void OnStartGame(EGameState _state);
+	void OnAskMission(EMission _missionId);
 
 	void startMission(FMission const& _mission) const;
 	void endMission(FMission const& _mission) const;

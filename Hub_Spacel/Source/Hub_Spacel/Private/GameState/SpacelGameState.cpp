@@ -155,6 +155,24 @@ void ASpacelGameState::RPCNetMulticastEndMission_Implementation(EMission _type)
     OnEndMissionDelegate.Broadcast(_type);
 }
 
+void ASpacelGameState::registerMission()
+{
+    if (this->GameStateDataAsset != nullptr)
+    {
+        FTimerHandle handle;
+        this->GetWorldTimerManager().SetTimer(handle, this, &ASpacelGameState::FirstMission, 1.0f, false, this->GameStateDataAsset->TimerFirstMission);
+    }
+
+    OnAskMissionDelegate.Broadcast(EMission::FirstBlood);
+    OnAskMissionDelegate.Broadcast(EMission::ScoreRace);
+}
+
+void ASpacelGameState::FirstMission()
+{
+    // TO DO
+    OnAskMissionDelegate.Broadcast(EMission::Pirate);
+}
+
 void ASpacelGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
