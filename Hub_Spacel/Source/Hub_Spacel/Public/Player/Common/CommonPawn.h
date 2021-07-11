@@ -18,6 +18,7 @@ class HUB_SPACEL_API ACommonPawn : public APawn
 	friend class ACommonPlayerController;
     friend class ULocalPlayerActionComponent;
     friend class UFireComponent;
+    friend class SkillCountDown;
 
 public:
 	// Sets default values for this pawn's properties
@@ -151,6 +152,10 @@ protected:
 	float PercentHorizontalStraf{ 0.0f };
 	float PercentVerticalStraf{ 0.0f };
 	float PercentFlightAttitude{ 0.0f };
+
+    // if we have bonus, value != 0
+    uint8 m_bonusFireRate{ 0 };
+    uint8 m_bonusCountDown{ 0 };
 
 private:
     UPROPERTY()

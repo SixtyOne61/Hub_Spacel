@@ -7,6 +7,7 @@
 #include "Gameplay/Skill/SkillBehaviour.h"
 #include "DataAsset/UniqueSkillDataAsset.h"
 #include "Components/ProgressBar.h"
+#include "Player/Common/CommonPawn.h"
 
 SkillCountDown::SkillCountDown(SkillCountDown const& _cpy)
     : m_netMode(_cpy.m_netMode)
@@ -82,13 +83,19 @@ void SkillCountDown::tick(float _delta)
     }
     else if (m_state == ECountDown::CountDown)
     {
-        if (m_currentTime >= m_param->CountDown)
+        float reducCountDown = 1.0f;
+        if (m_pawn != nullptr)
+        {
+            reducCountDown = (100.0f - m_pawn->m_bonusCountDown) / 100.0f;
+        }
+
+        if (m_currentTime >= (m_param->CountDown * reducCountDown))
         {
             m_state = ECountDown::Available;
         }
         else
         {
-            updatePercent(m_progressBar, 1.0f - m_currentTime / m_param->CountDown);
+            updatePercent(m_progressBar, 1.0f - m_currentTime / (m_param->CountDown * reducCountDown));
         }
     }
 }
