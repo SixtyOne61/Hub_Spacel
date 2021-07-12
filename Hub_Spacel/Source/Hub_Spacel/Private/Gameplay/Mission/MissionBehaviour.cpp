@@ -246,3 +246,31 @@ void MissionPirate::onKill(FName const& _team)
 {
     m_team = _team;
 }
+
+void MissionGold::start(class UWorld* _world)
+{
+    MissionBehaviour::start(_world);
+    if (UParamGoldDataAsset* param = Cast<UParamGoldDataAsset>(m_mission.Param))
+    {
+        TArray<AActor*> out;
+        UGameplayStatics::GetAllActorsWithTag(_world, Tags::StartGold, out);
+
+        if (out.Num() != 0 && out[0] != nullptr)
+        {
+            FTransform transform = out[0]->GetTransform();
+            if (AActor* actor = UGameplayStatics::BeginDeferredActorSpawnFromClass(_world, param->GoldClass, transform))
+            {
+                actor->InitialLifeSpan = m_mission.DurationValue;
+                if (AGold* gold = Cast<AGold>(actor))
+                {
+                }
+                UGameplayStatics::FinishSpawningActor(actor, transform);
+            }
+        }
+    }
+}
+
+void MissionGold::tick(float _deltaTime, UWorld* _world)
+{
+    MissionBehaviour::tick(_deltaTime, _world);
+}

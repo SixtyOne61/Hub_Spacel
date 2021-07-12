@@ -113,3 +113,12 @@ public:
 private:
 	FName m_team { "" };
 };
+
+class HUB_SPACEL_API MissionGold : public MissionBehaviour
+{
+	using MissionBehaviour::MissionBehaviour;
+
+public:
+	void start(class UWorld* _world) override;
+	void tick(float _deltaTime, UWorld* _world) override;
+};

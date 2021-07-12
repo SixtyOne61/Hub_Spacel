@@ -11,5 +11,6 @@ namespace Tags
     static const FName Asteroide { "Asteroide" };
     static const FName Mission { "Mission" };
     static const FName StartPirate { "StartPirate" };
-    static const FName StartComet{ "StartComet" };
+    static const FName StartComet { "StartComet" };
+    static const FName StartGold { "StartGold" };
 }

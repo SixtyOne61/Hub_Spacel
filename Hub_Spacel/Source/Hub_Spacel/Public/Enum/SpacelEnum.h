@@ -134,6 +134,7 @@ enum class EMission : uint8
     EcartType UMETA(DisplayName = "EcartType"),
     Comet UMETA(DisplayName = "Comet"),
     Pirate UMETA(DisplayName = "Pirate"),
+    HoldGold UMETA(DisplayName = "HoldGold"),
 };
 
 UENUM(BlueprintType)

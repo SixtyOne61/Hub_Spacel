@@ -58,6 +58,14 @@ void AMissionManager::OnAskMission(EMission _missionId)
 			break;
 		}
 
+		case EMission::HoldGold:
+		{
+			FMission const& mission = this->MissionDataAsset->getMission(EMission::HoldGold);
+			m_openMission.Add(MakeUnique<MissionGold>(mission));
+			startMission(mission);
+			break;
+		}
+
 		case EMission::EcartType:
 		{
 			FMission const& mission = this->MissionDataAsset->getMission(EMission::EcartType);
