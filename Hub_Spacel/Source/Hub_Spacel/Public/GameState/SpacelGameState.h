@@ -155,7 +155,6 @@ protected:
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
 	class UGameStateDataAsset* GameStateDataAsset { nullptr };
 
-	UPROPERTY(Category = "Mission", EditAnywhere, BlueprintReadWrite)
 	TArray<EMission> RandomMissions { EMission::Comet, EMission::Pirate };
 
 private:

@@ -58,10 +58,10 @@ void AMissionManager::OnAskMission(EMission _missionId)
 			break;
 		}
 
-		case EMission::HoldGold:
+		case EMission::TakeGold:
 		{
-			FMission const& mission = this->MissionDataAsset->getMission(EMission::HoldGold);
-			m_openMission.Add(MakeUnique<MissionGold>(mission));
+			FMission const& mission = this->MissionDataAsset->getMission(EMission::TakeGold);
+			m_openMission.Add(MakeUnique<MissionTakeGold>(mission));
 			startMission(mission);
 			break;
 		}

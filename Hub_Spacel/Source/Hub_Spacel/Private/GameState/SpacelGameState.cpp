@@ -159,6 +159,8 @@ void ASpacelGameState::registerMission()
 {
     if (this->GameStateDataAsset != nullptr)
     {
+        RandomMissions = this->GameStateDataAsset->RandomMissions;
+
         for (auto timer : this->GameStateDataAsset->TimerMissions)
         {
             FTimerHandle handle;

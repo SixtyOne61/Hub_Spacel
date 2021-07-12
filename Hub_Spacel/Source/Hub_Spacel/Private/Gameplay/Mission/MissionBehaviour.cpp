@@ -248,7 +248,7 @@ void MissionPirate::onKill(FName const& _team)
     m_team = _team;
 }
 
-void MissionGold::start(class UWorld* _world)
+void MissionTakeGold::start(class UWorld* _world)
 {
     MissionBehaviour::start(_world);
     if (UParamGoldDataAsset* param = Cast<UParamGoldDataAsset>(m_mission.Param))
@@ -274,7 +274,7 @@ void MissionGold::start(class UWorld* _world)
     }
 }
 
-void MissionGold::tick(float _deltaTime, UWorld* _world)
+void MissionTakeGold::tick(float _deltaTime, UWorld* _world)
 {
     MissionBehaviour::tick(_deltaTime, _world);
 }

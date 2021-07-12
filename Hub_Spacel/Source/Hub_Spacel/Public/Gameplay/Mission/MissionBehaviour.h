@@ -114,7 +114,7 @@ private:
 	FName m_team { "" };
 };
 
-class HUB_SPACEL_API MissionGold : public MissionBehaviour
+class HUB_SPACEL_API MissionTakeGold : public MissionBehaviour
 {
 	using MissionBehaviour::MissionBehaviour;
 
