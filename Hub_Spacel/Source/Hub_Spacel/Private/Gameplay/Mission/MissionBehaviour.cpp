@@ -5,6 +5,7 @@
 #include "GameState/SpacelGameState.h"
 #include "Gameplay/Mission/Pirate.h"
 #include "Gameplay/Mission/Comet.h"
+#include "Gameplay/Mission/Gold.h"
 #include "Player/SpacelPlayerState.h"
 #include "Player/ShipPawn.h"
 #include "DataAsset/ParamMissionDataAsset.h"
@@ -255,9 +256,12 @@ void MissionGold::start(class UWorld* _world)
         TArray<AActor*> out;
         UGameplayStatics::GetAllActorsWithTag(_world, Tags::StartGold, out);
 
-        if (out.Num() != 0 && out[0] != nullptr)
+        // random start
+        int32 index = FMath::RandRange(0, out.Num() - 1);
+
+        if (out.Num() != 0 && out[index] != nullptr)
         {
-            FTransform transform = out[0]->GetTransform();
+            FTransform transform = out[index]->GetTransform();
             if (AActor* actor = UGameplayStatics::BeginDeferredActorSpawnFromClass(_world, param->GoldClass, transform))
             {
                 actor->InitialLifeSpan = m_mission.DurationValue;

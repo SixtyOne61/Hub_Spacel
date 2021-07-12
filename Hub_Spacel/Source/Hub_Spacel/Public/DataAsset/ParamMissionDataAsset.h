@@ -43,5 +43,5 @@ class HUB_SPACEL_API UParamGoldDataAsset : public UParamMissionDataAsset
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TSubclassOf<class AGold> GoldClass{ nullptr };
+	TSubclassOf<class AActor> GoldClass{ nullptr };
 };
