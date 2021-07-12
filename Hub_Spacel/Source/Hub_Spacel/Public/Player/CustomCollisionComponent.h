@@ -58,6 +58,8 @@ private:
 	void killersProcess(TArray<FHitResult> const& _hits);
 	void spawnMatiere();
 
+	void checkGold(int32 _otherPlayerId);
+
 private:
 	/* matiere manager */
 	TWeakObjectPtr<class AMatiereManager> m_matiereManager{};

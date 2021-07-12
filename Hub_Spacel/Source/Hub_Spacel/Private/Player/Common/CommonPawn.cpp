@@ -116,6 +116,8 @@ void ACommonPawn::moveShip(float _deltaTime)
         coefSpeed = this->PlayerDataAsset->EscapeModeCoef;
     }
 
+    coefSpeed += (m_bonusSpeed / 100.0f);
+
     // roll rotation
     FRotator rotation = this->GetActorRotation();
     rotation.Add(0.0f, 0.0f, this->PercentFlightAttitude * FMath::Max(coefSpeed, 1.0f) * this->PlayerDataAsset->MaxFlightAttitudeSpeed);

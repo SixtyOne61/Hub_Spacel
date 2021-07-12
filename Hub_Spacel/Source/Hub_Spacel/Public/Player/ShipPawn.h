@@ -6,7 +6,6 @@
 #include "Player/Common/CommonPawn.h"
 #include "Util/EnumUtil.h"
 #include "Util/SpacelEvent.h"
-#include "DataAsset/MissionDataAsset.h"
 #include <functional>
 #include "ShipPawn.generated.h"
 
@@ -102,6 +101,9 @@ protected:
     UFUNCTION(BlueprintImplementableEvent)
     void BP_InitFireComponent();
 
+    UFUNCTION()
+    void OnEndMission(EMission _type);
+
 private:
     void OnRep_PlayerState() override;
 
@@ -195,6 +197,8 @@ public:
     using ConstStr = FString const&;
     Util::Event<ConstStr, ConstStr> OnKill {};
 
+    Util::Event<> OnLostGoldDelegate{ };
+
 protected:
     UPROPERTY(ReplicatedUsing = "OnRep_Matiere")
     int16 RU_Matiere { 0 };
@@ -213,6 +217,9 @@ protected:
 
     // use by local client for feedback
     int32 m_lastMatiere {0};
+
+    UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
+    class UMissionDataAsset* MissionDataAsset { nullptr };
 
 private:
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")

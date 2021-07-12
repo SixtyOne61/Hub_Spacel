@@ -156,6 +156,7 @@ protected:
     // if we have bonus, value != 0
     uint8 m_bonusFireRate{ 0 };
     uint8 m_bonusCountDown{ 0 };
+    uint8 m_bonusSpeed{ 0 };
 
 private:
     UPROPERTY()

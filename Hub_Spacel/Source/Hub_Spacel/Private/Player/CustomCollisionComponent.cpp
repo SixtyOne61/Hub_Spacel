@@ -288,11 +288,7 @@ void UCustomCollisionComponent::hitMission(FVector const& _ownerLocation, FName 
 	{
 		hits.RemoveAll([](FHitResult const& _item)
 			{
-				if (_item.Actor.IsValid() && _item.Actor.Get()->ActorHasTag(Tags::Mission))
-				{
-					return false;
-				}
-				return true;
+				return !(_item.Actor.IsValid() && _item.Actor.Get()->ActorHasTag(Tags::Mission));
 			});
 
 		ASpacelPlayerState const* spacelPlayerState = get()->GetPlayerState<ASpacelPlayerState>();
@@ -339,6 +335,32 @@ void UCustomCollisionComponent::hitMatiere(FVector const& _ownerLocation, FName 
 			if (addMatiere != int{})
 			{
 				pawn->OnUpdateMatiereDelegate.Broadcast(addMatiere);
+			}
+		}
+	}
+}
+
+void UCustomCollisionComponent::checkGold(int32 _otherPlayerId)
+{
+	if (AShipPawn* shipPawn = get<AShipPawn>())
+	{
+		if (shipPawn->hasEffect(EEffect::Gold))
+		{
+			if (ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld())))
+			{
+				TArray<APlayerState*> playerStates = spacelGameState->PlayerArray;
+				for (auto* playerState : playerStates)
+				{
+					if (AShipPawn* otherPawn = playerState->GetPawn<AShipPawn>())
+					{
+						if (otherPawn->GetUniqueID() == _otherPlayerId)
+						{
+							otherPawn->addEffect(EEffect::Gold);
+							shipPawn->removeEffect(EEffect::Gold);
+							break;
+						}
+					}
+				}
 			}
 		}
 	}
@@ -391,6 +413,7 @@ void UCustomCollisionComponent::hit(FString const& _team, int32 _playerId, class
 	{
 		if (!shipPawn->canTank(1))
 		{
+			checkGold(_playerId);
 			lb_removeInstance(_mesh, _replicated, _removeReplicated);
 			lb_addScore(EScoreType::Hit);
 
@@ -416,6 +439,7 @@ void UCustomCollisionComponent::hit(FString const& _team, int32 _playerId, class
 	{
 		if (!shipPawn->canTank(1) && !shipPawn->hasEffect(EEffect::Killed))
 		{
+			checkGold(_playerId);
 			if (m_matiereManager.IsValid())
 			{
 				if (ASpacelPlayerState const* spacelPlayerState = get()->GetPlayerState<ASpacelPlayerState>())

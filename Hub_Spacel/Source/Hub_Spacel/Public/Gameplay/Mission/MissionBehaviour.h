@@ -37,6 +37,8 @@ public:
 	}
 	virtual void end() { m_isEnd = true; };
 
+	void resetTimer() { m_timer = 0.0f; }
+
 protected:
 	FMission m_mission {};
 
@@ -121,4 +123,25 @@ class HUB_SPACEL_API MissionTakeGold : public MissionBehaviour
 public:
 	void start(class UWorld* _world) override;
 	void tick(float _deltaTime, UWorld* _world) override;
+
+	void onTaken(uint32 const& _id);
+
+private:
+	uint32 m_id {};
+};
+
+class HUB_SPACEL_API MissionHoldGold : public MissionBehaviour
+{
+	using MissionBehaviour::MissionBehaviour;
+
+public:
+	void start(class UWorld* _world) override;
+	void tick(float _deltaTime, UWorld* _world) override;
+	void findGold(class UWorld* _world);
+
+private:
+	void onTokenChange();
+
+private:
+	bool m_find { false };
 };

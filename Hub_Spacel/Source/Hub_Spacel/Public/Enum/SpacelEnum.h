@@ -107,6 +107,7 @@ enum class EEffect : uint8
     Respawned UMETA(DisplayName = "Respawned"),
     Targeted UMETA(DisplayName = "Targeted"),
     StartGame UMETA(DisplayName = "StartGame"),
+    Gold UMETA(DisplayName = "Gold"),
 };
 
 UENUM(BlueprintType)

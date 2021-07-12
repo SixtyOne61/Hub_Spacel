@@ -267,6 +267,7 @@ void MissionTakeGold::start(class UWorld* _world)
                 actor->InitialLifeSpan = m_mission.DurationValue;
                 if (AGold* gold = Cast<AGold>(actor))
                 {
+                    gold->OnDestroyDelegate.add(std::bind(&MissionTakeGold::onTaken, this, std::placeholders::_1));
                 }
                 UGameplayStatics::FinishSpawningActor(actor, transform);
             }
@@ -277,4 +278,61 @@ void MissionTakeGold::start(class UWorld* _world)
 void MissionTakeGold::tick(float _deltaTime, UWorld* _world)
 {
     MissionBehaviour::tick(_deltaTime, _world);
+
+    if (m_id != uint32{})
+    {
+        if (ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(_world->GetGameState()))
+        {
+            spacelGameState->OnAskMissionDelegate.Broadcast(EMission::HoldGold);
+        }
+        end();
+    }
+}
+
+void MissionTakeGold::onTaken(uint32 const& _id)
+{
+    m_id = _id;
+}
+
+void MissionHoldGold::start(class UWorld* _world)
+{
+    MissionBehaviour::start(_world);
+
+    findGold(_world);
+}
+
+void MissionHoldGold::tick(float _deltaTime, UWorld* _world)
+{
+    MissionBehaviour::tick(_deltaTime, _world);
+
+    if (m_find)
+    {
+        findGold(_world);
+    }
+}
+
+void MissionHoldGold::findGold(class UWorld* _world)
+{
+    if (ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(_world->GetGameState()))
+    {
+        TArray<APlayerState*> playerStates = spacelGameState->PlayerArray;
+        for (auto* playerState : playerStates)
+        {
+            if (AShipPawn* shipPawn = playerState->GetPawn<AShipPawn>())
+            {
+                if (shipPawn->hasEffect(EEffect::Gold))
+                {
+                    shipPawn->OnLostGoldDelegate.add(std::bind(&MissionHoldGold::onTokenChange, this));
+                    m_find = false;
+                    break;
+                }
+            }
+        }
+    }
+}
+
+void MissionHoldGold::onTokenChange()
+{
+    resetTimer();
+    m_find = true;
 }

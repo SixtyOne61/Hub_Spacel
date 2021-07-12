@@ -20,6 +20,7 @@
 #include "DataAsset/TeamColorDataAsset.h"
 #include "DataAsset/SkillDataAsset.h"
 #include "DataAsset/UniqueSkillDataAsset.h"
+#include "DataAsset/MissionDataAsset.h"
 #include "Player/SpacelPlayerState.h"
 #include "Player/TargetActor.h"
 #include "Player/FireComponent.h"
@@ -179,6 +180,7 @@ void AShipPawn::BeginPlay()
         {
             spacelGameState->OnChangeStateDelegate.AddDynamic(this, &AShipPawn::OnChangeState);
             spacelGameState->OnPlayerEnterFogDelegate.AddDynamic(this, &AShipPawn::OnPlayerEnterFog);
+            spacelGameState->OnEndMissionDelegate.AddDynamic(this, &AShipPawn::OnEndMission);
         }
         activateComponent(this->FireComponent);
         activateComponent(this->RepairComponent);
@@ -235,6 +237,22 @@ void AShipPawn::BeginPlay()
             this->SpringArmComponent->SetRelativeLocation(FVector(-10.0f, 40.0f, -60.0f));
             FVector rot(15.0f, -25.0f, -15.0f);
             this->SpringArmComponent->SetRelativeRotation(rot.ToOrientationRotator().Quaternion());
+        }
+    }
+}
+
+void AShipPawn::OnEndMission(EMission _type)
+{
+    if (_type == EMission::HoldGold)
+    {
+        if (hasEffect(EEffect::Gold))
+        {
+            if (this->MissionDataAsset != nullptr)
+            {
+                FMission const& mission = this->MissionDataAsset->getMission(EMission::HoldGold);
+                m_bonusSpeed = mission.RewardValue;
+            }
+            removeEffect(EEffect::Gold);
         }
     }
 }
