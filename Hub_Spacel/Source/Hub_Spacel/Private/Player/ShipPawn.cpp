@@ -970,6 +970,10 @@ void AShipPawn::behaviourRemoveEffect(EEffect _type)
             this->R_OverDrive = 0.0f;
         }
     }
+    else if (_type == EEffect::Gold)
+    {
+        this->OnLostGoldDelegate.broadcast();
+    }
 }
 
 void AShipPawn::RPCClientFeedbackScore_Implementation(EScoreType _type, int16 _value)

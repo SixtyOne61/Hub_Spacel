@@ -36,15 +36,18 @@ void AMissionManager::BeginPlay()
 	}
 }
 
-void AMissionManager::OnAskMission(EMission _missionId)
+void AMissionManager::batch()
 {
-	if(this->MissionDataAsset == nullptr) return;
+	if (this->MissionDataAsset == nullptr) return;
 
-	switch (_missionId)
+	for (auto missionId : m_batch)
 	{
+		FMission const& mission = this->MissionDataAsset->getMission(missionId);
+
+		switch (missionId)
+		{
 		case EMission::Pirate:
 		{
-			FMission const& mission = this->MissionDataAsset->getMission(EMission::Pirate);
 			m_openMission.Add(MakeUnique<MissionPirate>(mission));
 			startMission(mission);
 			break;
@@ -52,7 +55,6 @@ void AMissionManager::OnAskMission(EMission _missionId)
 
 		case EMission::Comet:
 		{
-			FMission const& mission = this->MissionDataAsset->getMission(EMission::Comet);
 			m_openMission.Add(MakeUnique<MissionComet>(mission));
 			startMission(mission);
 			break;
@@ -60,55 +62,64 @@ void AMissionManager::OnAskMission(EMission _missionId)
 
 		case EMission::TakeGold:
 		{
-			FMission const& mission = this->MissionDataAsset->getMission(EMission::TakeGold);
 			m_openMission.Add(MakeUnique<MissionTakeGold>(mission));
+			startMission(mission);
+			break;
+		}
+
+		case EMission::HoldGold:
+		{
+			m_openMission.Add(MakeUnique<MissionHoldGold>(mission));
 			startMission(mission);
 			break;
 		}
 
 		case EMission::EcartType:
 		{
-			FMission const& mission = this->MissionDataAsset->getMission(EMission::EcartType);
 			m_silenceMission.Add(MakeUnique<MissionEcartType>(mission));
 			break;
 		}
 
 		case EMission::FirstBlood:
 		{
-			FMission const& firstBlood = this->MissionDataAsset->getMission(EMission::FirstBlood);
-
 			// start mission first blood with delay
 			FTimerDelegate timerCallbackFirstBlood;
 			timerCallbackFirstBlood.BindLambda([&]() {
-				FMission const& mission = this->MissionDataAsset->getMission(EMission::FirstBlood);
-				m_openMission.Add(MakeUnique<MissionFirstBlood>(mission));
+				FMission const& firstblood = this->MissionDataAsset->getMission(EMission::FirstBlood);
+				m_openMission.Add(MakeUnique<MissionFirstBlood>(firstblood));
 				startMission(m_openMission.Last()->m_mission); });
 
 			FTimerHandle handleFirstBlood;
-			this->GetWorldTimerManager().SetTimer(handleFirstBlood, timerCallbackFirstBlood, firstBlood.ConditionValue, false);
+			this->GetWorldTimerManager().SetTimer(handleFirstBlood, timerCallbackFirstBlood, mission.ConditionValue, false);
 			break;
 		}
 
 		case EMission::ScoreRace:
 		{
-			FMission const& scoreRace = this->MissionDataAsset->getMission(EMission::ScoreRace);
-
 			// start mission score race with delay
 			FTimerDelegate timerCallbackScoreRace;
 			timerCallbackScoreRace.BindLambda([&]() {
-				FMission const& mission = this->MissionDataAsset->getMission(EMission::ScoreRace);
-				m_openMission.Add(MakeUnique<MissionRaceScore>(mission));
+				FMission const& scoreRace = this->MissionDataAsset->getMission(EMission::ScoreRace);
+				m_openMission.Add(MakeUnique<MissionRaceScore>(scoreRace));
 				startMission(this->MissionDataAsset->getMission(EMission::ScoreRace)); });
 
 			FTimerHandle handleScoreRace;
-			this->GetWorldTimerManager().SetTimer(handleScoreRace, timerCallbackScoreRace, scoreRace.ConditionValue, false);
+			this->GetWorldTimerManager().SetTimer(handleScoreRace, timerCallbackScoreRace, mission.ConditionValue, false);
 			break;
 		}
 
 		default:
 			ensure(false);
-		break;
+			break;
+		}
 	}
+
+	m_batch.Empty();
+}
+
+void AMissionManager::OnAskMission(EMission _missionId)
+{
+	m_batch.Add(_missionId);
 }
 
 // Called every frame
@@ -147,7 +158,7 @@ void AMissionManager::Tick(float DeltaTime)
 			}
 		}
 #endif
-		
+		batch();
 		lb(m_openMission);
 		lb(m_silenceMission);
 	}

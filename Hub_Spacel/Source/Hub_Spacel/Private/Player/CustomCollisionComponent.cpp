@@ -351,9 +351,9 @@ void UCustomCollisionComponent::checkGold(int32 _otherPlayerId)
 				TArray<APlayerState*> playerStates = spacelGameState->PlayerArray;
 				for (auto* playerState : playerStates)
 				{
-					if (AShipPawn* otherPawn = playerState->GetPawn<AShipPawn>())
+					if (playerState->PlayerId == _otherPlayerId)
 					{
-						if (otherPawn->GetUniqueID() == _otherPlayerId)
+						if (AShipPawn* otherPawn = playerState->GetPawn<AShipPawn>())
 						{
 							otherPawn->addEffect(EEffect::Gold);
 							shipPawn->removeEffect(EEffect::Gold);

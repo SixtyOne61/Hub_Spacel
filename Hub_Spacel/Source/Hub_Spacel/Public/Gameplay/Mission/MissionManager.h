@@ -32,6 +32,8 @@ private:
 	void startMission(FMission const& _mission) const;
 	void endMission(FMission const& _mission) const;
 
+	void batch();
+
 public:
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
 	class UMissionDataAsset* MissionDataAsset{ nullptr };
@@ -39,6 +41,9 @@ public:
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
 	class UEditorHackDataAsset* HackDataAsset{ nullptr };
 
+private:
 	TArray<TUniquePtr<MissionBehaviour>> m_openMission;
 	TArray<TUniquePtr<MissionSilence>> m_silenceMission;
+
+	TArray<EMission> m_batch;
 };
