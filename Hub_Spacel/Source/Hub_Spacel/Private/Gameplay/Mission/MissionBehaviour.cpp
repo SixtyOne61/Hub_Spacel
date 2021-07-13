@@ -333,6 +333,9 @@ void MissionHoldGold::findGold(class UWorld* _world)
 
 void MissionHoldGold::onTokenChange()
 {
-    resetTimer();
-    m_find = true;
+    if (!isEnd())
+    {
+        resetTimer();
+        m_find = true;
+    }
 }

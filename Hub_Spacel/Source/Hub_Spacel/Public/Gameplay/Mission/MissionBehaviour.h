@@ -38,6 +38,7 @@ public:
 	virtual void end() { m_isEnd = true; };
 
 	void resetTimer() { m_timer = 0.0f; }
+	inline bool isEnd() const { return m_isEnd; }
 
 protected:
 	FMission m_mission {};
