@@ -39,9 +39,6 @@ public:
 	FSlateColor BackgroundColorBtn { };
 
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<class USkillWidget> SkillWidgetClass{ nullptr };
-
-	UPROPERTY(EditAnywhere)
 	FKey Key {};
 
 	UPROPERTY(EditAnywhere)

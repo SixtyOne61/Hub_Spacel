@@ -253,27 +253,17 @@ void USpacelWidget::addSkill(class SkillCountDown * _skill)
 
     if (UUniqueSkillDataAsset const* skill = _skill->getParam())
     {
-        USkillWidget* skillWidget{ nullptr };
-        if (skill->SkillWidgetClass != nullptr)
+        if (USkillWidget* skillWidget = SimplyUI::initUnSafeFromName<UUserWidget, USkillWidget>(this, skill->WidgetName))
         {
-            FString name = "Skill";
-            name.Append(FString::FromInt((int)skill->Skill));
-            skillWidget = CreateWidget<USkillWidget, UHorizontalBox>(this->SkillBarHorizontalBox, skill->SkillWidgetClass, *name);
-            this->SkillBarHorizontalBox->AddChildToHorizontalBox(skillWidget);
-        }
-        else if (skill->WidgetName.IsValid())
-        {
-            skillWidget = SimplyUI::initUnSafeFromName<UUserWidget, USkillWidget>(this, skill->WidgetName);
-        }
+            if (this->KeyDataAsset != nullptr)
+            {
+                skillWidget->BP_Setup(skill->BackgroundColorBtn, skill->IconeBtn, this->KeyDataAsset->get(skill->Key));
+            }
 
-        if (skillWidget != nullptr && this->KeyDataAsset != nullptr)
-        {
-            skillWidget->BP_Setup(skill->BackgroundColorBtn, skill->IconeBtn, this->KeyDataAsset->get(skill->Key));
-        }
-
-        if (UProgressBar* progress = SimplyUI::initUnSafeFromName<UUserWidget, UProgressBar>(skillWidget, TEXT("ProgressBar_Skill")))
-        {
-            _skill->addProgressBar(progress);
+            if (UProgressBar* progress = SimplyUI::initUnSafeFromName<UUserWidget, UProgressBar>(skillWidget, TEXT("ProgressBar_Skill")))
+            {
+                _skill->addProgressBar(progress);
+            }
         }
     }
 }
