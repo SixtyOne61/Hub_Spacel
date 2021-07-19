@@ -32,6 +32,9 @@ protected:
 private:
 	void setupSkill();
 
+	UFUNCTION()
+	void SetupSpecialSkill();
+
 	UFUNCTION(Reliable, Server)
 	void RPCServerUseSkill(ESkill _skill);
 

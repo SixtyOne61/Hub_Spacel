@@ -80,6 +80,11 @@ void AShipPawn::OnChangeState(EGameState _state)
             FTimerHandle handle;
             this->GetWorldTimerManager().SetTimer(handle, timerCallback, 3.0f, false);
         }
+
+        if (this->SkillComponent != nullptr)
+        {
+            this->SkillComponent->SetupSpecialSkill();
+        }
     }
     else if (_state == EGameState::EndGame)
     {

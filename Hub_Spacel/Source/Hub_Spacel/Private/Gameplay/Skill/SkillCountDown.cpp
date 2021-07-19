@@ -27,9 +27,10 @@ SkillCountDown::SkillCountDown(SkillCountDown const& _cpy)
     m_callbackFailed = _cpy.m_callbackFailed;
 }
 
-SkillCountDown::SkillCountDown(UUniqueSkillDataAsset const* _skill, class ACommonPawn* _pawn, ENetMode _netMode, std::function<void(ESkill)> _callbackSucced, std::function<void(ESkill, ESkillReturn)> _callbackFailed)
+SkillCountDown::SkillCountDown(UUniqueSkillDataAsset const* _skill, class ACommonPawn* _pawn, ENetMode _netMode, std::function<void(ESkill)> _callbackSucced, std::function<void(ESkill, ESkillReturn)> _callbackFailed, bool _isActive)
     : m_netMode(_netMode)
     , m_pawn(_pawn)
+    , m_isActive(_isActive)
     , m_callbackSucced(_callbackSucced)
     , m_callbackFailed(_callbackFailed)
 {
@@ -111,6 +112,19 @@ void SkillCountDown::updatePercent(UProgressBar* _progressBar, float _percent)
 void SkillCountDown::addProgressBar(class UProgressBar* _progressBar)
 {
     m_progressBar = _progressBar;
+    if (m_progressBar != nullptr)
+    {
+        m_progressBar->SetPercent(m_isActive ? 0.0f : 1.0f);
+    }
+}
+
+void SkillCountDown::setActive(bool _val)
+{
+    m_isActive = _val;
+    if (m_progressBar != nullptr)
+    {
+        m_progressBar->SetPercent(m_isActive ? 0.0f : 1.0f);
+    }
 }
 
 void SkillCountDown::onAvailable()
@@ -155,6 +169,7 @@ void SkillCountDown::onCountDown()
 void SkillCountDown::use(class UWorld* _context)
 {
     if(_context == nullptr) return;
+    if(m_isActive == false) return;
 
     if (m_state == ECountDown::Available)
     {
