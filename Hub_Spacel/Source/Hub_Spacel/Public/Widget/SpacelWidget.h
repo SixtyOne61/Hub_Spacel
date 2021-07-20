@@ -35,10 +35,7 @@ protected:
 	void NativeTick(const FGeometry& _myGeometry, float _deltaTime) override;
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Setup")
-	void SetBackgroundRanking(FSlateColor const& _teamColor);
-
-	UFUNCTION(BlueprintImplementableEvent, Category = "Setup")
-	void SetRanking(uint8 _rank);
+	void SetBackgroundTeamColor(FSlateColor const& _teamColor);
 
 	UFUNCTION()
 	void OnChangeState(EGameState _state);
@@ -118,21 +115,6 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void HideMissionPanel();
 
-	template<class T>
-	void setVisibility(T* _widget, bool _show)
-	{
-		if (_widget == nullptr) return;
-
-		if (_show)
-		{
-			_widget->SetVisibility(ESlateVisibility::Visible);
-		}
-		else
-		{
-			_widget->SetVisibility(ESlateVisibility::Hidden);
-		}
-	}
-
 	void OnLoadGame(const FString& _slotName, const int32 _userIndex, class USaveGame* _loadedGameData);
 
 	void addSkill(class SkillCountDown * _skill);
@@ -173,6 +155,9 @@ private:
 	class UTextBlock* EventTextBlock { nullptr };
 
 	UPROPERTY()
+	class UTextBlock* TimerTextBlock{ nullptr };
+
+	UPROPERTY()
 	class UTextBlock* PingTextBlock { nullptr };
 
 	UPROPERTY()
@@ -197,7 +182,10 @@ private:
 	TArray<class UAllyWidget*> AllyWidgets { };
 
 	UPROPERTY()
-	class UScoreUserWidget* ScoreWidget { nullptr };
+	TArray<class UBorder*> TeamScoreColorWidgets { };
+
+	UPROPERTY()
+	TArray<class UTextBlock*> TeamScoreWidgets{ };
 
 	UPROPERTY()
 	class UTutorialUserWidget* TutorialWidget { nullptr };

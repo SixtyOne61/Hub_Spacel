@@ -422,7 +422,7 @@ void AFlyingGameMode::CountDownUntilGameOver()
     int sec = this->RemainingGameTime % 60;
     FString minStr = min < 10 ? "0" + FString::FromInt(min) : FString::FromInt(min);
     FString secStr = sec < 10 ? "0" + FString::FromInt(sec) : FString::FromInt(sec);
-    spacelGameState->R_LatestEvent = minStr + ":" + secStr;
+    spacelGameState->R_LatestEvent = "Timer" + minStr + ":" + secStr;
 
     if (this->RemainingGameTime > 0)
     {
