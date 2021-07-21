@@ -44,18 +44,23 @@ void USpacelWidget::NativeConstruct()
     Super::NativeConstruct();
 
     EventTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Event"));
+    TimerTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Timer"));
     PingTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Ping"));
     ProtectionProgressBar = SimplyUI::initSafetyFromName<UUserWidget, UProgressBar>(this, TEXT("ProgressBar_Protection"));
     SupportProgressBar = SimplyUI::initSafetyFromName<UUserWidget, UProgressBar>(this, TEXT("ProgressBar_Support"));
     ProtectionTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Protection"));
     SupportTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Support"));
-    ScoreWidget = SimplyUI::initSafetyFromName<UUserWidget, UScoreUserWidget>(this, TEXT("WBP_Score"));
     SkillBarHorizontalBox = SimplyUI::initSafetyFromName<UUserWidget, UHorizontalBox>(this, TEXT("SkillBar"));
     EffectBarHorizontalBox = SimplyUI::initSafetyFromName<UUserWidget, UHorizontalBox>(this, TEXT("EffectBar"));
-    TutorialWidget = SimplyUI::initSafetyFromName<UUserWidget, UTutorialUserWidget>(this, TEXT("WBP_Didactitiel"));
 
     TArray<FName> allyNames { TEXT("Widget_Ally1"), TEXT("Widget_Ally2") };
     SimplyUI::initArray(this, AllyWidgets, allyNames);
+
+    TArray<FName> scoreColorNames { TEXT("Border_ColorTeam1"), TEXT("Border_ColorTeam2"), TEXT("Border_ColorTeam3") };
+    SimplyUI::initArray(this, TeamScoreColorWidgets, scoreColorNames);
+
+    TArray<FName> scoreNames{ TEXT("TextBlock_ScoreTeam1"), TEXT("TextBlock_ScoreTeam2"), TEXT("TextBlock_ScoreTeam3") };
+    SimplyUI::initArray(this, TeamScoreWidgets, scoreNames);
 
     UWorld* world{ this->GetWorld() };
     if (!ensure(world != nullptr)) return;
@@ -191,13 +196,7 @@ void USpacelWidget::OnChangeState(EGameState _state)
         //set background color for ranking
         if (this->TeamColorDataAsset != nullptr)
         {
-            SetBackgroundRanking(this->TeamColorDataAsset->GetColor<FSlateColor>(Team));
-        }
-
-        // create score array
-        if (this->ScoreWidget != nullptr)
-        {
-            this->ScoreWidget->initScoreArray();
+            SetBackgroundTeamColor(this->TeamColorDataAsset->GetColor<FSlateColor>(Team));
         }
 
         int i{ 0 };
@@ -223,12 +222,6 @@ void USpacelWidget::OnChangeState(EGameState _state)
         float firstDelay = this->GameModeDataAsset->EndModuleTime / 4;
         float inRate = (this->GameModeDataAsset->EndModuleTime - firstDelay) / 2.0f;
         world->GetTimerManager().SetTimer(this->RedLightAnimationHandle, this, &USpacelWidget::RedLight, inRate, true, firstDelay);
-
-        // Set up the delegate.
-        FAsyncLoadGameFromSlotDelegate LoadedDelegate;
-        // USomeUObjectClass::LoadGameDelegateFunction is a void function that takes the following parameters: const FString& SlotName, const int32 UserIndex, USaveGame* LoadedGameData
-        LoadedDelegate.BindUObject(this, &USpacelWidget::OnLoadGame);
-        UGameplayStatics::AsyncLoadGameFromSlot("Save", 0, LoadedDelegate);
     }
     else if (_state == EGameState::InGame)
     {
@@ -253,126 +246,41 @@ void USpacelWidget::addSkill(class SkillCountDown * _skill)
 
     if (UUniqueSkillDataAsset const* skill = _skill->getParam())
     {
-        USkillWidget* skillWidget{ nullptr };
-        if (skill->SkillWidgetClass != nullptr)
+        if (USkillWidget* skillWidget = SimplyUI::initUnSafeFromName<UUserWidget, USkillWidget>(this, skill->WidgetName))
         {
-            FString name = "Skill";
-            name.Append(FString::FromInt((int)skill->Skill));
-            skillWidget = CreateWidget<USkillWidget, UHorizontalBox>(this->SkillBarHorizontalBox, skill->SkillWidgetClass, *name);
-            this->SkillBarHorizontalBox->AddChildToHorizontalBox(skillWidget);
-        }
-        else if (skill->WidgetName.IsValid())
-        {
-            skillWidget = SimplyUI::initUnSafeFromName<UUserWidget, USkillWidget>(this, skill->WidgetName);
-        }
-
-        if (skillWidget != nullptr && this->KeyDataAsset != nullptr)
-        {
-            skillWidget->BP_Setup(skill->BackgroundColorBtn, skill->IconeBtn, this->KeyDataAsset->get(skill->Key));
-        }
-
-        if (UProgressBar* progress = SimplyUI::initUnSafeFromName<UUserWidget, UProgressBar>(skillWidget, TEXT("ProgressBar_Skill")))
-        {
-            _skill->addProgressBar(progress);
-        }
-    }
-}
-
-void USpacelWidget::OnLoadGame(const FString& _slotName, const int32 _userIndex, USaveGame* _loadedGameData)
-{
-    USpacelSaveGame* save = Cast<USpacelSaveGame>(_loadedGameData);
-
-    if (save == nullptr || !save->HasSeeDitactitial)
-    {
-        UWorld* world{ this->GetWorld() };
-        if (!ensure(world != nullptr)) return;
-
-        // Start didactitial
-        world->GetTimerManager().SetTimer(ShowDitactitialHandle, this, &USpacelWidget::ShowDidactitial, 10.0f, true, 1.0f);
-    }
-    else
-    {
-        ShowRandomTips();
-    }
-}
-
-void USpacelWidget::ShowRandomTips()
-{
-    if (this->RandomTipsDataAsset != nullptr)
-    {
-        TArray<FDitactitial> const& tipsArray = this->RandomTipsDataAsset->Tips;
-        int32 id = FMath::RandRange(0, tipsArray.Num()-1);
-
-        if (id < tipsArray.Num())
-        {
-            if (this->TutorialWidget != nullptr)
+            if (this->KeyDataAsset != nullptr)
             {
-                this->TutorialWidget->ShowDitactitial(tipsArray[id].Tips);
-                ShowDidactitialFx();
+                skillWidget->BP_Setup(skill->BackgroundColorBtn, skill->IconeBtn, this->KeyDataAsset->get(skill->Key));
+            }
+
+            if (UProgressBar* progress = SimplyUI::initUnSafeFromName<UUserWidget, UProgressBar>(skillWidget, TEXT("ProgressBar_Skill")))
+            {
+                _skill->addProgressBar(progress);
             }
         }
-    }
-}
-
-void USpacelWidget::ShowDidactitial()
-{
-    if (this->TipsDataAsset != nullptr)
-    {
-        TArray<FDitactitial> const& tipsArray = this->TipsDataAsset->Tips;
-        if (m_nextTipsId >= tipsArray.Num())
-        {
-            UWorld* world{ this->GetWorld() };
-            if (world != nullptr)
-            {
-                world->GetTimerManager().ClearTimer(ShowDitactitialHandle);
-
-                // save information
-                if(USpacelSaveGame* saveGameInstance = Cast<USpacelSaveGame>(UGameplayStatics::CreateSaveGameObject(USpacelSaveGame::StaticClass())))
-                {
-                    // Set data on the savegame object.
-                    saveGameInstance->HasSeeDitactitial = true;
-
-                    // Start async save process.
-                    UGameplayStatics::AsyncSaveGameToSlot(saveGameInstance, "Save", 0);
-                }
-                return;
-            }
-        }
-
-        if (this->TutorialWidget != nullptr)
-        {
-            this->TutorialWidget->ShowDitactitial(tipsArray[m_nextTipsId].Tips);
-            ShowDidactitialFx();
-        }
-        ++m_nextTipsId;
     }
 }
 
 void USpacelWidget::UpdateScore()
 {
-    if(this->ScoreWidget == nullptr) return;
-    this->ScoreWidget->updateScore();
+    if(this->TeamColorDataAsset == nullptr) return;
 
-    ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld()));
-    if (spacelGameState != nullptr)
+    if (ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld())))
     {
         TArray<FScore> scores = spacelGameState->R_Scores;
 
-        // search ranking
-        scores.Sort([](FScore const& _s1, FScore const& _s2)
+        for (int i {0} ; i < scores.Num() ; ++i)
         {
-            return _s1.Score > _s2.Score;
-        });
-
-        uint8 rank = 1;
-        for (FScore const& score : scores)
-        {
-            if (score.Team == this->Team)
+            if (i < this->TeamScoreWidgets.Num())
             {
-                SetRanking(rank);
-                break;
+                this->TeamScoreWidgets[i]->SetText(FText::FromString(FString::FromInt(scores[i].Score)));
             }
-            ++rank;
+
+            if (i < this->TeamScoreColorWidgets.Num())
+            {
+                this->TeamScoreColorWidgets[i]->SetBrushColor(this->TeamColorDataAsset->GetColor<FColor>(scores[i].Team));
+            }
+
         }
     }
 }
@@ -398,11 +306,12 @@ void USpacelWidget::SetLatestEvent()
                 this->EventTextBlock->SetText(FText::FromString(winningTeam + " won!"));
             }
         }
-        else
+        else if(latestEvent.Contains("Timer"))
         {
-            if (this->EventTextBlock)
+            if (this->TimerTextBlock)
             {
-                this->EventTextBlock->SetText(FText::FromString(latestEvent));
+                latestEvent = latestEvent.Replace(TEXT("Timer"), TEXT(""));
+                this->TimerTextBlock->SetText(FText::FromString(latestEvent));
             }
         }
     }
@@ -447,7 +356,6 @@ void USpacelWidget::OnUpdateCountSupport(int32 _value, int32 _max)
 
 void USpacelWidget::OnShowScore(bool _show)
 {
-    setVisibility(this->ScoreWidget, _show);
 }
 
 void USpacelWidget::OnAddEffect(EEffect _type)

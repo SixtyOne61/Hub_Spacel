@@ -58,6 +58,7 @@ private:
 	void fireOff() override;
 	void lock() override;
 
+	// TO DO : DEPRECATED change for something else
 	void showScore();
 	void hideScore();
 

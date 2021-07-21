@@ -15,7 +15,7 @@ class HUB_SPACEL_API SkillCountDown
 {
 public:
 	SkillCountDown(const SkillCountDown &);
-	SkillCountDown(class UUniqueSkillDataAsset const* _skill, class ACommonPawn* _pawn, ENetMode _netMode, std::function<void(ESkill)> _callbackSucced, std::function<void(ESkill, ESkillReturn)> _callbackFailed);
+	SkillCountDown(class UUniqueSkillDataAsset const* _skill, class ACommonPawn* _pawn, ENetMode _netMode, std::function<void(ESkill)> _callbackSucced, std::function<void(ESkill, ESkillReturn)> _callbackFailed, bool _isActive);
 	~SkillCountDown();
 
 	void use(class UWorld* _context);
@@ -23,7 +23,10 @@ public:
 	inline class UUniqueSkillDataAsset const* getParam() const { return m_param; }
 	void addProgressBar(class UProgressBar* _progressBar);
 
-	bool& inputeState() { return m_isDown; }
+	bool& isDown() { return m_isDown; }
+	bool isActive() const { return m_isActive; }
+
+	void setActive(bool _val);
 
 	ESkill getSkillType() const;
 
@@ -44,6 +47,8 @@ private:
 	TUniquePtr<class SkillBehaviour> m_behaviour {};
 
 	bool m_isDown { false };
+	bool m_isActive { false };
+
 	std::function<void(ESkill)> m_callbackSucced {};
 	std::function<void(ESkill, ESkillReturn)> m_callbackFailed{};
 };

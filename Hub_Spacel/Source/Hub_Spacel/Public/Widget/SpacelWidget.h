@@ -35,10 +35,7 @@ protected:
 	void NativeTick(const FGeometry& _myGeometry, float _deltaTime) override;
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Setup")
-	void SetBackgroundRanking(FSlateColor const& _teamColor);
-
-	UFUNCTION(BlueprintImplementableEvent, Category = "Setup")
-	void SetRanking(uint8 _rank);
+	void SetBackgroundTeamColor(FSlateColor const& _teamColor);
 
 	UFUNCTION()
 	void OnChangeState(EGameState _state);
@@ -77,15 +74,6 @@ protected:
 	void BP_RedLight(int32 _level);
 
 	UFUNCTION()
-	void ShowDidactitial();
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void ShowDidactitialFx();
-
-	UFUNCTION()
-	void ShowRandomTips();
-
-	UFUNCTION()
 	void OnShowScore(bool _show);
 
 	UFUNCTION()
@@ -118,23 +106,6 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void HideMissionPanel();
 
-	template<class T>
-	void setVisibility(T* _widget, bool _show)
-	{
-		if (_widget == nullptr) return;
-
-		if (_show)
-		{
-			_widget->SetVisibility(ESlateVisibility::Visible);
-		}
-		else
-		{
-			_widget->SetVisibility(ESlateVisibility::Hidden);
-		}
-	}
-
-	void OnLoadGame(const FString& _slotName, const int32 _userIndex, class USaveGame* _loadedGameData);
-
 	void addSkill(class SkillCountDown * _skill);
 
 	UFUNCTION()
@@ -151,12 +122,6 @@ protected:
 	class UTeamColorDataAsset* TeamColorDataAsset{ nullptr };
 
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
-	class UDitactitialDataAsset* TipsDataAsset { nullptr };
-	
-	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
-	class UDitactitialDataAsset* RandomTipsDataAsset { nullptr };
-
-	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
 	class UMissionDataAsset* MissionDataAsset { nullptr };
 
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
@@ -171,6 +136,9 @@ private:
 
 	UPROPERTY()
 	class UTextBlock* EventTextBlock { nullptr };
+
+	UPROPERTY()
+	class UTextBlock* TimerTextBlock{ nullptr };
 
 	UPROPERTY()
 	class UTextBlock* PingTextBlock { nullptr };
@@ -197,10 +165,10 @@ private:
 	TArray<class UAllyWidget*> AllyWidgets { };
 
 	UPROPERTY()
-	class UScoreUserWidget* ScoreWidget { nullptr };
+	TArray<class UBorder*> TeamScoreColorWidgets { };
 
 	UPROPERTY()
-	class UTutorialUserWidget* TutorialWidget { nullptr };
+	TArray<class UTextBlock*> TeamScoreWidgets{ };
 
 	FString Team {};
 

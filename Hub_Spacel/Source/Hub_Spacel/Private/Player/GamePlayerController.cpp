@@ -16,8 +16,8 @@ void AGamePlayerController::SetupInputComponent()
 {
     Super::SetupInputComponent();
 
-    this->InputComponent->BindAction("Score", IE_Pressed, this, &AGamePlayerController::showScore);
-    this->InputComponent->BindAction("Score", IE_Released, this, &AGamePlayerController::hideScore);
+    //this->InputComponent->BindAction("Score", IE_Pressed, this, &AGamePlayerController::showScore);
+    //this->InputComponent->BindAction("Score", IE_Released, this, &AGamePlayerController::hideScore);
 }
 
 void AGamePlayerController::BeginPlay()
