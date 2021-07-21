@@ -52,7 +52,6 @@ void USpacelWidget::NativeConstruct()
     SupportTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Support"));
     SkillBarHorizontalBox = SimplyUI::initSafetyFromName<UUserWidget, UHorizontalBox>(this, TEXT("SkillBar"));
     EffectBarHorizontalBox = SimplyUI::initSafetyFromName<UUserWidget, UHorizontalBox>(this, TEXT("EffectBar"));
-    TutorialWidget = SimplyUI::initSafetyFromName<UUserWidget, UTutorialUserWidget>(this, TEXT("WBP_Didactitiel"));
 
     TArray<FName> allyNames { TEXT("Widget_Ally1"), TEXT("Widget_Ally2") };
     SimplyUI::initArray(this, AllyWidgets, allyNames);
@@ -223,12 +222,6 @@ void USpacelWidget::OnChangeState(EGameState _state)
         float firstDelay = this->GameModeDataAsset->EndModuleTime / 4;
         float inRate = (this->GameModeDataAsset->EndModuleTime - firstDelay) / 2.0f;
         world->GetTimerManager().SetTimer(this->RedLightAnimationHandle, this, &USpacelWidget::RedLight, inRate, true, firstDelay);
-
-        // Set up the delegate.
-        FAsyncLoadGameFromSlotDelegate LoadedDelegate;
-        // USomeUObjectClass::LoadGameDelegateFunction is a void function that takes the following parameters: const FString& SlotName, const int32 UserIndex, USaveGame* LoadedGameData
-        LoadedDelegate.BindUObject(this, &USpacelWidget::OnLoadGame);
-        UGameplayStatics::AsyncLoadGameFromSlot("Save", 0, LoadedDelegate);
     }
     else if (_state == EGameState::InGame)
     {
@@ -265,76 +258,6 @@ void USpacelWidget::addSkill(class SkillCountDown * _skill)
                 _skill->addProgressBar(progress);
             }
         }
-    }
-}
-
-void USpacelWidget::OnLoadGame(const FString& _slotName, const int32 _userIndex, USaveGame* _loadedGameData)
-{
-    USpacelSaveGame* save = Cast<USpacelSaveGame>(_loadedGameData);
-
-    if (save == nullptr || !save->HasSeeDitactitial)
-    {
-        UWorld* world{ this->GetWorld() };
-        if (!ensure(world != nullptr)) return;
-
-        // Start didactitial
-        world->GetTimerManager().SetTimer(ShowDitactitialHandle, this, &USpacelWidget::ShowDidactitial, 10.0f, true, 1.0f);
-    }
-    else
-    {
-        ShowRandomTips();
-    }
-}
-
-void USpacelWidget::ShowRandomTips()
-{
-    if (this->RandomTipsDataAsset != nullptr)
-    {
-        TArray<FDitactitial> const& tipsArray = this->RandomTipsDataAsset->Tips;
-        int32 id = FMath::RandRange(0, tipsArray.Num()-1);
-
-        if (id < tipsArray.Num())
-        {
-            if (this->TutorialWidget != nullptr)
-            {
-                this->TutorialWidget->ShowDitactitial(tipsArray[id].Tips);
-                ShowDidactitialFx();
-            }
-        }
-    }
-}
-
-void USpacelWidget::ShowDidactitial()
-{
-    if (this->TipsDataAsset != nullptr)
-    {
-        TArray<FDitactitial> const& tipsArray = this->TipsDataAsset->Tips;
-        if (m_nextTipsId >= tipsArray.Num())
-        {
-            UWorld* world{ this->GetWorld() };
-            if (world != nullptr)
-            {
-                world->GetTimerManager().ClearTimer(ShowDitactitialHandle);
-
-                // save information
-                if(USpacelSaveGame* saveGameInstance = Cast<USpacelSaveGame>(UGameplayStatics::CreateSaveGameObject(USpacelSaveGame::StaticClass())))
-                {
-                    // Set data on the savegame object.
-                    saveGameInstance->HasSeeDitactitial = true;
-
-                    // Start async save process.
-                    UGameplayStatics::AsyncSaveGameToSlot(saveGameInstance, "Save", 0);
-                }
-                return;
-            }
-        }
-
-        if (this->TutorialWidget != nullptr)
-        {
-            this->TutorialWidget->ShowDitactitial(tipsArray[m_nextTipsId].Tips);
-            ShowDidactitialFx();
-        }
-        ++m_nextTipsId;
     }
 }
 

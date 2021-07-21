@@ -74,15 +74,6 @@ protected:
 	void BP_RedLight(int32 _level);
 
 	UFUNCTION()
-	void ShowDidactitial();
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void ShowDidactitialFx();
-
-	UFUNCTION()
-	void ShowRandomTips();
-
-	UFUNCTION()
 	void OnShowScore(bool _show);
 
 	UFUNCTION()
@@ -115,8 +106,6 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void HideMissionPanel();
 
-	void OnLoadGame(const FString& _slotName, const int32 _userIndex, class USaveGame* _loadedGameData);
-
 	void addSkill(class SkillCountDown * _skill);
 
 	UFUNCTION()
@@ -131,12 +120,6 @@ protected:
 
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
 	class UTeamColorDataAsset* TeamColorDataAsset{ nullptr };
-
-	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
-	class UDitactitialDataAsset* TipsDataAsset { nullptr };
-	
-	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
-	class UDitactitialDataAsset* RandomTipsDataAsset { nullptr };
 
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
 	class UMissionDataAsset* MissionDataAsset { nullptr };
@@ -186,9 +169,6 @@ private:
 
 	UPROPERTY()
 	TArray<class UTextBlock*> TeamScoreWidgets{ };
-
-	UPROPERTY()
-	class UTutorialUserWidget* TutorialWidget { nullptr };
 
 	FString Team {};
 
