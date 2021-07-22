@@ -17,8 +17,13 @@ SkillBehaviour::SkillBehaviour(ACommonPawn* _pawn, ENetMode _netMode)
 
 ESkillReturn SkillNinePack::onStart()
 {
+    return ESkillReturn::InternError;
+}
+
+ESkillReturn SkillHealPack::onStart()
+{
     if (get<AShipPawn>() == nullptr) return ESkillReturn::InternError;
-    return get<AShipPawn>()->spawnNinePack();
+    return get<AShipPawn>()->spawnHealPack();
 }
 
 ESkillReturn SkillRepairProtection::onStart()
@@ -35,14 +40,12 @@ ESkillReturn SkillRepairSupport::onStart()
 
 ESkillReturn SkillGiveAlly1::onStart()
 {
-    if (get<AShipPawn>() == nullptr) return ESkillReturn::InternError;
-    return get<AShipPawn>()->giveMatiereToAlly(0);
+    return ESkillReturn::InternError;
 }
 
 ESkillReturn SkillGiveAlly2::onStart()
 {
-    if (get<AShipPawn>() == nullptr) return ESkillReturn::InternError;
-    return get<AShipPawn>()->giveMatiereToAlly(1);
+    return ESkillReturn::InternError;
 }
 
 ESkillReturn SkillEscapeMode::onStart()
@@ -206,6 +209,7 @@ TUniquePtr<SkillBehaviour> SkillFactory::create(ESkill _skill, class ACommonPawn
         case ESkill::MetaFormSupport: return MakeUnique<SkillMetaFormSupport>(_pawn, _netMode);
         case ESkill::NinePack: return MakeUnique<SkillNinePack>(_pawn, _netMode);
         case ESkill::Katyusha: return MakeUnique<SkillKatyusha>(_pawn, _netMode);
+        case ESkill::HealPack: return MakeUnique<SkillHealPack>(_pawn, _netMode);
         default: ensure(false); break;
     }
 

@@ -83,13 +83,10 @@ public:
     int SupportRatioEffect{};
 
     UPROPERTY(Category = "Skill", EditAnywhere, BlueprintReadWrite)
-    int MaxGiveMatiere{};
+    int NbMatiereForHealPack{};
 
     UPROPERTY(Category = "Skill", EditAnywhere, BlueprintReadWrite)
-    int NbMatiereForNinePack{};
-
-    UPROPERTY(Category = "Skill", EditAnywhere, BlueprintReadWrite)
-    TSubclassOf<class AActor> NinePackClass { nullptr };
+    TSubclassOf<class AActor> HealPackClass { nullptr };
 
     UPROPERTY(Category = "Skill", EditAnywhere, BlueprintReadOnly)
     TSubclassOf<class AActor> MetaSupportPostProcessClass;

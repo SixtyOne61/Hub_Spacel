@@ -38,7 +38,7 @@
 #include "Gameplay/SkillComponent.h"
 #include "Gameplay/Skill/PostProcessInvisible.h"
 #include "NiagaraComponent.h"
-#include "Skill/NinePackActor.h"
+#include "Skill/HealPackBullet.h"
 
 void AShipPawn::OnChangeState(EGameState _state)
 {
@@ -166,11 +166,6 @@ void AShipPawn::RPCNetMulticastFxFireBullet_Implementation()
 void AShipPawn::RPCNetMulticastFxFireMissile_Implementation()
 {
     BP_FxFireMissile();
-}
-
-void AShipPawn::RPCNetMulticastFxNinePack_Implementation()
-{
-    BP_FxSpawnNinePacks();
 }
 
 // Called when the game starts or when spawned
@@ -369,48 +364,6 @@ void AShipPawn::emp(uint32 _duration, FName const& _team, int32 _playerId)
     addEffect(EEffect::Emp);
     FTimerHandle handle;
     this->GetWorldTimerManager().SetTimer(handle, this, &AShipPawn::CleanEmp, _duration, false);
-}
-
-ESkillReturn AShipPawn::giveMatiereToAlly(uint8 _id)
-{
-    if(this->RU_Matiere <= 0) return ESkillReturn::NoMater;
-    if(this->PlayerDataAsset == nullptr) return ESkillReturn::InternError;
-
-    if (ASpacelPlayerState* localSpacelPlayerState = GetPlayerState<ASpacelPlayerState>())
-    {
-        FString const& localTeam = localSpacelPlayerState->R_Team;
-
-        if (AGameStateBase* gameStateBase = GetWorld()->GetGameState())
-        {
-            TArray<APlayerState*> const& playerStates = gameStateBase->PlayerArray;
-            uint8 i = 0;
-            for (APlayerState const* playerState : playerStates)
-            {
-                if (ASpacelPlayerState const* spacelPlayerState = Cast<ASpacelPlayerState>(playerState))
-                {
-                    if(localSpacelPlayerState->PlayerId == playerState->PlayerId) continue;
-
-                    if (spacelPlayerState->R_Team == localTeam)
-                    {
-                        if (i == _id)
-                        {
-                            if (AShipPawn* allyPawn = spacelPlayerState->GetPawn<AShipPawn>())
-                            {
-                                int value = FMath::Min((int)this->PlayerDataAsset->MaxGiveMatiere, (int)this->RU_Matiere);
-                                allyPawn->addMatiere(value);
-
-                                addMatiere(value * -1);
-                                return ESkillReturn::Success;
-                            }
-                        }
-                        ++i;
-                    }
-                }
-            }
-        }
-    }
-
-    return ESkillReturn::InternError;
 }
 
 void AShipPawn::CleanEmp()
@@ -986,6 +939,11 @@ void AShipPawn::RPCClientFeedbackScore_Implementation(EScoreType _type, int16 _v
     OnFeedbackScoreDelegate.Broadcast(_type, _value);
 }
 
+void AShipPawn::heal(uint8 _value)
+{
+    this->RepairComponent->heal(_value);
+}
+
 ESkillReturn AShipPawn::onRepairProtection()
 {
     if (this->RepairComponent != nullptr)
@@ -1030,23 +988,38 @@ void AShipPawn::farmAsteroide()
     }
 }
 
-ESkillReturn AShipPawn::spawnNinePack()
+ESkillReturn AShipPawn::spawnHealPack()
 {
     if (this->PlayerDataAsset != nullptr)
     {
-        if (this->RU_Matiere >= this->PlayerDataAsset->NbMatiereForNinePack)
+        int healPackMatiere = this->PlayerDataAsset->NbMatiereForHealPack;
+        if (this->RU_Matiere >= healPackMatiere)
         {
-            addMatiere(this->PlayerDataAsset->NbMatiereForNinePack * -1);
+            addMatiere(healPackMatiere * -1);
             // spawn wall
-            TArray<UActorComponent*> const& actors = this->GetComponentsByTag(USceneComponent::StaticClass(), "NinePack");
+            TArray<UActorComponent*> const& actors = this->GetComponentsByTag(USceneComponent::StaticClass(), Tags::HealPack);
             if (actors.Num() > 0 && actors[0] != nullptr)
             {
                 if (USceneComponent* comp = Cast<USceneComponent>(actors[0]))
                 {
-                    FTransform const& tr = comp->GetComponentTransform();
-                    ANinePackActor* ninePackActor = Cast<ANinePackActor>(UGameplayStatics::BeginDeferredActorSpawnFromClass(GetWorld(), this->PlayerDataAsset->NinePackClass, tr));
-                    UGameplayStatics::FinishSpawningActor(ninePackActor, tr);
-                    RPCNetMulticastFxNinePack();
+                    FTransform tr = comp->GetComponentTransform();
+
+                    FVector dir = UKismetMathLibrary::FindLookAtRotation(tr.GetLocation(), TargetLocation).Vector();
+                    dir.Normalize();
+                    tr.SetRotation(dir.ToOrientationQuat());
+
+                    if (AHealPackBullet* healPackActor = Cast<AHealPackBullet>(UGameplayStatics::BeginDeferredActorSpawnFromClass(GetWorld(), this->PlayerDataAsset->HealPackClass, tr)))
+                    {
+                        healPackActor->R_Team = Team;
+                        if (APlayerState* playerState = GetPlayerState())
+                        {
+                            healPackActor->PlayerIdOwner = playerState->PlayerId;
+                        }
+                        healPackActor->Value = healPackMatiere;
+                        healPackActor->Tags.Add(Tags::HealPack);
+                        UGameplayStatics::FinishSpawningActor(healPackActor, tr);
+                    }
+
                     return ESkillReturn::Success;
                 }
             }

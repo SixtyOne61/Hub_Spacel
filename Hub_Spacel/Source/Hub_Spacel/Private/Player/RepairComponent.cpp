@@ -47,6 +47,34 @@ ESkillReturn URepairComponent::onRepairProtection()
     return ESkillReturn::InternError;
 }
 
+void URepairComponent::heal(uint8 _value)
+{
+    auto lb = [&](TArray<FVector_NetQuantize>& _removedLocations, TArray<FVector_NetQuantize>& _locations, std::function<void(void)> _onRep)
+    {
+        while (_value > 0 && _removedLocations.Num() > 0)
+        {
+            _locations.Add(_removedLocations[0]);
+            _removedLocations.RemoveAt(0);
+            _value--;
+        }
+
+        _onRep();
+    };
+
+    if (get()->ModuleComponent->RemovedProtectionLocations.Num() != 0)
+    {
+        lb(get()->ModuleComponent->RemovedProtectionLocations,
+            get()->ModuleComponent->RU_ProtectionLocations,
+            std::bind(&UModuleComponent::OnRep_Protection, get()->ModuleComponent));
+    }
+    else if (get()->ModuleComponent->RemovedSupportLocations.Num() != 0)
+    {
+        lb(get()->ModuleComponent->RemovedSupportLocations,
+            get()->ModuleComponent->RU_SupportLocations,
+            std::bind(&UModuleComponent::OnRep_Support, get()->ModuleComponent));
+    }
+}
+
 ESkillReturn URepairComponent::onRepairSupport()
 {
     if (get() != nullptr)
