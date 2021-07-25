@@ -18,7 +18,13 @@ class HUB_SPACEL_API UMissionInfoUserWidget : public UUserWidget
 public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void SetTitle(FString const& _title);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void SetDesc(FString const& _title);
 	
+	UFUNCTION(BlueprintImplementableEvent)
+	void ShowDesc(bool _visible);
+
 public:
 	EMission Type {};
 };

@@ -13,6 +13,7 @@ void UMissionPanelUserWidget::NativeConstruct()
     Super::NativeConstruct();
 
     VerticalBox = SimplyUI::initSafetyFromName<UUserWidget, UVerticalBox>(this, TEXT("Mission_VerticalBox"));
+    PanelTitle = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_PanelTitle"));
 }
 
 void UMissionPanelUserWidget::addMission(FMission const& _mission)
@@ -24,16 +25,18 @@ void UMissionPanelUserWidget::addMission(FMission const& _mission)
         if (UMissionInfoUserWidget* missionWidget = CreateWidget<UMissionInfoUserWidget, UVerticalBox>(this->VerticalBox, this->MissionInfoWidgetClass, *name))
         {
             missionWidget->Type = _mission.Type;
-            FString title = _mission.MissionTitle;
-            title = title.Replace(*FString("%reward%"), *FString::FromInt(_mission.RewardValue));
-            title = title.Replace(*FString("%condition%"), *FString::FromInt(_mission.ConditionValue));
-            title = title.Replace(*FString("%time%"), *(FString::FromInt(_mission.DurationValue) + "s"));
+            missionWidget->SetTitle(_mission.MissionTitle);
+
+            FString desc = _mission.MissionDesc;
+            desc = desc.Replace(*FString("%reward%"), *FString::FromInt(_mission.RewardValue));
+            desc = desc.Replace(*FString("%condition%"), *FString::FromInt(_mission.ConditionValue));
+            desc = desc.Replace(*FString("%time%"), *(FString::FromInt(_mission.DurationValue) + "s"));
             if (this->TeamColorDataAsset != nullptr && !_mission.Team.IsEmpty())
             {
                 FColorsType const& info = this->TeamColorDataAsset->GetColorType(_mission.Team);
-                title = title.Replace(*FString("%team%"), *info.ShortName);
+                desc = desc.Replace(*FString("%team%"), *info.ShortName);
             }
-            missionWidget->SetTitle(title);
+            missionWidget->SetDesc(desc);
 
             this->VerticalBox->AddChildToVerticalBox(missionWidget);
         }
@@ -49,6 +52,21 @@ void UMissionPanelUserWidget::removeMission(EMission _type)
         if (UMissionInfoUserWidget* widget = SimplyUI::initSafetyFromName<UUserWidget, UMissionInfoUserWidget>(this, *name))
         {
             this->VerticalBox->RemoveChild(widget);
+        }
+    }
+}
+
+void UMissionPanelUserWidget::showMission(bool _show)
+{
+    if (this->VerticalBox != nullptr)
+    {
+        TArray<UWidget*> children = this->VerticalBox->GetAllChildren();
+        for (auto* child : children)
+        {
+            if (UMissionInfoUserWidget* missionWidget = Cast<UMissionInfoUserWidget>(child))
+            {
+                missionWidget->ShowDesc(_show);
+            }
         }
     }
 }
