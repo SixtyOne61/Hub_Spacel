@@ -21,13 +21,20 @@ protected:
 public:
 	void addMission(FMission const& _mission);
 	void removeMission(EMission _type);
+	void showMission(bool _show);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void BP_Setup(class UTexture2D* _name);
 
 public:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class UMissionInfoUserWidget> MissionInfoWidgetClass { nullptr };
 
 	UPROPERTY()
-	class UVerticalBox* VerticalBox{ nullptr };
+	class UVerticalBox* VerticalBox { nullptr };
+
+	UPROPERTY()
+	class UTextBlock* PanelTitle { nullptr };
 
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
 	class UTeamColorDataAsset* TeamColorDataAsset{ nullptr };

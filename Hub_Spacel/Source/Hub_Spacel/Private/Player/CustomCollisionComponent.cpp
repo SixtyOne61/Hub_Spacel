@@ -15,6 +15,7 @@
 #include "Util/Tag.h"
 #include "DrawDebugHelpers.h"
 #include "GameState/SpacelGameState.h"
+#include "Gameplay/Skill/HealPackBullet.h"
 
 // Sets default values for this component's properties
 UCustomCollisionComponent::UCustomCollisionComponent()
@@ -184,6 +185,8 @@ void UCustomCollisionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 	hitMatiere(ownerLocation, profileCollision);
 	// resolve mission
 	hitMission(ownerLocation, profileCollision);
+	// hit heal
+	hitHeal(ownerLocation, profileCollision);
 
 	TArray<FHitResult> hits;
 	if (sweepByProfile(hits, ownerLocation, profileCollision, { FCollisionShape::MakeBox({400, 350, 200}) }))
@@ -335,6 +338,40 @@ void UCustomCollisionComponent::hitMatiere(FVector const& _ownerLocation, FName 
 			if (addMatiere != int{})
 			{
 				pawn->OnUpdateMatiereDelegate.Broadcast(addMatiere);
+			}
+		}
+	}
+}
+
+void UCustomCollisionComponent::hitHeal(FVector const& _ownerLocation, FName const& _profileCollision) const
+{
+	TArray<FHitResult> hits;
+	if (sweepByProfile(hits, _ownerLocation, _profileCollision, { FCollisionShape::MakeBox({600, 600, 600}) }))
+	{
+		hits.RemoveAll([](FHitResult const& _item)
+			{
+				return !(_item.Actor.IsValid() && _item.Actor.Get()->ActorHasTag(Tags::HealPack));
+			});
+
+		ASpacelPlayerState const* spacelPlayerState = get()->GetPlayerState<ASpacelPlayerState>();
+		if (spacelPlayerState == nullptr) return;
+
+		FString const& team = spacelPlayerState->R_Team;
+
+		for (auto const& hit : hits)
+		{
+			if (AHealPackBullet* healPack = Cast<AHealPackBullet>(hit.Actor))
+			{
+				if (healPack->R_Team == *team)
+				{
+					// heal
+					if (AShipPawn* pawn = get<AShipPawn>())
+					{
+						pawn->heal(healPack->Value);
+					}
+				}
+
+				healPack->Destroy();
 			}
 		}
 	}

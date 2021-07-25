@@ -74,7 +74,7 @@ protected:
 	void BP_RedLight(int32 _level);
 
 	UFUNCTION()
-	void OnShowScore(bool _show);
+	void OnShowMission(bool _show);
 
 	UFUNCTION()
 	void OnAddEffect(EEffect _type);
@@ -129,6 +129,9 @@ protected:
 
 	UPROPERTY()
 	FTimerHandle RedLightAnimationHandle {};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FKey KeyMissionPanel { };
 
 private:
 	UPROPERTY(EditAnywhere)

@@ -58,9 +58,8 @@ private:
 	void fireOff() override;
 	void lock() override;
 
-	// TO DO : DEPRECATED change for something else
-	void showScore();
-	void hideScore();
+	void showMission();
+	void hideMission();
 
 	/* from event */
 	UFUNCTION()

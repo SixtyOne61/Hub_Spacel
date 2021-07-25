@@ -11,7 +11,7 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUpdateMatiere, int, _value);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnEndUpdateMatiere, int32, _value, FString const&, _deltaStr);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnShowScore, bool, _show);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnShowMission, bool, _show);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLocalTeamUpdate, FString const&, _team);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAddEffect, EEffect, _type);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRemoveEffect, EEffect, _type);
@@ -59,7 +59,6 @@ public:
     void spawnKatyusha();
     void emp();
     void emp(uint32 _duration, FName const& _team, int32 _playerId);
-    ESkillReturn giveMatiereToAlly(uint8 _id);
 
     ESkillReturn onRepairProtection();
     ESkillReturn onRepairSupport();
@@ -69,7 +68,7 @@ public:
 
     void addMatiere(int32 _val);
     void farmAsteroide();
-    ESkillReturn spawnNinePack();
+    ESkillReturn spawnHealPack();
 
     void boostPassive(EMission _type, int32 _rewardValue);
 
@@ -82,9 +81,6 @@ protected:
 
     UFUNCTION(BlueprintImplementableEvent)
     void BP_FxFireMissile();
-
-    UFUNCTION(BlueprintImplementableEvent)
-    void BP_FxSpawnNinePacks();
 
     UFUNCTION(BlueprintImplementableEvent)
     void BP_FxAddMatiere(int32 _val);
@@ -123,6 +119,9 @@ private:
 
     /* call for kill a player when red zone is hit */
     void kill();
+
+    /* call for force heal */
+    void heal(uint8 _value);
 
     /* call on server */
     UFUNCTION()
@@ -166,9 +165,6 @@ private:
 
     UFUNCTION(UnReliable, NetMulticast)
     void RPCNetMulticastFxFireMissile();
-
-    UFUNCTION(UnReliable, NetMulticast)
-    void RPCNetMulticastFxNinePack();
 
     UFUNCTION(UnReliable, NetMulticast)
     void RPCClientFxAddMatiere(int8 _val);
@@ -229,7 +225,7 @@ private:
     FOnEndUpdateMatiere OnEndUpdateMatiereDelegate {};
 
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
-    FOnShowScore OnShowScoreDelegate {};
+    FOnShowMission OnShowMissionDelegate {};
 
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
     FOnLocalTeamUpdate OnLocalTeamUpdateDelegate {};

@@ -13,4 +13,5 @@ namespace Tags
     static const FName StartPirate { "StartPirate" };
     static const FName StartComet { "StartComet" };
     static const FName StartGold { "StartGold" };
+    static const FName HealPack { "HealPack" };
 }

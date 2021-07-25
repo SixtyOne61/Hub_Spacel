@@ -87,13 +87,21 @@ void USpacelWidget::NativeConstruct()
         shipPawn->ModuleComponent->OnUpdateCountProtectionDelegate.AddDynamic(this, &USpacelWidget::OnUpdateCountProtection);
         shipPawn->ModuleComponent->OnUpdateCountSupportDelegate.AddDynamic(this, &USpacelWidget::OnUpdateCountSupport);
 
-        shipPawn->OnShowScoreDelegate.AddDynamic(this, &USpacelWidget::OnShowScore);
+        shipPawn->OnShowMissionDelegate.AddDynamic(this, &USpacelWidget::OnShowMission);
         shipPawn->OnAddEffectDelegate.AddDynamic(this, &USpacelWidget::OnAddEffect);
         shipPawn->OnRemoveEffectDelegate.AddDynamic(this, &USpacelWidget::OnRemoveEffect);
 
         shipPawn->OnSendInfoPlayerDelegate.AddDynamic(this, &USpacelWidget::OnSendInfoPlayer);
 
         RegisterPlayerState();
+    }
+
+    if (UMissionPanelUserWidget* panelMission = SimplyUI::initSafetyFromName<UUserWidget, UMissionPanelUserWidget>(this, TEXT("WBP_Mission")))
+    {
+        if (this->KeyDataAsset != nullptr)
+        {
+            panelMission->BP_Setup(this->KeyDataAsset->get(this->KeyMissionPanel));
+        }
     }
 }
 
@@ -151,8 +159,7 @@ void USpacelWidget::OnStartMission(EMission _type)
 
     m_currentMission.Add(_type);
 
-    UMissionPanelUserWidget* panelMission = SimplyUI::initSafetyFromName<UUserWidget, UMissionPanelUserWidget>(this, TEXT("WBP_Mission"));
-    if (panelMission != nullptr)
+    if (UMissionPanelUserWidget* panelMission = SimplyUI::initSafetyFromName<UUserWidget, UMissionPanelUserWidget>(this, TEXT("WBP_Mission")))
     {
         panelMission->addMission(this->MissionDataAsset->getMission(_type));
     }
@@ -354,8 +361,12 @@ void USpacelWidget::OnUpdateCountSupport(int32 _value, int32 _max)
     }
 }
 
-void USpacelWidget::OnShowScore(bool _show)
+void USpacelWidget::OnShowMission(bool _show)
 {
+    if (UMissionPanelUserWidget* panelMission = SimplyUI::initSafetyFromName<UUserWidget, UMissionPanelUserWidget>(this, TEXT("WBP_Mission")))
+    {
+        panelMission->showMission(_show);
+    }
 }
 
 void USpacelWidget::OnAddEffect(EEffect _type)

@@ -36,6 +36,9 @@ private:
 	/* manage if we hit mission */
 	void hitMission(FVector const& _ownerLocation, FName const& _profileCollision) const;
 
+	/* manage if we hit heal */
+	void hitHeal(FVector const& _ownerLocation, FName const& _profileCollision) const;
+
 	/* create collision shape */
 	template<class T>
 	FCollisionShape createCollisionShapeWithLocalBounds(T const* _obj, FVector const& _scale) const
