@@ -73,6 +73,10 @@ void URepairComponent::heal(uint8 _value)
             get()->ModuleComponent->RU_SupportLocations,
             std::bind(&UModuleComponent::OnRep_Support, get()->ModuleComponent));
     }
+    else
+    {
+        this->OnUpdateMatiere(_value);
+    }
 }
 
 ESkillReturn URepairComponent::onRepairSupport()
