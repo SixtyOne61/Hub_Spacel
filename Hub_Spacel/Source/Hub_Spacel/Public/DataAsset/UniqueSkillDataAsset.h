@@ -33,9 +33,6 @@ public:
 	class UTexture2D* IconeBtn { nullptr };
 
 	UPROPERTY(EditAnywhere)
-	class UTexture2D* IconeLarge { nullptr };
-
-	UPROPERTY(EditAnywhere)
 	FSlateColor BackgroundColorBtn { };
 
 	UPROPERTY(EditAnywhere)

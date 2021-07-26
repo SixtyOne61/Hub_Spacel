@@ -30,7 +30,7 @@ protected:
 	void NativeDestruct() override;
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void BP_SetDesc(FString const& _desc);
+	void BP_SetTitle(FString const& _title);
 
 	UFUNCTION(BlueprintCallable)
 	void SpinRight();

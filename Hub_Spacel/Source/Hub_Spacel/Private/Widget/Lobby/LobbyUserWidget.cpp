@@ -205,7 +205,7 @@ void ULobbyUserWidget::setupSkill(TArray<ESkill> const& _skills)
         if (UUniqueSkillDataAsset const* skill = this->SkillDataAsset->getSKill(type))
         {
             uint8 id = (uint8)type;
-            datas.Add({ id, skill->BackgroundColorLobby, skill->Desc, skill->IconeLarge });
+            datas.Add({ id, skill->BackgroundColorLobby, skill->Title, skill->Desc });
         }
     }
 

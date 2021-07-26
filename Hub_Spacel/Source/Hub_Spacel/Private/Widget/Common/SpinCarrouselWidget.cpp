@@ -26,7 +26,7 @@ void USpinCarrouselWidget::NativeDestruct()
 
 void USpinCarrouselWidget::setDesc()
 {
-    BP_SetDesc(this->Items[1]->m_data.m_text);
+    BP_SetTitle(this->Items[1]->m_data.m_title);
 }
 
 void USpinCarrouselWidget::setupItems(TArray<UItemCarrouselWidget::FData> const& _data)
