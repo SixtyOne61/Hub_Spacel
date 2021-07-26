@@ -40,8 +40,4 @@ public:
 
 	UPROPERTY(Replicated)
 	int32 PlayerIdOwner {};
-
-protected:
-	UPROPERTY(EditAnywhere)
-	class UNiagaraSystem* FireFx{ nullptr };
 };

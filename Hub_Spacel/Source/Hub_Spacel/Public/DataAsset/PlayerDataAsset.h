@@ -83,9 +83,6 @@ public:
     int SupportRatioEffect{};
 
     UPROPERTY(Category = "Skill", EditAnywhere, BlueprintReadWrite)
-    int NbMatiereForHealPack{};
-
-    UPROPERTY(Category = "Skill", EditAnywhere, BlueprintReadWrite)
     TSubclassOf<class AActor> HealPackClass { nullptr };
 
     UPROPERTY(Category = "Skill", EditAnywhere, BlueprintReadOnly)

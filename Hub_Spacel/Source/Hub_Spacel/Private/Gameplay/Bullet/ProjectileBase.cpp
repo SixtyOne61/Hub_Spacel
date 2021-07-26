@@ -7,7 +7,6 @@
 #include "GameFramework/GameStateBase.h"
 #include "GameFramework/PlayerState.h"
 #include "GameState/SpacelGameState.h"
-#include "NiagaraFunctionLibrary.h"
 #include "Util/Tag.h"
 #include "Player/ShipPawn.h"
 #include "Net/UnrealNetwork.h"
@@ -31,9 +30,6 @@ void AProjectileBase::BeginPlay()
         if (!ensure(ProjectileCollisionComponent != nullptr)) return;
         this->ProjectileCollisionComponent->OnComponentHit.AddDynamic(this, &AProjectileBase::OnComponentHit);
     }
-
-    // spawn fx fire
-    //UNiagaraFunctionLibrary::SpawnSystemAtLocation(this->GetWorld(), this->FireFx, this->GetActorLocation(), this->GetActorRotation());
 }
 
 void AProjectileBase::applyHit(TArray<int32>& _instance)

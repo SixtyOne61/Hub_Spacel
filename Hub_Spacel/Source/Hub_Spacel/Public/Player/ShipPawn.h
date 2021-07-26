@@ -97,6 +97,9 @@ protected:
     UFUNCTION(BlueprintImplementableEvent)
     void BP_InitFireComponent();
 
+    UFUNCTION(BlueprintImplementableEvent)
+    void BP_ExploseHealFx();
+
     UFUNCTION()
     void OnEndMission(EMission _type);
 
@@ -172,6 +175,9 @@ private:
     UFUNCTION(UnReliable, NetMulticast)
     void RPCNetMulticastFxKilled();
 
+    UFUNCTION(UnReliable, NetMulticast)
+    void RPCNetMulticastFxExploseHeal();
+
     bool canTank(int32 _val);
 
     UFUNCTION()
@@ -216,6 +222,9 @@ protected:
 
     UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
     class UMissionDataAsset* MissionDataAsset { nullptr };
+
+    UPROPERTY(EditAnywhere)
+    class UNiagaraSystem* HealPackFx { nullptr };
 
 private:
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")

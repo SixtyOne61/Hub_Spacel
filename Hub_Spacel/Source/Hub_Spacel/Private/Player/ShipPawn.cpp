@@ -37,8 +37,9 @@
 #include "TimerManager.h"
 #include "Gameplay/SkillComponent.h"
 #include "Gameplay/Skill/PostProcessInvisible.h"
+#include "Gameplay/Skill/HealPackBullet.h"
 #include "NiagaraComponent.h"
-#include "Skill/HealPackBullet.h"
+#include "NiagaraFunctionLibrary.h"
 
 void AShipPawn::OnChangeState(EGameState _state)
 {
@@ -46,6 +47,8 @@ void AShipPawn::OnChangeState(EGameState _state)
     {
         if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
         {
+            this->StartTransform = GetActorTransform();
+
             // add custom collision component
             if (UCustomCollisionComponent* customCollisionComponent = NewObject<UCustomCollisionComponent>(this, "CustomCollision_00"))
             {
@@ -939,9 +942,15 @@ void AShipPawn::RPCClientFeedbackScore_Implementation(EScoreType _type, int16 _v
     OnFeedbackScoreDelegate.Broadcast(_type, _value);
 }
 
+void AShipPawn::RPCNetMulticastFxExploseHeal_Implementation()
+{
+    BP_ExploseHealFx();
+}
+
 void AShipPawn::heal(uint8 _value)
 {
     this->RepairComponent->heal(_value);
+    RPCNetMulticastFxExploseHeal();
 }
 
 ESkillReturn AShipPawn::onRepairProtection()
@@ -990,43 +999,46 @@ void AShipPawn::farmAsteroide()
 
 ESkillReturn AShipPawn::spawnHealPack()
 {
-    if (this->PlayerDataAsset != nullptr)
+    if (this->SkillComponent != nullptr)
     {
-        int healPackMatiere = this->PlayerDataAsset->NbMatiereForHealPack;
-        if (this->RU_Matiere >= healPackMatiere)
+        if (UUniqueSkillDataAsset const* uniqueSkillDataAsset = this->SkillComponent->getSkill(ESkill::HealPack))
         {
-            addMatiere(healPackMatiere * -1);
-            // spawn wall
-            TArray<UActorComponent*> const& actors = this->GetComponentsByTag(USceneComponent::StaticClass(), Tags::HealPack);
-            if (actors.Num() > 0 && actors[0] != nullptr)
+            int healPackMatiere = uniqueSkillDataAsset->Value;
+            if (this->RU_Matiere >= healPackMatiere)
             {
-                if (USceneComponent* comp = Cast<USceneComponent>(actors[0]))
+                addMatiere(healPackMatiere * -1);
+                // spawn wall
+                TArray<UActorComponent*> const& actors = this->GetComponentsByTag(USceneComponent::StaticClass(), Tags::HealPack);
+                if (actors.Num() > 0 && actors[0] != nullptr)
                 {
-                    FTransform tr = comp->GetComponentTransform();
-
-                    FVector dir = UKismetMathLibrary::FindLookAtRotation(tr.GetLocation(), TargetLocation).Vector();
-                    dir.Normalize();
-                    tr.SetRotation(dir.ToOrientationQuat());
-
-                    if (AHealPackBullet* healPackActor = Cast<AHealPackBullet>(UGameplayStatics::BeginDeferredActorSpawnFromClass(GetWorld(), this->PlayerDataAsset->HealPackClass, tr)))
+                    if (USceneComponent* comp = Cast<USceneComponent>(actors[0]))
                     {
-                        healPackActor->R_Team = Team;
-                        if (APlayerState* playerState = GetPlayerState())
-                        {
-                            healPackActor->PlayerIdOwner = playerState->PlayerId;
-                        }
-                        healPackActor->Value = healPackMatiere;
-                        healPackActor->Tags.Add(Tags::HealPack);
-                        UGameplayStatics::FinishSpawningActor(healPackActor, tr);
-                    }
+                        FTransform tr = comp->GetComponentTransform();
 
-                    return ESkillReturn::Success;
+                        FVector dir = UKismetMathLibrary::FindLookAtRotation(tr.GetLocation(), TargetLocation).Vector();
+                        dir.Normalize();
+                        tr.SetRotation(dir.ToOrientationQuat());
+
+                        if (AHealPackBullet* healPackActor = Cast<AHealPackBullet>(UGameplayStatics::BeginDeferredActorSpawnFromClass(GetWorld(), this->PlayerDataAsset->HealPackClass, tr)))
+                        {
+                            healPackActor->R_Team = Team;
+                            if (APlayerState* playerState = GetPlayerState())
+                            {
+                                healPackActor->PlayerIdOwner = playerState->PlayerId;
+                            }
+                            healPackActor->Value = healPackMatiere;
+                            healPackActor->Tags.Add(Tags::HealPack);
+                            UGameplayStatics::FinishSpawningActor(healPackActor, tr);
+                        }
+
+                        return ESkillReturn::Success;
+                    }
                 }
             }
-        }
-        else
-        {
-            return ESkillReturn::NoMater;
+            else
+            {
+                return ESkillReturn::NoMater;
+            }
         }
     }
     return ESkillReturn::InternError;
