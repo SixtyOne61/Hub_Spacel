@@ -6,6 +6,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "Components/SphereComponent.h"
 #include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
 #include "Util/Tag.h"
 #include "Player/ModuleComponent.h"
 #include "DataAsset/TeamColorDataAsset.h"
@@ -27,6 +28,17 @@ void ALaserBullet::BeginPlay()
             FString team = getLocalTeam();
             FColor color = this->Colors->GetColor<FColor>(team);
             comp->SetVectorParameterValueOnMaterials("Color", FVector(color.R / 255.0f, color.G / 255.0f, color.B / 255.0f));
+        }
+    }
+
+    if (UNiagaraComponent* trail = Cast<UNiagaraComponent>(this->GetComponentByClass(UNiagaraComponent::StaticClass())))
+    {
+        if (this->Colors != nullptr)
+        {
+            FString team = getLocalTeam();
+            FLinearColor color = this->Colors->GetColor<FColor>(team);
+
+            trail->SetNiagaraVariableLinearColor("User.TrailColor", color);
         }
     }
 }
