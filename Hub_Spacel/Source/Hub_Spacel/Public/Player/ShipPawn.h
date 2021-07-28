@@ -100,6 +100,9 @@ protected:
     UFUNCTION(BlueprintImplementableEvent)
     void BP_ExploseHealFx();
 
+    UFUNCTION(BlueprintImplementableEvent)
+    void BP_GoldFx(bool _activate);
+
     UFUNCTION()
     void OnEndMission(EMission _type);
 
@@ -177,6 +180,9 @@ private:
 
     UFUNCTION(UnReliable, NetMulticast)
     void RPCNetMulticastFxExploseHeal();
+
+    UFUNCTION(UnReliable, NetMulticast)
+    void RPCNetMultiCastFxGold(bool _activate);
 
     bool canTank(int32 _val);
 

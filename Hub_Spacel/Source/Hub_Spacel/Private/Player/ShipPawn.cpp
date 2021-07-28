@@ -852,6 +852,15 @@ void AShipPawn::behaviourAddEffect(EEffect _type)
             this->R_OverDrive = this->PlayerDataAsset->CoefOverDriveValue;
         }
     }
+    else if (_type == EEffect::Gold)
+    {
+        RPCNetMultiCastFxGold(true);
+    }
+}
+
+void AShipPawn::RPCNetMultiCastFxGold_Implementation(bool _activate)
+{
+    BP_GoldFx(_activate);
 }
 
 void AShipPawn::RPCNetMulticastFxKilled_Implementation()
@@ -934,6 +943,7 @@ void AShipPawn::behaviourRemoveEffect(EEffect _type)
     else if (_type == EEffect::Gold)
     {
         this->OnLostGoldDelegate.broadcast();
+        RPCNetMultiCastFxGold(false);
     }
 }
 
