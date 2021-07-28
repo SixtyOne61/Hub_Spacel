@@ -27,3 +27,7 @@ Hub_Spacel.uproject, remove UMGEditor for compile
 			]
 			
 Path for local network : \\DESKTOP-0CMBLT2\Users\olivi\OneDrive\Desktop\Projects\PC\Build\SpaceLClient
+
+Token git
+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
+https://github.com/SixtyOne61/Hub_Spacel.git
