@@ -138,7 +138,7 @@ void ASpacelGameState::RegisterTeam()
 void ASpacelGameState::BeginPlay()
 {
     Super::BeginPlay();
-    FMath::RandInit((int32)FDateTime::Now().ToUnixTimestamp());
+    FMath::RandInit((int32)FDateTime::Now().GetMillisecond());
 }
 
 void ASpacelGameState::RPCNetMulticastStartMission_Implementation(EMission _type)
