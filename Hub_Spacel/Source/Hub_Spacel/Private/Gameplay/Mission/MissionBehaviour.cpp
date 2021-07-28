@@ -118,22 +118,13 @@ void MissionComet::start(class UWorld* _world)
         FTransform transform = starts[index]->GetActorTransform();
         FVector const& baseLocation = transform.GetLocation();
 
-        TArray<FVector> scales{
-            FVector { 20.0f, 3.0f, 5.0f },
-            FVector { 7.0f, 5.0f, 1.0f },
-            FVector { 1.0f, 1.0f, 1.0f },
-            FVector { 11.0f, 4.0f, 4.0f }
-        };
-
         TArray<FVector> delta
         {
-            FVector { 860.0f, 860.0f, 860.0f },
-            FVector { -640.0f, 180.0f, 440.0f },
-            FVector { 0.0, -440.0f, -1200.0f },
-            FVector { -600.0f, -800.0f, -330.0f }
+            FVector { 760.0f, 760.0f, 760.0f },
+            FVector { -340.0f, 180.0f, 340.0f },
+            FVector { 0.0, -340.0f, -1000.0f },
+            FVector { -500.0f, -700.0f, -230.0f }
         };
-
-        transform.SetScale3D(FVector{ 30.0f, 7.0f, 7.0f });
 
         for (int i = 0; i < 5; ++i)
         {
@@ -146,11 +137,8 @@ void MissionComet::start(class UWorld* _world)
                 comet->FinishSpawning(transform);
             }
 
-            if (scales.Num() > 0 && delta.Num() > 0)
+            if (delta.Num() > 0)
             {
-                int32 randScaleIndex = FMath::RandRange(0, scales.Num() - 1);
-                transform.SetScale3D(scales[randScaleIndex]);
-
                 int32 randDeltaIndex = FMath::RandRange(0, delta.Num() - 1);
                 transform.SetTranslation(baseLocation + delta[randDeltaIndex]);
                 delta.RemoveAt(randDeltaIndex);
