@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "DataAsset/MissionDataAsset.h"
 #include "Util/SpacelEvent.h"
+
 /**
  * 
  */
@@ -40,17 +41,15 @@ public:
 	void resetTimer()
 	{
 		m_timer = 0.0f;
-		if(OnResetTimerUniqueDelegate != nullptr)
-		{
-			OnResetTimerUniqueDelegate(m_mission.Type);
-		}
+		OnResetTimerUniqueDelegate.broadcast(m_mission.Type);
 	}
 	inline bool isEnd() const { return m_isEnd; }
 
 protected:
 	FMission m_mission {};
 
-	std::function<void(EMission)> OnResetTimerUniqueDelegate { nullptr };
+	Util::Event<EMission> OnResetTimerUniqueDelegate;
+
 private:
 	bool m_isStart{ false };
 	bool m_isEnd { false };

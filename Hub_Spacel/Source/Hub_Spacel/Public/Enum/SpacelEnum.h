@@ -109,6 +109,9 @@ enum class EEffect : uint8
     Targeted UMETA(DisplayName = "Targeted"),
     StartGame UMETA(DisplayName = "StartGame"),
     Gold UMETA(DisplayName = "Gold"),
+    PassiveFireRate UMETA(DisplayName = "PassiveFireRate"),
+    PassiveCountDown UMETA(DisplayName = "PassiveCountDown"),
+    PassiveSpeed UMETA(DisplayName = "PassiveSpeed"),
 };
 
 UENUM(BlueprintType)

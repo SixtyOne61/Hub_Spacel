@@ -176,7 +176,7 @@ void AMissionManager::startMission(TUniquePtr<MissionBehaviour>& _missionBehavio
 		spacelGameState->RPCNetMulticastStartMission(_missionBehaviour->m_mission.Type);
 	}
 
-	_missionBehaviour->OnResetTimerUniqueDelegate = std::bind(&AMissionManager::onResetTimer, this, std::placeholders::_1);
+	_missionBehaviour->OnResetTimerUniqueDelegate.add(std::bind(&AMissionManager::onResetTimer, this, std::placeholders::_1));
 }
 
 void AMissionManager::endMission(FMission const& _mission) const

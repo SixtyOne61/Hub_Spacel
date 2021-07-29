@@ -253,7 +253,7 @@ void AShipPawn::OnEndMission(EMission _type)
             if (this->MissionDataAsset != nullptr)
             {
                 FMission const& mission = this->MissionDataAsset->getMission(EMission::HoldGold);
-                m_bonusSpeed = mission.RewardValue;
+                boostPassive(_type, mission.RewardValue);
             }
             removeEffect(EEffect::Gold);
         }
@@ -628,11 +628,18 @@ void AShipPawn::boostPassive(EMission _type, int32 _rewardValue)
     switch (_type)
     {
         case EMission::Pirate:
+            addEffect(EEffect::PassiveFireRate);
             m_bonusFireRate = _rewardValue;
         break;
 
         case EMission::Comet:
+            addEffect(EEffect::PassiveCountDown);
             m_bonusCountDown = _rewardValue;
+        break;
+
+        case EMission::HoldGold:
+            addEffect(EEffect::PassiveSpeed);
+            m_bonusSpeed = _rewardValue;
         break;
     }
 }
