@@ -17,14 +17,27 @@ class HUB_SPACEL_API UMissionInfoUserWidget : public UUserWidget
 
 public:
 	UFUNCTION(BlueprintImplementableEvent)
-	void SetTitle(FString const& _title);
+	void BP_SetTitle(FString const& _title);
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void SetDesc(FString const& _title);
+	void BP_SetDesc(FString const& _title);
 	
 	UFUNCTION(BlueprintImplementableEvent)
-	void ShowDesc(bool _visible);
+	void BP_ShowDesc(bool _visible);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void BP_SetTimer(FString const& _titleWithTimer);
+
+	void startTimer(int8 _duration);
+
+	UFUNCTION()
+	void UpdateTimer();
 
 public:
 	EMission Type {};
+	FString Title {};
+	int8 Duration {};
+
+private:
+	int8 m_currentTimer {};
 };

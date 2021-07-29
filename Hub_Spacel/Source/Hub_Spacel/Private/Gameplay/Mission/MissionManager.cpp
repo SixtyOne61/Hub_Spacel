@@ -49,28 +49,28 @@ void AMissionManager::batch()
 		case EMission::Pirate:
 		{
 			m_openMission.Add(MakeUnique<MissionPirate>(mission));
-			startMission(mission);
+			startMission(m_openMission.Last());
 			break;
 		}
 
 		case EMission::Comet:
 		{
 			m_openMission.Add(MakeUnique<MissionComet>(mission));
-			startMission(mission);
+			startMission(m_openMission.Last());
 			break;
 		}
 
 		case EMission::TakeGold:
 		{
 			m_openMission.Add(MakeUnique<MissionTakeGold>(mission));
-			startMission(mission);
+			startMission(m_openMission.Last());
 			break;
 		}
 
 		case EMission::HoldGold:
 		{
 			m_openMission.Add(MakeUnique<MissionHoldGold>(mission));
-			startMission(mission);
+			startMission(m_openMission.Last());
 			break;
 		}
 
@@ -87,7 +87,7 @@ void AMissionManager::batch()
 			timerCallbackFirstBlood.BindLambda([&]() {
 				FMission const& firstblood = this->MissionDataAsset->getMission(EMission::FirstBlood);
 				m_openMission.Add(MakeUnique<MissionFirstBlood>(firstblood));
-				startMission(m_openMission.Last()->m_mission); });
+				startMission(m_openMission.Last()); });
 
 			FTimerHandle handleFirstBlood;
 			this->GetWorldTimerManager().SetTimer(handleFirstBlood, timerCallbackFirstBlood, mission.ConditionValue, false);
@@ -101,7 +101,7 @@ void AMissionManager::batch()
 			timerCallbackScoreRace.BindLambda([&]() {
 				FMission const& scoreRace = this->MissionDataAsset->getMission(EMission::ScoreRace);
 				m_openMission.Add(MakeUnique<MissionRaceScore>(scoreRace));
-				startMission(this->MissionDataAsset->getMission(EMission::ScoreRace)); });
+				startMission(m_openMission.Last()); });
 
 			FTimerHandle handleScoreRace;
 			this->GetWorldTimerManager().SetTimer(handleScoreRace, timerCallbackScoreRace, mission.ConditionValue, false);
@@ -164,15 +164,19 @@ void AMissionManager::Tick(float DeltaTime)
 	}
 }
 
-void AMissionManager::startMission(FMission const& _mission) const
+void AMissionManager::startMission(TUniquePtr<MissionBehaviour>& _missionBehaviour)
 {
+	if(!_missionBehaviour.IsValid()) return;
+
 	UWorld const* world{ this->GetWorld() };
 	if (!ensure(world != nullptr)) return;
 
 	if (ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(world->GetGameState()))
 	{
-		spacelGameState->RPCNetMulticastStartMission(_mission.Type);
+		spacelGameState->RPCNetMulticastStartMission(_missionBehaviour->m_mission.Type);
 	}
+
+	_missionBehaviour->OnResetTimerUniqueDelegate = std::bind(&AMissionManager::onResetTimer, this, std::placeholders::_1);
 }
 
 void AMissionManager::endMission(FMission const& _mission) const
@@ -183,5 +187,16 @@ void AMissionManager::endMission(FMission const& _mission) const
 	if (ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(world->GetGameState()))
 	{
 		spacelGameState->RPCNetMulticastEndMission(_mission.Type);
+	}
+}
+
+void AMissionManager::onResetTimer(EMission _type)
+{
+	UWorld const* world{ this->GetWorld() };
+	if (!ensure(world != nullptr)) return;
+
+	if (ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(world->GetGameState()))
+	{
+		spacelGameState->RPCNetMulticastResetTimerMission(_type);
 	}
 }

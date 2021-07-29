@@ -77,6 +77,7 @@ void USpacelWidget::NativeConstruct()
         spacelGameState->OnStartMissionDelegate.AddDynamic(this, &USpacelWidget::OnStartMission);
         spacelGameState->OnStartMissionTwoParamDelegate.AddDynamic(this, &USpacelWidget::OnStartMissionTwoParam);
         spacelGameState->OnEndMissionDelegate.AddDynamic(this, &USpacelWidget::OnEndMission);
+        spacelGameState->OnResetTimerMissionDelegate.AddDynamic(this, &USpacelWidget::OnResetTimerMission);
     }
 
     AShipPawn* shipPawn { this->GetOwningPlayerPawn<AShipPawn>() };
@@ -180,6 +181,17 @@ void USpacelWidget::OnEndMission(EMission _type)
         if (UMissionPanelUserWidget* panelMission = SimplyUI::initSafetyFromName<UUserWidget, UMissionPanelUserWidget>(this, TEXT("WBP_Mission")))
         {
             panelMission->removeMission(_type);
+        }
+    }
+}
+
+void USpacelWidget::OnResetTimerMission(EMission _type)
+{
+    if (m_currentMission.Contains(_type))
+    {
+        if (UMissionPanelUserWidget* panelMission = SimplyUI::initSafetyFromName<UUserWidget, UMissionPanelUserWidget>(this, TEXT("WBP_Mission")))
+        {
+            panelMission->resetTimer(_type);
         }
     }
 }

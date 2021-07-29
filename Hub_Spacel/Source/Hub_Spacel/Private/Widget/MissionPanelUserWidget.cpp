@@ -25,7 +25,8 @@ void UMissionPanelUserWidget::addMission(FMission const& _mission)
         if (UMissionInfoUserWidget* missionWidget = CreateWidget<UMissionInfoUserWidget, UVerticalBox>(this->VerticalBox, this->MissionInfoWidgetClass, *name))
         {
             missionWidget->Type = _mission.Type;
-            missionWidget->SetTitle(_mission.MissionTitle);
+            missionWidget->Title = _mission.MissionTitle;
+            missionWidget->startTimer(_mission.DurationValue);
 
             FString desc = _mission.MissionDesc;
             desc = desc.Replace(*FString("%reward%"), *FString::FromInt(_mission.RewardValue));
@@ -36,7 +37,7 @@ void UMissionPanelUserWidget::addMission(FMission const& _mission)
                 FColorsType const& info = this->TeamColorDataAsset->GetColorType(_mission.Team);
                 desc = desc.Replace(*FString("%team%"), *info.ShortName);
             }
-            missionWidget->SetDesc(desc);
+            missionWidget->BP_SetDesc(desc);
 
             this->VerticalBox->AddChildToVerticalBox(missionWidget);
         }
@@ -65,8 +66,21 @@ void UMissionPanelUserWidget::showMission(bool _show)
         {
             if (UMissionInfoUserWidget* missionWidget = Cast<UMissionInfoUserWidget>(child))
             {
-                missionWidget->ShowDesc(_show);
+                missionWidget->BP_ShowDesc(_show);
             }
+        }
+    }
+}
+
+void UMissionPanelUserWidget::resetTimer(EMission _type)
+{
+    if (this->VerticalBox != nullptr)
+    {
+        FString name = "Mission";
+        name.Append(FString::FromInt((int)_type));
+        if (UMissionInfoUserWidget* widget = SimplyUI::initSafetyFromName<UUserWidget, UMissionInfoUserWidget>(this, *name))
+        {
+            widget->startTimer(widget->Duration);
         }
     }
 }

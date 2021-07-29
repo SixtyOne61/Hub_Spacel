@@ -14,6 +14,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStartMission, EMission, _type);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnStartMissionTwoParam, EMission, _type, FName const&, _team);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEndMission, EMission, _type);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAskMission, EMission, _type);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnResetTimerMission, EMission, _type);
 
 USTRUCT()
 struct HUB_SPACEL_API FTeamLocation
@@ -111,6 +112,9 @@ public:
 	UFUNCTION(Reliable, NetMulticast)
 	void RPCNetMulticastEndMission(EMission _type);
 
+	UFUNCTION(Reliable, NetMulticast)
+	void RPCNetMulticastResetTimerMission(EMission _type);
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -147,6 +151,9 @@ public:
 
 	UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
 	FOnEndMission OnEndMissionDelegate {};
+
+	UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
+	FOnResetTimerMission OnResetTimerMissionDelegate {};
 
 	UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
 	FOnAskMission OnAskMissionDelegate {};

@@ -103,6 +103,9 @@ protected:
 	UFUNCTION()
 	void OnEndMission(EMission _type);
 
+	UFUNCTION()
+	void OnResetTimerMission(EMission _type);
+
 	UFUNCTION(BlueprintImplementableEvent)
 	void HideMissionPanel();
 

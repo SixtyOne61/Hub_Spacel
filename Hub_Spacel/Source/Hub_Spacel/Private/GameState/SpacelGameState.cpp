@@ -156,6 +156,11 @@ void ASpacelGameState::RPCNetMulticastEndMission_Implementation(EMission _type)
     OnEndMissionDelegate.Broadcast(_type);
 }
 
+void ASpacelGameState::RPCNetMulticastResetTimerMission_Implementation(EMission _type)
+{
+    OnResetTimerMissionDelegate.Broadcast(_type);
+}
+
 void ASpacelGameState::registerMission()
 {
     if (this->GameStateDataAsset != nullptr)

@@ -29,8 +29,9 @@ private:
 	UFUNCTION()
 	void OnAskMission(EMission _missionId);
 
-	void startMission(FMission const& _mission) const;
+	void startMission(TUniquePtr<MissionBehaviour> & _missionBehaviour);
 	void endMission(FMission const& _mission) const;
+	void onResetTimer(EMission _type);
 
 	void batch();
 

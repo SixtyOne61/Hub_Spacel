@@ -22,6 +22,7 @@ public:
 	void addMission(FMission const& _mission);
 	void removeMission(EMission _type);
 	void showMission(bool _show);
+	void resetTimer(EMission _type);
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void BP_Setup(class UTexture2D* _name);

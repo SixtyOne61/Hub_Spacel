@@ -37,12 +37,20 @@ public:
 	}
 	virtual void end() { m_isEnd = true; };
 
-	void resetTimer() { m_timer = 0.0f; }
+	void resetTimer()
+	{
+		m_timer = 0.0f;
+		if(OnResetTimerUniqueDelegate != nullptr)
+		{
+			OnResetTimerUniqueDelegate(m_mission.Type);
+		}
+	}
 	inline bool isEnd() const { return m_isEnd; }
 
 protected:
 	FMission m_mission {};
 
+	std::function<void(EMission)> OnResetTimerUniqueDelegate { nullptr };
 private:
 	bool m_isStart{ false };
 	bool m_isEnd { false };
