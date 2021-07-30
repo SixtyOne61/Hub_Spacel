@@ -205,7 +205,7 @@ void ULobbyUserWidget::setupSkill(TArray<ESkill> const& _skills)
         if (UUniqueSkillDataAsset const* skill = this->SkillDataAsset->getSKill(type))
         {
             uint8 id = (uint8)type;
-            datas.Add({ id, skill->BackgroundColorLobby, skill->Title, skill->Desc });
+            datas.Add({ id, skill->BackgroundColorLobby, skill->Title, skill->Desc, skill->IconeBtn });
         }
     }
 
@@ -247,4 +247,14 @@ void ULobbyUserWidget::SetupOwningTeam()
 void ULobbyUserWidget::OnCurrentSkillChange()
 {
     saveLocalSkillChoosen();
+
+    if (this->SkillDataAsset == nullptr) return;
+    if (this->Carrousel == nullptr) return;
+
+    uint8 id = this->Carrousel->getIdSelected();
+
+    if (UUniqueSkillDataAsset const* skill = this->SkillDataAsset->getSKill((ESkill)id))
+    {
+        BP_SetChoose(skill->IconeBtn, m_currentSkillType);
+    }
 }

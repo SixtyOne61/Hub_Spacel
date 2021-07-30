@@ -51,9 +51,9 @@ UENUM(BlueprintType)
 enum class ESkillType : uint8
 {
     None UMETA(DisplayName = "None"),
-    Low UMETA(DisplayName = "Attack"),
-    Medium UMETA(DisplayName = "Protection"),
-    Hight UMETA(DisplayName = "Support")
+    Low UMETA(DisplayName = "Low"),
+    Medium UMETA(DisplayName = "Medium"),
+    Hight UMETA(DisplayName = "Hight")
 };
 
 UENUM(BlueprintType)

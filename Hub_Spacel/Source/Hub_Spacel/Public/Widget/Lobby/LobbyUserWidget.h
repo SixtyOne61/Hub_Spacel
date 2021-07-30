@@ -22,6 +22,9 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void BP_SetupOutline(FSlateColor _color);
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void BP_SetChoose(class UTexture2D* _icon, ESkillType _type);
+
 private:
 	UFUNCTION()
 	void StartLobby(EGameState _state);

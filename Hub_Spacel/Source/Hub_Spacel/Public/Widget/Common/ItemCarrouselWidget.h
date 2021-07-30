@@ -21,6 +21,7 @@ public:
 		FSlateColor m_backgroundColor {};
 		FString m_title {};
 		FString m_desc {};
+		class UTexture2D* m_icon { nullptr };
 	} m_data;
 
 public:
@@ -29,5 +30,5 @@ public:
 protected:
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void BP_Setup(FSlateColor const& _backgroundColor, FString const& _desc);
+	void BP_Setup(FSlateColor const& _backgroundColor, FString const& _desc, class UTexture2D * _icon);
 };

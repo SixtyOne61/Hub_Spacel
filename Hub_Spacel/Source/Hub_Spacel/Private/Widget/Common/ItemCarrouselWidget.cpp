@@ -9,5 +9,6 @@ void UItemCarrouselWidget::setupItems(FData const& _data)
     m_data.m_backgroundColor = _data.m_backgroundColor;
     m_data.m_title = _data.m_title;
     m_data.m_desc = _data.m_desc;
-    BP_Setup(m_data.m_backgroundColor, m_data.m_desc);
+    m_data.m_icon = _data.m_icon;
+    BP_Setup(m_data.m_backgroundColor, m_data.m_desc, m_data.m_icon);
 }
