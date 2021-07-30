@@ -187,6 +187,23 @@ void UModuleComponent::OnStartGame(EGameState _state)
             buildShip(this->SupportMeshComponent, this->SupportDataAsset, this->RU_SupportLocations);
             setLocationExhaustFx();
 
+            // add effect for low skill
+            if (AShipPawn* shipPawn = Cast<AShipPawn>(pawn))
+            {
+                switch (lowSkillId)
+                {
+                case (uint8)ESkill::FireRate:
+                    shipPawn->addEffect(EEffect::SkillPassiveFireRate);
+                    break;
+                case (uint8)ESkill::HeavyProtection:
+                    shipPawn->addEffect(EEffect::SkillPassiveProtection);
+                    break;
+                case (uint8)ESkill::Speedy:
+                    shipPawn->addEffect(EEffect::SkillPassiveSpeed);
+                    break;
+                }
+            }
+
             lb_readXml(mediumSkillId == (uint8)ESkill::Missile, this->WeaponDataAsset, R_MissileLocations, "Missile");
             if (this->MissileMeshComponent != nullptr && this->R_MissileLocations.Num() != 0)
             {
