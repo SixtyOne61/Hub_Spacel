@@ -20,6 +20,9 @@ class HUB_SPACEL_API AGold : public AMissionActor
 public:
 	void hit(class AShipPawn* _pawn, FString const& _team) override;
 
+protected:
+	void BeginPlay() override;
+
 public:
 	Util::Event<uint32 const&> OnDestroyDelegate{ };
 };

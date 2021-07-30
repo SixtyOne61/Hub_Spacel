@@ -3,6 +3,13 @@
 
 #include "Gold.h"
 #include "Player/ShipPawn.h"
+#include "Util/Tag.h"
+
+void AGold::BeginPlay()
+{
+    Super::BeginPlay();
+    Tags.Add(Tags::Gold);
+}
 
 void AGold::hit(class AShipPawn* _pawn, FString const& _team)
 {

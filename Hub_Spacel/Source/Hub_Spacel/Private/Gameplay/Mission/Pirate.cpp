@@ -30,6 +30,7 @@ APirate::APirate()
 void APirate::BeginPlay()
 {
 	Super::BeginPlay();
+    Tags.Add(Tags::Pirate);
 	
 	BuildShip();
 

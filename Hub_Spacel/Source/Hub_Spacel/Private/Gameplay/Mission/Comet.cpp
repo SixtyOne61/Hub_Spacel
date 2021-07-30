@@ -23,6 +23,7 @@ AComet::AComet()
 void AComet::BeginPlay()
 {
 	Super::BeginPlay();
+	Tags.Add(Tags::Comet);
 
 	m_speedRoll = FMath::RandRange(10, 60);
 	m_speedRoll *= FMath::RandRange(-1, 1);

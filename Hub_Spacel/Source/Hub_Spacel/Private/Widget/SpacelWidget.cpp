@@ -17,6 +17,7 @@
 #include "GameState/SpacelGameState.h"
 #include "Hub_SpacelGameInstance.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Util/SimplyUI.h"
 #include "DataAsset/PlayerDataAsset.h"
 #include "DataAsset/SkillDataAsset.h"
@@ -37,6 +38,7 @@
 #include "Factory/SpacelFactory.h"
 #include "Styling/SlateColor.h"
 #include "GameMode/FlyingGameMode.h"
+#include "Util/Tag.h"
 #include "Util/DebugScreenMessage.h"
 
 void USpacelWidget::NativeConstruct()
@@ -138,6 +140,33 @@ void USpacelWidget::NativeTick(const FGeometry& _myGeometry, float _deltaTime)
 {
     Super::NativeTick(_myGeometry, _deltaTime);
     UpdateScore();
+    updateArrow();
+}
+
+void USpacelWidget::updateArrow()
+{
+    if (AShipPawn* shipPawn = this->GetOwningPlayerPawn<AShipPawn>())
+    {
+        TArray<UActorComponent*> components = shipPawn->GetComponentsByTag(USceneComponent::StaticClass(), Tags::Arrow);
+        for (auto component : components)
+        {
+            if (USceneComponent* sceneComponent = Cast<USceneComponent>(component))
+            {
+                if (m_arrowTarget != nullptr && !m_arrowTarget->IsPendingKill())
+                {
+                    FRotator rot = UKismetMathLibrary::FindLookAtRotation(sceneComponent->GetComponentLocation(), m_arrowTarget->GetActorLocation());
+                    sceneComponent->SetWorldRotation(rot.Quaternion());
+                    sceneComponent->SetVisibility(true);
+                }
+                else
+                {
+                    sceneComponent->SetVisibility(false);
+                }
+                break;
+            }
+        }
+    }
+
 }
 
 void USpacelWidget::OnStartMissionTwoParam(EMission _type, FName const& _team)
@@ -164,6 +193,46 @@ void USpacelWidget::OnStartMission(EMission _type)
     {
         panelMission->addMission(this->MissionDataAsset->getMission(_type));
     }
+
+    if (_type == EMission::Pirate)
+    {
+        // find pirate
+        InitTargetArrow(Tags::Pirate);
+    }
+    else if (_type == EMission::Comet)
+    {
+        // find comet
+        InitTargetArrow(Tags::Comet);
+    }
+    else if (_type == EMission::TakeGold)
+    {
+        // find gold
+        InitTargetArrow(Tags::Gold);
+    }
+}
+
+void USpacelWidget::InitTargetArrow(FName const& _tag)
+{
+    TArray<AActor*> out;
+    UGameplayStatics::GetAllActorsWithTag(this->GetWorld(), _tag, out);
+
+    for (auto act : out)
+    {
+        if (act != nullptr && !act->IsPendingKill())
+        {
+            m_arrowTarget = act;
+            return;
+        }
+    }
+
+    FTimerDelegate timerDelegate;
+    timerDelegate.BindUFunction(this, FName("InitTargetArrow"), _tag);
+
+    UWorld* world { this->GetWorld() };
+    if (!ensure(world != nullptr)) return;
+
+    FTimerHandle handle;
+    world->GetTimerManager().SetTimer(handle, timerDelegate, 1.0f, false, 0.0f);
 }
 
 void USpacelWidget::OnEndMission(EMission _type)
@@ -182,6 +251,12 @@ void USpacelWidget::OnEndMission(EMission _type)
         {
             panelMission->removeMission(_type);
         }
+    }
+
+    if (_type == EMission::Pirate || _type == EMission::Comet || _type == EMission::TakeGold)
+    {
+        // reset
+        m_arrowTarget = nullptr;
     }
 }
 

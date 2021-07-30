@@ -114,6 +114,11 @@ protected:
 	UFUNCTION()
 	void RegisterPlayerState();
 
+	UFUNCTION()
+	void InitTargetArrow(FName const& _tag);
+
+	void updateArrow();
+
 protected:
 	UPROPERTY(EditAnywhere)
 	class UEffectDataAsset* EffectDataAsset { nullptr };
@@ -182,4 +187,6 @@ private:
 	int8 m_currentIdRedLight { 0 };
 
 	TSet<EMission> m_currentMission {};
+
+	class AActor* m_arrowTarget { nullptr };
 };
