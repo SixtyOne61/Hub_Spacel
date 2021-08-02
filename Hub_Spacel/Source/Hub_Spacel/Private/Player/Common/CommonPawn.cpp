@@ -161,14 +161,25 @@ void ACommonPawn::removeEffect(EEffect _type)
 
 void ACommonPawn::OnRep_PercentSpeed()
 {
-    if (this->ExhaustFxComponent == nullptr)
+    if (this->ExhaustFxComponents.Num() == 0)
     {
-        this->ExhaustFxComponent = Cast<UNiagaraComponent>(this->GetComponentByClass(UNiagaraComponent::StaticClass()));
+        TArray<UActorComponent*> out;
+        this->GetComponents(UNiagaraComponent::StaticClass(), out);
+        for (auto com : out)
+        {
+            if (com != nullptr && com->GetFName().ToString().Contains("Exhaust"))
+            {
+                this->ExhaustFxComponents.Add(Cast<UNiagaraComponent>(com));
+            }
+        }
     }
 
-    if (this->ExhaustFxComponent != nullptr)
+    for (auto exhaust : this->ExhaustFxComponents)
     {
-        this->ExhaustFxComponent->SetNiagaraVariableFloat("User.Velocity", this->RU_PercentSpeed);
+        if (exhaust != nullptr && exhaust->IsActive())
+        {
+            exhaust->SetNiagaraVariableFloat("User.Velocity", this->RU_PercentSpeed);
+        }
     }
 }
 

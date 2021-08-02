@@ -559,7 +559,7 @@ void AShipPawn::OnRep_Matiere()
         FString str = FString::FromInt(delta);
         if (delta > 0)
         {
-            FString signe { "+" };
+            FString signe{ "+" };
             str = signe + str;
         }
 
@@ -570,7 +570,7 @@ void AShipPawn::OnRep_Matiere()
 
 void AShipPawn::hit(FString const& _team, int32 _playerId, class UPrimitiveComponent* _comp, int32 _index, FVector const& _otherLocation)
 {
-    UCustomCollisionComponent* customCollisionComponent { Cast<UCustomCollisionComponent>(this->GetComponentByClass(UCustomCollisionComponent::StaticClass())) };
+    UCustomCollisionComponent* customCollisionComponent{ Cast<UCustomCollisionComponent>(this->GetComponentByClass(UCustomCollisionComponent::StaticClass())) };
     if (customCollisionComponent != nullptr)
     {
         customCollisionComponent->hit(_team, _playerId, _comp, _index, _otherLocation);
@@ -579,18 +579,36 @@ void AShipPawn::hit(FString const& _team, int32 _playerId, class UPrimitiveCompo
 
 void AShipPawn::setLocationExhaustFx(TArray<FVector_NetQuantize> const& _loc)
 {
-    if (this->ExhaustFxComponent == nullptr)
+    TArray<FVector_NetQuantize> cpy = _loc;
+
+    if (this->ExhaustFxComponents.Num() == 0)
     {
-        this->ExhaustFxComponent = Cast<UNiagaraComponent>(this->GetComponentByClass(UNiagaraComponent::StaticClass()));
+        TArray<UActorComponent*> out;
+        this->GetComponents(UNiagaraComponent::StaticClass(), out);
+        for (auto com : out)
+        {
+            if (com != nullptr && com->GetFName().ToString().Contains("Exhaust"))
+            {
+                this->ExhaustFxComponents.Add(Cast<UNiagaraComponent>(com));
+            }
+        }
     }
 
-    if (this->ExhaustFxComponent != nullptr)
+    for (auto exhaust : this->ExhaustFxComponents)
     {
-        this->ExhaustFxComponent->SetNiagaraVariableInt("User.NbExhaust", _loc.Num());
-        for (int32 i = 0; i < _loc.Num(); ++i)
+        if (exhaust != nullptr)
         {
-            FString name = "User.Location" + FString::FromInt(i);
-            this->ExhaustFxComponent->SetNiagaraVariableVec3(name, _loc[i]);
+            if (cpy.Num() != 0)
+            {
+                exhaust->SetNiagaraVariableFloat("User.Velocity", this->RU_PercentSpeed);
+                exhaust->SetRelativeLocation(cpy[0]);
+                cpy.RemoveAt(0);
+                exhaust->SetActive(true, true);
+            }
+            else if (exhaust->IsActive())
+            {
+                exhaust->SetActive(false, true);
+            }
         }
     }
 }

@@ -134,7 +134,7 @@ public:
 
 protected:
     UPROPERTY()
-    class UNiagaraComponent* ExhaustFxComponent{ nullptr };
+    TArray<class UNiagaraComponent*> ExhaustFxComponents { };
 
 	FVector TargetLocation{ FVector::ZeroVector };
 
