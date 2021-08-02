@@ -40,6 +40,7 @@ void USpinCarrouselWidget::setupItems(TArray<UItemCarrouselWidget::FData> const&
     }
 
     setDesc();
+    m_idChoose = MAX_uint8;
 }
 
 void USpinCarrouselWidget::SpinRight()
@@ -101,5 +102,18 @@ uint8 USpinCarrouselWidget::getIdSelected() const
 
 void USpinCarrouselWidget::ValidChoose()
 {
+    m_idChoose = getIdSelected();
     OnValidChooseDelegate.Broadcast();
+}
+
+uint8 USpinCarrouselWidget::getId() const
+{
+    if (m_idChoose == MAX_uint8)
+    {
+        return getIdSelected();
+    }
+    else
+    {
+        return m_idChoose;
+    }
 }

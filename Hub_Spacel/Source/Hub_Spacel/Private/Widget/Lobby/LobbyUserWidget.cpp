@@ -133,7 +133,7 @@ void ULobbyUserWidget::StartLobby(EGameState _state)
         // save low module choice
         if (ASpacelPlayerState* owningPlayerState = Cast<ASpacelPlayerState>(this->GetOwningPlayerState()))
         {
-            uint8 id = this->Carrousel->getIdSelected();
+            uint8 id = this->Carrousel->getId();
 #if WITH_EDITOR
             if (HackDataAsset != nullptr && HackDataAsset->UseHack)
             {
@@ -160,7 +160,7 @@ void ULobbyUserWidget::StartLobby(EGameState _state)
         // save medium module choice
         if (ASpacelPlayerState* owningPlayerState = Cast<ASpacelPlayerState>(this->GetOwningPlayerState()))
         {
-            uint8 id = this->Carrousel->getIdSelected();
+            uint8 id = this->Carrousel->getId();
 #if WITH_EDITOR
             if (HackDataAsset != nullptr && HackDataAsset->UseHack)
             {
@@ -188,7 +188,7 @@ void ULobbyUserWidget::StartLobby(EGameState _state)
         // save hight module choice
         if (ASpacelPlayerState* owningPlayerState = Cast<ASpacelPlayerState>(this->GetOwningPlayerState()))
         {
-            uint8 id = this->Carrousel->getIdSelected();
+            uint8 id = this->Carrousel->getId();
 #if WITH_EDITOR
             if (HackDataAsset != nullptr && HackDataAsset->UseHack)
             {
@@ -227,7 +227,7 @@ void ULobbyUserWidget::saveLocalSkillChoosen()
 {
     if (ASpacelPlayerState* owningPlayerState = Cast<ASpacelPlayerState>(this->GetOwningPlayerState()))
     {
-        owningPlayerState->LocalAddSkill(this->Carrousel->getIdSelected(), m_currentSkillType);
+        owningPlayerState->LocalAddSkill(this->Carrousel->getId(), m_currentSkillType);
     }
 }
 
@@ -264,7 +264,7 @@ void ULobbyUserWidget::OnCurrentSkillChange()
         if (this->SkillDataAsset == nullptr) return;
         if (this->Carrousel == nullptr) return;
 
-        uint8 id = this->Carrousel->getIdSelected();
+        uint8 id = this->Carrousel->getId();
 
         if (UUniqueSkillDataAsset const* skill = this->SkillDataAsset->getSKill((ESkill)id))
         {
@@ -280,7 +280,7 @@ void ULobbyUserWidget::OnValidChoose()
     if (this->SkillDataAsset == nullptr) return;
     if (this->Carrousel == nullptr) return;
 
-    uint8 id = this->Carrousel->getIdSelected();
+    uint8 id = this->Carrousel->getId();
 
     if (UUniqueSkillDataAsset const* skill = this->SkillDataAsset->getSKill((ESkill)id))
     {

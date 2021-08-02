@@ -21,10 +21,10 @@ class HUB_SPACEL_API USpinCarrouselWidget : public UUserWidget
 public:
 	void setupItems(TArray<UItemCarrouselWidget::FData> const& _data);
 
-	uint8 getIdSelected() const;
-
 	UFUNCTION(BlueprintImplementableEvent)
 	void BP_SetTeamColor(FSlateColor _color);
+
+	uint8 getId() const;
 
 protected:
 	void NativeConstruct() override;
@@ -44,6 +44,8 @@ protected:
 
 	void setDesc();
 
+	uint8 getIdSelected() const;
+
 public:
 	UPROPERTY()
 	FOnCarrouselMove OnCarrouselMoveDelegate {};
@@ -54,5 +56,7 @@ public:
 protected:
 	TArray<class UItemCarrouselWidget*> Items {};
 	class UGridPanel* GridCarrousel { nullptr };
+
+	uint8 m_idChoose { MAX_uint8 };
 };
 
