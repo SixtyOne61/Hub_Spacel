@@ -8,6 +8,7 @@
 #include "SpinCarrouselWidget.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnCarrouselMove);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnValidChoose);
 
 /**
  * 
@@ -38,11 +39,17 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void SpinLeft();
 
+	UFUNCTION(BlueprintCallable)
+	void ValidChoose();
+
 	void setDesc();
 
 public:
 	UPROPERTY()
-	FOnCarrouselMove OnCarrouselMoveDelegate{};
+	FOnCarrouselMove OnCarrouselMoveDelegate {};
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, BlueprintAssignable)
+	FOnValidChoose OnValidChooseDelegate {};
 
 protected:
 	TArray<class UItemCarrouselWidget*> Items {};

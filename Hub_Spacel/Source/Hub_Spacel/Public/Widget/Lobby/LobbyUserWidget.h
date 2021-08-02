@@ -25,6 +25,9 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void BP_SetChoose(class UTexture2D* _icon, ESkillType _type);
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void BP_Valid(ESkillType _type);
+
 private:
 	UFUNCTION()
 	void StartLobby(EGameState _state);
@@ -37,6 +40,9 @@ private:
 
 	UFUNCTION()
 	void OnCurrentSkillChange();
+
+	UFUNCTION()
+	void OnValidChoose();
 
 	UFUNCTION()
 	void SpawnLobby3D();
@@ -82,4 +88,5 @@ protected:
 	int Time { 0 };
 
 	ESkillType m_currentSkillType{};
+	bool m_isChoose { false };
 };

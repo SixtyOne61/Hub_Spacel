@@ -98,3 +98,8 @@ uint8 USpinCarrouselWidget::getIdSelected() const
     ensure(false);
     return 0;
 }
+
+void USpinCarrouselWidget::ValidChoose()
+{
+    OnValidChooseDelegate.Broadcast();
+}
