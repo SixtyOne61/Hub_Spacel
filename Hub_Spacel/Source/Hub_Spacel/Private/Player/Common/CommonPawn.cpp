@@ -98,7 +98,40 @@ void ACommonPawn::lookAt(FVector const& _loc, FVector const& _dir, FVector const
 void ACommonPawn::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+    auto lb = [&](FName _tag) -> UNiagaraComponent*
+    {
+        TArray<UActorComponent*> out;
+        out = this->GetComponentsByTag(UNiagaraComponent::StaticClass(), "RightTrail");
+        for (auto comp : out)
+        {
+            if (comp != nullptr)
+            {
+                return Cast<UNiagaraComponent>(comp);
+            }
+        }
+
+        return nullptr;
+    };
+
+    RightTrailComponent = lb("RightTrail");
+    LeftTrailComponent = lb("LeftTrail");
+}
+
+void ACommonPawn::OnRep_RightTrail()
+{
+    if (this->RightTrailComponent == nullptr) return;
+    FVector dirRight { 0.0f, 1.0f, 0.0f };
+    this->RightTrailComponent->SetActive(RU_RightTrail, true);
+    this->RightTrailComponent->SetNiagaraVariableVec3("User.Velocity", RU_RightTrail ? dirRight : FVector::ZeroVector);
+}
+
+void ACommonPawn::OnRep_LeftTrail()
+{
+    if (this->LeftTrailComponent == nullptr) return;
+    FVector dirLeft { 0.0f, -1.0f, 0.0f };
+    this->RightTrailComponent->SetActive(RU_LeftTrail, true);
+    this->LeftTrailComponent->SetNiagaraVariableVec3("User.Velocity", RU_LeftTrail ? dirLeft : FVector::ZeroVector);
 }
 
 void ACommonPawn::moveShip(float _deltaTime)
@@ -126,7 +159,7 @@ void ACommonPawn::moveShip(float _deltaTime)
     // linear
     FVector const& linearVelocity = this->DriverMeshComponent->GetPhysicsLinearVelocity(NAME_None);
 
-    float percentSpeed = this->R_OverDrive != 0.0f ? this->R_OverDrive : this->RU_PercentSpeed;
+    float percentSpeed = this->R_OverDrive != 0.0f ? (this->R_OverDrive / 10.0f) : this->RU_PercentSpeed;
     FVector newVelocity = this->DriverMeshComponent->GetForwardVector() * this->PlayerDataAsset->MaxForwardSpeed * percentSpeed * coefSpeed;
     newVelocity += this->DriverMeshComponent->GetRightVector() * this->PlayerDataAsset->MaxHorizontalSpeed * this->PercentHorizontalStraf * coefSpeed;
     newVelocity += this->DriverMeshComponent->GetUpVector() * this->PlayerDataAsset->MaxVerticalSpeed * this->PercentVerticalStraf * coefSpeed;
@@ -231,5 +264,7 @@ void ACommonPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
     DOREPLIFETIME(ACommonPawn, R_Effect);
     DOREPLIFETIME(ACommonPawn, RU_PercentSpeed);
     DOREPLIFETIME(ACommonPawn, R_OverDrive);
+    DOREPLIFETIME(ACommonPawn, RU_RightTrail);
+    DOREPLIFETIME(ACommonPawn, RU_LeftTrail);
 }
 

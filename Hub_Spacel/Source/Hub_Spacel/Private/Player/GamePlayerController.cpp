@@ -100,6 +100,25 @@ void AGamePlayerController::RPCServerHorizontalStraf_Implementation(float _val)
     if (isAvailable())
     {
         m_data.m_lastHorizontalStrafInput = _val;
+
+        if (AShipPawn* shipPawn = Cast<AShipPawn>(this->GetPawn()))
+        {
+            if (_val > 0)
+            {
+                shipPawn->RU_RightTrail = true;
+                shipPawn->RU_LeftTrail = false;
+            }
+            else if (_val < 0)
+            {
+                shipPawn->RU_LeftTrail = true;
+                shipPawn->RU_RightTrail = false;
+            }
+            else
+            {
+                shipPawn->RU_LeftTrail = false;
+                shipPawn->RU_RightTrail = false;
+            }
+        }
     }
 }
 

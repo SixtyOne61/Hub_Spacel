@@ -839,6 +839,8 @@ void AShipPawn::behaviourAddEffect(EEffect _type)
         if (_type == EEffect::Killed)
         {
             RPCNetMulticastFxKilled();
+            this->RU_LeftTrail = false;
+            this->RU_RightTrail = false;
         }
     }
     else if (_type == EEffect::Emp)
@@ -874,7 +876,7 @@ void AShipPawn::behaviourAddEffect(EEffect _type)
     {
         if (this->PlayerDataAsset != nullptr)
         {
-            this->R_OverDrive = this->PlayerDataAsset->CoefOverDriveValue;
+            this->R_OverDrive = this->PlayerDataAsset->CoefOverDriveValue * 10;
         }
     }
     else if (_type == EEffect::Gold)
@@ -962,7 +964,7 @@ void AShipPawn::behaviourRemoveEffect(EEffect _type)
     {
         if (this->PlayerDataAsset != nullptr)
         {
-            this->R_OverDrive = 0.0f;
+            this->R_OverDrive = 0;
         }
     }
     else if (_type == EEffect::Gold)

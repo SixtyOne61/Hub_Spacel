@@ -56,6 +56,12 @@ protected:
     UFUNCTION()
     void OnRep_PercentSpeed();
 
+    UFUNCTION()
+    void OnRep_RightTrail();
+
+    UFUNCTION()
+    void OnRep_LeftTrail();
+
     void moveShip(float _deltaTime);
 
     template<class T>
@@ -129,6 +135,12 @@ public:
     UPROPERTY(Category = "FX", EditAnywhere)
     class UMaterialInstance* MaterialSpeedLines{ nullptr };
 
+    UPROPERTY(Category = "FX", EditAnywhere, BlueprintReadWrite)
+    class UNiagaraComponent* RightTrailComponent { nullptr };
+
+    UPROPERTY(Category = "FX", EditAnywhere, BlueprintReadWrite)
+    class UNiagaraComponent* LeftTrailComponent { nullptr };
+
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
     FOnSendInfoPlayer OnSendInfoPlayerDelegate {};
 
@@ -146,7 +158,13 @@ protected:
     float RU_PercentSpeed { 0.0f };
 
     UPROPERTY(Replicated)
-    float R_OverDrive{ 0.0f };
+    uint8 R_OverDrive { 0 };
+
+    UPROPERTY(ReplicatedUsing = "OnRep_RightTrail")
+    bool RU_RightTrail{ false };
+
+    UPROPERTY(ReplicatedUsing = "OnRep_LeftTrail")
+    bool RU_LeftTrail { false };
 
 	/* use by server or offline */
 	float PercentHorizontalStraf{ 0.0f };

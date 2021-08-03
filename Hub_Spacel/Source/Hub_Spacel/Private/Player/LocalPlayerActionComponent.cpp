@@ -61,7 +61,7 @@ void ULocalPlayerActionComponent::TickComponent(float _deltaTime, ELevelTick _ti
             coefSpeed = pawn->PlayerDataAsset->EscapeModeCoef;
         }
         // set material parameter
-        float speedRef = FMath::Max(pawn->RU_PercentSpeed, pawn->R_OverDrive);
+        float speedRef = FMath::Max(pawn->RU_PercentSpeed, (pawn->R_OverDrive / 10.0f));
         float percent = FMath::Clamp(speedRef * coefSpeed, 0.0f, 2.6f);
         float multiplicator = pawn->hasEffect(EEffect::StartGame) ? 4.0f : 2.0f;
         m_speedLineMaterial->SetScalarParameterValue("Weight", percent * multiplicator);
