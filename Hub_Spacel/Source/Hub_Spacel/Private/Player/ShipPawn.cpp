@@ -161,16 +161,6 @@ void AShipPawn::RPCClientStartGame_Implementation(FName const& _team)
     BP_OnStartGame();
 }
 
-void AShipPawn::RPCNetMulticastFxFireBullet_Implementation()
-{
-    BP_FxFireBullet();
-}
-
-void AShipPawn::RPCNetMulticastFxFireMissile_Implementation()
-{
-    BP_FxFireMissile();
-}
-
 // Called when the game starts or when spawned
 void AShipPawn::BeginPlay()
 {
@@ -553,6 +543,7 @@ void AShipPawn::RPCNetMulticastEnterFog_Implementation(int32 _playerId, bool _en
 
 void AShipPawn::OnRep_Matiere()
 {
+    // only on local player
     if (this->OnEndUpdateMatiereDelegate.IsBound())
     {
         int32 delta = this->RU_Matiere - m_lastMatiere;
@@ -562,6 +553,8 @@ void AShipPawn::OnRep_Matiere()
             FString signe{ "+" };
             str = signe + str;
         }
+
+        BP_FxAddMatiere(delta);
 
         m_lastMatiere = this->RU_Matiere;
         this->OnEndUpdateMatiereDelegate.Broadcast(this->RU_Matiere, str);
@@ -1012,13 +1005,6 @@ void AShipPawn::addMatiere(int32 _val)
 {
     this->RU_Matiere += _val;
     OnRep_Matiere();
-
-    RPCClientFxAddMatiere(_val);
-}
-
-void AShipPawn::RPCClientFxAddMatiere_Implementation(int8 _val)
-{
-    BP_FxAddMatiere(_val);
 }
 
 void AShipPawn::farmAsteroide()

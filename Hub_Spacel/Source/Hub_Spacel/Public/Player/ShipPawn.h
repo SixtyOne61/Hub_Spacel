@@ -77,12 +77,6 @@ protected:
     void BP_OnStartGame();
 
     UFUNCTION(BlueprintImplementableEvent)
-    void BP_FxFireBullet();
-
-    UFUNCTION(BlueprintImplementableEvent)
-    void BP_FxFireMissile();
-
-    UFUNCTION(BlueprintImplementableEvent)
     void BP_FxAddMatiere(int32 _val);
 
     UFUNCTION(BlueprintImplementableEvent)
@@ -165,15 +159,6 @@ private:
 
     UFUNCTION(Reliable, Client)
     void RPCClientRemoveEffect(EEffect _effect);
-
-    UFUNCTION(UnReliable, NetMulticast)
-    void RPCNetMulticastFxFireBullet();
-
-    UFUNCTION(UnReliable, NetMulticast)
-    void RPCNetMulticastFxFireMissile();
-
-    UFUNCTION(UnReliable, NetMulticast)
-    void RPCClientFxAddMatiere(int8 _val);
 
     UFUNCTION(UnReliable, NetMulticast)
     void RPCNetMulticastFxKilled();
