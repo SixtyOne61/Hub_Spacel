@@ -52,4 +52,7 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	FString Title {};
+
+	UPROPERTY(EditAnywhere)
+	EInput InputType {};
 };

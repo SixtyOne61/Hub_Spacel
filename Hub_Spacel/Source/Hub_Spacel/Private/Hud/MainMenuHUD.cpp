@@ -5,7 +5,7 @@
 
 AMainMenuHUD::AMainMenuHUD()
 {
-    MainMenuWidgetClass = SpacelFactory::FindClass<UUserWidget>(TEXT("/Game/Blueprint/UI/Widgets/WBP_MainMenu"));
+    MainMenuWidgetClass = SpacelFactory::FindClass<UUserWidget>(TEXT("/Game/Blueprint/UI/Widgets/MainMenu/WBP_MainMenu"));
 }
 
 void AMainMenuHUD::BeginPlay()

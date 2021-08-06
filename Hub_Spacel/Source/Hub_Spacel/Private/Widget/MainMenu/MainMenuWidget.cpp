@@ -11,12 +11,14 @@
 #include "Components/TextBlock.h"
 #include "Components/Border.h"
 #include "Components/EditableText.h"
+#include "Components/ScrollBox.h"
 #include "Hub_SpacelGameInstance.h"
 #include "Util/SimplyUI.h"
 #include "Util/SimplyHttpRequest.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetStringLibrary.h"
 #include "Player/Save/SpacelSaveGame.h"
+#include "Widget/MainMenu/InputSelectionWidget.h"
 
 UMainMenuWidget::UMainMenuWidget(FObjectInitializer const& _objectInitializer)
     : Super(_objectInitializer)
@@ -56,6 +58,9 @@ void UMainMenuWidget::NativeConstruct()
     {
         PlayerName->OnTextChanged.AddDynamic(this, &UMainMenuWidget::OnPlayerNameChange);
     }
+
+    ScrollBox = SimplyUI::initSafetyFromName<UUserWidget, UScrollBox>(this, TEXT("ScrollBox_Input"));
+    InputSelection = SimplyUI::initSafetyFromName<UUserWidget, UInputSelectionWidget>(this, TEXT("WBP_InputSelection"));
 
     UWorld* world{ this->GetWorld() };
     if (!ensure(world != nullptr)) return;
@@ -235,7 +240,7 @@ void UMainMenuWidget::onGetPlayerDataResponseReceived(FHttpRequestPtr _request, 
     SimplyUI::setVisibility({ESlateVisibility::Hidden}, 
         std::make_tuple(this->WebBrowser));
     SimplyUI::setVisibility({ ESlateVisibility::Visible },
-        std::make_tuple(this->MatchmakingButton, this->WinsTextBlock, this->LossesTextBlock, this->PingTextBlock, this->MatchmakingEventTextBlock, this->BorderName));
+        std::make_tuple(this->MatchmakingButton, this->WinsTextBlock, this->LossesTextBlock, this->PingTextBlock, this->MatchmakingEventTextBlock, this->BorderName, this->ScrollBox, this->InputSelection));
 }
 
 void UMainMenuWidget::OnMatchmakingButtonClicked()

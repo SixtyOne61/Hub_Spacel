@@ -19,6 +19,8 @@ class HUB_SPACEL_API USkillDataAsset : public UDataAsset
 public:
 	class UUniqueSkillDataAsset * getSKill(ESkill _type);
 
+	TArray<class UUniqueSkillDataAsset*> getSkillByInput(EInput _input);
+
 public:
 	UPROPERTY(EditAnywhere)
 	TArray<class UUniqueSkillDataAsset*> Skills;

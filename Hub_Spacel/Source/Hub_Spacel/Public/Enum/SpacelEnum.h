@@ -78,6 +78,27 @@ enum class ESkill : uint8
     HealPack UMETA(DisplayName = "HealPack"),
 };
 
+UENUM(BlueprintType)
+enum class EInput : uint8
+{
+    PrimaryShot UMETA(DisplayName = "PrimaryShot"),
+    SecondaryShot UMETA(DisplayName = "SecondaryShot"),
+    Forward UMETA(DisplayName = "Forward"),
+    Backward UMETA(DisplayName = "Backward"),
+    Left UMETA(DisplayName = "Left"),
+    Right UMETA(DisplayName = "Right"),
+    FlightAltitudeLeft UMETA(DisplayName = "FlightAltitudeLeft"),
+    FlightAltitudeRight UMETA(DisplayName = "FlightAltitudeRight"),
+    ShowMission UMETA(DisplayName = "ShowMission"),
+    Lock UMETA(DisplayName = "Lock"),
+    EscapeMode UMETA(DisplayName = "EscapeMode"),
+    MediumSkill UMETA(DisplayName = "MediumSkill"),
+    HightSkill UMETA(DisplayName = "HightSkill"),
+    HealSkill UMETA(DisplayName = "HealSkill"),
+    RepairProtection UMETA(DisplayName = "RepairProtection"),
+    RepairEngine UMETA(DisplayName = "RepairEngine"),
+};
+
 UENUM(BlueprintType, meta = (Bitflags, UseEnumValuesAsMaskValuesInEditor = "true"))
 enum class EFace : uint8
 {

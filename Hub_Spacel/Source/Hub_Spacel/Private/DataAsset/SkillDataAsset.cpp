@@ -17,3 +17,18 @@ UUniqueSkillDataAsset * USkillDataAsset::getSKill(ESkill _type)
     ensure(false);
     return nullptr;
 }
+
+TArray<class UUniqueSkillDataAsset*> USkillDataAsset::getSkillByInput(EInput _input)
+{
+    TArray<class UUniqueSkillDataAsset*> skills {};
+
+    for (UUniqueSkillDataAsset* skill : this->Skills)
+    {
+        if (skill && skill->InputType == _input)
+        {
+            skills.Add(skill);
+        }
+    }
+
+    return skills;
+}

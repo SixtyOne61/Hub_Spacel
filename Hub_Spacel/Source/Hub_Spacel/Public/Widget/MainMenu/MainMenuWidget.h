@@ -96,6 +96,12 @@ private:
 	class UEditableText* PlayerName { nullptr };
 
 	UPROPERTY()
+	class UScrollBox* ScrollBox { nullptr };
+
+	UPROPERTY()
+	class UInputSelectionWidget* InputSelection { nullptr };
+
+	UPROPERTY()
 	float AveragePlayerLatency {};
 
 	UPROPERTY()
