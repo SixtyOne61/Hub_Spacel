@@ -245,6 +245,19 @@ void UMainMenuWidget::onGetPlayerDataResponseReceived(FHttpRequestPtr _request, 
 
 void UMainMenuWidget::OnMatchmakingButtonClicked()
 {
+    // save player name
+    if (USpacelSaveGame* saveGameInstance = Cast<USpacelSaveGame>(UGameplayStatics::CreateSaveGameObject(USpacelSaveGame::StaticClass())))
+    {
+        if (UHub_SpacelGameInstance* spacelGameInstance = Cast<UHub_SpacelGameInstance>(this->GetGameInstance()))
+        {
+            // Set data on the savegame object.
+            saveGameInstance->PlayerName = spacelGameInstance->CustomPlayerName;
+
+            // Start async save process.
+            UGameplayStatics::AsyncSaveGameToSlot(saveGameInstance, "Save", 0);
+        }
+    }
+
     // prevent double click
     this->MatchmakingButton->SetIsEnabled(false);
 
@@ -380,7 +393,7 @@ void UMainMenuWidget::onStartMatchmakingResponseReceived(FHttpRequestPtr _reques
     world->GetTimerManager().SetTimer(this->PollMatchmakingHandle, this, &UMainMenuWidget::PollMatchmaking, 1.0f, true, 1.0f);
     this->SearchingForGame = true;
 
-    setMatchkingTextBlock(FText::FromString("Cancel Matchmaking"), FText::FromString("Currently looking for a match"));
+    setMatchkingTextBlock(FText::FromString("Cancel"), FText::FromString("Currently looking for a match"));
 }
 
 void UMainMenuWidget::onStopMatchmakingResponseReceived(FHttpRequestPtr _request, FHttpResponsePtr _response, bool _bWasSuccessful)
@@ -467,16 +480,6 @@ void UMainMenuWidget::onPollMatchmakingReceived(FHttpRequestPtr _request, FHttpR
             FString levelName { ipAddress + ":" + port };
             FString const& options { "?PlayerSessionId=" + playerSessionId + "?PlayerId=" + playerId };
             //UE_LOG(LogTemp, Warning, TEXT("options : %s"), *options);
-
-            // save player name
-            if (USpacelSaveGame* saveGameInstance = Cast<USpacelSaveGame>(UGameplayStatics::CreateSaveGameObject(USpacelSaveGame::StaticClass())))
-            {
-                // Set data on the savegame object.
-                saveGameInstance->PlayerName = spacelGameInstance->CustomPlayerName;
-
-                // Start async save process.
-                UGameplayStatics::AsyncSaveGameToSlot(saveGameInstance, "Save", 0);
-            }
 
             UGameplayStatics::OpenLevel(world, FName(*levelName), false, options);
         }
