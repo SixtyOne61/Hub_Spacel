@@ -172,4 +172,5 @@ enum class EMetric : uint8
 {
     Fog,
     Precision,
+    Kill,
 };

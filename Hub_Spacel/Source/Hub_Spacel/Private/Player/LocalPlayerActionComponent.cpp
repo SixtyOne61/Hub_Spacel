@@ -43,6 +43,7 @@ void ULocalPlayerActionComponent::BeginPlay()
 
             shipPawn->OnAddEffectDelegate.AddDynamic(this, &ULocalPlayerActionComponent::AddEffect);
             shipPawn->OnRemoveEffectDelegate.AddDynamic(this, &ULocalPlayerActionComponent::RemoveEffect);
+            shipPawn->OnFeedbackScoreDelegate.AddDynamic(this, &ULocalPlayerActionComponent::OnScored);
         }
     }
 }
@@ -134,6 +135,17 @@ void ULocalPlayerActionComponent::RemoveEffect(EEffect _effect)
                 m_speedLineMaterial->SetScalarParameterValue("Meta", 0.0f);
             }
         }
+    }
+}
+
+void ULocalPlayerActionComponent::OnScored(EScoreType _type, int32 _value)
+{
+    switch (_type)
+    {
+        case EScoreType::Kill:
+            Metric::Data data;
+            m_metric->operator()(EMetric::Kill, std::move(data));
+        break;
     }
 }
 

@@ -45,6 +45,9 @@ private:
 	UFUNCTION()
 	void RemoveEffect(EEffect _effect);
 
+	UFUNCTION()
+	void OnScored(EScoreType _type, int32 _value);
+
 private:
 	void createPrecisionData(bool _success);
 

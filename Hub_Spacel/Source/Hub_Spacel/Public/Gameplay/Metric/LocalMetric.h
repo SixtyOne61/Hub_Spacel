@@ -31,7 +31,7 @@ public:
 };
 
 template<class T>
-class HUB_SPACEL_API FogMetric : public MetricInterface
+class HUB_SPACEL_API MetricFog : public MetricInterface
 {
 	void operator()(Metric::Data && _data) override
 	{
@@ -42,7 +42,7 @@ class HUB_SPACEL_API FogMetric : public MetricInterface
 };
 
 template<class T>
-class HUB_SPACEL_API Precision : public MetricInterface
+class HUB_SPACEL_API MetricPrecision : public MetricInterface
 {
 	void operator()(Metric::Data&& _data) override
 	{
@@ -58,6 +58,17 @@ class HUB_SPACEL_API Precision : public MetricInterface
 	int m_nbSuccess { 0 };
 };
 
+template<class T>
+class HUB_SPACEL_API MetricKill : public MetricInterface
+{
+	void operator()(Metric::Data&& _data) override
+	{
+		++m_nb;
+	}
+
+	int m_nb{ 0 };
+};
+
 /**
  * 
  */
@@ -66,8 +77,9 @@ class HUB_SPACEL_API LocalMetric
 public:
 	LocalMetric()
 	{
-		m_metric.insert({EMetric::Fog, std::make_shared<FogMetric<Metric::Data>>()});
-		m_metric.insert({EMetric::Precision, std::make_shared<Precision<Metric::DataPrecision>>() });
+		m_metric.insert({EMetric::Fog, std::make_shared<MetricFog<Metric::Data>>()});
+		m_metric.insert({EMetric::Precision, std::make_shared<MetricPrecision<Metric::DataPrecision>>() });
+		m_metric.insert({EMetric::Kill, std::make_shared<MetricKill<Metric::Data>>()});
 	}
 
 	~LocalMetric()
