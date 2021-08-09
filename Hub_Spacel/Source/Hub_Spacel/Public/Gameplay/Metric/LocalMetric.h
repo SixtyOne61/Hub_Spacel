@@ -6,6 +6,19 @@
 #include "Enum/SpacelEnum.h"
 #include <memory>
 #include <map>
+#include <algorithm>
+
+namespace Metric
+{
+	struct Data
+	{
+	};
+
+	struct DataPrecision : Data
+	{
+		bool success { false };
+	};
+}
 
 class HUB_SPACEL_API MetricInterface
 {
@@ -14,24 +27,35 @@ public:
 	virtual ~MetricInterface() {};
 	MetricInterface(MetricInterface const&) = delete;
 
-	template<class ... Ts>
-	void operator()(Ts... _args) { ensure(false); } // TO DO : not work because we manipulate metric interface
+	virtual void operator()(Metric::Data && _data) = 0;
 };
 
 template<class T>
-class HUB_SPACEL_API BehaviourMetric : public MetricInterface
+class HUB_SPACEL_API FogMetric : public MetricInterface
 {
-public:
-	template<class ... Ts>
-	void operator()(Ts... _args) { dynamic_cast<T*>(this)->apply(_args); }
+	void operator()(Metric::Data && _data) override
+	{
+		m_nb++;
+	}
+
+	int m_nb {};
 };
 
-class HUB_SPACEL_API FogMetric : public BehaviourMetric<FogMetric>
+template<class T>
+class HUB_SPACEL_API Precision : public MetricInterface
 {
-	void apply()
+	void operator()(Metric::Data&& _data) override
 	{
-		int i = 0;
-	};
+		T const& data = static_cast<T const&>(_data);
+		++m_nb;
+		if (data.success)
+		{
+			++m_nbSuccess;
+		}
+	}
+
+	int m_nb { 0 };
+	int m_nbSuccess { 0 };
 };
 
 /**
@@ -42,7 +66,8 @@ class HUB_SPACEL_API LocalMetric
 public:
 	LocalMetric()
 	{
-		m_metric.insert({EMetric::Fog, std::make_shared<FogMetric>()});
+		m_metric.insert({EMetric::Fog, std::make_shared<FogMetric<Metric::Data>>()});
+		m_metric.insert({EMetric::Precision, std::make_shared<Precision<Metric::DataPrecision>>() });
 	}
 
 	~LocalMetric()
@@ -50,17 +75,15 @@ public:
 
 	}
 
-	template<class ... Ts>
-	void operator()(EMetric _type, Ts... _args)
+	void operator()(EMetric _type, Metric::Data && _data)
 	{
-		if (m_metric.find(_type) != m_metric.end())
+		std::for_each(m_metric.begin(), m_metric.end(), [&_type, &_data](auto _obj)
 		{
-			m_metric[_type]->operator()(_args...);
-		}
-		else
-		{
-			ensure(false);
-		}
+			if(_obj.first == _type)
+			{
+				_obj.second->operator()(std::forward<Metric::Data>(_data));
+			}
+		});
 	}
 
 protected:

@@ -3,13 +3,18 @@
 
 #include "LaserBullet.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "GameFramework/PlayerController.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/SphereComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
 #include "Util/Tag.h"
 #include "Player/ModuleComponent.h"
+#include "Player/ShipPawn.h"
+#include "Player/LocalPlayerActionComponent.h"
 #include "DataAsset/TeamColorDataAsset.h"
+#include "Kismet/GameplayStatics.h"
+#include "Enum/SpacelEnum.h"
 
 ALaserBullet::ALaserBullet()
     : AProjectileBase()
@@ -20,6 +25,8 @@ ALaserBullet::ALaserBullet()
 void ALaserBullet::BeginPlay()
 {
     Super::BeginPlay();
+
+    m_startUnixTime = FDateTime::Now().ToUnixTimestamp();
 
     if (UStaticMeshComponent* comp = Cast<UStaticMeshComponent>(this->GetComponentByClass(UStaticMeshComponent::StaticClass())))
     {
@@ -41,5 +48,26 @@ void ALaserBullet::BeginPlay()
             trail->SetNiagaraVariableLinearColor("User.TrailColor", color);
         }
     }
+}
+
+void ALaserBullet::Destroyed()
+{
+    if (this->GetNetMode() != ENetMode::NM_DedicatedServer)
+    {
+        if (APlayerController* controller = UGameplayStatics::GetPlayerController(this->GetWorld(), 0))
+        {
+            if (AShipPawn* pawn = Cast<AShipPawn>(controller->GetPawn()))
+            {
+                if (ULocalPlayerActionComponent* localComponent = Cast<ULocalPlayerActionComponent>(pawn->GetComponentByClass(ULocalPlayerActionComponent::StaticClass())))
+                {
+                    int64 time = FDateTime::Now().ToUnixTimestamp();
+                    bool isExpired = FMath::IsNearlyEqual(FMath::Abs(time - m_startUnixTime), this->InitialLifeSpan, 0.3f);
+                    localComponent->useMetric(EMetric::Precision, isExpired);
+                }
+            }
+        }
+    }
+
+    Super::Destroyed();
 }
 

@@ -17,6 +17,7 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	void BeginPlay() override;
+	void Destroyed() override;
 
 protected:
 	UPROPERTY(EditAnywhere, Category = "Default")
@@ -24,4 +25,6 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	class UTeamColorDataAsset* Colors{ nullptr };
+
+	int64 m_startUnixTime {};
 };

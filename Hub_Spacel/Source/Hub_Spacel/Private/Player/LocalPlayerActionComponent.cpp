@@ -106,6 +106,11 @@ void ULocalPlayerActionComponent::AddEffect(EEffect _effect)
             }
         }
     }
+    else if (_effect == EEffect::Fog)
+    {
+        Metric::Data data{};
+        m_metric->operator()(EMetric::Fog, std::move(data));
+    }
 }
 
 void ULocalPlayerActionComponent::RemoveEffect(EEffect _effect)
@@ -130,4 +135,11 @@ void ULocalPlayerActionComponent::RemoveEffect(EEffect _effect)
             }
         }
     }
+}
+
+void ULocalPlayerActionComponent::createPrecisionData(bool _success)
+{
+    Metric::DataPrecision data;
+    data.success = _success;
+    m_metric->operator()(EMetric::Precision, std::move(data));
 }

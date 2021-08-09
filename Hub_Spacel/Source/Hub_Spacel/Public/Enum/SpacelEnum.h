@@ -171,4 +171,5 @@ UENUM(BlueprintType)
 enum class EMetric : uint8
 {
     Fog,
+    Precision,
 };
