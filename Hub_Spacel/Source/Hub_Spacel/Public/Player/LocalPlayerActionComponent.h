@@ -24,16 +24,13 @@ public:
 	void BeginPlay() override;
 	void TickComponent(float _deltaTime, ELevelTick _tickType, FActorComponentTickFunction* _thisTickFunction) override;
 
-	template<class ... Ts>
-	void useMetric(EMetric _type, Ts ... _args)
-	{
-		switch (_type)
-		{
-		case EMetric::Precision:
-			createPrecisionData(std::forward<Ts>(_args)...);
-		break;
-		}
-	}
+	void createPrecisionData(bool _success);
+	void createFogData();
+	void createKillData();
+	void createEmpPointData(uint8 _value);
+	void createTankPointData(uint8 _value);
+	void createMatiereWinData(uint16 _value);
+	void createMatiereRepair(uint16 _value);
 
 private:
 	UFUNCTION()
@@ -47,9 +44,6 @@ private:
 
 	UFUNCTION()
 	void OnScored(EScoreType _type, int32 _value);
-
-private:
-	void createPrecisionData(bool _success);
 
 private:
 	class UMaterialInstanceDynamic* m_speedLineMaterial { nullptr };

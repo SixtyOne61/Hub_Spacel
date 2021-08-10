@@ -37,4 +37,7 @@ private:
 	void heal(uint8 _value);
 
 	ESkillReturn repair(TArray<FVector_NetQuantize> & _removedLocations, TArray<FVector_NetQuantize> & _locations, std::function<void(void)> _onRep, int _minMatiere, int _effect);
+
+	UFUNCTION(UnReliable, Client)
+	void RPCClientRepair(uint8 _value);
 };

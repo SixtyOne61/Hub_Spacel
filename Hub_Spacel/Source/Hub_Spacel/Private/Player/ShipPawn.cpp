@@ -552,6 +552,11 @@ void AShipPawn::OnRep_Matiere()
         {
             FString signe{ "+" };
             str = signe + str;
+
+            if (ULocalPlayerActionComponent* component = Cast<ULocalPlayerActionComponent>(this->GetComponentByClass(ULocalPlayerActionComponent::StaticClass())))
+            {
+                component->createMatiereWinData((uint16)delta);
+            }
         }
 
         BP_FxAddMatiere(delta);

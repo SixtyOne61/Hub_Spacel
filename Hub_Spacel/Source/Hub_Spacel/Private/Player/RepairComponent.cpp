@@ -4,6 +4,7 @@
 #include "RepairComponent.h"
 #include "Player/ShipPawn.h"
 #include "Player/ModuleComponent.h"
+#include "Player/LocalPlayerActionComponent.h"
 #include "DataAsset/PlayerDataAsset.h"
 #include "Net/UnrealNetwork.h"
 
@@ -16,8 +17,8 @@ void URepairComponent::BeginPlay()
 {
     Super::BeginPlay();
 
-    if (this->GetNetMode() != ENetMode::NM_DedicatedServer) return;
     if (get() == nullptr && !initShipPawnOwner()) return;
+    if (this->GetNetMode() != ENetMode::NM_DedicatedServer) return;
 
     if (AShipPawn* pawn = get<AShipPawn>())
     {
@@ -97,24 +98,40 @@ ESkillReturn URepairComponent::repair(TArray<FVector_NetQuantize>& _removedLocat
 {
     if (_removedLocations.Num() != 0)
     {
-        if (get<AShipPawn>() != nullptr && get<AShipPawn>()->RU_Matiere >= _minMatiere)
+        if (AShipPawn* pawn = get<AShipPawn>())
         {
-            while (_effect > 0 && _removedLocations.Num() > 0)
+            if (pawn->RU_Matiere >= _minMatiere)
             {
-                _locations.Add(_removedLocations[0]);
-                _removedLocations.RemoveAt(0);
-                _effect--;
-            }
+                uint8 nbRepair { 0 };
 
-            this->OnUpdateMatiere(-1 * _minMatiere);
-            _onRep();
-            return ESkillReturn::Success;
+                while (_effect > 0 && _removedLocations.Num() > 0)
+                {
+                    _locations.Add(_removedLocations[0]);
+                    _removedLocations.RemoveAt(0);
+                    _effect--;
+                    ++nbRepair;
+                }
+
+                RPCClientRepair(nbRepair);
+
+                this->OnUpdateMatiere(-1 * _minMatiere);
+                _onRep();
+                return ESkillReturn::Success;
+            }
         }
-        else
-        {
-            return ESkillReturn::NoMater;
-        }
+
+        return ESkillReturn::NoMater;
     }
     return ESkillReturn::Unavailable;
 }
 
+void URepairComponent::RPCClientRepair_Implementation(uint8 _value)
+{
+    if (AShipPawn* pawn = get<AShipPawn>())
+    {
+        if (ULocalPlayerActionComponent* component = Cast<ULocalPlayerActionComponent>(pawn->GetComponentByClass(ULocalPlayerActionComponent::StaticClass())))
+        {
+            component->createMatiereRepair(_value);
+        }
+    }
+}

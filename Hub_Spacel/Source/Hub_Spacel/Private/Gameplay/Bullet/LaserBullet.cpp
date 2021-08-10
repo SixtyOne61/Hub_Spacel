@@ -62,7 +62,7 @@ void ALaserBullet::Destroyed()
                 {
                     int64 time = FDateTime::Now().ToUnixTimestamp();
                     bool isExpired = FMath::IsNearlyEqual(FMath::Abs(time - m_startUnixTime), this->InitialLifeSpan, 0.3f);
-                    localComponent->useMetric(EMetric::Precision, isExpired);
+                    localComponent->createPrecisionData(isExpired);
                 }
             }
         }

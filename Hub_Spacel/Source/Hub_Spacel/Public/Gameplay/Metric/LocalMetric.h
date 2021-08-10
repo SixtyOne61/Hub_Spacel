@@ -18,6 +18,16 @@ namespace Metric
 	{
 		bool success { false };
 	};
+
+	struct DataScore : Data
+	{
+		uint8 value { };
+	};
+
+	struct DataMatiere : Data
+	{
+		uint16 value { };
+	};
 }
 
 class HUB_SPACEL_API MetricInterface
@@ -69,6 +79,30 @@ class HUB_SPACEL_API MetricKill : public MetricInterface
 	int m_nb{ 0 };
 };
 
+template<class T>
+class HUB_SPACEL_API MetricScore : public MetricInterface
+{
+	void operator()(Metric::Data&& _data) override
+	{
+		T const& data = static_cast<T const&>(_data);
+		m_nb += data.value;
+	}
+
+	int m_nb { 0 };
+};
+
+template<class T>
+class HUB_SPACEL_API MetricMatiere : public MetricInterface
+{
+	void operator()(Metric::Data&& _data) override
+	{
+		T const& data = static_cast<T const&>(_data);
+		m_nb += data.value;
+	}
+
+	int m_nb { 0 };
+};
+
 /**
  * 
  */
@@ -77,9 +111,13 @@ class HUB_SPACEL_API LocalMetric
 public:
 	LocalMetric()
 	{
-		m_metric.insert({EMetric::Fog, std::make_shared<MetricFog<Metric::Data>>()});
-		m_metric.insert({EMetric::Precision, std::make_shared<MetricPrecision<Metric::DataPrecision>>() });
-		m_metric.insert({EMetric::Kill, std::make_shared<MetricKill<Metric::Data>>()});
+		m_metric.insert({ EMetric::Fog, std::make_shared<MetricFog<Metric::Data>>() });
+		m_metric.insert({ EMetric::Precision, std::make_shared<MetricPrecision<Metric::DataPrecision>>() });
+		m_metric.insert({ EMetric::Kill, std::make_shared<MetricKill<Metric::Data>>() });
+		m_metric.insert({ EMetric::EmpPoint, std::make_shared<MetricScore<Metric::DataScore>>() });
+		m_metric.insert({ EMetric::TankPoint, std::make_shared<MetricScore<Metric::DataScore>>() });
+		m_metric.insert({ EMetric::MatiereWin, std::make_shared<MetricMatiere<Metric::DataMatiere>>() });
+		m_metric.insert({ EMetric::MatiereUseForRepair, std::make_shared<MetricMatiere<Metric::DataMatiere>>() });
 	}
 
 	~LocalMetric()

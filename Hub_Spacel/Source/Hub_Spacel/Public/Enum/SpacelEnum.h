@@ -173,4 +173,8 @@ enum class EMetric : uint8
     Fog,
     Precision,
     Kill,
+    EmpPoint,
+    TankPoint,
+    MatiereWin,
+    MatiereUseForRepair,
 };
