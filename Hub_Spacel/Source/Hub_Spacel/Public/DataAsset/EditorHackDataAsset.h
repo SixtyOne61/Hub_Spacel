@@ -33,4 +33,7 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool MissionSucceedImmediately { true };
+
+	UPROPERTY(EditAnywhere)
+	int RemainingGameTime { 10 };
 };

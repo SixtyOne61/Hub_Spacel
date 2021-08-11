@@ -21,7 +21,7 @@ namespace Metric
 
 	struct DataScore : Data
 	{
-		uint8 value { };
+		uint16 value { };
 	};
 
 	struct DataMatiere : Data
@@ -48,6 +48,7 @@ class HUB_SPACEL_API MetricFog : public MetricInterface
 		m_nb++;
 	}
 
+public:
 	int m_nb {};
 };
 
@@ -64,6 +65,7 @@ class HUB_SPACEL_API MetricPrecision : public MetricInterface
 		}
 	}
 
+public:
 	int m_nb { 0 };
 	int m_nbSuccess { 0 };
 };
@@ -76,6 +78,7 @@ class HUB_SPACEL_API MetricKill : public MetricInterface
 		++m_nb;
 	}
 
+public:
 	int m_nb{ 0 };
 };
 
@@ -88,6 +91,7 @@ class HUB_SPACEL_API MetricScore : public MetricInterface
 		m_nb += data.value;
 	}
 
+public:
 	int m_nb { 0 };
 };
 
@@ -100,6 +104,7 @@ class HUB_SPACEL_API MetricMatiere : public MetricInterface
 		m_nb += data.value;
 	}
 
+public:
 	int m_nb { 0 };
 };
 
@@ -118,6 +123,7 @@ public:
 		m_metric.insert({ EMetric::TankPoint, std::make_shared<MetricScore<Metric::DataScore>>() });
 		m_metric.insert({ EMetric::MatiereWin, std::make_shared<MetricMatiere<Metric::DataMatiere>>() });
 		m_metric.insert({ EMetric::MatiereUseForRepair, std::make_shared<MetricMatiere<Metric::DataMatiere>>() });
+		m_metric.insert({ EMetric::TotalScore, std::make_shared<MetricScore<Metric::DataScore>>() });
 	}
 
 	~LocalMetric()
@@ -134,6 +140,19 @@ public:
 				_obj.second->operator()(std::forward<Metric::Data>(_data));
 			}
 		});
+	}
+
+	MetricInterface* getData(EMetric _type)
+	{
+		for (auto& metric : m_metric)
+		{
+			if (metric.first == _type)
+			{
+				return metric.second.get();
+			}
+		}
+
+		return nullptr;
 	}
 
 protected:

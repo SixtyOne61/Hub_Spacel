@@ -30,6 +30,7 @@
 #include "Player/RepairComponent.h"
 #include "Player/LocalPlayerActionComponent.h"
 #include "Player/PlayerNameActor.h"
+#include "Player/MetricComponent.h"
 #include "GameState/SpacelGameState.h"
 #include "Hub_SpacelGameInstance.h"
 #include "Util/Tag.h"
@@ -552,11 +553,6 @@ void AShipPawn::OnRep_Matiere()
         {
             FString signe{ "+" };
             str = signe + str;
-
-            if (ULocalPlayerActionComponent* component = Cast<ULocalPlayerActionComponent>(this->GetComponentByClass(ULocalPlayerActionComponent::StaticClass())))
-            {
-                component->createMatiereWinData((uint16)delta);
-            }
         }
 
         BP_FxAddMatiere(delta);
@@ -1006,9 +1002,21 @@ ESkillReturn AShipPawn::onRepairSupport()
     return ESkillReturn::InternError;
 }
 
-void AShipPawn::addMatiere(int32 _val)
+void AShipPawn::addMatiere(int32 _val, EMatiereOrigin _type)
 {
     this->RU_Matiere += _val;
+
+    // in fact, _val > 0 is an useless test, because we have a type for lost matiere
+    // therefor, we convert _val into uint so it's better to check if is not an negative number
+    // because if in futur we have a case where we can have negative value for this type...
+    if (_val > 0 && (_type == EMatiereOrigin::Farm || _type == EMatiereOrigin::Kill))
+    {
+        if (UMetricComponent* component = Cast<UMetricComponent>(this->GetComponentByClass(UMetricComponent::StaticClass())))
+        {
+            component->createMatiereWinData((uint16)_val);
+        }
+    }
+
     OnRep_Matiere();
 }
 
@@ -1019,7 +1027,7 @@ void AShipPawn::farmAsteroide()
         m_nbAsteroideFarm++;
         if (this->PlayerDataAsset->NbAsteroideForMatiere <= m_nbAsteroideFarm)
         {
-            addMatiere(1);
+            addMatiere(1, EMatiereOrigin::Farm);
             m_nbAsteroideFarm = 0;
         }
     }
@@ -1034,7 +1042,7 @@ ESkillReturn AShipPawn::spawnHealPack()
             int healPackMatiere = uniqueSkillDataAsset->Value;
             if (this->RU_Matiere >= healPackMatiere)
             {
-                addMatiere(healPackMatiere * -1);
+                addMatiere(healPackMatiere * -1, EMatiereOrigin::Lost);
                 // spawn wall
                 TArray<UActorComponent*> const& actors = this->GetComponentsByTag(USceneComponent::StaticClass(), Tags::HealPack);
                 if (actors.Num() > 0 && actors[0] != nullptr)

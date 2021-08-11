@@ -4,6 +4,8 @@
 #include "LaserBullet.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "GameFramework/PlayerController.h"
+#include "GameFramework/GameStateBase.h"
+#include "GameFramework/PlayerState.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/SphereComponent.h"
 #include "NiagaraFunctionLibrary.h"
@@ -11,7 +13,7 @@
 #include "Util/Tag.h"
 #include "Player/ModuleComponent.h"
 #include "Player/ShipPawn.h"
-#include "Player/LocalPlayerActionComponent.h"
+#include "Player/MetricComponent.h"
 #include "DataAsset/TeamColorDataAsset.h"
 #include "Kismet/GameplayStatics.h"
 #include "Enum/SpacelEnum.h"
@@ -25,8 +27,6 @@ ALaserBullet::ALaserBullet()
 void ALaserBullet::BeginPlay()
 {
     Super::BeginPlay();
-
-    m_startUnixTime = FDateTime::Now().ToUnixTimestamp();
 
     if (UStaticMeshComponent* comp = Cast<UStaticMeshComponent>(this->GetComponentByClass(UStaticMeshComponent::StaticClass())))
     {
@@ -50,19 +50,32 @@ void ALaserBullet::BeginPlay()
     }
 }
 
+void ALaserBullet::LifeSpanExpired()
+{
+    Super::LifeSpanExpired();
+
+    if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
+    {
+        m_hasExpired = true;
+    }
+}
+
 void ALaserBullet::Destroyed()
 {
-    if (this->GetNetMode() != ENetMode::NM_DedicatedServer)
+    if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
     {
-        if (APlayerController* controller = UGameplayStatics::GetPlayerController(this->GetWorld(), 0))
+        TArray<APlayerState*> playerStates = this->GetWorld()->GetGameState()->PlayerArray;
+        for (APlayerState* playerState : playerStates)
         {
-            if (AShipPawn* pawn = Cast<AShipPawn>(controller->GetPawn()))
+            if (playerState != nullptr && playerState->PlayerId == this->PlayerIdOwner)
             {
-                if (ULocalPlayerActionComponent* localComponent = Cast<ULocalPlayerActionComponent>(pawn->GetComponentByClass(ULocalPlayerActionComponent::StaticClass())))
+                if (AShipPawn* pawn = playerState->GetPawn<AShipPawn>())
                 {
-                    int64 time = FDateTime::Now().ToUnixTimestamp();
-                    bool isExpired = FMath::IsNearlyEqual(FMath::Abs(time - m_startUnixTime), this->InitialLifeSpan, 0.3f);
-                    localComponent->createPrecisionData(isExpired);
+                    if (UMetricComponent* metricComponent = Cast<UMetricComponent>(pawn->GetComponentByClass(UMetricComponent::StaticClass())))
+                    {
+                        metricComponent->createPrecisionData(!m_hasExpired);
+                    }
+                    break;
                 }
             }
         }

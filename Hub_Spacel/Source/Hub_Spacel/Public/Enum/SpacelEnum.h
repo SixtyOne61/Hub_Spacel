@@ -177,4 +177,14 @@ enum class EMetric : uint8
     TankPoint,
     MatiereWin,
     MatiereUseForRepair,
+    TotalScore,
+};
+
+UENUM(BlueprintType)
+enum class EMatiereOrigin : uint8
+{
+    Heal UMETA(DisplayName = "Heal"),
+    Farm UMETA(DisplayName = "Farm"),
+    Kill UMETA(DisplayName = "Kill"),
+    Lost UMETA(DisplayName = "Lost"),
 };

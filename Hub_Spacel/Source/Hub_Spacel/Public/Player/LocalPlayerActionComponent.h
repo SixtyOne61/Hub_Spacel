@@ -4,9 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "Player/PlayerActorComponent.h"
-#include "Gameplay/Metric/LocalMetric.h"
-#include "Enum/SpacelEnum.h"
-#include <memory>
 #include "LocalPlayerActionComponent.generated.h"
 
 /**
@@ -24,14 +21,6 @@ public:
 	void BeginPlay() override;
 	void TickComponent(float _deltaTime, ELevelTick _tickType, FActorComponentTickFunction* _thisTickFunction) override;
 
-	void createPrecisionData(bool _success);
-	void createFogData();
-	void createKillData();
-	void createEmpPointData(uint8 _value);
-	void createTankPointData(uint8 _value);
-	void createMatiereWinData(uint16 _value);
-	void createMatiereRepair(uint16 _value);
-
 private:
 	UFUNCTION()
 	void OnUpdateTeam(FString const& _team);
@@ -42,11 +31,6 @@ private:
 	UFUNCTION()
 	void RemoveEffect(EEffect _effect);
 
-	UFUNCTION()
-	void OnScored(EScoreType _type, int32 _value);
-
 private:
 	class UMaterialInstanceDynamic* m_speedLineMaterial { nullptr };
-
-	std::unique_ptr<LocalMetric> m_metric { nullptr };
 };

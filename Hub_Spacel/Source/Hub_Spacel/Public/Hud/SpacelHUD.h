@@ -29,5 +29,8 @@ private:
 	TSubclassOf<class UUserWidget> GameWidgetClass { nullptr };
 
 	UPROPERTY()
-	TSubclassOf<UUserWidget> LobbyWidgetClass { nullptr };
+	TSubclassOf<class UUserWidget> LobbyWidgetClass { nullptr };
+
+	UPROPERTY()
+	TSubclassOf<class UUserWidget> EndMenuWidgetClass{ nullptr };
 };

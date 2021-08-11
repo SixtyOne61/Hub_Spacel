@@ -17,6 +17,7 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	void BeginPlay() override;
+	void LifeSpanExpired() override;
 	void Destroyed() override;
 
 protected:
@@ -26,5 +27,5 @@ protected:
 	UPROPERTY(EditAnywhere)
 	class UTeamColorDataAsset* Colors{ nullptr };
 
-	int64 m_startUnixTime {};
+	bool m_hasExpired { false };
 };

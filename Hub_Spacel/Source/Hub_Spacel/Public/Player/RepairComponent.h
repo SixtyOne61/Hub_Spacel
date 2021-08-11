@@ -25,7 +25,7 @@ public:
 	
 private:
 	UFUNCTION()
-	void OnUpdateMatiere(int _value);
+	void OnUpdateMatiere(int _value, EMatiereOrigin _type);
 
 	/* repair protection */
 	ESkillReturn onRepairProtection();
@@ -37,7 +37,4 @@ private:
 	void heal(uint8 _value);
 
 	ESkillReturn repair(TArray<FVector_NetQuantize> & _removedLocations, TArray<FVector_NetQuantize> & _locations, std::function<void(void)> _onRep, int _minMatiere, int _effect);
-
-	UFUNCTION(UnReliable, Client)
-	void RPCClientRepair(uint8 _value);
 };

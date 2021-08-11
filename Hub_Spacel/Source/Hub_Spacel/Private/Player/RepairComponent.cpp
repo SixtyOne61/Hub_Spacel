@@ -4,7 +4,7 @@
 #include "RepairComponent.h"
 #include "Player/ShipPawn.h"
 #include "Player/ModuleComponent.h"
-#include "Player/LocalPlayerActionComponent.h"
+#include "Player/MetricComponent.h"
 #include "DataAsset/PlayerDataAsset.h"
 #include "Net/UnrealNetwork.h"
 
@@ -26,11 +26,11 @@ void URepairComponent::BeginPlay()
     }
 }
 
-void URepairComponent::OnUpdateMatiere(int _value)
+void URepairComponent::OnUpdateMatiere(int _value, EMatiereOrigin _type)
 {
     if (get<AShipPawn>() != nullptr)
     {
-        get<AShipPawn>()->addMatiere(_value);
+        get<AShipPawn>()->addMatiere(_value, _type);
     }
 }
 
@@ -76,7 +76,7 @@ void URepairComponent::heal(uint8 _value)
     }
     else
     {
-        this->OnUpdateMatiere(_value);
+        this->OnUpdateMatiere(_value, EMatiereOrigin::Heal);
     }
 }
 
@@ -112,9 +112,12 @@ ESkillReturn URepairComponent::repair(TArray<FVector_NetQuantize>& _removedLocat
                     ++nbRepair;
                 }
 
-                RPCClientRepair(nbRepair);
+                if (UMetricComponent* component = Cast<UMetricComponent>(pawn->GetComponentByClass(UMetricComponent::StaticClass())))
+                {
+                    component->createMatiereRepair(nbRepair);
+                }
 
-                this->OnUpdateMatiere(-1 * _minMatiere);
+                this->OnUpdateMatiere(-1 * _minMatiere, EMatiereOrigin::Lost);
                 _onRep();
                 return ESkillReturn::Success;
             }
@@ -123,15 +126,4 @@ ESkillReturn URepairComponent::repair(TArray<FVector_NetQuantize>& _removedLocat
         return ESkillReturn::NoMater;
     }
     return ESkillReturn::Unavailable;
-}
-
-void URepairComponent::RPCClientRepair_Implementation(uint8 _value)
-{
-    if (AShipPawn* pawn = get<AShipPawn>())
-    {
-        if (ULocalPlayerActionComponent* component = Cast<ULocalPlayerActionComponent>(pawn->GetComponentByClass(ULocalPlayerActionComponent::StaticClass())))
-        {
-            component->createMatiereRepair(_value);
-        }
-    }
 }

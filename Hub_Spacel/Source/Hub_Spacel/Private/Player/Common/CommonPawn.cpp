@@ -19,6 +19,7 @@
 #include "Player/RepairComponent.h"
 #include "Player/LocalPlayerActionComponent.h"
 #include "Player/PlayerNameActor.h"
+#include "Player/MetricComponent.h"
 #include "DataAsset/PlayerDataAsset.h"
 #include "DataAsset/TeamColorDataAsset.h"
 #include "Gameplay/SkillComponent.h"
@@ -80,6 +81,9 @@ ACommonPawn::ACommonPawn()
     ShieldComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Shield_00"));
     if (!ensure(ShieldComponent != nullptr)) return;
     ShieldComponent->SetupAttachment(RootComponent);
+
+    MetricComponent = CreateDefaultSubobject<UMetricComponent>(TEXT("Metric_00"));
+    if(!ensure(MetricComponent != nullptr)) return;
 
     Tags.Add(Tags::Player);
 }

@@ -107,6 +107,9 @@ public:
     UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)
     class USkillComponent* SkillComponent{ nullptr };
 
+    UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)
+    class UMetricComponent* MetricComponent { nullptr };
+
     /* only on server side */
     UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)
     class URepairComponent* RepairComponent{ nullptr };

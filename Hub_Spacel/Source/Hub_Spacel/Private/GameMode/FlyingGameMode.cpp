@@ -34,6 +34,7 @@ void AFlyingGameMode::BeginPlay()
 #if WITH_EDITOR
         if (HackDataAsset != nullptr && HackDataAsset->UseHack)
         {
+            RemainingGameTime = HackDataAsset->RemainingGameTime;
             RemainingChooseModuleTime = HackDataAsset->ChooseModuleTime;
         }
 #endif

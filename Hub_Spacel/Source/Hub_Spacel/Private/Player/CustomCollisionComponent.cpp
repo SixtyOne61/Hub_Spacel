@@ -337,7 +337,7 @@ void UCustomCollisionComponent::hitMatiere(FVector const& _ownerLocation, FName 
 		{
 			if (addMatiere != int{})
 			{
-				pawn->OnUpdateMatiereDelegate.Broadcast(addMatiere);
+				pawn->OnUpdateMatiereDelegate.Broadcast(addMatiere, EMatiereOrigin::Kill);
 			}
 		}
 	}

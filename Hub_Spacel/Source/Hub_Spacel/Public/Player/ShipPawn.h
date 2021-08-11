@@ -6,10 +6,11 @@
 #include "Player/Common/CommonPawn.h"
 #include "Util/EnumUtil.h"
 #include "Util/SpacelEvent.h"
+#include "Enum/SpacelEnum.h"
 #include <functional>
 #include "ShipPawn.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUpdateMatiere, int, _value);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnUpdateMatiere, int, _value, EMatiereOrigin, _type);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnEndUpdateMatiere, int32, _value, FString const&, _deltaStr);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnShowMission, bool, _show);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLocalTeamUpdate, FString const&, _team);
@@ -29,6 +30,7 @@ class HUB_SPACEL_API AShipPawn : public ACommonPawn
     friend class URepairComponent;
     friend class ULocalPlayerActionComponent;
     friend class USkillComponent;
+    friend class UMetricComponent;
     friend class AMissionManager;
     friend class AComet;
 
@@ -66,7 +68,7 @@ public:
     UFUNCTION(UnReliable, Client)
     void RPCClientFeedbackScore(EScoreType _type, int16 _value);
 
-    void addMatiere(int32 _val);
+    void addMatiere(int32 _val, EMatiereOrigin _type);
     void farmAsteroide();
     ESkillReturn spawnHealPack();
 

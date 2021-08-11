@@ -27,8 +27,6 @@ void ULocalPlayerActionComponent::BeginPlay()
 {
     Super::BeginPlay();
 
-    m_metric = std::make_unique<LocalMetric>();
-
     if (ACommonPawn* pawn = get())
     {
         if (pawn->SpeedLinesComponent != nullptr)
@@ -43,7 +41,6 @@ void ULocalPlayerActionComponent::BeginPlay()
 
             shipPawn->OnAddEffectDelegate.AddDynamic(this, &ULocalPlayerActionComponent::AddEffect);
             shipPawn->OnRemoveEffectDelegate.AddDynamic(this, &ULocalPlayerActionComponent::RemoveEffect);
-            shipPawn->OnFeedbackScoreDelegate.AddDynamic(this, &ULocalPlayerActionComponent::OnScored);
         }
     }
 }
@@ -107,10 +104,6 @@ void ULocalPlayerActionComponent::AddEffect(EEffect _effect)
             }
         }
     }
-    else if (_effect == EEffect::Fog)
-    {
-        createFogData();
-    }
 }
 
 void ULocalPlayerActionComponent::RemoveEffect(EEffect _effect)
@@ -137,73 +130,3 @@ void ULocalPlayerActionComponent::RemoveEffect(EEffect _effect)
     }
 }
 
-void ULocalPlayerActionComponent::OnScored(EScoreType _type, int32 _value)
-{
-    switch (_type)
-    {
-        case EScoreType::Kill:
-        {
-            createKillData();
-            break;
-        }
-
-        case EScoreType::Emp:
-        {
-            createEmpPointData((uint8)_value);
-            break;
-        }
-
-        case EScoreType::Tank:
-        {
-            createTankPointData((uint8)_value);
-            break;
-        }
-    }
-}
-
-void ULocalPlayerActionComponent::createPrecisionData(bool _success)
-{
-    Metric::DataPrecision data;
-    data.success = _success;
-    m_metric->operator()(EMetric::Precision, std::move(data));
-}
-
-void ULocalPlayerActionComponent::createFogData()
-{
-    Metric::Data data{};
-    m_metric->operator()(EMetric::Fog, std::move(data));
-}
-
-void ULocalPlayerActionComponent::createKillData()
-{
-    Metric::Data data{};
-    m_metric->operator()(EMetric::Kill, std::move(data));
-}
-
-void ULocalPlayerActionComponent::createEmpPointData(uint8 _value)
-{
-    Metric::DataScore data;
-    data.value = _value;
-    m_metric->operator()(EMetric::EmpPoint, std::move(data));
-}
-
-void ULocalPlayerActionComponent::createTankPointData(uint8 _value)
-{
-    Metric::DataScore data;
-    data.value = _value;
-    m_metric->operator()(EMetric::TankPoint, std::move(data));
-}
-
-void ULocalPlayerActionComponent::createMatiereWinData(uint16 _value)
-{
-    Metric::DataMatiere data;
-    data.value = _value;
-    m_metric->operator()(EMetric::MatiereWin, std::move(data));
-}
-
-void ULocalPlayerActionComponent::createMatiereRepair(uint16 _value)
-{
-    Metric::DataMatiere data;
-    data.value = _value;
-    m_metric->operator()(EMetric::MatiereUseForRepair, std::move(data));
-}
