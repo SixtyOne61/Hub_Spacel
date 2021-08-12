@@ -52,12 +52,12 @@ void ALaserBullet::BeginPlay()
 
 void ALaserBullet::LifeSpanExpired()
 {
-    Super::LifeSpanExpired();
-
     if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
     {
         m_hasExpired = true;
     }
+
+    Super::LifeSpanExpired();
 }
 
 void ALaserBullet::Destroyed()

@@ -21,4 +21,7 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void BP_SetStats(int _nbKill, int _score, int Precision);
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void BP_SetName(FString const& _name);
+
 };

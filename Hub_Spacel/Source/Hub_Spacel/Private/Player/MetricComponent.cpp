@@ -17,7 +17,6 @@ void UMetricComponent::BeginPlay()
         if (AShipPawn* shipPawn = get<AShipPawn>())
         {
             shipPawn->OnAddEffectDelegate.AddDynamic(this, &UMetricComponent::AddEffect);
-            shipPawn->OnFeedbackScoreDelegate.AddDynamic(this, &UMetricComponent::OnScored);
         }
 
         if (ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld())))
@@ -48,8 +47,37 @@ void UMetricComponent::OnChangeState(EGameState _state)
             totalScore = totalScoreMetric->m_nb;
         }
 
-        // send data to client
+        // send data to all client
         RPCNetMulticastSendData(precision, nbKill, totalScore);
+
+        uint8 nbFog {};
+        uint16 empPoint {}, tankPoint {}, matiereWin {}, matiereUseForRepair {};
+        if (auto fogMetric = static_cast<MetricFog<Metric::Data>*>(m_metric->getData(EMetric::Fog)))
+        {
+            nbFog = fogMetric->m_nb;
+        }
+
+        if (auto empMetric = static_cast<MetricScore<Metric::DataScore>*>(m_metric->getData(EMetric::EmpPoint)))
+        {
+            empPoint = empMetric->m_nb;
+        }
+
+        if (auto tankPointMetric = static_cast<MetricScore<Metric::DataScore>*>(m_metric->getData(EMetric::TankPoint)))
+        {
+            tankPoint = tankPointMetric->m_nb;
+        }
+
+        if (auto matiereWinMetric = static_cast<MetricMatiere<Metric::DataMatiere>*>(m_metric->getData(EMetric::MatiereWin)))
+        {
+            matiereWin = matiereWinMetric->m_nb;
+        }
+
+        if (auto matiereUseForRepairMetric = static_cast<MetricMatiere<Metric::DataMatiere>*>(m_metric->getData(EMetric::MatiereUseForRepair)))
+        {
+            matiereUseForRepair = matiereUseForRepairMetric->m_nb;
+        }
+
+        RPCClientSendData(nbFog, empPoint, tankPoint, matiereWin, matiereUseForRepair);
     }
 }
 
@@ -59,6 +87,15 @@ void UMetricComponent::RPCNetMulticastSendData_Implementation(uint8 _precision, 
     this->NbKill = _nbKill;
     this->TotalScore = _totalScore;
     this->HasInit = true;
+}
+
+void UMetricComponent::RPCClientSendData_Implementation(uint8 _nbFog, uint16 _empPoint, uint16 _tankPoint, uint16 _matiereWin, uint16 _matiereUseForRepair)
+{
+    this->NbFog = _nbFog;
+    this->EmpPoint = _empPoint;
+    this->TankPoint = _tankPoint;
+    this->MatiereWin = _matiereWin;
+    this->MatiereUseForRepair = _matiereUseForRepair;
 }
 
 void UMetricComponent::OnScored(EScoreType _type, int32 _value)

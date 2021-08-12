@@ -26,6 +26,8 @@ void UEndMenuWidget::FillStat()
     UWorld* world{ this->GetWorld() };
     if (!ensure(world != nullptr)) return;
 
+    if(TeamColorDataAsset == nullptr) return;
+
     if (ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(world->GetGameState()))
     {
         FString const& bestTeam = spacelGameState->GetBestTeam();
@@ -58,6 +60,10 @@ void UEndMenuWidget::FillStat()
                                     if (UPlayerWinnerWidget* widget = PlayerWinnerWidgets[id])
                                     {
                                         widget->BP_SetStats(component->NbKill, component->TotalScore, component->Precision);
+                                        if (ASpacelPlayerState* spacelPlayerState = Cast<ASpacelPlayerState>(playerState))
+                                        {
+                                            widget->BP_SetName(spacelPlayerState->GetPlayerName());
+                                        }
                                         ++id;
                                     }
                                 }
@@ -71,6 +77,19 @@ void UEndMenuWidget::FillStat()
                         }
                     }
                 }
+            }
+        }
+    }
+
+    // fill our stat
+    if (AShipPawn* shipPawn = this->GetOwningPlayerPawn<AShipPawn>())
+    {
+        BP_SetLocalColor(TeamColorDataAsset->GetColor<FColor>(shipPawn->Team.ToString()));
+        if (UMetricComponent* component = Cast<UMetricComponent>(shipPawn->GetComponentByClass(UMetricComponent::StaticClass())))
+        {
+            if (component->HasInit)
+            {
+                BP_SetLocalStat(component->NbKill, component->Precision, component->TotalScore, FMath::Max(component->EmpPoint, component->TankPoint), component->MatiereWin, component->MatiereUseForRepair);
             }
         }
     }

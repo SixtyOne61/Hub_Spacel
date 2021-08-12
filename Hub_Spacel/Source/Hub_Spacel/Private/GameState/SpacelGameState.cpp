@@ -4,6 +4,7 @@
 #include "SpacelGameState.h"
 #include "Player/SpacelPlayerState.h"
 #include "Player/ShipPawn.h"
+#include "Player/MetricComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerStart.h"
@@ -85,6 +86,10 @@ void ASpacelGameState::AddScore(FString const& _team, int32 _playerId, EScoreTyp
                 if (AShipPawn* shipPawn = playerState->GetPawn<AShipPawn>())
                 {
                     shipPawn->RPCClientFeedbackScore(_type, scoreValue);
+                    if (UMetricComponent* component = Cast<UMetricComponent>(shipPawn->GetComponentByClass(UMetricComponent::StaticClass())))
+                    {
+                        component->OnScored(_type, scoreValue);
+                    }
                 }
             }
         }
