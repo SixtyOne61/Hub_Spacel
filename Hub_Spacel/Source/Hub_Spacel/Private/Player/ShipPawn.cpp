@@ -39,6 +39,7 @@
 #include "Gameplay/SkillComponent.h"
 #include "Gameplay/Skill/PostProcessInvisible.h"
 #include "Gameplay/Skill/HealPackBullet.h"
+#include "Gameplay/Skill/EmpBullet.h"
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
 
@@ -332,23 +333,45 @@ void AShipPawn::spawnKatyusha()
     this->FireComponent->spawnKatyusha();
 }
 
-void AShipPawn::emp()
+ESkillReturn AShipPawn::spawnEmp()
 {
-    if(this->FireComponent == nullptr) return;
-    if (AShipPawn* target = Cast<AShipPawn>(this->FireComponent->m_target))
-    {
-        if(this->SkillComponent == nullptr) return;
-        if(this->SkillComponent->SkillDataAsset == nullptr) return;
+    if(this->SkillComponent == nullptr) return ESkillReturn::InternError;
+    if (this->SkillComponent->SkillDataAsset == nullptr) return ESkillReturn::InternError;
 
-        if (UUniqueSkillDataAsset const* skillParam = this->SkillComponent->SkillDataAsset->getSKill(ESkill::Emp))
+    if (UUniqueSkillDataAsset const* skillParam = this->SkillComponent->SkillDataAsset->getSKill(ESkill::Emp))
+    {
+        uint32 duration = skillParam->FlatDuration;
+
+        TArray<UActorComponent*> const& actors = this->GetComponentsByTag(USceneComponent::StaticClass(), Tags::HealPack);
+        if (actors.Num() > 0 && actors[0] != nullptr)
         {
-            uint32 duration = skillParam->FlatDuration;
-            if (ASpacelPlayerState* playerState = this->GetPlayerState<ASpacelPlayerState>())
+            if (USceneComponent* comp = Cast<USceneComponent>(actors[0]))
             {
-                target->emp(duration, this->Team, playerState->PlayerId);
+                FTransform tr = comp->GetComponentTransform();
+
+                FVector dir = UKismetMathLibrary::FindLookAtRotation(tr.GetLocation(), TargetLocation).Vector();
+                dir.Normalize();
+                tr.SetRotation(dir.ToOrientationQuat());
+
+                if (AEmpBullet* empActor = Cast<AEmpBullet>(UGameplayStatics::BeginDeferredActorSpawnFromClass(GetWorld(), this->PlayerDataAsset->EmpClass, tr)))
+                {
+                    empActor->R_Team = Team;
+                    empActor->EffectDuration = duration;
+                    if (APlayerState* playerState = GetPlayerState())
+                    {
+                        empActor->PlayerIdOwner = playerState->PlayerId;
+                    }
+
+                    empActor->Tags.Add(Tags::EmpBullet);
+                    UGameplayStatics::FinishSpawningActor(empActor, tr);
+                }
+
+                return ESkillReturn::Success;
             }
         }
     }
+
+    return ESkillReturn::Unavailable;
 }
 
 void AShipPawn::emp(uint32 _duration, FName const& _team, int32 _playerId)
@@ -1043,7 +1066,7 @@ ESkillReturn AShipPawn::spawnHealPack()
             if (this->RU_Matiere >= healPackMatiere)
             {
                 addMatiere(healPackMatiere * -1, EMatiereOrigin::Lost);
-                // spawn wall
+                // spawn heal pack
                 TArray<UActorComponent*> const& actors = this->GetComponentsByTag(USceneComponent::StaticClass(), Tags::HealPack);
                 if (actors.Num() > 0 && actors[0] != nullptr)
                 {

@@ -18,4 +18,5 @@ namespace Tags
     static const FName Gold { "Gold" };
     static const FName HealPack { "HealPack" };
     static const FName Arrow { "Arrow" };
+    static const FName EmpBullet { "EmpBullet" };
 }

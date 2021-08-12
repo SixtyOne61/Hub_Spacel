@@ -129,10 +129,7 @@ void SkillSpecialProtection::onEnd()
 ESkillReturn SkillSpecialSupport::onStart()
 {
     if (get<AShipPawn>() == nullptr) return ESkillReturn::InternError;
-    if (!get<AShipPawn>()->hasEffect(EEffect::TargetLock)) return ESkillReturn::Unavailable;
-
-    get<AShipPawn>()->emp();
-    return ESkillReturn::Success;
+    return get<AShipPawn>()->spawnEmp();
 }
 
 ESkillReturn SkillMetaFormAttack::onStart()

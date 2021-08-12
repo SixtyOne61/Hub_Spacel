@@ -82,6 +82,9 @@ public:
     UPROPERTY(Category = "Skill", EditAnywhere, BlueprintReadWrite)
     int SupportRatioEffect{};
 
+    UPROPERTY(Category = "Skill", EditAnywhere, BlueprintReadOnly)
+    TSubclassOf<class AActor> EmpClass { nullptr };
+
     UPROPERTY(Category = "Skill", EditAnywhere, BlueprintReadWrite)
     TSubclassOf<class AActor> HealPackClass { nullptr };
 

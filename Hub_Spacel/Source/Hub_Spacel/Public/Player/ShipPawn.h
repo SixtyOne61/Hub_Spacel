@@ -59,7 +59,7 @@ public:
 
     void launchMissile();
     void spawnKatyusha();
-    void emp();
+    ESkillReturn spawnEmp();
     void emp(uint32 _duration, FName const& _team, int32 _playerId);
 
     ESkillReturn onRepairProtection();
