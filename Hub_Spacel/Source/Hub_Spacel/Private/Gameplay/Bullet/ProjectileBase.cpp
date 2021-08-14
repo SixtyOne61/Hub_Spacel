@@ -32,6 +32,12 @@ void AProjectileBase::BeginPlay()
     }
 }
 
+void AProjectileBase::Destroyed()
+{
+    BP_OnDestroy();
+    Super::Destroyed();
+}
+
 void AProjectileBase::applyHit(TArray<int32>& _instance)
 {
     Super::applyHit(_instance);

@@ -399,7 +399,7 @@ void UCustomCollisionComponent::hitEmp(FVector const& _ownerLocation, FName cons
 		{
 			if (AEmpBullet* empBullet = Cast<AEmpBullet>(hit.Actor))
 			{
-				if (empBullet->R_Team == *team)
+				if (empBullet->R_Team != *team)
 				{
 					// emp
 					if (AShipPawn* pawn = get<AShipPawn>())

@@ -20,6 +20,9 @@ protected:
 	void LifeSpanExpired() override;
 	void Destroyed() override;
 
+	UFUNCTION(BlueprintCallable)
+	FLinearColor GetColor() const;
+
 protected:
 	UPROPERTY(EditAnywhere, Category = "Default")
 	class UProjectileMovementComponent* ProjectileMovementComponent{ nullptr };

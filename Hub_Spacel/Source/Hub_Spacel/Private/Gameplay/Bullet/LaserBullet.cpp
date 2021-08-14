@@ -84,3 +84,12 @@ void ALaserBullet::Destroyed()
     Super::Destroyed();
 }
 
+FLinearColor ALaserBullet::GetColor() const
+{
+    if (this->Colors != nullptr)
+    {
+        return FLinearColor(this->Colors->GetColor<FColor>(getLocalTeam()));
+    }
+
+    return FLinearColor{};
+}

@@ -20,9 +20,13 @@ public:
 	/* override */
 	void applyHit(TArray<int32>& _instance) override;
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void BP_OnDestroy();
+
 protected:
 	// Called when the game starts or when spawned
 	void BeginPlay() override;
+	void Destroyed() override;
 
 	virtual bool OnHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit);
 
