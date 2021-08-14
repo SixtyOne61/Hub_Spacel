@@ -25,11 +25,12 @@ public:
 	APirate();
 
 	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+	void Tick(float DeltaTime) override;
 
 protected:
 	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+	void BeginPlay() override;
+	void Destroyed() override;
 
 	void BuildShip();
 
@@ -41,6 +42,9 @@ protected:
 
 	UFUNCTION(Reliable, NetMulticast)
 	void RPCNetMulticastHit(int32 _index, uint8 _type);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void BP_OnDestroy();
 
 protected:
 	UPROPERTY(EditAnywhere)

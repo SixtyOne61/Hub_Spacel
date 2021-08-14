@@ -744,6 +744,11 @@ void AShipPawn::RPCNetMulticastEnterHidding_Implementation(int32 _playerId, bool
     }
 }
 
+void AShipPawn::RPCNetMulticastAddEffect_Implementation(EEffect _effect)
+{
+    BP_FxGlobalAddEffect(_effect);
+}
+
 void AShipPawn::RPCClientAddEffect_Implementation(EEffect _effect)
 {
     OnAddEffectDelegate.Broadcast(_effect);
@@ -921,6 +926,7 @@ void AShipPawn::addEffectSuccess(EEffect _type)
 {
     behaviourAddEffect(_type);
     RPCClientAddEffect(_type);
+    RPCNetMulticastAddEffect(_type);
 }
 
 void AShipPawn::removeEffectSuccess(EEffect _type)

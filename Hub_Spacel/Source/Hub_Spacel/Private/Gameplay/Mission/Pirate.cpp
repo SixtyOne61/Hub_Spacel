@@ -123,3 +123,9 @@ void APirate::BuildShip()
     lb("Base", this->Base);
     lb("Addon", this->Addon);
 }
+
+void APirate::Destroyed()
+{
+    BP_OnDestroy();
+    Super::Destroyed();
+}
