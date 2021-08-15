@@ -166,6 +166,11 @@ void ASpacelGameState::RPCNetMulticastResetTimerMission_Implementation(EMission 
     OnResetTimerMissionDelegate.Broadcast(_type);
 }
 
+void ASpacelGameState::RPCNetMulticastKill_Implementation(int32 _killer, int32 _killed)
+{
+    OnWhoKillWhoDelegate.Broadcast(_killer, _killed);
+}
+
 void ASpacelGameState::registerMission()
 {
     if (this->GameStateDataAsset != nullptr)
