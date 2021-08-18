@@ -39,4 +39,10 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	int MatiereAtBeginning { 20 };
+
+	UPROPERTY(EditAnywhere)
+	bool NoGeneration { false };
+
+	UPROPERTY(EditAnywhere)
+	bool NoFx { false };
 };

@@ -3,6 +3,7 @@
 #include "World/WorldManager.h"
 #include "World/Chunck.h"
 #include "DataAsset/WorldDataAsset.h"
+#include "DataAsset/EditorHackDataAsset.h"
 #include "Components/BoxComponent.h"
 #include "Mesh/SpacelProceduralMeshComponent.h"
 #include "Player/ShipPawn.h"
@@ -27,6 +28,16 @@ AWorldManager::AWorldManager()
 void AWorldManager::BeginPlay()
 {
 	Super::BeginPlay();
+
+#if WITH_EDITOR
+    if (this->HackDataAsset != nullptr)
+    {
+        if (this->HackDataAsset->UseHack && this->HackDataAsset->NoGeneration)
+        {
+            return;
+        }
+    }
+#endif
 
     if (this->GetNetMode() != ENetMode::NM_DedicatedServer)
     {
