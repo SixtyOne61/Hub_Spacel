@@ -11,6 +11,9 @@
 #include "Player/ShipPawn.h"
 #include "Net/UnrealNetwork.h"
 #include "Kismet/GameplayStatics.h"
+#include "Factory/SpacelFactory.h"
+#include "DataAsset/EditorHackDataAsset.h"
+#include "NiagaraComponent.h"
 
 AProjectileBase::AProjectileBase()
 {
@@ -25,6 +28,33 @@ void AProjectileBase::BeginPlay()
 {
     Super::BeginPlay();
 
+#if WITH_EDITOR
+    if (this->HackDataAsset != nullptr)
+    {
+        if(this->HackDataAsset->UseHack)
+        {
+            if(this->HackDataAsset->NoBulletFx)
+            {
+                TArray<UActorComponent*> components;
+                this->GetComponents(UNiagaraComponent::StaticClass(), components);
+                for(auto* component : components)
+                {
+                    if(UNiagaraComponent* niagaraComponent = Cast<UNiagaraComponent>(component))
+                    {
+                        niagaraComponent->DestroyComponent();
+                    }
+                }
+            }
+            else
+            {
+                BP_OnBegin();
+            }
+        }
+    }
+#else
+    BP_OnBegin();
+#endif
+
     if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
     {
         if (!ensure(ProjectileCollisionComponent != nullptr)) return;
@@ -34,7 +64,17 @@ void AProjectileBase::BeginPlay()
 
 void AProjectileBase::Destroyed()
 {
+#if WITH_EDITOR
+    if (this->HackDataAsset != nullptr)
+    {
+        if (!(this->HackDataAsset->UseHack && this->HackDataAsset->NoBulletFx))
+        {
+            BP_OnDestroy();
+        }
+    }
+#else
     BP_OnDestroy();
+#endif
     Super::Destroyed();
 }
 

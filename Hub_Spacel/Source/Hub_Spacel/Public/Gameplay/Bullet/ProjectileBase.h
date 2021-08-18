@@ -21,6 +21,9 @@ public:
 	void applyHit(TArray<int32>& _instance) override;
 
 	UFUNCTION(BlueprintImplementableEvent)
+	void BP_OnBegin();
+
+	UFUNCTION(BlueprintImplementableEvent)
 	void BP_OnDestroy();
 
 protected:
@@ -44,4 +47,7 @@ public:
 
 	UPROPERTY(Replicated)
 	int32 PlayerIdOwner {};
+
+	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
+	class UEditorHackDataAsset* HackDataAsset{ nullptr };
 };

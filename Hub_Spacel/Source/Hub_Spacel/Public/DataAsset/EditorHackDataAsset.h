@@ -44,5 +44,5 @@ public:
 	bool NoGeneration { false };
 
 	UPROPERTY(EditAnywhere)
-	bool NoFx { false };
+	bool NoBulletFx { false };
 };
