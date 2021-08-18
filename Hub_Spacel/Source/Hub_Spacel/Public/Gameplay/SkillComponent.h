@@ -49,10 +49,22 @@ private:
 
 	class UUniqueSkillDataAsset const* getSkill(ESkill _skill) const;
 
+	void emergencyRedCube();
+	UFUNCTION(Reliable, Client)
+	void RPCEmergencyRedCube();
+
+	void emergencyRedCubeRemove();
+	UFUNCTION(Reliable, Client)
+	void RPCEmergencyRedCubeRemove();
+
+	void removeSkill();
+
 public:
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
 	class USkillDataAsset* SkillDataAsset{ nullptr };
 
 private:
 	TArray<TUniquePtr<SkillCountDown>> m_skills {};
+
+	TArray<ESkill> m_skillToRemove {};
 };

@@ -181,6 +181,8 @@ void UModuleComponent::OnStartGame(EGameState _state)
             buildShip(this->WeaponMeshComponent, this->WeaponDataAsset, this->RU_AttackLocations);
 
             lb_readXml(lowSkillId == (uint8)ESkill::HeavyProtection, this->ProtectionDataAsset, this->RU_ProtectionLocations, "Location");
+            lb_readXml(lowSkillId == (uint8)ESkill::HeavyProtection, this->ProtectionDataAsset, this->EmergencyLocations, "Emergency");
+            this->RU_ProtectionLocations.Append(this->EmergencyLocations);
             buildShip(this->ProtectionMeshComponent, this->ProtectionDataAsset, this->RU_ProtectionLocations);
 
             lb_readXml(lowSkillId == (uint8)ESkill::Speedy, this->SupportDataAsset, this->RU_SupportLocations, "Location");
@@ -297,6 +299,64 @@ float UModuleComponent::getPercentProtection() const
 float UModuleComponent::getPercentSupport() const
 {
     return (float)this->RU_SupportLocations.Num() / m_maxSupport;
+}
+
+ESkillReturn UModuleComponent::onSwapEmergency(uint32 _value, uint8 _tresholdPercent)
+{
+    AShipPawn* pawn = Cast<AShipPawn>(this->GetOwner());
+    if(pawn == nullptr) return ESkillReturn::InternError;
+
+    while (this->EmergencyLocationsRemove.Num())
+    {
+        FVector const& location = this->EmergencyLocationsRemove.Pop();
+
+        for (int i { 0 }; i < this->RemovedProtectionLocations.Num(); ++i)
+        {
+            if (location == this->RemovedProtectionLocations[i])
+            {
+                bool canRepair { false };
+                int32 nbProtections { RU_ProtectionLocations.Num() };
+                int32 nbRemovedProtections { RemovedProtectionLocations.Num() };
+
+                // use matiere first
+                if (pawn->RU_Matiere >= (int16)_value)
+                {
+                    pawn->addMatiere(-1 * _value, EMatiereOrigin::Lost);
+                    canRepair = true;
+                }
+                // then use protection
+                else if ((float)nbProtections / (float)(nbProtections + nbRemovedProtections) >= (float)_tresholdPercent / 100.0f)
+                {
+                    canRepair = true;
+                    for (int j { 0 }; j < this->RU_ProtectionLocations.Num(); ++j)
+                    {
+                        if (!this->EmergencyLocations.Find(this->RU_ProtectionLocations[j]))
+                        {
+                            this->RemovedProtectionLocations.Add(this->RU_ProtectionLocations[j]);
+                            this->RU_ProtectionLocations.RemoveAt(j);
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    this->EmergencyLocationsRemove.Add(location);
+                    OnRep_Protection();
+                    return ESkillReturn::Unavailable;
+                }
+
+                if (canRepair)
+                {
+                    this->RemovedProtectionLocations.RemoveAt(i);
+                    this->RU_ProtectionLocations.Add(location);
+                }
+                break;
+            }
+        }
+    }
+
+    OnRep_Protection();
+    return ESkillReturn::Success;
 }
 
 void UModuleComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

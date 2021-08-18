@@ -28,6 +28,7 @@
 #include "DataAsset/FlyingGameModeDataAsset.h"
 #include "DataAsset/KeyDataAsset.h"
 #include "DataAsset/MissionDataAsset.h"
+#include "DataAsset/SkillDataAsset.h"
 #include "Widget/AllyWidget.h"
 #include "Widget/SkillWidget.h"
 #include "Widget/SkillProgressWidget.h"
@@ -114,6 +115,7 @@ void USpacelWidget::RegisterPlayerState()
         if (ASpacelPlayerState* playerState = shipPawn->GetPlayerState<ASpacelPlayerState>())
         {
             playerState->OnAddSkillUniqueDelegate = std::bind(&USpacelWidget::addSkill, this, std::placeholders::_1);
+            playerState->OnRemoveSkillUniqueDelegate = std::bind(&USpacelWidget::removeSkill, this, std::placeholders::_1);
             return;
         }
     }
@@ -330,6 +332,20 @@ void USpacelWidget::RedLight()
 {
     BP_RedLight(m_currentIdRedLight);
     ++m_currentIdRedLight;
+}
+
+void USpacelWidget::removeSkill(ESkill _type)
+{
+    if (this->SkillDataAsset != nullptr)
+    {
+        if (UUniqueSkillDataAsset* skillParam = this->SkillDataAsset->getSKill(_type))
+        {
+            if (USkillWidget* skillWidget = SimplyUI::initUnSafeFromName<UUserWidget, USkillWidget>(this, skillParam->WidgetName))
+            {
+                skillWidget->BP_Remove();
+            }
+        }
+    }
 }
 
 void USpacelWidget::addSkill(class SkillCountDown * _skill)

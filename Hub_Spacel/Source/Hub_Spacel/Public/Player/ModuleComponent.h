@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/SceneComponent.h"
+#include "Enum/SpacelEnum.h"
 #include "ModuleComponent.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnUpdateCountProtection, int32, _value, int32, _max);
@@ -26,6 +27,8 @@ public:
 
     float getPercentProtection() const;
     float getPercentSupport() const;
+
+    ESkillReturn onSwapEmergency(uint32 _value, uint8 _tresholdPercent);
 
 protected:
 	// Called when the game starts
@@ -102,6 +105,12 @@ private:
 
     UPROPERTY(ReplicatedUsing = "OnRep_Protection")
     TArray<FVector_NetQuantize> RU_ProtectionLocations{};
+
+    UPROPERTY()
+    TArray<FVector_NetQuantize> EmergencyLocations{};
+
+    UPROPERTY()
+    TArray<FVector_NetQuantize> EmergencyLocationsRemove{};
 
     UPROPERTY()
     TArray<FVector_NetQuantize> RemovedProtectionLocations{};

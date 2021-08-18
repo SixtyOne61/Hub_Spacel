@@ -56,7 +56,7 @@ private:
 	void dispatch(TArray<FHitResult> const& _items) const;
 
 	/* check for each instance, can spawn matiere */
-	bool sweepForInstancedStaticMesh(class UInstancedStaticMeshComponent*& _mesh, TArray<FVector_NetQuantize>& _replicated, TArray<FVector_NetQuantize>& _removeReplicated, FVector const& _scale, FName const& _profile, FName const& _teamTag);
+	bool sweepForInstancedStaticMesh(class UInstancedStaticMeshComponent*& _mesh, TArray<FVector_NetQuantize>& _replicated, TArray<FVector_NetQuantize>& _removeReplicated, FVector const& _scale, FName const& _profile, FName const& _teamTag, TArray<FVector_NetQuantize> const& _emergency = {});
 
 	/* call for add score to game state */
 	void addScore(TArray<FHitResult> const& _hits, EScoreType _type) const;

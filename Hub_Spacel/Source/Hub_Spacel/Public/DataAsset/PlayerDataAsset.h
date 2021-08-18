@@ -94,6 +94,12 @@ public:
     UPROPERTY(Category = "Skill", EditAnywhere, BlueprintReadOnly)
     TSubclassOf<class AActor> EmpPostProcessClass;
 
+    UPROPERTY(Category = "Skill", EditAnywhere, BlueprintReadOnly)
+    uint8 TresholdForEmergency { 2 };
+
+    UPROPERTY(Category = "Skill", EditAnywhere, BlueprintReadOnly)
+    uint8 TresholdForSwapEmergencyPercent { 10 };
+
     UPROPERTY(Category = "Farm", EditAnywhere, BlueprintReadWrite)
     int NbAsteroideForMatiere{};
 };

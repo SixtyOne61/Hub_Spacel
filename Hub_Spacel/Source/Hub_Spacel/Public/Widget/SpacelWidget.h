@@ -111,6 +111,8 @@ protected:
 
 	void addSkill(class SkillCountDown * _skill);
 
+	void removeSkill(ESkill _type);
+
 	UFUNCTION()
 	void RegisterPlayerState();
 
@@ -131,6 +133,9 @@ protected:
 
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
 	class UMissionDataAsset* MissionDataAsset { nullptr };
+
+	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
+	class USkillDataAsset* SkillDataAsset { nullptr };
 
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
 	class UFlyingGameModeDataAsset* GameModeDataAsset{ nullptr };

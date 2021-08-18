@@ -406,6 +406,40 @@ void AShipPawn::Tick(float _deltaTime)
     }
 }
 
+void AShipPawn::emergencyRedCube(FVector const& _location)
+{
+    if (this->PlayerDataAsset == nullptr) return;
+    if (this->ModuleComponent != nullptr)
+    {
+        this->ModuleComponent->EmergencyLocationsRemove.Add(_location);
+        if (this->ModuleComponent->EmergencyLocationsRemove.Num() >= this->PlayerDataAsset->TresholdForEmergency)
+        {
+            if (this->SkillComponent != nullptr)
+            {
+                this->SkillComponent->emergencyRedCube();
+                this->SkillComponent->RPCEmergencyRedCube();
+            }
+        }
+    }
+}
+
+void AShipPawn::onEmergencyCountDownEnd()
+{
+    if(this->PlayerDataAsset == nullptr) return;
+    if (this->ModuleComponent != nullptr)
+    {
+        if (this->ModuleComponent->EmergencyLocationsRemove.Num() < this->PlayerDataAsset->TresholdForEmergency)
+        {
+            // remove skill
+            if (this->SkillComponent != nullptr)
+            {
+                this->SkillComponent->emergencyRedCubeRemove();
+                this->SkillComponent->RPCEmergencyRedCubeRemove();
+            }
+        }
+    }
+}
+
 void AShipPawn::OnRep_PlayerState()
 {
     Super::OnRep_PlayerState();
@@ -1027,6 +1061,24 @@ ESkillReturn AShipPawn::onRepairSupport()
     if (this->RepairComponent != nullptr)
     {
         return this->RepairComponent->onRepairSupport();
+    }
+    return ESkillReturn::InternError;
+}
+
+ESkillReturn AShipPawn::onSwapEmergency()
+{
+    if (this->ModuleComponent != nullptr)
+    {
+        if (this->SkillComponent != nullptr)
+        {
+            if (UUniqueSkillDataAsset const* skillParam = this->SkillComponent->SkillDataAsset->getSKill(ESkill::Emergency))
+            {
+                if (this->PlayerDataAsset != nullptr)
+                {
+                    return this->ModuleComponent->onSwapEmergency(skillParam->Value, this->PlayerDataAsset->TresholdForSwapEmergencyPercent);
+                }
+            }
+        }
     }
     return ESkillReturn::InternError;
 }

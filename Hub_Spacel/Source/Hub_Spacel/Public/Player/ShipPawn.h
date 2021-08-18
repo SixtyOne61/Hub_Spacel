@@ -31,6 +31,7 @@ class HUB_SPACEL_API AShipPawn : public ACommonPawn
     friend class ULocalPlayerActionComponent;
     friend class USkillComponent;
     friend class UMetricComponent;
+    friend class UModuleComponent;
     friend class AMissionManager;
     friend class AComet;
 
@@ -64,6 +65,8 @@ public:
 
     ESkillReturn onRepairProtection();
     ESkillReturn onRepairSupport();
+    ESkillReturn onSwapEmergency();
+    void onEmergencyCountDownEnd();
 
     UFUNCTION(UnReliable, Client)
     void RPCClientFeedbackScore(EScoreType _type, int16 _value);
@@ -104,6 +107,8 @@ protected:
 
     UFUNCTION()
     void OnEndMission(EMission _type);
+
+    void emergencyRedCube(FVector const& _location);
 
 private:
     void OnRep_PlayerState() override;

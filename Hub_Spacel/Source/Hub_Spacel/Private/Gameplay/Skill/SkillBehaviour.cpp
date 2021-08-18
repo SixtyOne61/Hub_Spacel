@@ -189,6 +189,18 @@ ESkillReturn SkillKatyusha::onStart()
     return ESkillReturn::Success;
 }
 
+ESkillReturn SkillEmergency::onStart()
+{
+    if (get<AShipPawn>() == nullptr) return ESkillReturn::InternError;
+    return get<AShipPawn>()->onSwapEmergency();
+}
+
+void SkillEmergency::onEndCountDown()
+{
+    if (get<AShipPawn>() == nullptr) return;
+    get<AShipPawn>()->onEmergencyCountDownEnd();
+}
+
 TUniquePtr<SkillBehaviour> SkillFactory::create(ESkill _skill, class ACommonPawn* _pawn, ENetMode _netMode)
 {
     switch (_skill)
@@ -207,6 +219,7 @@ TUniquePtr<SkillBehaviour> SkillFactory::create(ESkill _skill, class ACommonPawn
         case ESkill::NinePack: return MakeUnique<SkillNinePack>(_pawn, _netMode);
         case ESkill::Katyusha: return MakeUnique<SkillKatyusha>(_pawn, _netMode);
         case ESkill::HealPack: return MakeUnique<SkillHealPack>(_pawn, _netMode);
+        case ESkill::Emergency: return MakeUnique<SkillEmergency>(_pawn, _netMode);
         default: ensure(false); break;
     }
 

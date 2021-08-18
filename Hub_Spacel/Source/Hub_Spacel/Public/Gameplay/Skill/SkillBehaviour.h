@@ -186,6 +186,17 @@ public:
 	void onEndCountDown() override {};
 };
 
+class HUB_SPACEL_API SkillEmergency : public SkillBehaviour
+{
+	using SkillBehaviour::SkillBehaviour;
+public:
+	virtual ~SkillEmergency() {}
+
+	ESkillReturn onStart() override;
+	void onEnd() override {};
+	void onEndCountDown() override;
+};
+
 class HUB_SPACEL_API SkillFactory
 {
 public:

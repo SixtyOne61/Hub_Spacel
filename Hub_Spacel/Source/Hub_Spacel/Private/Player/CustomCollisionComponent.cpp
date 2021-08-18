@@ -115,7 +115,7 @@ void UCustomCollisionComponent::dispatch(TArray<FHitResult> const& _items) const
 	}
 }
 
-bool UCustomCollisionComponent::sweepForInstancedStaticMesh(UInstancedStaticMeshComponent*& _mesh, TArray<FVector_NetQuantize>& _replicated, TArray<FVector_NetQuantize>& _removeReplicated, FVector const& _scale, FName const& _profile, FName const& _teamTag)
+bool UCustomCollisionComponent::sweepForInstancedStaticMesh(UInstancedStaticMeshComponent*& _mesh, TArray<FVector_NetQuantize>& _replicated, TArray<FVector_NetQuantize>& _removeReplicated, FVector const& _scale, FName const& _profile, FName const& _teamTag, TArray<FVector_NetQuantize> const& _emergency /*= {}*/)
 {
 	if (_mesh == nullptr || _mesh->GetInstanceCount() == 0) return false;
 
@@ -148,6 +148,15 @@ bool UCustomCollisionComponent::sweepForInstancedStaticMesh(UInstancedStaticMesh
 			FVector const& location = localTransform.GetLocation();
 			_replicated.Remove(location);
 			_removeReplicated.Add(location);
+
+			int emergencyIndex {};
+			if (_emergency.Find(location, emergencyIndex))
+			{
+				if (shipPawn != nullptr)
+				{
+					shipPawn->emergencyRedCube(location);
+				}
+			}
 
 			addScore(hits, EScoreType::Hit);
 
@@ -203,7 +212,7 @@ void UCustomCollisionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 			{
 				FName prot = moduleComponent->ProtectionMeshComponent->GetCollisionProfileName();
 				// for each module, we need to check each instance
-				if (sweepForInstancedStaticMesh(moduleComponent->ProtectionMeshComponent, moduleComponent->RU_ProtectionLocations, moduleComponent->RemovedProtectionLocations, scale, profileCollision, *tagTeam))
+				if (sweepForInstancedStaticMesh(moduleComponent->ProtectionMeshComponent, moduleComponent->RU_ProtectionLocations, moduleComponent->RemovedProtectionLocations, scale, profileCollision, *tagTeam, moduleComponent->EmergencyLocations))
 				{
 					pawn->RPCClientPlayCameraShake();
 				}
@@ -452,7 +461,7 @@ void UCustomCollisionComponent::hit(FString const& _team, int32 _playerId, class
 
 	uint32 uniqueId { _comp->GetUniqueID() };
 
-	auto lb_removeInstance = [&](UInstancedStaticMeshComponent*& _mesh, TArray<FVector_NetQuantize>& _replicated, TArray<FVector_NetQuantize>& _removeReplicated)
+	auto lb_removeInstance = [&](UInstancedStaticMeshComponent*& _mesh, TArray<FVector_NetQuantize>& _replicated, TArray<FVector_NetQuantize>& _removeReplicated, TArray<FVector_NetQuantize> const& _emergency = {})
 	{
 		if (_mesh == nullptr || _mesh->GetInstanceCount() == 0) return;
 
@@ -469,6 +478,13 @@ void UCustomCollisionComponent::hit(FString const& _team, int32 _playerId, class
 			FVector_NetQuantize const& location = localTransform.GetLocation();
 			_replicated.Remove(location);
 			_removeReplicated.Add(location);
+
+			int index{};
+			if (_emergency.Find(location, index))
+			{
+				shipPawn->emergencyRedCube(location);
+			}
+
 		}
 	};
 
@@ -483,12 +499,12 @@ void UCustomCollisionComponent::hit(FString const& _team, int32 _playerId, class
 		}
 	};
 
-	auto lb_generic = [&](UInstancedStaticMeshComponent*& _mesh, TArray<FVector_NetQuantize>& _replicated, TArray<FVector_NetQuantize>& _removeReplicated)
+	auto lb_generic = [&](UInstancedStaticMeshComponent*& _mesh, TArray<FVector_NetQuantize>& _replicated, TArray<FVector_NetQuantize>& _removeReplicated, TArray<FVector_NetQuantize> const& _emergency = {})
 	{
 		if (!shipPawn->canTank(1))
 		{
 			checkGold(_playerId);
-			lb_removeInstance(_mesh, _replicated, _removeReplicated);
+			lb_removeInstance(_mesh, _replicated, _removeReplicated, _emergency);
 			lb_addScore(EScoreType::Hit);
 
 			// for feedback
@@ -501,7 +517,8 @@ void UCustomCollisionComponent::hit(FString const& _team, int32 _playerId, class
 	{
 		lb_generic(moduleComponent->ProtectionMeshComponent,
 					moduleComponent->RU_ProtectionLocations,
-					moduleComponent->RemovedProtectionLocations);
+					moduleComponent->RemovedProtectionLocations,
+					moduleComponent->EmergencyLocations);
 	}
 	else if (uniqueId == get()->ModuleComponent->SupportMeshComponent->GetUniqueID())
 	{

@@ -246,5 +246,68 @@ void USkillComponent::TickComponent(float _deltaTime, ELevelTick _tickType, FAct
             }
         }
     }
+
+    removeSkill();
 }
 
+void USkillComponent::emergencyRedCube()
+{
+    // check if we already are in emergency
+    for (auto & skill : m_skills)
+    {
+        if (skill.IsValid() && skill->getSkillType() == ESkill::Emergency)
+        {
+            return;
+        }
+    }
+
+    auto callbackSucced = std::bind(&USkillComponent::RPCClientSucced, this, std::placeholders::_1);
+    auto callbackFailed = std::bind(&USkillComponent::RPCClientFailed, this, std::placeholders::_1, std::placeholders::_2);
+    ENetMode mode = this->GetNetMode();
+    m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::Emergency), get(), mode, callbackSucced, callbackFailed, true));
+
+    if (ASpacelPlayerState* spacelPlayerState = Cast<ASpacelPlayerState>(get()->GetPlayerState()))
+    {
+        if (spacelPlayerState->OnAddSkillUniqueDelegate != nullptr)
+        {
+            spacelPlayerState->OnAddSkillUniqueDelegate(m_skills.Last().Get());
+        }
+    }
+}
+
+
+void USkillComponent::RPCEmergencyRedCube_Implementation()
+{
+    emergencyRedCube();
+}
+
+void USkillComponent::emergencyRedCubeRemove()
+{
+    m_skillToRemove.Add(ESkill::Emergency);
+}
+
+void USkillComponent::RPCEmergencyRedCubeRemove_Implementation()
+{
+    emergencyRedCubeRemove();
+}
+
+void USkillComponent::removeSkill()
+{
+    for (auto type : m_skillToRemove)
+    {
+        if (m_skills.RemoveAll([&](auto const& _skill) {
+            return _skill.IsValid() && _skill->getSkillType() == type;
+            }))
+        {
+            if (ASpacelPlayerState* spacelPlayerState = Cast<ASpacelPlayerState>(get()->GetPlayerState()))
+            {
+                if (spacelPlayerState->OnRemoveSkillUniqueDelegate != nullptr)
+                {
+                    spacelPlayerState->OnRemoveSkillUniqueDelegate(type);
+                }
+            }
+        }
+    }
+
+    m_skillToRemove.Empty();
+}
