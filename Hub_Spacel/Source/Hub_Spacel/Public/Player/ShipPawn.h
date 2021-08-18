@@ -227,6 +227,9 @@ protected:
     UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
     class UMissionDataAsset* MissionDataAsset { nullptr };
 
+    UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
+    class UEditorHackDataAsset* HackDataAsset { nullptr };
+
     UPROPERTY(EditAnywhere)
     class UNiagaraSystem* HealPackFx { nullptr };
 

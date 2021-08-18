@@ -36,4 +36,7 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	int RemainingGameTime { 10 };
+
+	UPROPERTY(EditAnywhere)
+	int MatiereAtBeginning { 20 };
 };

@@ -21,6 +21,7 @@
 #include "DataAsset/SkillDataAsset.h"
 #include "DataAsset/UniqueSkillDataAsset.h"
 #include "DataAsset/MissionDataAsset.h"
+#include "DataAsset/EditorHackDataAsset.h"
 #include "Player/SpacelPlayerState.h"
 #include "Player/TargetActor.h"
 #include "Player/FireComponent.h"
@@ -84,6 +85,16 @@ void AShipPawn::OnChangeState(EGameState _state)
 
             FTimerHandle handle;
             this->GetWorldTimerManager().SetTimer(handle, timerCallback, 3.0f, false);
+
+#if WITH_EDITOR
+            if (this->HackDataAsset != nullptr)
+            {
+                if (this->HackDataAsset->UseHack)
+                {
+                    addMatiere(this->HackDataAsset->MatiereAtBeginning, EMatiereOrigin::Farm);
+                }
+            }
+#endif
         }
 
         if (this->SkillComponent != nullptr)
