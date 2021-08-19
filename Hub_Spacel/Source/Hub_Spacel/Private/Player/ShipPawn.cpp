@@ -939,6 +939,13 @@ void AShipPawn::behaviourAddEffect(EEffect _type)
             }
         }
     }
+    else if (_type == EEffect::MetaFormProtection)
+    {
+        if (this->MetaFormProtectionComponent != nullptr)
+        {
+            this->MetaFormProtectionComponent->SetVisibility(true);
+        }
+    }
     else if (_type == EEffect::StartGame)
     {
         if (this->PlayerDataAsset != nullptr)
@@ -1015,6 +1022,13 @@ void AShipPawn::behaviourRemoveEffect(EEffect _type)
             {
                 spacelGameState->OnPlayerEnterFogDelegate.Broadcast(playerState->PlayerId, false);
             }
+        }
+    }
+    else if (_type == EEffect::MetaFormProtection)
+    {
+        if (this->MetaFormProtectionComponent != nullptr)
+        {
+            this->MetaFormProtectionComponent->SetVisibility(false);
         }
     }
     else if (_type == EEffect::TargetLock)

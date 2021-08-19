@@ -82,6 +82,10 @@ ACommonPawn::ACommonPawn()
     if (!ensure(ShieldComponent != nullptr)) return;
     ShieldComponent->SetupAttachment(RootComponent);
 
+    MetaFormProtectionComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MetaFormProtection_00"));
+    if (!ensure(MetaFormProtectionComponent != nullptr)) return;
+    MetaFormProtectionComponent->SetupAttachment(RootComponent);
+
     MetricComponent = CreateDefaultSubobject<UMetricComponent>(TEXT("Metric_00"));
     if(!ensure(MetricComponent != nullptr)) return;
 
