@@ -9,9 +9,6 @@
 
 ASpacelHUD::ASpacelHUD()
 {
-    GameWidgetClass = SpacelFactory::FindClass<UUserWidget>(TEXT("/Game/Blueprint/UI/Widgets/WBP_Game"));
-    LobbyWidgetClass = SpacelFactory::FindClass<UUserWidget>(TEXT("/Game/Blueprint/UI/Widgets/Lobby/WBP_Lobby"));
-    EndMenuWidgetClass = SpacelFactory::FindClass<UUserWidget>(TEXT("/Game/Blueprint/UI/Widgets/EndMenu/WBP_EndMenu"));
 }
 
 void ASpacelHUD::BeginPlay()

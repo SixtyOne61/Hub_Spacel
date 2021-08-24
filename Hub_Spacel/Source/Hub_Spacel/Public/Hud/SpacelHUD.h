@@ -24,13 +24,13 @@ private:
 	UFUNCTION()
 	void StartGame(EGameState _state);
 
-private:
-	UPROPERTY()
+protected:
+	UPROPERTY(EditAnywhere)
 	TSubclassOf<class UUserWidget> GameWidgetClass { nullptr };
 
-	UPROPERTY()
+	UPROPERTY(EditAnywhere)
 	TSubclassOf<class UUserWidget> LobbyWidgetClass { nullptr };
 
-	UPROPERTY()
+	UPROPERTY(EditAnywhere)
 	TSubclassOf<class UUserWidget> EndMenuWidgetClass{ nullptr };
 };
