@@ -274,5 +274,6 @@ void ACommonPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
     DOREPLIFETIME(ACommonPawn, R_OverDrive);
     DOREPLIFETIME(ACommonPawn, RU_RightTrail);
     DOREPLIFETIME(ACommonPawn, RU_LeftTrail);
+    DOREPLIFETIME(ACommonPawn, R_BonusCountDown);
 }
 

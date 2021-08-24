@@ -87,7 +87,7 @@ void SkillCountDown::tick(float _delta)
         float reducCountDown = 1.0f;
         if (m_pawn != nullptr)
         {
-            reducCountDown = (100.0f - m_pawn->m_bonusCountDown) / 100.0f;
+            reducCountDown = (100.0f - m_pawn->R_BonusCountDown) / 100.0f;
         }
 
         if (m_currentTime >= (m_param->CountDown * reducCountDown))

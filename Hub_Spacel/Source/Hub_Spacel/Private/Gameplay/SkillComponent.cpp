@@ -276,7 +276,7 @@ void USkillComponent::emergencyRedCube()
 }
 
 
-void USkillComponent::RPCEmergencyRedCube_Implementation()
+void USkillComponent::RPCClientEmergencyRedCube_Implementation()
 {
     emergencyRedCube();
 }
@@ -286,7 +286,7 @@ void USkillComponent::emergencyRedCubeRemove()
     m_skillToRemove.Add(ESkill::Emergency);
 }
 
-void USkillComponent::RPCEmergencyRedCubeRemove_Implementation()
+void USkillComponent::RPCClientEmergencyRedCubeRemove_Implementation()
 {
     emergencyRedCubeRemove();
 }

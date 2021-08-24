@@ -428,7 +428,7 @@ void AShipPawn::emergencyRedCube(FVector const& _location)
             if (this->SkillComponent != nullptr)
             {
                 this->SkillComponent->emergencyRedCube();
-                this->SkillComponent->RPCEmergencyRedCube();
+                this->SkillComponent->RPCClientEmergencyRedCube();
             }
         }
     }
@@ -445,7 +445,7 @@ void AShipPawn::onEmergencyCountDownEnd()
             if (this->SkillComponent != nullptr)
             {
                 this->SkillComponent->emergencyRedCubeRemove();
-                this->SkillComponent->RPCEmergencyRedCubeRemove();
+                this->SkillComponent->RPCClientEmergencyRedCubeRemove();
             }
         }
     }
@@ -505,6 +505,13 @@ void AShipPawn::kill()
 
         lb(this->GetController<AGamePlayerController>());
         lb(this->ModuleComponent);
+
+        // remove skill emergency if exist
+        if (this->SkillComponent != nullptr)
+        {
+            this->SkillComponent->emergencyRedCubeRemove();
+            this->SkillComponent->RPCClientEmergencyRedCubeRemove();
+        }
 
         setFire(false);
 
@@ -714,7 +721,7 @@ void AShipPawn::boostPassive(EMission _type, int32 _rewardValue)
 
         case EMission::Comet:
             addEffect(EEffect::PassiveCountDown);
-            m_bonusCountDown = _rewardValue;
+            R_BonusCountDown = _rewardValue;
         break;
 
         case EMission::HoldGold:

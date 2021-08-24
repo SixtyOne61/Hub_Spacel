@@ -51,11 +51,11 @@ private:
 
 	void emergencyRedCube();
 	UFUNCTION(Reliable, Client)
-	void RPCEmergencyRedCube();
+	void RPCClientEmergencyRedCube();
 
 	void emergencyRedCubeRemove();
 	UFUNCTION(Reliable, Client)
-	void RPCEmergencyRedCubeRemove();
+	void RPCClientEmergencyRedCubeRemove();
 
 	void removeSkill();
 
