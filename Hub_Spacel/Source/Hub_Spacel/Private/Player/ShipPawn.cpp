@@ -791,7 +791,15 @@ void AShipPawn::RPCNetMulticastEnterHidding_Implementation(int32 _playerId, bool
 
         if (!hasEffect(EEffect::Shield))
         {
-            this->ShieldComponent->SetVisibility(false);
+            if (this->ShieldComponent != nullptr)
+            {
+                this->ShieldComponent->SetVisibility(false);
+            }
+        }
+
+        if (this->MetaFormProtectionComponent != nullptr)
+        {
+            this->MetaFormProtectionComponent->SetVisibility(false);
         }
     }
 }
@@ -810,20 +818,6 @@ void AShipPawn::RPCClientAddEffect_Implementation(EEffect _effect)
     {
         // TO DO Text system
         OnSendInfoPlayerDelegate.Broadcast("Didn't you seriously want to quit?");
-    }
-    else if (_effect == EEffect::MetaFormSupport)
-    {
-        if (this->PlayerDataAsset != nullptr)
-        {
-            FTransform const& transform = this->GetActorTransform();
-            if (APostProcessInvisible* actor = Cast<APostProcessInvisible>(UGameplayStatics::BeginDeferredActorSpawnFromClass(this->GetWorld(), this->PlayerDataAsset->MetaSupportPostProcessClass, transform)))
-            {
-                actor->Effect = _effect;
-                OnRemoveEffectDelegate.AddDynamic(actor, &APostProcessInvisible::OnRemoveEffect);
-                UGameplayStatics::FinishSpawningActor(actor, transform);
-                actor->AttachToActor(this, FAttachmentTransformRules(EAttachmentRule::KeepWorld, true));
-            }
-        }
     }
     else if (_effect == EEffect::MetaFormAttack)
     {
@@ -945,12 +939,29 @@ void AShipPawn::behaviourAddEffect(EEffect _type)
                 spacelGameState->OnPlayerEnterFogDelegate.Broadcast(playerState->PlayerId, true);
             }
         }
+
+        if (this->ModuleComponent != nullptr)
+        {
+            this->ModuleComponent->activeMetaForm(EEffect::MetaFormSupport);
+        }
     }
     else if (_type == EEffect::MetaFormProtection)
     {
+        if (this->ModuleComponent != nullptr)
+        {
+            this->ModuleComponent->activeMetaForm(EEffect::MetaFormProtection);
+        }
+
         if (this->MetaFormProtectionComponent != nullptr)
         {
             this->MetaFormProtectionComponent->SetVisibility(true);
+        }
+    }
+    else if (_type == EEffect::MetaFormAttack)
+    {
+        if (this->ModuleComponent != nullptr)
+        {
+            this->ModuleComponent->activeMetaForm(EEffect::MetaFormAttack);
         }
     }
     else if (_type == EEffect::StartGame)
@@ -1030,12 +1041,29 @@ void AShipPawn::behaviourRemoveEffect(EEffect _type)
                 spacelGameState->OnPlayerEnterFogDelegate.Broadcast(playerState->PlayerId, false);
             }
         }
+
+        if (this->ModuleComponent != nullptr)
+        {
+            this->ModuleComponent->removeMetaForm();
+        }
     }
     else if (_type == EEffect::MetaFormProtection)
     {
         if (this->MetaFormProtectionComponent != nullptr)
         {
             this->MetaFormProtectionComponent->SetVisibility(false);
+        }
+
+        if (this->ModuleComponent != nullptr)
+        {
+            this->ModuleComponent->removeMetaForm();
+        }
+    }
+    else if (_type == EEffect::MetaFormAttack)
+    {
+        if (this->ModuleComponent != nullptr)
+        {
+            this->ModuleComponent->removeMetaForm();
         }
     }
     else if (_type == EEffect::TargetLock)

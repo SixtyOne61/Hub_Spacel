@@ -94,16 +94,6 @@ void ULocalPlayerActionComponent::AddEffect(EEffect _effect)
             }
         }
     }
-    else if (_effect == EEffect::MetaFormProtection)
-    {
-        if (ACommonPawn* pawn = get())
-        {
-            if (pawn->SpeedLinesComponent != nullptr && m_speedLineMaterial != nullptr)
-            {
-                m_speedLineMaterial->SetScalarParameterValue("Meta", 1.0f);
-            }
-        }
-    }
 }
 
 void ULocalPlayerActionComponent::RemoveEffect(EEffect _effect)
@@ -115,16 +105,6 @@ void ULocalPlayerActionComponent::RemoveEffect(EEffect _effect)
             if (pawn->SpeedLinesComponent != nullptr && m_speedLineMaterial != nullptr)
             {
                 m_speedLineMaterial->SetScalarParameterValue("GradientRadius", 1.0f);
-            }
-        }
-    }
-    else if (_effect == EEffect::MetaFormProtection)
-    {
-        if (ACommonPawn* pawn = get())
-        {
-            if (pawn->SpeedLinesComponent != nullptr && m_speedLineMaterial != nullptr)
-            {
-                m_speedLineMaterial->SetScalarParameterValue("Meta", 0.0f);
             }
         }
     }

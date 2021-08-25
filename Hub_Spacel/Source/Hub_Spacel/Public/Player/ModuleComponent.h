@@ -56,6 +56,9 @@ protected:
     UFUNCTION()
     void BuildShipLobby();
 
+    void activeMetaForm(EEffect _type);
+    void removeMetaForm();
+
 private:
     void buildShip(class UInstancedStaticMeshComponent*& _mesh, class UStaticMeshDataAsset* _staticMesh, TArray<FVector_NetQuantize> const& _locations);
 
@@ -82,6 +85,9 @@ public:
 
     UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
     class USetupAttributeDataAsset* SupportDataAsset{ nullptr };
+
+    UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
+    class UMetaFormSetupDataAsset* MetaFormDataAsset{ nullptr };
 
     UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)
     class UInstancedStaticMeshComponent* SupportMeshComponent{ nullptr };

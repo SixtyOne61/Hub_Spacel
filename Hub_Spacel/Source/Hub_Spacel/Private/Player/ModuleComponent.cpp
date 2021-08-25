@@ -4,6 +4,7 @@
 #include "ModuleComponent.h"
 #include "Player/SpacelPlayerState.h"
 #include "DataAsset/SetupAttributeDataAsset.h"
+#include "DataAsset/MetaFormSetupDataAsset.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "GameState/SpacelGameState.h"
 #include "Kismet/GameplayStatics.h"
@@ -67,6 +68,29 @@ void UModuleComponent::OnRep_Protection()
 {
     this->OnUpdateCountProtectionDelegate.Broadcast(this->RU_ProtectionLocations.Num(), m_maxProtection);
     buildShip(this->ProtectionMeshComponent, this->ProtectionDataAsset, RU_ProtectionLocations);
+
+    if (AShipPawn* shipPawn = Cast<AShipPawn>(this->GetOwner()))
+    {
+        if (this->MetaFormDataAsset != nullptr)
+        {
+            if (this->ProtectionMeshComponent != nullptr)
+            {
+                // check override
+                if (shipPawn->hasEffect(EEffect::MetaFormAttack))
+                {
+                    this->ProtectionMeshComponent->SetStaticMesh(this->MetaFormDataAsset->AttackStaticMesh);
+                }
+                else if (shipPawn->hasEffect(EEffect::MetaFormProtection))
+                {
+                    this->ProtectionMeshComponent->SetStaticMesh(this->MetaFormDataAsset->ProtectionStaticMesh);
+                }
+                else if (shipPawn->hasEffect(EEffect::MetaFormSupport))
+                {
+                    this->ProtectionMeshComponent->SetStaticMesh(this->MetaFormDataAsset->SupportStaticMesh);
+                }
+            }
+        }
+    }
 }
 
 void UModuleComponent::OnRep_Support()
@@ -357,6 +381,112 @@ ESkillReturn UModuleComponent::onSwapEmergency(uint32 _value, uint8 _tresholdPer
 
     OnRep_Protection();
     return ESkillReturn::Success;
+}
+
+void UModuleComponent::activeMetaForm(EEffect _type)
+{
+    if (!ensure(this->MetaFormDataAsset != nullptr)) return;
+
+    FString tag {};
+    UStaticMesh* mesh { nullptr };
+    if (_type == EEffect::MetaFormProtection)
+    {
+        tag = "Protection";
+        mesh = this->MetaFormDataAsset->ProtectionStaticMesh;
+    }
+    else if (_type == EEffect::MetaFormAttack)
+    {
+        tag = "Attack";
+        mesh = this->MetaFormDataAsset->AttackStaticMesh;
+    }
+    else if (_type == EEffect::MetaFormSupport)
+    {
+        tag = "Support";
+        mesh = this->MetaFormDataAsset->SupportStaticMesh;
+    }
+
+    FString const& path { this->MetaFormDataAsset->DefaultPath };
+
+    TArray<FVector_NetQuantize> out{};
+
+    auto lbread = [&out, &path](FString const& _tag)
+    {
+        SimplyXml::FContainer<FVector> locationInformation{ _tag };
+        SimplyXml::FReader reader{ FPaths::ProjectDir() + path };
+        reader.read(locationInformation);
+
+        for (FVector loc : locationInformation.Values)
+        {
+            out.Add(loc);
+        }
+    };
+
+    lbread("Emergency");
+    lbread(tag);
+
+    auto lb = [&out](TArray<FVector_NetQuantize>& _fill, int32 _max)
+    {
+        _fill.Empty();
+        while (_max != 0 && out.Num() != 0)
+        {
+            _fill.Add(out.Pop());
+            --_max;
+        }
+    };
+
+    lb(this->RU_ProtectionLocations, this->RU_ProtectionLocations.Num());
+    lb(this->RemovedProtectionLocations, this->RemovedProtectionLocations.Num());
+
+    OnRep_Protection();
+}
+
+void UModuleComponent::removeMetaForm()
+{
+    if (APawn* pawn = Cast<APawn>(this->GetOwner()))
+    {
+        if(ASpacelPlayerState* spacelPlayerState = pawn->GetPlayerState<ASpacelPlayerState>())
+        {
+            uint8 lowSkillId = spacelPlayerState->getSkillId(ESkillType::Low);
+            bool isHeavy = lowSkillId == (uint8)ESkill::HeavyProtection;
+
+            if (!ensure(this->ProtectionDataAsset != nullptr)) return;
+            FString const& path { isHeavy ? this->ProtectionDataAsset->HeavyPath : this->ProtectionDataAsset->DefaultPath };
+
+            TArray<FVector_NetQuantize> out{};
+            auto lbread = [&out, &path](FString const& _tag)
+            {
+                SimplyXml::FContainer<FVector> locationInformation{ _tag };
+                SimplyXml::FReader reader{ FPaths::ProjectDir() + path };
+                reader.read(locationInformation);
+
+                for (FVector loc : locationInformation.Values)
+                {
+                    out.Add(loc);
+                }
+            };
+
+            lbread("Emergency");
+            lbread("Location");
+
+            int32 maxProtection = this->RU_ProtectionLocations.Num();
+            int32 maxRemove = this->RemovedProtectionLocations.Num();
+
+            auto lb = [&out](TArray<FVector_NetQuantize>& _fill, int32 _max)
+            {
+                _fill.Empty();
+                while (_max != 0 && out.Num() != 0)
+                {
+                    _fill.Add(out.Pop());
+                    --_max;
+                }
+            };
+
+            lb(this->RU_ProtectionLocations, this->RU_ProtectionLocations.Num());
+            lb(this->RemovedProtectionLocations, this->RemovedProtectionLocations.Num());
+
+            OnRep_Protection();
+        }
+    }
 }
 
 void UModuleComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
