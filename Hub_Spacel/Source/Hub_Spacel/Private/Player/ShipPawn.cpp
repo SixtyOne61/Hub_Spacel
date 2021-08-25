@@ -692,7 +692,7 @@ void AShipPawn::RPCClientPlayCameraShake_Implementation()
             playerController->ClientPlayCameraShake(this->CameraShakeClass, 1.0f, ECameraAnimPlaySpace::UserDefined, (this->GetActorLocation() - camLoc).Rotation());
         }
 
-        BP_HitIndicator();
+        //BP_HitIndicator();
     }
 }
 
