@@ -809,6 +809,11 @@ void AShipPawn::RPCNetMulticastAddEffect_Implementation(EEffect _effect)
     BP_FxGlobalAddEffect(_effect);
 }
 
+void AShipPawn::RPCNetMulticastRemoveEffect_Implementation(EEffect _effect)
+{
+    BP_FxGlobalRemoveEffect(_effect);
+}
+
 void AShipPawn::RPCClientAddEffect_Implementation(EEffect _effect)
 {
     OnAddEffectDelegate.Broadcast(_effect);
@@ -1003,6 +1008,7 @@ void AShipPawn::removeEffectSuccess(EEffect _type)
 {
     behaviourRemoveEffect(_type);
     RPCClientRemoveEffect(_type);
+    RPCNetMulticastRemoveEffect(_type);
 }
 
 void AShipPawn::behaviourRemoveEffect(EEffect _type)

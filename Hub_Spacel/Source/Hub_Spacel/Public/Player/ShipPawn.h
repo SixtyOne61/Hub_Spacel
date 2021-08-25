@@ -94,6 +94,9 @@ protected:
     void BP_FxGlobalAddEffect(EEffect _effect);
 
     UFUNCTION(BlueprintImplementableEvent)
+    void BP_FxGlobalRemoveEffect(EEffect _effect);
+
+    UFUNCTION(BlueprintImplementableEvent)
     void BP_FxRemoveEffect(EEffect _effect);
 
     UFUNCTION(BlueprintImplementableEvent)
@@ -169,6 +172,9 @@ private:
 
     UFUNCTION(Reliable, NetMulticast)
     void RPCNetMulticastAddEffect(EEffect _effect);
+
+    UFUNCTION(Reliable, NetMulticast)
+    void RPCNetMulticastRemoveEffect(EEffect _effect);
 
     UFUNCTION(Reliable, Client)
     void RPCClientRemoveEffect(EEffect _effect);
