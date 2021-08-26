@@ -682,14 +682,21 @@ void AShipPawn::setLocationExhaustFx(TArray<FVector_NetQuantize> const& _loc)
     }
 }
 
-void AShipPawn::RPCClientPlayCameraShake_Implementation()
+void AShipPawn::RPCClientPlayCameraShake_Implementation(EImpactType _type)
 {
     if (this->IsLocallyControlled())
     {
         if (APlayerController* playerController = this->GetController<APlayerController>())
         {
             FVector const& camLoc = this->CameraComponent->GetComponentLocation();
-            playerController->ClientPlayCameraShake(this->CameraShakeClass, 1.0f, ECameraAnimPlaySpace::UserDefined, (this->GetActorLocation() - camLoc).Rotation());
+            if (_type == EImpactType::Obstacle)
+            {
+                playerController->ClientPlayCameraShake(this->CameraShakeObstacleClass, 1.0f, ECameraAnimPlaySpace::UserDefined, (this->GetActorLocation() - camLoc).Rotation());
+            }
+            else if (_type == EImpactType::Hit)
+            {
+                playerController->ClientPlayCameraShake(this->CameraShakeHitClass, 1.0f, ECameraAnimPlaySpace::UserDefined, (this->GetActorLocation() - camLoc).Rotation());
+            }
         }
 
         //BP_HitIndicator();

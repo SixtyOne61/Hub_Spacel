@@ -158,6 +158,13 @@ enum class EScoreType : uint8
 };
 
 UENUM(BlueprintType)
+enum class EImpactType : uint8
+{
+    Hit UMETA(DisplayName = "Hit"),
+    Obstacle UMETA(DisplayName = "Obstacle")
+};
+
+UENUM(BlueprintType)
 enum class EMission : uint8
 {
     FirstBlood UMETA(DisplayName = "FirstBlood"),

@@ -214,11 +214,11 @@ void UCustomCollisionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 				// for each module, we need to check each instance
 				if (sweepForInstancedStaticMesh(moduleComponent->ProtectionMeshComponent, moduleComponent->RU_ProtectionLocations, moduleComponent->RemovedProtectionLocations, scale, profileCollision, *tagTeam, moduleComponent->EmergencyLocations))
 				{
-					pawn->RPCClientPlayCameraShake();
+					pawn->RPCClientPlayCameraShake(EImpactType::Obstacle);
 				}
 				if (sweepForInstancedStaticMesh(moduleComponent->SupportMeshComponent, moduleComponent->RU_SupportLocations, moduleComponent->RemovedSupportLocations, scale, profileCollision, *tagTeam))
 				{
-					pawn->RPCClientPlayCameraShake();
+					pawn->RPCClientPlayCameraShake(EImpactType::Obstacle);
 				}
 
 				// end check red zone
@@ -509,6 +509,7 @@ void UCustomCollisionComponent::hit(FString const& _team, int32 _playerId, class
 
 			// for feedback
 			shipPawn->RPCClientDamageIndicator(_otherLocation);
+			shipPawn->RPCClientPlayCameraShake(EImpactType::Hit);
 		}
 	};
 

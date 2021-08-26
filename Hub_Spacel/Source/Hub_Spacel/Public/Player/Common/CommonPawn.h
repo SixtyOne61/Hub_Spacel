@@ -136,7 +136,10 @@ public:
     class UPostProcessComponent* SpeedLinesComponent{ nullptr };
 
     UPROPERTY(Category = "FX", EditAnywhere, BlueprintReadWrite)
-    TSubclassOf<class UCameraShake> CameraShakeClass{ nullptr };
+    TSubclassOf<class UCameraShake> CameraShakeObstacleClass{ nullptr };
+
+    UPROPERTY(Category = "FX", EditAnywhere, BlueprintReadWrite)
+    TSubclassOf<class UCameraShake> CameraShakeHitClass{ nullptr };
 
     UPROPERTY(Category = "FX", EditAnywhere)
     class UMaterialInstance* MaterialSpeedLines{ nullptr };
