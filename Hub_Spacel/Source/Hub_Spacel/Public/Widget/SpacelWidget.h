@@ -121,6 +121,8 @@ protected:
 
 	void updateArrow();
 
+	void updateLocalTimer();
+
 protected:
 	UPROPERTY(EditAnywhere)
 	class UEffectDataAsset* EffectDataAsset { nullptr };

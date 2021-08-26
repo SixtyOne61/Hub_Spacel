@@ -416,15 +416,6 @@ FString AFlyingGameMode::InitNewPlayer(class APlayerController* _newPlayerContro
 
 void AFlyingGameMode::CountDownUntilGameOver()
 {
-    ASpacelGameState* spacelGameState { Cast<ASpacelGameState>(this->GameState) };
-    if (!ensure(spacelGameState != nullptr)) return;
-    // format time
-    int min = this->RemainingGameTime / 60;
-    int sec = this->RemainingGameTime % 60;
-    FString minStr = min < 10 ? "0" + FString::FromInt(min) : FString::FromInt(min);
-    FString secStr = sec < 10 ? "0" + FString::FromInt(sec) : FString::FromInt(sec);
-    spacelGameState->R_LatestEvent = "Timer" + minStr + ":" + secStr;
-
     if (this->RemainingGameTime > 0)
     {
         this->RemainingGameTime--;
@@ -484,13 +475,14 @@ void AFlyingGameMode::PreparePhaseUntilLock()
 
 void AFlyingGameMode::EndLobby()
 {
-    GetWorldTimerManager().SetTimer(this->CountDownUntilGameOverHandle, this, &AFlyingGameMode::CountDownUntilGameOver, 1.0f, true, 0.0f);
-
     if(ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(this->GameState))
     {
         // change game state
         spacelGameState->GoToInGame();
+        spacelGameState->RPCNetMulticastStartGlobalCountDown(FDateTime::UtcNow().ToUnixTimestamp(), this->RemainingGameTime);
     }
+
+    GetWorldTimerManager().SetTimer(this->CountDownUntilGameOverHandle, this, &AFlyingGameMode::CountDownUntilGameOver, 1.0f, true, 0.0f);
 }
 
 void AFlyingGameMode::EndGame()
@@ -513,15 +505,6 @@ void AFlyingGameMode::EndGame()
 void AFlyingGameMode::LeaveLevel()
 {
     this->RemainingLeaveTime--;
-
-    ASpacelGameState* spacelGameState{ Cast<ASpacelGameState>(this->GameState) };
-    if (!ensure(spacelGameState != nullptr)) return;
-    // format time
-    int min = this->RemainingLeaveTime / 60;
-    int sec = this->RemainingLeaveTime % 60;
-    FString minStr = min < 10 ? "0" + FString::FromInt(min) : FString::FromInt(min);
-    FString secStr = sec < 10 ? "0" + FString::FromInt(sec) : FString::FromInt(sec);
-    spacelGameState->R_LatestEvent = minStr + ":" + secStr;
 
     if(this->RemainingLeaveTime <= 0)
     {
@@ -565,9 +548,11 @@ void AFlyingGameMode::LeaveLevel()
 
 void AFlyingGameMode::PickAWinningTeam()
 {
-    ASpacelGameState* spacelGameState{ Cast<ASpacelGameState>(this->GameState) };
-    if (!ensure(spacelGameState != nullptr)) return;
-    spacelGameState->GoToEndGame();
+    if(ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(this->GameState))
+    {
+        spacelGameState->GoToEndGame();
+        spacelGameState->RPCNetMulticastStartGlobalCountDown(FDateTime::UtcNow().ToUnixTimestamp(), this->RemainingLeaveTime);
+    }
 
     GetWorldTimerManager().SetTimer(this->LeaveLevelHandle, this, &AFlyingGameMode::LeaveLevel, 1.0f, true, 0.0f);
 }

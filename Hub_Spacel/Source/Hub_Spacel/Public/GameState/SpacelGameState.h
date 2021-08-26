@@ -118,13 +118,19 @@ public:
 	UFUNCTION(Reliable, NetMulticast)
 	void RPCNetMulticastKill(int32 _killer, int32 _killed);
 
+	UFUNCTION(Reliable, NetMulticast)
+	void RPCNetMulticastStartGlobalCountDown(int64 _syncPoint, uint16 _duration);
+
 protected:
-	virtual void BeginPlay() override;
+	void BeginPlay() override;
 
 	void registerMission();
 
 	UFUNCTION()
 	void CallMission();
+
+	UFUNCTION()
+	void UpdateGlobalLocalTimer();
 
 private:
 	UFUNCTION()
@@ -164,6 +170,9 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
 	FOnWhoKillWho OnWhoKillWhoDelegate {};
 
+	UPROPERTY()
+	int GlobalSecondLocalCountDown { 0 };
+
 protected:
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
 	class UGameStateDataAsset* GameStateDataAsset { nullptr };
@@ -178,4 +187,7 @@ private:
 	TArray<FScore> R_Scores {};
 
 	TSet<FString> TeamWithBonusMission {};
+
+	UPROPERTY()
+	FTimerHandle LocalCountDownHandle {};
 };

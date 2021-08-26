@@ -142,6 +142,23 @@ void USpacelWidget::NativeTick(const FGeometry& _myGeometry, float _deltaTime)
     Super::NativeTick(_myGeometry, _deltaTime);
     UpdateScore();
     updateArrow();
+    updateLocalTimer();
+}
+
+void USpacelWidget::updateLocalTimer()
+{
+    UWorld* world{ this->GetWorld() };
+    if (!ensure(world != nullptr)) return;
+
+    if (ASpacelGameState const* gameState = Cast<ASpacelGameState>(world->GetGameState()))
+    {
+        int min = (int)gameState->GlobalSecondLocalCountDown / 60;
+        int sec = (int)gameState->GlobalSecondLocalCountDown % 60;
+        FString minStr = min < 10 ? "0" + FString::FromInt(min) : FString::FromInt(min);
+        FString secStr = sec < 10 ? "0" + FString::FromInt(sec) : FString::FromInt(sec);
+
+        this->TimerTextBlock->SetText(FText::FromString(minStr + ":" + secStr));
+    }
 }
 
 void USpacelWidget::updateArrow()
@@ -280,6 +297,9 @@ void USpacelWidget::OnChangeState(EGameState _state)
 
         UWorld* world{ this->GetWorld() };
         if (!ensure(world != nullptr)) return;
+
+        if(world->GetGameState() == nullptr) return;
+
         TArray<APlayerState*> const& playerStates{ world->GetGameState()->PlayerArray };
 
         ASpacelPlayerState* owningPlayerState{ Cast<ASpacelPlayerState>(this->GetOwningPlayerState()) };
@@ -413,14 +433,6 @@ void USpacelWidget::SetLatestEvent()
             if (this->EventTextBlock)
             {
                 this->EventTextBlock->SetText(FText::FromString(winningTeam + " won!"));
-            }
-        }
-        else if(latestEvent.Contains("Timer"))
-        {
-            if (this->TimerTextBlock)
-            {
-                latestEvent = latestEvent.Replace(TEXT("Timer"), TEXT(""));
-                this->TimerTextBlock->SetText(FText::FromString(latestEvent));
             }
         }
     }

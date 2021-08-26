@@ -51,7 +51,7 @@ void AKatyusha::Tick(float _deltaTime)
 
     if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
     {
-        int64 syncTime = FDateTime::Now().ToUnixTimestamp();
+        int64 syncTime = FDateTime::UtcNow().ToUnixTimestamp();
         RPCNetMulticastSync(syncTime, this->GetActorLocation());
     }
 }
@@ -65,9 +65,9 @@ void AKatyusha::RPCNetMulticastSync_Implementation(int64 _syncPoint, FVector_Net
 {
     if (this->DataAsset == nullptr) return;
 
-    int64 time = FDateTime::Now().ToUnixTimestamp();
+    int64 time = FDateTime::UtcNow().ToUnixTimestamp();
     // readjust location with sync time
-    int64 deltaTime = time - _syncPoint;
+    int64 deltaSecond = time - _syncPoint;
 
     FVector dir = this->GetActorForwardVector();
     float speed = this->DataAsset->SpeedPreLock;
@@ -77,7 +77,7 @@ void AKatyusha::RPCNetMulticastSync_Implementation(int64 _syncPoint, FVector_Net
         speed = this->DataAsset->SpeedAfterLock;
     }
 
-    FVector nextLocation = _location + dir * speed * deltaTime;
+    FVector nextLocation = _location + dir * speed * deltaSecond;
     this->SetActorLocation(nextLocation);
 }
 
