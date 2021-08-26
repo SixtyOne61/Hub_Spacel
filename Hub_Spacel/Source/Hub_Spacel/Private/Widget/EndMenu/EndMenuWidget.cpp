@@ -53,26 +53,17 @@ void UEndMenuWidget::FillStat()
                     {
                         if (UMetricComponent* component = Cast<UMetricComponent>(pawn->GetComponentByClass(UMetricComponent::StaticClass())))
                         {
-                            if (component->HasInit)
+                            if (id < PlayerWinnerWidgets.Num())
                             {
-                                if (id < PlayerWinnerWidgets.Num())
+                                if (UPlayerWinnerWidget* widget = PlayerWinnerWidgets[id])
                                 {
-                                    if (UPlayerWinnerWidget* widget = PlayerWinnerWidgets[id])
+                                    widget->BP_SetStats(component->NbKill, component->TotalScore, component->Precision);
+                                    if (ASpacelPlayerState* spacelPlayerState = Cast<ASpacelPlayerState>(playerState))
                                     {
-                                        widget->BP_SetStats(component->NbKill, component->TotalScore, component->Precision);
-                                        if (ASpacelPlayerState* spacelPlayerState = Cast<ASpacelPlayerState>(playerState))
-                                        {
-                                            widget->BP_SetName(spacelPlayerState->GetPlayerName());
-                                        }
-                                        ++id;
+                                        widget->BP_SetName(spacelPlayerState->GetPlayerName());
                                     }
+                                    ++id;
                                 }
-                            }
-                            else
-                            {
-                                FTimerHandle handle;
-                                world->GetTimerManager().SetTimer(handle, this, &UEndMenuWidget::FillStat, 1.0f, false, 0.0f);
-                                return;
                             }
                         }
                     }
@@ -93,4 +84,7 @@ void UEndMenuWidget::FillStat()
             }
         }
     }
+
+    FTimerHandle handle;
+    world->GetTimerManager().SetTimer(handle, this, &UEndMenuWidget::FillStat, 1.0f, false, 0.0f);
 }
