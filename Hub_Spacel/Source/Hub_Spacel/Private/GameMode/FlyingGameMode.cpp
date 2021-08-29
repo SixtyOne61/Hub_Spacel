@@ -511,6 +511,7 @@ void AFlyingGameMode::LeaveLevel()
         GetWorldTimerManager().ClearTimer(this->LeaveLevelHandle);
 
 #if WITH_GAMELIFT
+        ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(this->GameState);
         if (spacelGameState != nullptr)
         {
             spacelGameState->R_LatestEvent = "GameEnded";
