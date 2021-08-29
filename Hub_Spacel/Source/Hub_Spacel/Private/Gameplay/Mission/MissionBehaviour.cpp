@@ -63,7 +63,7 @@ void MissionEcartType::start(UWorld* _world)
             m_mission.Team = bestTeam;
             m_loosingTeam = worstTeam;
 
-            spacelGameState->RPCNetMulticastStartMissionTwoParam(m_mission.Type, *worstTeam);
+            spacelGameState->RPCNetMulticastStartMissionTwoParam(m_mission.Type, *worstTeam, *bestTeam);
 
             // find player of this team
             TArray<APlayerState*> playerStates = spacelGameState->PlayerArray;

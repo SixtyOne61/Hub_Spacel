@@ -60,6 +60,11 @@ public:
 		return {};
 	}
 
+	inline FMission* getMissionModify(EMission _type)
+	{
+		return Missions.FindByPredicate([&_type](auto const& _mission) { return _mission.Type == _type; });
+	}
+
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<FMission> Missions {};

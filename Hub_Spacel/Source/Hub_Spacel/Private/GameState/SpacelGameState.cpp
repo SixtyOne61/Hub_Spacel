@@ -172,9 +172,9 @@ void ASpacelGameState::RPCNetMulticastStartMission_Implementation(EMission _type
     OnStartMissionDelegate.Broadcast(_type);
 }
 
-void ASpacelGameState::RPCNetMulticastStartMissionTwoParam_Implementation(EMission _type, FName _team)
+void ASpacelGameState::RPCNetMulticastStartMissionTwoParam_Implementation(EMission _type, FName _team, FName _teamTarget)
 {
-    OnStartMissionTwoParamDelegate.Broadcast(_type, _team);
+    OnStartMissionTwoParamDelegate.Broadcast(_type, _team, _teamTarget);
 }
 
 void ASpacelGameState::RPCNetMulticastEndMission_Implementation(EMission _type)

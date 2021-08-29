@@ -808,6 +808,15 @@ void AShipPawn::RPCNetMulticastEnterHidding_Implementation(int32 _playerId, bool
         {
             this->MetaFormProtectionComponent->SetVisibility(false);
         }
+
+        TArray<UActorComponent*> components = this->GetComponentsByTag(USceneComponent::StaticClass(), Tags::Arrow);
+        for (auto component : components)
+        {
+            if (USceneComponent* sceneComponent = Cast<USceneComponent>(component))
+            {
+                sceneComponent->SetVisibility(false);
+            }
+        }
     }
 }
 

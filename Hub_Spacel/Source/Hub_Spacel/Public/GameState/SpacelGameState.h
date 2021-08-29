@@ -11,7 +11,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FChangeState, EGameState, _state);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FScoreUpdate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FPlayerEnterFog, int32, _playerId, bool, _enter);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStartMission, EMission, _type);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnStartMissionTwoParam, EMission, _type, FName const&, _team);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnStartMissionTwoParam, EMission, _type, FName const&, _team, FName const&, _teamTarget);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEndMission, EMission, _type);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAskMission, EMission, _type);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnResetTimerMission, EMission, _type);
@@ -107,7 +107,7 @@ public:
 	void RPCNetMulticastStartMission(EMission _type);
 
 	UFUNCTION(Reliable, NetMulticast)
-	void RPCNetMulticastStartMissionTwoParam(EMission _type, FName _team);
+	void RPCNetMulticastStartMissionTwoParam(EMission _type, FName _team, FName _teamTarget);
 
 	UFUNCTION(Reliable, NetMulticast)
 	void RPCNetMulticastEndMission(EMission _type);

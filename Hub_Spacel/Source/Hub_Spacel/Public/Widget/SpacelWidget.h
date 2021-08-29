@@ -95,7 +95,7 @@ protected:
 	void OnStartMission(EMission _type);
 
 	UFUNCTION()
-	void OnStartMissionTwoParam(EMission _type, FName const& _team);
+	void OnStartMissionTwoParam(EMission _type, FName const& _team, FName const& _targetTeam);
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void BP_ShowMissionPanel();

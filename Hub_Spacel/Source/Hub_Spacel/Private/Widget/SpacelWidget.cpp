@@ -187,10 +187,14 @@ void USpacelWidget::updateArrow()
 
 }
 
-void USpacelWidget::OnStartMissionTwoParam(EMission _type, FName const& _team)
+void USpacelWidget::OnStartMissionTwoParam(EMission _type, FName const& _team, FName const& _targetTeam)
 {
     if (*this->Team == _team)
     {
+        if (FMission* mission = this->MissionDataAsset->getMissionModify(_type))
+        {
+            mission->Team = _targetTeam.ToString();
+        }
         OnStartMission(_type);
     }
 }
