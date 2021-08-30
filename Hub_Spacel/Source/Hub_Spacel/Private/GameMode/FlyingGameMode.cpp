@@ -272,7 +272,8 @@ void AFlyingGameMode::Tick(float _deltaSeconde)
     {
         if (ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(this->GameState))
         {
-            switch(spacelGameState->GetState())
+            EGameState state = spacelGameState->GetState();
+            switch(state)
             {
                 case EGameState::Prepare:
                 {
@@ -314,7 +315,6 @@ void AFlyingGameMode::Tick(float _deltaSeconde)
                 }
 
                 default:
-                    ensure(false);
                 break;
             }
         }

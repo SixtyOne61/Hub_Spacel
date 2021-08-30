@@ -363,6 +363,12 @@ void USpacelWidget::RedLight()
 {
     BP_RedLight(m_currentIdRedLight);
     ++m_currentIdRedLight;
+    if (m_currentIdRedLight >= 3)
+    {
+        UWorld* world{ this->GetWorld() };
+        if (!ensure(world != nullptr)) return;
+        world->GetTimerManager().ClearTimer(this->RedLightAnimationHandle);
+    }
 }
 
 void USpacelWidget::removeSkill(ESkill _type)
