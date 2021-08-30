@@ -41,7 +41,6 @@ void AFlyingGameMode::BeginPlay()
 #endif
 
         this->RemainingLeaveTime = this->GameModeDataAsset->RemainingLeaveTime;
-        m_timerSeconde = this->RemainingChooseModuleTime;
     }
 
 #if WITH_GAMELIFT
@@ -240,6 +239,7 @@ void AFlyingGameMode::BeginPlay()
     ASpacelGameState* spacelGameState{ Cast<ASpacelGameState>(this->GameState) };
     if (!ensure(spacelGameState != nullptr)) return;
     spacelGameState->GoToPrepare();
+    m_timerSeconde = this->RemainingChooseModuleTime;
 #endif
 
     TArray<AActor*> out {};
@@ -612,6 +612,7 @@ void AFlyingGameMode::HandleGameSessionUpdate()
         ASpacelGameState* spacelGameState{ Cast<ASpacelGameState>(this->GameState) };
         if (!ensure(spacelGameState != nullptr)) return;
         spacelGameState->GoToPrepare();
+        m_timerSeconde = this->RemainingChooseModuleTime;
     }
     else if(this->WaitingForPlayersToJoin)
     {
