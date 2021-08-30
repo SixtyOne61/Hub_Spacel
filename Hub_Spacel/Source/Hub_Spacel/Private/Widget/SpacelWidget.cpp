@@ -80,6 +80,7 @@ void USpacelWidget::NativeConstruct()
         spacelGameState->OnStartMissionTwoParamDelegate.AddDynamic(this, &USpacelWidget::OnStartMissionTwoParam);
         spacelGameState->OnEndMissionDelegate.AddDynamic(this, &USpacelWidget::OnEndMission);
         spacelGameState->OnResetTimerMissionDelegate.AddDynamic(this, &USpacelWidget::OnResetTimerMission);
+        spacelGameState->OnStartLocalTimerDelegate.AddDynamic(this, &USpacelWidget::OnStartLocalTimer);
     }
 
     AShipPawn* shipPawn { this->GetOwningPlayerPawn<AShipPawn>() };
@@ -142,18 +143,19 @@ void USpacelWidget::NativeTick(const FGeometry& _myGeometry, float _deltaTime)
     Super::NativeTick(_myGeometry, _deltaTime);
     UpdateScore();
     updateArrow();
-    updateLocalTimer();
+    updateLocalTimer(_deltaTime);
 }
 
-void USpacelWidget::updateLocalTimer()
+void USpacelWidget::updateLocalTimer(float _deltaSeconde)
 {
     UWorld* world{ this->GetWorld() };
     if (!ensure(world != nullptr)) return;
 
-    if (ASpacelGameState const* gameState = Cast<ASpacelGameState>(world->GetGameState()))
+    if (m_localTimer > 0.0f)
     {
-        int min = (int)gameState->GlobalSecondLocalCountDown / 60;
-        int sec = (int)gameState->GlobalSecondLocalCountDown % 60;
+        m_localTimer = FMath::Max(m_localTimer - _deltaSeconde, 0.0f);
+        int min = (int)m_localTimer / 60;
+        int sec = (int)m_localTimer % 60;
         FString minStr = min < 10 ? "0" + FString::FromInt(min) : FString::FromInt(min);
         FString secStr = sec < 10 ? "0" + FString::FromInt(sec) : FString::FromInt(sec);
 
@@ -185,6 +187,11 @@ void USpacelWidget::updateArrow()
         }
     }
 
+}
+
+void USpacelWidget::OnStartLocalTimer(int _startTimer)
+{
+    m_localTimer = _startTimer;
 }
 
 void USpacelWidget::OnStartMissionTwoParam(EMission _type, FName const& _team, FName const& _targetTeam)

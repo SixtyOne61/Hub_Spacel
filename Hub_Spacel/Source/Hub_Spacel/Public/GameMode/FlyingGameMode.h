@@ -89,16 +89,11 @@ public:
 	FTransform GetSpawnLocation(FName const& _team);
 
 protected:
-	virtual void BeginPlay() override;
-	virtual FString InitNewPlayer(class APlayerController* _newPlayerController, FUniqueNetIdRepl const& _uniqueId, FString const& _options, FString const& _portal) override;
+	void BeginPlay() override;
+	FString InitNewPlayer(class APlayerController* _newPlayerController, FUniqueNetIdRepl const& _uniqueId, FString const& _options, FString const& _portal) override;
+	void Tick(float _deltaSeconde) override;
 
 private:
-	UFUNCTION()
-	void CountDownUntilGameOver();
-
-	UFUNCTION()
-	void PreparePhaseUntilLock();
-
 	UFUNCTION()
 	void EndLobby();
 
@@ -128,9 +123,6 @@ private:
 
 public:
 	UPROPERTY()
-	FTimerHandle CountDownUntilGameOverHandle {};
-
-	UPROPERTY()
 	FTimerHandle EndGameHandle {};
 
 	UPROPERTY()
@@ -146,9 +138,6 @@ public:
 	FTimerHandle SuspendBackfillHandle {};
 
 	UPROPERTY()
-	FTimerHandle PreparePhaseUntilLockHandle {};
-
-	UPROPERTY()
 	FTimerHandle UnlockInputHandle {};
 
 	UPROPERTY()
@@ -158,12 +147,7 @@ public:
 	int RemainingChooseModuleTime { }; // 60
 
 	UPROPERTY()
-	int NbStep { 0 };
-
-	UPROPERTY()
 	int RemainingLeaveTime { };
-
-	int m_nextStepTime { };
 
 	UPROPERTY()
 	int SuspendBackfillTime { 45 };
@@ -220,4 +204,6 @@ private:
 	};
 
 	TMap<FName, TArray<FStartLocation>> m_startLocation {};
+
+	float m_timerSeconde { 0.0f };
 };

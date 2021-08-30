@@ -121,7 +121,10 @@ protected:
 
 	void updateArrow();
 
-	void updateLocalTimer();
+	void updateLocalTimer(float _deltaSeconde);
+
+	UFUNCTION()
+	void OnStartLocalTimer(int _startTime);
 
 protected:
 	UPROPERTY(EditAnywhere)
@@ -196,4 +199,6 @@ private:
 	TSet<EMission> m_currentMission {};
 
 	class AActor* m_arrowTarget { nullptr };
+
+	float m_localTimer { 0.0f };
 };

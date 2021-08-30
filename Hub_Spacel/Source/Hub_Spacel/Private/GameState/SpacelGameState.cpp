@@ -146,15 +146,6 @@ void ASpacelGameState::BeginPlay()
     FMath::RandInit((int32)FDateTime::Now().GetMillisecond());
 }
 
-void ASpacelGameState::UpdateGlobalLocalTimer()
-{
-    this->GlobalSecondLocalCountDown--;
-    if (this->GlobalSecondLocalCountDown <= 0)
-    {
-        this->GetWorldTimerManager().ClearTimer(this->LocalCountDownHandle);
-    }
-}
-
 void ASpacelGameState::RPCNetMulticastStartGlobalCountDown_Implementation(int64 _syncPoint, uint16 _duration)
 {
     int64 now = FDateTime::UtcNow().ToUnixTimestamp();
@@ -163,8 +154,7 @@ void ASpacelGameState::RPCNetMulticastStartGlobalCountDown_Implementation(int64 
 
     this->GlobalSecondLocalCountDown = _duration - deltaSecond;
 
-    this->GetWorldTimerManager().ClearTimer(this->LocalCountDownHandle);
-    this->GetWorldTimerManager().SetTimer(this->LocalCountDownHandle, this, &ASpacelGameState::UpdateGlobalLocalTimer, 1.0f, true, 0.0f);
+    OnStartLocalTimerDelegate.Broadcast(_duration - deltaSecond);
 }
 
 void ASpacelGameState::RPCNetMulticastStartMission_Implementation(EMission _type)

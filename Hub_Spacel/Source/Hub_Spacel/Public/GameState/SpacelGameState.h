@@ -16,6 +16,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEndMission, EMission, _type);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAskMission, EMission, _type);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnResetTimerMission, EMission, _type);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnWhoKillWho, int32, _killer, int32, _killed);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FStartLocalTimer, int, _startTime);
 
 USTRUCT()
 struct HUB_SPACEL_API FTeamLocation
@@ -129,9 +130,6 @@ protected:
 	UFUNCTION()
 	void CallMission();
 
-	UFUNCTION()
-	void UpdateGlobalLocalTimer();
-
 private:
 	UFUNCTION()
 	void OnRep_StateGame();
@@ -170,6 +168,9 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
 	FOnWhoKillWho OnWhoKillWhoDelegate {};
 
+	UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
+	FStartLocalTimer OnStartLocalTimerDelegate {};
+
 	UPROPERTY()
 	int GlobalSecondLocalCountDown { 0 };
 
@@ -187,7 +188,4 @@ private:
 	TArray<FScore> R_Scores {};
 
 	TSet<FString> TeamWithBonusMission {};
-
-	UPROPERTY()
-	FTimerHandle LocalCountDownHandle {};
 };
