@@ -126,9 +126,6 @@ public:
 	FTimerHandle EndGameHandle {};
 
 	UPROPERTY()
-	FTimerHandle LeaveLevelHandle {};
-
-	UPROPERTY()
 	FTimerHandle HandleProcessTerminationHandle {};
 
 	UPROPERTY()
@@ -141,7 +138,7 @@ public:
 	FTimerHandle UnlockInputHandle {};
 
 	UPROPERTY()
-	int RemainingGameTime { }; // 11'30
+	int RemainingGameTime { }; // 10'00
 
 	UPROPERTY()
 	int RemainingChooseModuleTime { }; // 60
