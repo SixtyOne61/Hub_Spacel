@@ -199,9 +199,6 @@ private:
     UFUNCTION()
     void BackToGame();
 
-    UFUNCTION()
-    void CountDownRespawn();
-
 public:
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
     FOnFeedbackScore OnFeedbackScoreDelegate {};
@@ -260,9 +257,6 @@ private:
 
     // only for local player
     FRotator m_defaultSprintArmRotator {};
-
-    // count time when respawn
-    int8 m_countDownRespawn {};
 
     // false when endgame appear
     bool m_endGame { false };
