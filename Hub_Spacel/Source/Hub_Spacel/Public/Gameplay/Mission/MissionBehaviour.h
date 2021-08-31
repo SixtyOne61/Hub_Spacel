@@ -36,7 +36,7 @@ public:
 			}
 		}
 	}
-	virtual void end(UWorld* _world) { m_isEnd = true; };
+	virtual void end(UWorld* _world) { m_isEnd = true; OnResetTimerUniqueDelegate.clean(); };
 
 	void resetTimer()
 	{
@@ -147,6 +147,7 @@ public:
 	void start(class UWorld* _world) override;
 	void tick(float _deltaTime, UWorld* _world) override;
 	void findGold(class UWorld* _world);
+	void end(class UWorld* _world) override;
 
 private:
 	void onTokenChange();

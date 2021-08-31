@@ -339,6 +339,24 @@ void MissionHoldGold::findGold(class UWorld* _world)
     }
 }
 
+void MissionHoldGold::end(UWorld* _world)
+{
+    MissionBehaviour::end(_world);
+
+    // clean event
+    if (ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(_world->GetGameState()))
+    {
+        TArray<APlayerState*> playerStates = spacelGameState->PlayerArray;
+        for (auto* playerState : playerStates)
+        {
+            if (AShipPawn* shipPawn = playerState->GetPawn<AShipPawn>())
+            {
+                shipPawn->OnLostGoldDelegate.clean();
+            }
+        }
+    }
+}
+
 void MissionHoldGold::onTokenChange()
 {
     if (!isEnd())
