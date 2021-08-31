@@ -153,7 +153,7 @@ void AMissionManager::Tick(float DeltaTime)
 			{
 				if (mission.IsValid())
 				{
-					mission->end();
+					mission->end(this->GetWorld());
 				}
 			}
 		}

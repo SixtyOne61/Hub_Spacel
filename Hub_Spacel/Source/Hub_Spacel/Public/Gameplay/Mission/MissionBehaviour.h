@@ -31,12 +31,12 @@ public:
 				m_timer += _deltaTime;
 				if (m_timer >= m_mission.DurationValue)
 				{
-					end();
+					end(_world);
 				}
 			}
 		}
 	}
-	virtual void end() { m_isEnd = true; };
+	virtual void end(UWorld* _world) { m_isEnd = true; };
 
 	void resetTimer()
 	{
@@ -85,6 +85,7 @@ class HUB_SPACEL_API MissionEcartType : public MissionSilence
 public:
 	void start(UWorld* _world) override;
 	void tick(float _deltaTime, UWorld* _world) override;
+	void end(UWorld* _world) override;
 
 private:
 	void onKill(FString const& _victim, FString const& _killer);

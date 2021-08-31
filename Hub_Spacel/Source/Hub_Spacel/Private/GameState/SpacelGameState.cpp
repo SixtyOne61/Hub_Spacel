@@ -57,7 +57,7 @@ int32 ASpacelGameState::GetScore(FString const& _team) const
         }
     }
 
-    ensure(false);
+    // can be happear on end when stats doesn't complete yet
     return 0;
 }
 

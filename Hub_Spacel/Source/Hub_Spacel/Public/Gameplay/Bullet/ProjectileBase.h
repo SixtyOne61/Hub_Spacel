@@ -45,7 +45,7 @@ public:
 	UPROPERTY(Replicated)
 	FName R_Team {};
 
-	UPROPERTY(Replicated)
+	UPROPERTY()
 	int32 PlayerIdOwner {};
 
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)

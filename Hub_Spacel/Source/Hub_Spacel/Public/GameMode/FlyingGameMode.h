@@ -141,7 +141,7 @@ public:
 	int RemainingGameTime { }; // 10'00
 
 	UPROPERTY()
-	int RemainingChooseModuleTime { }; // 60
+	int RemainingChooseModuleTime { }; // 20
 
 	UPROPERTY()
 	int RemainingLeaveTime { };

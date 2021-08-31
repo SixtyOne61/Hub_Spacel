@@ -21,7 +21,7 @@ void MissionFirstBlood::tick(float _deltaTime, UWorld* _world)
     {
         if (spacelGameState->GetState() == EGameState::UnlockMedium)
         {
-            end();
+            end(_world);
         }
     }
 }
@@ -39,7 +39,7 @@ void MissionRaceScore::tick(float _deltaTime, UWorld* _world)
         if (score >= m_mission.RewardValue)
         {
             spacelGameState->GoToUnlockUltimate();
-            end();
+            end(_world);
         }
     }
 }
@@ -90,13 +90,33 @@ void MissionEcartType::tick(float _deltaTime, UWorld* _world)
         {
             spacelGameState->AddScore(m_loosingTeam, m_mission.RewardValue);
         }
-        end();
+        end(_world);
+    }
+}
+
+void MissionEcartType::end(UWorld* _world)
+{
+    MissionSilence::end(_world);
+
+    if(_world == nullptr) return;
+
+    // clean event
+    if (ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(_world->GetGameState()))
+    {
+        TArray<APlayerState*> playerStates = spacelGameState->PlayerArray;
+        for (auto* playerState : playerStates)
+        {
+            if (AShipPawn* shipPawn = playerState->GetPawn<AShipPawn>())
+            {
+                shipPawn->OnKill.clean();
+            }
+        }
     }
 }
 
 void MissionEcartType::onKill(FString const& _victim, FString const& _killer)
 {
-    if (_victim == m_mission.Team && _killer == m_loosingTeam)
+    if (_killer == m_loosingTeam)
     {
         m_killDone = true;
     }
@@ -174,7 +194,7 @@ void MissionComet::tick(float _deltaTime, UWorld* _world)
 
     if (m_nbComet == 0)
     {
-        end();
+        end(_world);
     }
 }
 
@@ -227,7 +247,7 @@ void MissionPirate::tick(float _deltaTime, UWorld* _world)
                 }
             }
         }
-        end();
+        end(_world);
     }
 }
 
@@ -273,7 +293,7 @@ void MissionTakeGold::tick(float _deltaTime, UWorld* _world)
         {
             spacelGameState->OnAskMissionDelegate.Broadcast(EMission::HoldGold);
         }
-        end();
+        end(_world);
     }
 }
 

@@ -23,7 +23,6 @@ void UCleanFieldWidget::NativeConstruct()
     }
 
     Fields = SimplyUI::initSafetyFromName<UUserWidget, UVerticalBox>(this, TEXT("VerticalBox_Field"));
-
 }
 
 void UCleanFieldWidget::OnKill(int32 _killer, int32 _killed)

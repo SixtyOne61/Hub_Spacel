@@ -374,16 +374,19 @@ void UCustomCollisionComponent::hitHeal(FVector const& _ownerLocation, FName con
 		{
 			if (AHealPackBullet* healPack = Cast<AHealPackBullet>(hit.Actor))
 			{
-				if (healPack->R_Team == *team)
+				if (!healPack->IsPendingKill())
 				{
-					// heal
-					if (AShipPawn* pawn = get<AShipPawn>())
+					if (healPack->R_Team == *team)
 					{
-						pawn->heal(healPack->Value);
+						// heal
+						if (AShipPawn* pawn = get<AShipPawn>())
+						{
+							pawn->heal(healPack->Value);
+						}
 					}
-				}
 
-				healPack->Destroy();
+					healPack->Destroy();
+				}
 			}
 		}
 	}
@@ -399,6 +402,8 @@ void UCustomCollisionComponent::hitEmp(FVector const& _ownerLocation, FName cons
 				return !(_item.Actor.IsValid() && _item.Actor.Get()->ActorHasTag(Tags::EmpBullet));
 			});
 
+		if(get() == nullptr) return;
+
 		ASpacelPlayerState const* spacelPlayerState = get()->GetPlayerState<ASpacelPlayerState>();
 		if (spacelPlayerState == nullptr) return;
 
@@ -406,18 +411,24 @@ void UCustomCollisionComponent::hitEmp(FVector const& _ownerLocation, FName cons
 
 		for (auto const& hit : hits)
 		{
-			if (AEmpBullet* empBullet = Cast<AEmpBullet>(hit.Actor))
+			if (hit.Actor.IsValid())
 			{
-				if (empBullet->R_Team != *team)
+				if (AEmpBullet* empBullet = Cast<AEmpBullet>(hit.Actor))
 				{
-					// emp
-					if (AShipPawn* pawn = get<AShipPawn>())
+					if (!empBullet->IsPendingKill())
 					{
-						pawn->emp(empBullet->EffectDuration, empBullet->R_Team, empBullet->PlayerIdOwner);
+						if (empBullet->R_Team != *team)
+						{
+							// emp
+							if (AShipPawn* pawn = get<AShipPawn>())
+							{
+								pawn->emp(empBullet->EffectDuration, empBullet->R_Team, empBullet->PlayerIdOwner);
+							}
+						}
+
+						empBullet->Destroy();
 					}
 				}
-
-				empBullet->Destroy();
 			}
 		}
 	}
@@ -549,7 +560,7 @@ void UCustomCollisionComponent::hit(FString const& _team, int32 _playerId, class
 			{
 				if (ASpacelPlayerState const* spacelPlayerState = get()->GetPlayerState<ASpacelPlayerState>())
 				{
-					spacelGameState->RPCNetMulticastKill(spacelPlayerState->PlayerId, _playerId);
+					spacelGameState->RPCNetMulticastKill(_playerId, spacelPlayerState->PlayerId);
 				}
 			}
 		}
