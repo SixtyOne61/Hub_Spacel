@@ -309,6 +309,8 @@ void AFlyingGameMode::Tick(float _deltaSeconde)
                 }
 
                 case EGameState::InGame:
+                case EGameState::UnlockMedium:
+                case EGameState::UnlockUltimate:
                 {
                     this->PickAWinningTeam();
                     break;
@@ -549,9 +551,9 @@ void AFlyingGameMode::PickAWinningTeam()
     {
         spacelGameState->GoToEndGame();
         spacelGameState->RPCNetMulticastStartGlobalCountDown(FDateTime::UtcNow().ToUnixTimestamp(), this->RemainingLeaveTime);
-    }
 
-    m_timerSeconde = this->RemainingLeaveTime;
+        m_timerSeconde = this->RemainingLeaveTime;
+    }
 }
 
 void AFlyingGameMode::HandleProcessTermination()
