@@ -68,7 +68,7 @@ void UFireComponent::TickComponent(float _deltaTime, ELevelTick _tickType, FActo
             {
                 coef = get()->PlayerDataAsset->ReduceTimeBetweenFireWithMetaForm;
             }
-            m_fireCountDown = get()->PlayerDataAsset->TimeBetweenFire * coef;
+            m_fireCountDown = get()->PlayerDataAsset->TimeBetweenFire * coef * ((100.0f - get<AShipPawn>()->m_bonusFireRate) / 100.0f);
         }
         else
         {
@@ -93,11 +93,6 @@ void UFireComponent::spawnBullet(FTransform const& _transform) const
         laser->R_Team = get()->Team;
         UGameplayStatics::FinishSpawningActor(laser, _transform);
         setupProjectile(laser);
-
-        if (AShipPawn* shipPawn = get<AShipPawn>())
-        {
-            shipPawn->RPCNetMulticastFxFireBullet();
-        }
     }
 }
 
@@ -118,11 +113,6 @@ void UFireComponent::launchMissile(FTransform const _transform) const
 
             UGameplayStatics::FinishSpawningActor(missile, _transform);
             setupProjectile(missile);
-
-            if (AShipPawn* shipPawn = get<AShipPawn>())
-            {
-                shipPawn->RPCNetMulticastFxFireMissile();
-            }
         }
     }
 }
@@ -210,7 +200,7 @@ void UFireComponent::setupProjectile(AActor* _projectile) const
     {
         if (AProjectileBase* projectileBase = Cast<AProjectileBase>(_projectile))
         {
-            projectileBase->R_PlayerIdOwner = spacelPlayerState->PlayerId;
+            projectileBase->PlayerIdOwner = spacelPlayerState->PlayerId;
         }
     }
 }

@@ -25,13 +25,16 @@ public:
 	
 private:
 	UFUNCTION()
-	void OnUpdateMatiere(int _value);
+	void OnUpdateMatiere(int _value, EMatiereOrigin _type);
 
 	/* repair protection */
 	ESkillReturn onRepairProtection();
 
 	/* repair support */
 	ESkillReturn onRepairSupport();
+
+	/* force repair */
+	void heal(uint8 _value);
 
 	ESkillReturn repair(TArray<FVector_NetQuantize> & _removedLocations, TArray<FVector_NetQuantize> & _locations, std::function<void(void)> _onRep, int _minMatiere, int _effect);
 };

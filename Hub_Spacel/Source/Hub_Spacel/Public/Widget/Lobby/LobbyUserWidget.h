@@ -22,6 +22,12 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void BP_SetupOutline(FSlateColor _color);
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void BP_SetChoose(class UTexture2D* _icon, ESkillType _type);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void BP_Valid(ESkillType _type);
+
 private:
 	UFUNCTION()
 	void StartLobby(EGameState _state);
@@ -34,6 +40,9 @@ private:
 
 	UFUNCTION()
 	void OnCurrentSkillChange();
+
+	UFUNCTION()
+	void OnValidChoose();
 
 	UFUNCTION()
 	void SpawnLobby3D();
@@ -51,6 +60,9 @@ protected:
 
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
 	class UFlyingGameModeDataAsset* GameModeDataAsset { nullptr };
+
+	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
+	class UEditorHackDataAsset* HackDataAsset{ nullptr };
 
 	UPROPERTY(Category = "Setup", EditAnywhere, BlueprintReadWrite)
 	TArray<ESkill> LowSkill {};
@@ -76,4 +88,5 @@ protected:
 	int Time { 0 };
 
 	ESkillType m_currentSkillType{};
+	bool m_isChoose { false };
 };

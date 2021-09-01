@@ -58,8 +58,8 @@ private:
 	void fireOff() override;
 	void lock() override;
 
-	void showScore();
-	void hideScore();
+	void showMission();
+	void hideMission();
 
 	/* from event */
 	UFUNCTION()

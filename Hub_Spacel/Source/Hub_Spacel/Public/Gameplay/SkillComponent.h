@@ -32,6 +32,9 @@ protected:
 private:
 	void setupSkill();
 
+	UFUNCTION()
+	void SetupSpecialSkill();
+
 	UFUNCTION(Reliable, Server)
 	void RPCServerUseSkill(ESkill _skill);
 
@@ -46,10 +49,22 @@ private:
 
 	class UUniqueSkillDataAsset const* getSkill(ESkill _skill) const;
 
+	void emergencyRedCube();
+	UFUNCTION(Reliable, Client)
+	void RPCClientEmergencyRedCube();
+
+	void emergencyRedCubeRemove();
+	UFUNCTION(Reliable, Client)
+	void RPCClientEmergencyRedCubeRemove();
+
+	void removeSkill();
+
 public:
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
 	class USkillDataAsset* SkillDataAsset{ nullptr };
 
 private:
 	TArray<TUniquePtr<SkillCountDown>> m_skills {};
+
+	TArray<ESkill> m_skillToRemove {};
 };

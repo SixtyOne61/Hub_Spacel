@@ -4,6 +4,7 @@
 #include "SpacelGameState.h"
 #include "Player/SpacelPlayerState.h"
 #include "Player/ShipPawn.h"
+#include "Player/MetricComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerStart.h"
@@ -56,7 +57,7 @@ int32 ASpacelGameState::GetScore(FString const& _team) const
         }
     }
 
-    ensure(false);
+    // can be happear on end when stats doesn't complete yet
     return 0;
 }
 
@@ -85,6 +86,10 @@ void ASpacelGameState::AddScore(FString const& _team, int32 _playerId, EScoreTyp
                 if (AShipPawn* shipPawn = playerState->GetPawn<AShipPawn>())
                 {
                     shipPawn->RPCClientFeedbackScore(_type, scoreValue);
+                    if (UMetricComponent* component = Cast<UMetricComponent>(shipPawn->GetComponentByClass(UMetricComponent::StaticClass())))
+                    {
+                        component->OnScored(_type, scoreValue);
+                    }
                 }
             }
         }
@@ -138,6 +143,18 @@ void ASpacelGameState::RegisterTeam()
 void ASpacelGameState::BeginPlay()
 {
     Super::BeginPlay();
+    FMath::RandInit((int32)FDateTime::Now().GetMillisecond());
+}
+
+void ASpacelGameState::RPCNetMulticastStartGlobalCountDown_Implementation(int64 _syncPoint, uint16 _duration)
+{
+    int64 now = FDateTime::UtcNow().ToUnixTimestamp();
+    // readjust location with sync time
+    int64 deltaSecond = now - _syncPoint;
+
+    this->GlobalSecondLocalCountDown = _duration - deltaSecond;
+
+    OnStartLocalTimerDelegate.Broadcast(_duration - deltaSecond);
 }
 
 void ASpacelGameState::RPCNetMulticastStartMission_Implementation(EMission _type)
@@ -145,14 +162,48 @@ void ASpacelGameState::RPCNetMulticastStartMission_Implementation(EMission _type
     OnStartMissionDelegate.Broadcast(_type);
 }
 
-void ASpacelGameState::RPCNetMulticastStartMissionTwoParam_Implementation(EMission _type, FName _team)
+void ASpacelGameState::RPCNetMulticastStartMissionTwoParam_Implementation(EMission _type, FName _team, FName _teamTarget)
 {
-    OnStartMissionTwoParamDelegate.Broadcast(_type, _team);
+    OnStartMissionTwoParamDelegate.Broadcast(_type, _team, _teamTarget);
 }
 
 void ASpacelGameState::RPCNetMulticastEndMission_Implementation(EMission _type)
 {
     OnEndMissionDelegate.Broadcast(_type);
+}
+
+void ASpacelGameState::RPCNetMulticastResetTimerMission_Implementation(EMission _type)
+{
+    OnResetTimerMissionDelegate.Broadcast(_type);
+}
+
+void ASpacelGameState::RPCNetMulticastKill_Implementation(int32 _killer, int32 _killed)
+{
+    OnWhoKillWhoDelegate.Broadcast(_killer, _killed);
+}
+
+void ASpacelGameState::registerMission()
+{
+    if (this->GameStateDataAsset != nullptr)
+    {
+        RandomMissions = this->GameStateDataAsset->RandomMissions;
+
+        for (auto timer : this->GameStateDataAsset->TimerMissions)
+        {
+            FTimerHandle handle;
+            this->GetWorldTimerManager().SetTimer(handle, this, &ASpacelGameState::CallMission, 1.0f, false, timer);
+        }
+    }
+
+    OnAskMissionDelegate.Broadcast(EMission::FirstBlood);
+    OnAskMissionDelegate.Broadcast(EMission::ScoreRace);
+}
+
+void ASpacelGameState::CallMission()
+{
+    int32 id = FMath::RandRange(0, RandomMissions.Num() - 1);
+    OnAskMissionDelegate.Broadcast(RandomMissions[id]);
+    RandomMissions.RemoveAt(id);
 }
 
 void ASpacelGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

@@ -6,13 +6,13 @@
 #include "Player/Common/CommonPawn.h"
 #include "Util/EnumUtil.h"
 #include "Util/SpacelEvent.h"
-#include "DataAsset/MissionDataAsset.h"
+#include "Enum/SpacelEnum.h"
 #include <functional>
 #include "ShipPawn.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUpdateMatiere, int, _value);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnUpdateMatiere, int, _value, EMatiereOrigin, _type);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnEndUpdateMatiere, int32, _value, FString const&, _deltaStr);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnShowScore, bool, _show);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnShowMission, bool, _show);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLocalTeamUpdate, FString const&, _team);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAddEffect, EEffect, _type);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRemoveEffect, EEffect, _type);
@@ -30,6 +30,8 @@ class HUB_SPACEL_API AShipPawn : public ACommonPawn
     friend class URepairComponent;
     friend class ULocalPlayerActionComponent;
     friend class USkillComponent;
+    friend class UMetricComponent;
+    friend class UModuleComponent;
     friend class AMissionManager;
     friend class AComet;
 
@@ -58,34 +60,26 @@ public:
 
     void launchMissile();
     void spawnKatyusha();
-    void emp();
+    ESkillReturn spawnEmp();
     void emp(uint32 _duration, FName const& _team, int32 _playerId);
-    ESkillReturn giveMatiereToAlly(uint8 _id);
 
     ESkillReturn onRepairProtection();
     ESkillReturn onRepairSupport();
+    ESkillReturn onSwapEmergency();
+    void onEmergencyCountDownEnd();
 
     UFUNCTION(UnReliable, Client)
     void RPCClientFeedbackScore(EScoreType _type, int16 _value);
 
-    void addMatiere(int32 _val);
+    void addMatiere(int32 _val, EMatiereOrigin _type);
     void farmAsteroide();
-    ESkillReturn spawnNinePack();
+    ESkillReturn spawnHealPack();
 
-    void boostWall();
+    void boostPassive(EMission _type, int32 _rewardValue);
 
 protected:
     UFUNCTION(BlueprintImplementableEvent)
     void BP_OnStartGame();
-
-    UFUNCTION(BlueprintImplementableEvent)
-    void BP_FxFireBullet();
-
-    UFUNCTION(BlueprintImplementableEvent)
-    void BP_FxFireMissile();
-
-    UFUNCTION(BlueprintImplementableEvent)
-    void BP_FxSpawnNinePacks();
 
     UFUNCTION(BlueprintImplementableEvent)
     void BP_FxAddMatiere(int32 _val);
@@ -97,10 +91,27 @@ protected:
     void BP_FxAddEffect(EEffect _effect);
 
     UFUNCTION(BlueprintImplementableEvent)
+    void BP_FxGlobalAddEffect(EEffect _effect);
+
+    UFUNCTION(BlueprintImplementableEvent)
+    void BP_FxGlobalRemoveEffect(EEffect _effect);
+
+    UFUNCTION(BlueprintImplementableEvent)
     void BP_FxRemoveEffect(EEffect _effect);
 
     UFUNCTION(BlueprintImplementableEvent)
     void BP_InitFireComponent();
+
+    UFUNCTION(BlueprintImplementableEvent)
+    void BP_ExploseHealFx();
+
+    UFUNCTION(BlueprintImplementableEvent)
+    void BP_GoldFx(bool _activate);
+
+    UFUNCTION()
+    void OnEndMission(EMission _type);
+
+    void emergencyRedCube(FVector const& _location);
 
 private:
     void OnRep_PlayerState() override;
@@ -121,6 +132,9 @@ private:
 
     /* call for kill a player when red zone is hit */
     void kill();
+
+    /* call for force heal */
+    void heal(uint8 _value);
 
     /* call on server */
     UFUNCTION()
@@ -148,7 +162,7 @@ private:
     void RPCNetMulticastStartGame(FName const& _team);
 
     UFUNCTION(UnReliable, Client)
-    void RPCClientPlayCameraShake();
+    void RPCClientPlayCameraShake(EImpactType _type);
 
     UFUNCTION(Reliable, Client)
     void RPCClientStartGame(FName const& _team);
@@ -156,23 +170,23 @@ private:
     UFUNCTION(Reliable, Client)
     void RPCClientAddEffect(EEffect _effect);
 
+    UFUNCTION(Reliable, NetMulticast)
+    void RPCNetMulticastAddEffect(EEffect _effect);
+
+    UFUNCTION(Reliable, NetMulticast)
+    void RPCNetMulticastRemoveEffect(EEffect _effect);
+
     UFUNCTION(Reliable, Client)
     void RPCClientRemoveEffect(EEffect _effect);
 
     UFUNCTION(UnReliable, NetMulticast)
-    void RPCNetMulticastFxFireBullet();
-
-    UFUNCTION(UnReliable, NetMulticast)
-    void RPCNetMulticastFxFireMissile();
-
-    UFUNCTION(UnReliable, NetMulticast)
-    void RPCNetMulticastFxNinePack();
-
-    UFUNCTION(UnReliable, NetMulticast)
-    void RPCClientFxAddMatiere(int8 _val);
-
-    UFUNCTION(UnReliable, NetMulticast)
     void RPCNetMulticastFxKilled();
+
+    UFUNCTION(UnReliable, NetMulticast)
+    void RPCNetMulticastFxExploseHeal();
+
+    UFUNCTION(UnReliable, NetMulticast)
+    void RPCNetMultiCastFxGold(bool _activate);
 
     bool canTank(int32 _val);
 
@@ -185,9 +199,6 @@ private:
     UFUNCTION()
     void BackToGame();
 
-    UFUNCTION()
-    void CountDownRespawn();
-
 public:
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
     FOnFeedbackScore OnFeedbackScoreDelegate {};
@@ -195,15 +206,14 @@ public:
     using ConstStr = FString const&;
     Util::Event<ConstStr, ConstStr> OnKill {};
 
+    Util::Event<> OnLostGoldDelegate{ };
+
 protected:
     UPROPERTY(ReplicatedUsing = "OnRep_Matiere")
     int16 RU_Matiere { 0 };
 
     UPROPERTY(Replicated)
     int8 R_ShieldLife { 0 };
-
-    UPROPERTY(Replicated)
-    bool R_HasBoostWall { false };
 
     FName m_lastTeamEmp {};
     int32 m_lastPlayerIdEmp {};
@@ -217,6 +227,15 @@ protected:
     // use by local client for feedback
     int32 m_lastMatiere {0};
 
+    UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
+    class UMissionDataAsset* MissionDataAsset { nullptr };
+
+    UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
+    class UEditorHackDataAsset* HackDataAsset { nullptr };
+
+    UPROPERTY(EditAnywhere)
+    class UNiagaraSystem* HealPackFx { nullptr };
+
 private:
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
     FOnUpdateMatiere OnUpdateMatiereDelegate {};
@@ -225,7 +244,7 @@ private:
     FOnEndUpdateMatiere OnEndUpdateMatiereDelegate {};
 
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
-    FOnShowScore OnShowScoreDelegate {};
+    FOnShowMission OnShowMissionDelegate {};
 
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
     FOnLocalTeamUpdate OnLocalTeamUpdateDelegate {};
@@ -238,9 +257,6 @@ private:
 
     // only for local player
     FRotator m_defaultSprintArmRotator {};
-
-    // count time when respawn
-    int8 m_countDownRespawn {};
 
     // false when endgame appear
     bool m_endGame { false };

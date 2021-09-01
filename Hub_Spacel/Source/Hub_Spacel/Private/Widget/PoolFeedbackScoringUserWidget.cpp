@@ -44,19 +44,16 @@ void UPoolFeedbackScoringUserWidget::OnScored(EScoreType _type, int32 _value)
     {
         if (UPointUserWidget* widget = this->AvailableWidget.Pop())
         {
-            if (APlayerController* playerController = UGameplayStatics::GetPlayerController(this->GetWorld(), 0))
+            FString value = "+";
+            value += FString::FromInt(_value);
+
+            FVector2D mousePosition = UWidgetLayoutLibrary::GetMousePositionOnViewport(this->GetWorld());
+            if (UCanvasPanelSlot* panelSlot = Cast<UCanvasPanelSlot>(widget->Slot))
             {
-                FString value = "+";
-                value += FString::FromInt(_value);
+                panelSlot->SetPosition(mousePosition);
+                widget->StartAnim(value);
 
-                FVector2D mousePosition = UWidgetLayoutLibrary::GetMousePositionOnViewport(this->GetWorld());
-                if (UCanvasPanelSlot* panelSlot = Cast<UCanvasPanelSlot>(widget->Slot))
-                {
-                    panelSlot->SetPosition(mousePosition);
-                    widget->StartAnim(value);
-
-                    BP_OnScored(_type);
-                }
+                BP_OnScored(_type);
             }
         }
     }

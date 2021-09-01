@@ -18,6 +18,7 @@ class HUB_SPACEL_API ACommonPawn : public APawn
 	friend class ACommonPlayerController;
     friend class ULocalPlayerActionComponent;
     friend class UFireComponent;
+    friend class SkillCountDown;
 
 public:
 	// Sets default values for this pawn's properties
@@ -55,6 +56,12 @@ protected:
     UFUNCTION()
     void OnRep_PercentSpeed();
 
+    UFUNCTION()
+    void OnRep_RightTrail();
+
+    UFUNCTION()
+    void OnRep_LeftTrail();
+
     void moveShip(float _deltaTime);
 
     template<class T>
@@ -73,6 +80,9 @@ public:
 
     UPROPERTY(Category = "Ship", VisibleAnywhere, BlueprintReadOnly)
     class UStaticMeshComponent* ShieldComponent{ nullptr };
+
+    UPROPERTY(Category = "Ship", VisibleAnywhere, BlueprintReadOnly)
+    class UStaticMeshComponent* MetaFormProtectionComponent{ nullptr };
 
     UPROPERTY(Category = "Ship", VisibleAnywhere, BlueprintReadOnly)
     class UPoseableMeshComponent* BaseShipMeshComponent{ nullptr };
@@ -100,6 +110,9 @@ public:
     UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)
     class USkillComponent* SkillComponent{ nullptr };
 
+    UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)
+    class UMetricComponent* MetricComponent { nullptr };
+
     /* only on server side */
     UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)
     class URepairComponent* RepairComponent{ nullptr };
@@ -123,17 +136,26 @@ public:
     class UPostProcessComponent* SpeedLinesComponent{ nullptr };
 
     UPROPERTY(Category = "FX", EditAnywhere, BlueprintReadWrite)
-    TSubclassOf<class UCameraShake> CameraShakeClass{ nullptr };
+    TSubclassOf<class UCameraShake> CameraShakeObstacleClass{ nullptr };
+
+    UPROPERTY(Category = "FX", EditAnywhere, BlueprintReadWrite)
+    TSubclassOf<class UCameraShake> CameraShakeHitClass{ nullptr };
 
     UPROPERTY(Category = "FX", EditAnywhere)
     class UMaterialInstance* MaterialSpeedLines{ nullptr };
+
+    UPROPERTY(Category = "FX", EditAnywhere, BlueprintReadWrite)
+    class UNiagaraComponent* RightTrailComponent { nullptr };
+
+    UPROPERTY(Category = "FX", EditAnywhere, BlueprintReadWrite)
+    class UNiagaraComponent* LeftTrailComponent { nullptr };
 
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
     FOnSendInfoPlayer OnSendInfoPlayerDelegate {};
 
 protected:
     UPROPERTY()
-    class UNiagaraComponent* ExhaustFxComponent{ nullptr };
+    TArray<class UNiagaraComponent*> ExhaustFxComponents { };
 
 	FVector TargetLocation{ FVector::ZeroVector };
 
@@ -145,12 +167,25 @@ protected:
     float RU_PercentSpeed { 0.0f };
 
     UPROPERTY(Replicated)
-    float R_OverDrive{ 0.0f };
+    uint8 R_OverDrive { 0 };
+
+    UPROPERTY(ReplicatedUsing = "OnRep_RightTrail")
+    bool RU_RightTrail{ false };
+
+    UPROPERTY(ReplicatedUsing = "OnRep_LeftTrail")
+    bool RU_LeftTrail { false };
 
 	/* use by server or offline */
 	float PercentHorizontalStraf{ 0.0f };
 	float PercentVerticalStraf{ 0.0f };
 	float PercentFlightAttitude{ 0.0f };
+
+    // if we have bonus, value != 0
+    // must replicated reduc count down for progress bar skill
+    UPROPERTY(Replicated)
+    uint8 R_BonusCountDown{ 0 };
+    uint8 m_bonusFireRate{ 0 };
+    uint8 m_bonusSpeed{ 0 };
 
 private:
     UPROPERTY()

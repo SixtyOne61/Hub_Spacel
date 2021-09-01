@@ -51,9 +51,9 @@ UENUM(BlueprintType)
 enum class ESkillType : uint8
 {
     None UMETA(DisplayName = "None"),
-    Low UMETA(DisplayName = "Attack"),
-    Medium UMETA(DisplayName = "Protection"),
-    Hight UMETA(DisplayName = "Support")
+    Low UMETA(DisplayName = "Low"),
+    Medium UMETA(DisplayName = "Medium"),
+    Hight UMETA(DisplayName = "Hight")
 };
 
 UENUM(BlueprintType)
@@ -74,7 +74,31 @@ enum class ESkill : uint8
     FireRate UMETA(DisplayName = "FireRate"),
     HeavyProtection UMETA(DisplayName = "HeavyProtection"),
     Speedy UMETA(DisplayName = "Speedy"),
-    Katyusha UMETA(DisplayName = "Katyusha")
+    Katyusha UMETA(DisplayName = "Katyusha"),
+    HealPack UMETA(DisplayName = "HealPack"),
+    Emergency UMETA(DisplayName = "Emergency"),
+};
+
+UENUM(BlueprintType)
+enum class EInput : uint8
+{
+    PrimaryShot UMETA(DisplayName = "PrimaryShot"),
+    SecondaryShot UMETA(DisplayName = "SecondaryShot"),
+    Forward UMETA(DisplayName = "Forward"),
+    Backward UMETA(DisplayName = "Backward"),
+    Left UMETA(DisplayName = "Left"),
+    Right UMETA(DisplayName = "Right"),
+    FlightAltitudeLeft UMETA(DisplayName = "FlightAltitudeLeft"),
+    FlightAltitudeRight UMETA(DisplayName = "FlightAltitudeRight"),
+    ShowMission UMETA(DisplayName = "ShowMission"),
+    Lock UMETA(DisplayName = "Lock"),
+    EscapeMode UMETA(DisplayName = "EscapeMode"),
+    MediumSkill UMETA(DisplayName = "MediumSkill"),
+    HightSkill UMETA(DisplayName = "HightSkill"),
+    HealSkill UMETA(DisplayName = "HealSkill"),
+    RepairProtection UMETA(DisplayName = "RepairProtection"),
+    RepairEngine UMETA(DisplayName = "RepairEngine"),
+    Emergency UMETA(DisplayName = "Emergency")
 };
 
 UENUM(BlueprintType, meta = (Bitflags, UseEnumValuesAsMaskValuesInEditor = "true"))
@@ -107,6 +131,13 @@ enum class EEffect : uint8
     Respawned UMETA(DisplayName = "Respawned"),
     Targeted UMETA(DisplayName = "Targeted"),
     StartGame UMETA(DisplayName = "StartGame"),
+    Gold UMETA(DisplayName = "Gold"),
+    PassiveFireRate UMETA(DisplayName = "PassiveFireRate"),
+    PassiveCountDown UMETA(DisplayName = "PassiveCountDown"),
+    PassiveSpeed UMETA(DisplayName = "PassiveSpeed"),
+    SkillPassiveFireRate UMETA(DisplayName = "PassiveFireRate"),
+    SkillPassiveProtection UMETA(DisplayName = "PassiveCountDown"),
+    SkillPassiveSpeed UMETA(DisplayName = "PassiveSpeed"),
 };
 
 UENUM(BlueprintType)
@@ -127,16 +158,42 @@ enum class EScoreType : uint8
 };
 
 UENUM(BlueprintType)
+enum class EImpactType : uint8
+{
+    Hit UMETA(DisplayName = "Hit"),
+    Obstacle UMETA(DisplayName = "Obstacle")
+};
+
+UENUM(BlueprintType)
 enum class EMission : uint8
 {
     FirstBlood UMETA(DisplayName = "FirstBlood"),
     ScoreRace UMETA(DisplayName = "ScoreRace"),
     EcartType UMETA(DisplayName = "EcartType"),
     Comet UMETA(DisplayName = "Comet"),
+    Pirate UMETA(DisplayName = "Pirate"),
+    TakeGold UMETA(DisplayName = "TakeGold"),
+    HoldGold UMETA(DisplayName = "HoldGold"),
 };
 
 UENUM(BlueprintType)
 enum class EMetric : uint8
 {
     Fog,
+    Precision,
+    Kill,
+    EmpPoint,
+    TankPoint,
+    MatiereWin,
+    MatiereUseForRepair,
+    TotalScore,
+};
+
+UENUM(BlueprintType)
+enum class EMatiereOrigin : uint8
+{
+    Heal UMETA(DisplayName = "Heal"),
+    Farm UMETA(DisplayName = "Farm"),
+    Kill UMETA(DisplayName = "Kill"),
+    Lost UMETA(DisplayName = "Lost"),
 };

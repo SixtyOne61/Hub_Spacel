@@ -27,20 +27,24 @@ public:
 
 private:
 	UFUNCTION()
-	void OnStartGame(EGameState _state);
+	void OnAskMission(EMission _missionId);
 
-	void startMission(FMission const& _mission) const;
+	void startMission(TUniquePtr<MissionBehaviour> & _missionBehaviour);
 	void endMission(FMission const& _mission) const;
+	void onResetTimer(EMission _type);
 
-	void startMissionComet();
+	void batch();
 
 public:
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
 	class UMissionDataAsset* MissionDataAsset{ nullptr };
 
-	UPROPERTY(Category = "Sub class", EditAnywhere, BlueprintReadWrite)
-	TSubclassOf<class AComet> CometClass { nullptr };
+	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
+	class UEditorHackDataAsset* HackDataAsset{ nullptr };
 
+private:
 	TArray<TUniquePtr<MissionBehaviour>> m_openMission;
 	TArray<TUniquePtr<MissionSilence>> m_silenceMission;
+
+	TArray<EMission> m_batch;
 };

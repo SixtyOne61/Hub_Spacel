@@ -27,6 +27,9 @@ protected:
 	UFUNCTION(UnReliable, NetMulticast)
 	void RPCNetMulticastSync(int64 _syncPoint, FVector_NetQuantize const& _location);
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void BP_IsSeek();
+
 private:
 	UFUNCTION()
 	void Seek();
@@ -38,6 +41,6 @@ protected:
 	UPROPERTY(Replicated, EditAnywhere, Category = "Setup")
 	FVector R_TargetLocation {};
 
-	UPROPERTY(Replicated)
-	bool R_IsSeek{ false };
+	UPROPERTY(BlueprintReadWrite, ReplicatedUsing = "BP_IsSeek")
+	bool RU_IsSeek{ false };
 };

@@ -17,6 +17,7 @@
 #include "GameState/SpacelGameState.h"
 #include "Hub_SpacelGameInstance.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Util/SimplyUI.h"
 #include "DataAsset/PlayerDataAsset.h"
 #include "DataAsset/SkillDataAsset.h"
@@ -27,16 +28,17 @@
 #include "DataAsset/FlyingGameModeDataAsset.h"
 #include "DataAsset/KeyDataAsset.h"
 #include "DataAsset/MissionDataAsset.h"
+#include "DataAsset/SkillDataAsset.h"
 #include "Widget/AllyWidget.h"
 #include "Widget/SkillWidget.h"
 #include "Widget/SkillProgressWidget.h"
 #include "Widget/EffectWidget.h"
-#include "Widget/ScoreUserWidget.h"
 #include "Widget/TutorialUserWidget.h"
 #include "Widget/MissionPanelUserWidget.h"
 #include "Factory/SpacelFactory.h"
 #include "Styling/SlateColor.h"
 #include "GameMode/FlyingGameMode.h"
+#include "Util/Tag.h"
 #include "Util/DebugScreenMessage.h"
 
 void USpacelWidget::NativeConstruct()
@@ -44,18 +46,23 @@ void USpacelWidget::NativeConstruct()
     Super::NativeConstruct();
 
     EventTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Event"));
+    TimerTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Timer"));
     PingTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Ping"));
     ProtectionProgressBar = SimplyUI::initSafetyFromName<UUserWidget, UProgressBar>(this, TEXT("ProgressBar_Protection"));
     SupportProgressBar = SimplyUI::initSafetyFromName<UUserWidget, UProgressBar>(this, TEXT("ProgressBar_Support"));
     ProtectionTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Protection"));
     SupportTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Support"));
-    ScoreWidget = SimplyUI::initSafetyFromName<UUserWidget, UScoreUserWidget>(this, TEXT("WBP_Score"));
     SkillBarHorizontalBox = SimplyUI::initSafetyFromName<UUserWidget, UHorizontalBox>(this, TEXT("SkillBar"));
     EffectBarHorizontalBox = SimplyUI::initSafetyFromName<UUserWidget, UHorizontalBox>(this, TEXT("EffectBar"));
-    TutorialWidget = SimplyUI::initSafetyFromName<UUserWidget, UTutorialUserWidget>(this, TEXT("WBP_Didactitiel"));
 
     TArray<FName> allyNames { TEXT("Widget_Ally1"), TEXT("Widget_Ally2") };
     SimplyUI::initArray(this, AllyWidgets, allyNames);
+
+    TArray<FName> scoreColorNames { TEXT("Border_ColorTeam1"), TEXT("Border_ColorTeam2"), TEXT("Border_ColorTeam3") };
+    SimplyUI::initArray(this, TeamScoreColorWidgets, scoreColorNames);
+
+    TArray<FName> scoreNames{ TEXT("TextBlock_ScoreTeam1"), TEXT("TextBlock_ScoreTeam2"), TEXT("TextBlock_ScoreTeam3") };
+    SimplyUI::initArray(this, TeamScoreWidgets, scoreNames);
 
     UWorld* world{ this->GetWorld() };
     if (!ensure(world != nullptr)) return;
@@ -72,6 +79,8 @@ void USpacelWidget::NativeConstruct()
         spacelGameState->OnStartMissionDelegate.AddDynamic(this, &USpacelWidget::OnStartMission);
         spacelGameState->OnStartMissionTwoParamDelegate.AddDynamic(this, &USpacelWidget::OnStartMissionTwoParam);
         spacelGameState->OnEndMissionDelegate.AddDynamic(this, &USpacelWidget::OnEndMission);
+        spacelGameState->OnResetTimerMissionDelegate.AddDynamic(this, &USpacelWidget::OnResetTimerMission);
+        spacelGameState->OnStartLocalTimerDelegate.AddDynamic(this, &USpacelWidget::OnStartLocalTimer);
     }
 
     AShipPawn* shipPawn { this->GetOwningPlayerPawn<AShipPawn>() };
@@ -82,13 +91,21 @@ void USpacelWidget::NativeConstruct()
         shipPawn->ModuleComponent->OnUpdateCountProtectionDelegate.AddDynamic(this, &USpacelWidget::OnUpdateCountProtection);
         shipPawn->ModuleComponent->OnUpdateCountSupportDelegate.AddDynamic(this, &USpacelWidget::OnUpdateCountSupport);
 
-        shipPawn->OnShowScoreDelegate.AddDynamic(this, &USpacelWidget::OnShowScore);
+        shipPawn->OnShowMissionDelegate.AddDynamic(this, &USpacelWidget::OnShowMission);
         shipPawn->OnAddEffectDelegate.AddDynamic(this, &USpacelWidget::OnAddEffect);
         shipPawn->OnRemoveEffectDelegate.AddDynamic(this, &USpacelWidget::OnRemoveEffect);
 
         shipPawn->OnSendInfoPlayerDelegate.AddDynamic(this, &USpacelWidget::OnSendInfoPlayer);
 
         RegisterPlayerState();
+    }
+
+    if (UMissionPanelUserWidget* panelMission = SimplyUI::initSafetyFromName<UUserWidget, UMissionPanelUserWidget>(this, TEXT("WBP_Mission")))
+    {
+        if (this->KeyDataAsset != nullptr)
+        {
+            panelMission->BP_Setup(this->KeyDataAsset->get(this->KeyMissionPanel));
+        }
     }
 }
 
@@ -99,6 +116,7 @@ void USpacelWidget::RegisterPlayerState()
         if (ASpacelPlayerState* playerState = shipPawn->GetPlayerState<ASpacelPlayerState>())
         {
             playerState->OnAddSkillUniqueDelegate = std::bind(&USpacelWidget::addSkill, this, std::placeholders::_1);
+            playerState->OnRemoveSkillUniqueDelegate = std::bind(&USpacelWidget::removeSkill, this, std::placeholders::_1);
             return;
         }
     }
@@ -124,12 +142,66 @@ void USpacelWidget::NativeTick(const FGeometry& _myGeometry, float _deltaTime)
 {
     Super::NativeTick(_myGeometry, _deltaTime);
     UpdateScore();
+    updateArrow();
+    updateLocalTimer(_deltaTime);
 }
 
-void USpacelWidget::OnStartMissionTwoParam(EMission _type, FName const& _team)
+void USpacelWidget::updateLocalTimer(float _deltaSeconde)
+{
+    UWorld* world{ this->GetWorld() };
+    if (!ensure(world != nullptr)) return;
+
+    if (m_localTimer > 0.0f)
+    {
+        m_localTimer = FMath::Max(m_localTimer - _deltaSeconde, 0.0f);
+        int min = (int)m_localTimer / 60;
+        int sec = (int)m_localTimer % 60;
+        FString minStr = min < 10 ? "0" + FString::FromInt(min) : FString::FromInt(min);
+        FString secStr = sec < 10 ? "0" + FString::FromInt(sec) : FString::FromInt(sec);
+
+        this->TimerTextBlock->SetText(FText::FromString(minStr + ":" + secStr));
+    }
+}
+
+void USpacelWidget::updateArrow()
+{
+    if (AShipPawn* shipPawn = this->GetOwningPlayerPawn<AShipPawn>())
+    {
+        TArray<UActorComponent*> components = shipPawn->GetComponentsByTag(USceneComponent::StaticClass(), Tags::Arrow);
+        for (auto component : components)
+        {
+            if (USceneComponent* sceneComponent = Cast<USceneComponent>(component))
+            {
+                if (m_arrowTarget != nullptr && !m_arrowTarget->IsPendingKill())
+                {
+                    FRotator rot = UKismetMathLibrary::FindLookAtRotation(sceneComponent->GetComponentLocation(), m_arrowTarget->GetActorLocation());
+                    sceneComponent->SetWorldRotation(rot.Quaternion());
+                    sceneComponent->SetVisibility(true);
+                }
+                else
+                {
+                    sceneComponent->SetVisibility(false);
+                }
+                break;
+            }
+        }
+    }
+
+}
+
+void USpacelWidget::OnStartLocalTimer(int _startTimer)
+{
+    m_localTimer = _startTimer;
+}
+
+void USpacelWidget::OnStartMissionTwoParam(EMission _type, FName const& _team, FName const& _targetTeam)
 {
     if (*this->Team == _team)
     {
+        if (FMission* mission = this->MissionDataAsset->getMissionModify(_type))
+        {
+            mission->Team = _targetTeam.ToString();
+        }
         OnStartMission(_type);
     }
 }
@@ -146,11 +218,50 @@ void USpacelWidget::OnStartMission(EMission _type)
 
     m_currentMission.Add(_type);
 
-    UMissionPanelUserWidget* panelMission = SimplyUI::initSafetyFromName<UUserWidget, UMissionPanelUserWidget>(this, TEXT("WBP_Mission"));
-    if (panelMission != nullptr)
+    if (UMissionPanelUserWidget* panelMission = SimplyUI::initSafetyFromName<UUserWidget, UMissionPanelUserWidget>(this, TEXT("WBP_Mission")))
     {
         panelMission->addMission(this->MissionDataAsset->getMission(_type));
     }
+
+    if (_type == EMission::Pirate)
+    {
+        // find pirate
+        InitTargetArrow(Tags::Pirate);
+    }
+    else if (_type == EMission::Comet)
+    {
+        // find comet
+        InitTargetArrow(Tags::Comet);
+    }
+    else if (_type == EMission::TakeGold)
+    {
+        // find gold
+        InitTargetArrow(Tags::Gold);
+    }
+}
+
+void USpacelWidget::InitTargetArrow(FName const& _tag)
+{
+    TArray<AActor*> out;
+    UGameplayStatics::GetAllActorsWithTag(this->GetWorld(), _tag, out);
+
+    for (auto act : out)
+    {
+        if (act != nullptr && !act->IsPendingKill())
+        {
+            m_arrowTarget = act;
+            return;
+        }
+    }
+
+    FTimerDelegate timerDelegate;
+    timerDelegate.BindUFunction(this, FName("InitTargetArrow"), _tag);
+
+    UWorld* world { this->GetWorld() };
+    if (!ensure(world != nullptr)) return;
+
+    FTimerHandle handle;
+    world->GetTimerManager().SetTimer(handle, timerDelegate, 1.0f, false, 0.0f);
 }
 
 void USpacelWidget::OnEndMission(EMission _type)
@@ -170,6 +281,23 @@ void USpacelWidget::OnEndMission(EMission _type)
             panelMission->removeMission(_type);
         }
     }
+
+    if (_type == EMission::Pirate || _type == EMission::Comet || _type == EMission::TakeGold)
+    {
+        // reset
+        m_arrowTarget = nullptr;
+    }
+}
+
+void USpacelWidget::OnResetTimerMission(EMission _type)
+{
+    if (m_currentMission.Contains(_type))
+    {
+        if (UMissionPanelUserWidget* panelMission = SimplyUI::initSafetyFromName<UUserWidget, UMissionPanelUserWidget>(this, TEXT("WBP_Mission")))
+        {
+            panelMission->resetTimer(_type);
+        }
+    }
 }
 
 void USpacelWidget::OnChangeState(EGameState _state)
@@ -180,6 +308,9 @@ void USpacelWidget::OnChangeState(EGameState _state)
 
         UWorld* world{ this->GetWorld() };
         if (!ensure(world != nullptr)) return;
+
+        if(world->GetGameState() == nullptr) return;
+
         TArray<APlayerState*> const& playerStates{ world->GetGameState()->PlayerArray };
 
         ASpacelPlayerState* owningPlayerState{ Cast<ASpacelPlayerState>(this->GetOwningPlayerState()) };
@@ -191,13 +322,7 @@ void USpacelWidget::OnChangeState(EGameState _state)
         //set background color for ranking
         if (this->TeamColorDataAsset != nullptr)
         {
-            SetBackgroundRanking(this->TeamColorDataAsset->GetColor<FSlateColor>(Team));
-        }
-
-        // create score array
-        if (this->ScoreWidget != nullptr)
-        {
-            this->ScoreWidget->initScoreArray();
+            SetBackgroundTeamColor(this->TeamColorDataAsset->GetColor<FSlateColor>(Team));
         }
 
         int i{ 0 };
@@ -223,12 +348,6 @@ void USpacelWidget::OnChangeState(EGameState _state)
         float firstDelay = this->GameModeDataAsset->EndModuleTime / 4;
         float inRate = (this->GameModeDataAsset->EndModuleTime - firstDelay) / 2.0f;
         world->GetTimerManager().SetTimer(this->RedLightAnimationHandle, this, &USpacelWidget::RedLight, inRate, true, firstDelay);
-
-        // Set up the delegate.
-        FAsyncLoadGameFromSlotDelegate LoadedDelegate;
-        // USomeUObjectClass::LoadGameDelegateFunction is a void function that takes the following parameters: const FString& SlotName, const int32 UserIndex, USaveGame* LoadedGameData
-        LoadedDelegate.BindUObject(this, &USpacelWidget::OnLoadGame);
-        UGameplayStatics::AsyncLoadGameFromSlot("Save", 0, LoadedDelegate);
     }
     else if (_state == EGameState::InGame)
     {
@@ -244,6 +363,26 @@ void USpacelWidget::RedLight()
 {
     BP_RedLight(m_currentIdRedLight);
     ++m_currentIdRedLight;
+    if (m_currentIdRedLight >= 3)
+    {
+        UWorld* world{ this->GetWorld() };
+        if (!ensure(world != nullptr)) return;
+        world->GetTimerManager().ClearTimer(this->RedLightAnimationHandle);
+    }
+}
+
+void USpacelWidget::removeSkill(ESkill _type)
+{
+    if (this->SkillDataAsset != nullptr)
+    {
+        if (UUniqueSkillDataAsset* skillParam = this->SkillDataAsset->getSKill(_type))
+        {
+            if (USkillWidget* skillWidget = SimplyUI::initUnSafeFromName<UUserWidget, USkillWidget>(this, skillParam->WidgetName))
+            {
+                skillWidget->BP_Remove();
+            }
+        }
+    }
 }
 
 void USpacelWidget::addSkill(class SkillCountDown * _skill)
@@ -253,126 +392,41 @@ void USpacelWidget::addSkill(class SkillCountDown * _skill)
 
     if (UUniqueSkillDataAsset const* skill = _skill->getParam())
     {
-        USkillWidget* skillWidget{ nullptr };
-        if (skill->SkillWidgetClass != nullptr)
+        if (USkillWidget* skillWidget = SimplyUI::initUnSafeFromName<UUserWidget, USkillWidget>(this, skill->WidgetName))
         {
-            FString name = "Skill";
-            name.Append(FString::FromInt((int)skill->Skill));
-            skillWidget = CreateWidget<USkillWidget, UHorizontalBox>(this->SkillBarHorizontalBox, skill->SkillWidgetClass, *name);
-            this->SkillBarHorizontalBox->AddChildToHorizontalBox(skillWidget);
-        }
-        else if (skill->WidgetName.IsValid())
-        {
-            skillWidget = SimplyUI::initUnSafeFromName<UUserWidget, USkillWidget>(this, skill->WidgetName);
-        }
-
-        if (skillWidget != nullptr && this->KeyDataAsset != nullptr)
-        {
-            skillWidget->BP_Setup(skill->BackgroundColorBtn, skill->IconeBtn, this->KeyDataAsset->get(skill->Key));
-        }
-
-        if (UProgressBar* progress = SimplyUI::initUnSafeFromName<UUserWidget, UProgressBar>(skillWidget, TEXT("ProgressBar_Skill")))
-        {
-            _skill->addProgressBar(progress);
-        }
-    }
-}
-
-void USpacelWidget::OnLoadGame(const FString& _slotName, const int32 _userIndex, USaveGame* _loadedGameData)
-{
-    USpacelSaveGame* save = Cast<USpacelSaveGame>(_loadedGameData);
-
-    if (save == nullptr || !save->HasSeeDitactitial)
-    {
-        UWorld* world{ this->GetWorld() };
-        if (!ensure(world != nullptr)) return;
-
-        // Start didactitial
-        world->GetTimerManager().SetTimer(ShowDitactitialHandle, this, &USpacelWidget::ShowDidactitial, 10.0f, true, 1.0f);
-    }
-    else
-    {
-        ShowRandomTips();
-    }
-}
-
-void USpacelWidget::ShowRandomTips()
-{
-    if (this->RandomTipsDataAsset != nullptr)
-    {
-        TArray<FDitactitial> const& tipsArray = this->RandomTipsDataAsset->Tips;
-        int32 id = FMath::RandRange(0, tipsArray.Num()-1);
-
-        if (id < tipsArray.Num())
-        {
-            if (this->TutorialWidget != nullptr)
+            if (this->KeyDataAsset != nullptr)
             {
-                this->TutorialWidget->ShowDitactitial(tipsArray[id].Tips);
-                ShowDidactitialFx();
+                skillWidget->BP_Setup(skill->BackgroundColorBtn, skill->IconeBtn, this->KeyDataAsset->get(skill->Key));
+            }
+
+            if (UProgressBar* progress = SimplyUI::initUnSafeFromName<UUserWidget, UProgressBar>(skillWidget, TEXT("ProgressBar_Skill")))
+            {
+                _skill->addProgressBar(progress);
             }
         }
-    }
-}
-
-void USpacelWidget::ShowDidactitial()
-{
-    if (this->TipsDataAsset != nullptr)
-    {
-        TArray<FDitactitial> const& tipsArray = this->TipsDataAsset->Tips;
-        if (m_nextTipsId >= tipsArray.Num())
-        {
-            UWorld* world{ this->GetWorld() };
-            if (world != nullptr)
-            {
-                world->GetTimerManager().ClearTimer(ShowDitactitialHandle);
-
-                // save information
-                if(USpacelSaveGame* saveGameInstance = Cast<USpacelSaveGame>(UGameplayStatics::CreateSaveGameObject(USpacelSaveGame::StaticClass())))
-                {
-                    // Set data on the savegame object.
-                    saveGameInstance->HasSeeDitactitial = true;
-
-                    // Start async save process.
-                    UGameplayStatics::AsyncSaveGameToSlot(saveGameInstance, "Save", 0);
-                }
-                return;
-            }
-        }
-
-        if (this->TutorialWidget != nullptr)
-        {
-            this->TutorialWidget->ShowDitactitial(tipsArray[m_nextTipsId].Tips);
-            ShowDidactitialFx();
-        }
-        ++m_nextTipsId;
     }
 }
 
 void USpacelWidget::UpdateScore()
 {
-    if(this->ScoreWidget == nullptr) return;
-    this->ScoreWidget->updateScore();
+    if(this->TeamColorDataAsset == nullptr) return;
 
-    ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld()));
-    if (spacelGameState != nullptr)
+    if (ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld())))
     {
         TArray<FScore> scores = spacelGameState->R_Scores;
 
-        // search ranking
-        scores.Sort([](FScore const& _s1, FScore const& _s2)
+        for (int i {0} ; i < scores.Num() ; ++i)
         {
-            return _s1.Score > _s2.Score;
-        });
-
-        uint8 rank = 1;
-        for (FScore const& score : scores)
-        {
-            if (score.Team == this->Team)
+            if (i < this->TeamScoreWidgets.Num())
             {
-                SetRanking(rank);
-                break;
+                this->TeamScoreWidgets[i]->SetText(FText::FromString(FString::FromInt(scores[i].Score)));
             }
-            ++rank;
+
+            if (i < this->TeamScoreColorWidgets.Num())
+            {
+                this->TeamScoreColorWidgets[i]->SetBrushColor(this->TeamColorDataAsset->GetColor<FColor>(scores[i].Team));
+            }
+
         }
     }
 }
@@ -396,13 +450,6 @@ void USpacelWidget::SetLatestEvent()
             if (this->EventTextBlock)
             {
                 this->EventTextBlock->SetText(FText::FromString(winningTeam + " won!"));
-            }
-        }
-        else
-        {
-            if (this->EventTextBlock)
-            {
-                this->EventTextBlock->SetText(FText::FromString(latestEvent));
             }
         }
     }
@@ -445,9 +492,12 @@ void USpacelWidget::OnUpdateCountSupport(int32 _value, int32 _max)
     }
 }
 
-void USpacelWidget::OnShowScore(bool _show)
+void USpacelWidget::OnShowMission(bool _show)
 {
-    setVisibility(this->ScoreWidget, _show);
+    if (UMissionPanelUserWidget* panelMission = SimplyUI::initSafetyFromName<UUserWidget, UMissionPanelUserWidget>(this, TEXT("WBP_Mission")))
+    {
+        panelMission->showMission(_show);
+    }
 }
 
 void USpacelWidget::OnAddEffect(EEffect _type)

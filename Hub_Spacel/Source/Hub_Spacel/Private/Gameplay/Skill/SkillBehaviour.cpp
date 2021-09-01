@@ -17,8 +17,13 @@ SkillBehaviour::SkillBehaviour(ACommonPawn* _pawn, ENetMode _netMode)
 
 ESkillReturn SkillNinePack::onStart()
 {
+    return ESkillReturn::InternError;
+}
+
+ESkillReturn SkillHealPack::onStart()
+{
     if (get<AShipPawn>() == nullptr) return ESkillReturn::InternError;
-    return get<AShipPawn>()->spawnNinePack();
+    return get<AShipPawn>()->spawnHealPack();
 }
 
 ESkillReturn SkillRepairProtection::onStart()
@@ -35,14 +40,12 @@ ESkillReturn SkillRepairSupport::onStart()
 
 ESkillReturn SkillGiveAlly1::onStart()
 {
-    if (get<AShipPawn>() == nullptr) return ESkillReturn::InternError;
-    return get<AShipPawn>()->giveMatiereToAlly(0);
+    return ESkillReturn::InternError;
 }
 
 ESkillReturn SkillGiveAlly2::onStart()
 {
-    if (get<AShipPawn>() == nullptr) return ESkillReturn::InternError;
-    return get<AShipPawn>()->giveMatiereToAlly(1);
+    return ESkillReturn::InternError;
 }
 
 ESkillReturn SkillEscapeMode::onStart()
@@ -126,10 +129,7 @@ void SkillSpecialProtection::onEnd()
 ESkillReturn SkillSpecialSupport::onStart()
 {
     if (get<AShipPawn>() == nullptr) return ESkillReturn::InternError;
-    if (!get<AShipPawn>()->hasEffect(EEffect::TargetLock)) return ESkillReturn::Unavailable;
-
-    get<AShipPawn>()->emp();
-    return ESkillReturn::Success;
+    return get<AShipPawn>()->spawnEmp();
 }
 
 ESkillReturn SkillMetaFormAttack::onStart()
@@ -189,6 +189,18 @@ ESkillReturn SkillKatyusha::onStart()
     return ESkillReturn::Success;
 }
 
+ESkillReturn SkillEmergency::onStart()
+{
+    if (get<AShipPawn>() == nullptr) return ESkillReturn::InternError;
+    return get<AShipPawn>()->onSwapEmergency();
+}
+
+void SkillEmergency::onEndCountDown()
+{
+    if (get<AShipPawn>() == nullptr) return;
+    get<AShipPawn>()->onEmergencyCountDownEnd();
+}
+
 TUniquePtr<SkillBehaviour> SkillFactory::create(ESkill _skill, class ACommonPawn* _pawn, ENetMode _netMode)
 {
     switch (_skill)
@@ -206,6 +218,8 @@ TUniquePtr<SkillBehaviour> SkillFactory::create(ESkill _skill, class ACommonPawn
         case ESkill::MetaFormSupport: return MakeUnique<SkillMetaFormSupport>(_pawn, _netMode);
         case ESkill::NinePack: return MakeUnique<SkillNinePack>(_pawn, _netMode);
         case ESkill::Katyusha: return MakeUnique<SkillKatyusha>(_pawn, _netMode);
+        case ESkill::HealPack: return MakeUnique<SkillHealPack>(_pawn, _netMode);
+        case ESkill::Emergency: return MakeUnique<SkillEmergency>(_pawn, _netMode);
         default: ensure(false); break;
     }
 

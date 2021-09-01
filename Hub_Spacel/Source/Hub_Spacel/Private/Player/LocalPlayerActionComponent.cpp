@@ -27,8 +27,6 @@ void ULocalPlayerActionComponent::BeginPlay()
 {
     Super::BeginPlay();
 
-    m_metric = std::make_unique<LocalMetric>();
-
     if (ACommonPawn* pawn = get())
     {
         if (pawn->SpeedLinesComponent != nullptr)
@@ -61,7 +59,7 @@ void ULocalPlayerActionComponent::TickComponent(float _deltaTime, ELevelTick _ti
             coefSpeed = pawn->PlayerDataAsset->EscapeModeCoef;
         }
         // set material parameter
-        float speedRef = FMath::Max(pawn->RU_PercentSpeed, pawn->R_OverDrive);
+        float speedRef = FMath::Max(pawn->RU_PercentSpeed, (pawn->R_OverDrive / 10.0f));
         float percent = FMath::Clamp(speedRef * coefSpeed, 0.0f, 2.6f);
         float multiplicator = pawn->hasEffect(EEffect::StartGame) ? 4.0f : 2.0f;
         m_speedLineMaterial->SetScalarParameterValue("Weight", percent * multiplicator);
@@ -73,6 +71,11 @@ void ULocalPlayerActionComponent::TickComponent(float _deltaTime, ELevelTick _ti
         float currentFov { get()->CameraComponent->FieldOfView };
         float smoothFov { FMath::Lerp(currentFov, noSmoothFov, _deltaTime) };
         get()->CameraComponent->SetFieldOfView(smoothFov);
+    }
+
+    if (m_countDownRespawn > 0.0f)
+    {
+        CountDownRespawn(_deltaTime);
     }
 }
 
@@ -96,14 +99,22 @@ void ULocalPlayerActionComponent::AddEffect(EEffect _effect)
             }
         }
     }
-    else if (_effect == EEffect::MetaFormProtection)
+    else if (_effect == EEffect::Killed)
     {
-        if (ACommonPawn* pawn = get())
+        // TO DO : no magic number
+        m_countDownRespawn = 10.0f;
+    }
+}
+
+void ULocalPlayerActionComponent::CountDownRespawn(float _deltaSeconde)
+{
+    if (AShipPawn* pawn = get<AShipPawn>())
+    {
+        int round = m_countDownRespawn;
+        m_countDownRespawn = FMath::Max(m_countDownRespawn - _deltaSeconde, 0.0f);
+        if (round != (int)m_countDownRespawn)
         {
-            if (pawn->SpeedLinesComponent != nullptr && m_speedLineMaterial != nullptr)
-            {
-                m_speedLineMaterial->SetScalarParameterValue("Meta", 1.0f);
-            }
+            pawn->OnSendInfoPlayerDelegate.Broadcast("Rebuilding... " + FString::FromInt((int)m_countDownRespawn));
         }
     }
 }
@@ -120,14 +131,9 @@ void ULocalPlayerActionComponent::RemoveEffect(EEffect _effect)
             }
         }
     }
-    else if (_effect == EEffect::MetaFormProtection)
+    else if (_effect == EEffect::Killed)
     {
-        if (ACommonPawn* pawn = get())
-        {
-            if (pawn->SpeedLinesComponent != nullptr && m_speedLineMaterial != nullptr)
-            {
-                m_speedLineMaterial->SetScalarParameterValue("Meta", 0.0f);
-            }
-        }
+        m_countDownRespawn = 0.0f;
     }
 }
+

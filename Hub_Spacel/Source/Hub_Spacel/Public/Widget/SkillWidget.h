@@ -17,4 +17,7 @@ class HUB_SPACEL_API USkillWidget : public UUserWidget
 public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void BP_Setup(FSlateColor _color, class UTexture2D* _texture, class UTexture2D* _name);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void BP_Remove();
 };

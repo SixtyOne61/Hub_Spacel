@@ -40,6 +40,17 @@ public:
 	void onEndCountDown() override {};
 };
 
+class HUB_SPACEL_API SkillHealPack : public SkillBehaviour
+{
+	using SkillBehaviour::SkillBehaviour;
+public:
+	virtual ~SkillHealPack() {}
+
+	ESkillReturn onStart() override;
+	void onEnd() override {};
+	void onEndCountDown() override {};
+};
+
 class HUB_SPACEL_API SkillRepairProtection : public SkillBehaviour
 {
 	using SkillBehaviour::SkillBehaviour;
@@ -173,6 +184,17 @@ public:
 	ESkillReturn onStart() override;
 	void onEnd() override {};
 	void onEndCountDown() override {};
+};
+
+class HUB_SPACEL_API SkillEmergency : public SkillBehaviour
+{
+	using SkillBehaviour::SkillBehaviour;
+public:
+	virtual ~SkillEmergency() {}
+
+	ESkillReturn onStart() override;
+	void onEnd() override {};
+	void onEndCountDown() override;
 };
 
 class HUB_SPACEL_API SkillFactory

@@ -36,6 +36,12 @@ private:
 	/* manage if we hit mission */
 	void hitMission(FVector const& _ownerLocation, FName const& _profileCollision) const;
 
+	/* manage if we hit heal */
+	void hitHeal(FVector const& _ownerLocation, FName const& _profileCollision) const;
+
+	/* manage if we hit emp */
+	void hitEmp(FVector const& _ownerLocation, FName const& _profileCollision) const;
+
 	/* create collision shape */
 	template<class T>
 	FCollisionShape createCollisionShapeWithLocalBounds(T const* _obj, FVector const& _scale) const
@@ -50,13 +56,15 @@ private:
 	void dispatch(TArray<FHitResult> const& _items) const;
 
 	/* check for each instance, can spawn matiere */
-	bool sweepForInstancedStaticMesh(class UInstancedStaticMeshComponent*& _mesh, TArray<FVector_NetQuantize>& _replicated, TArray<FVector_NetQuantize>& _removeReplicated, FVector const& _scale, FName const& _profile, FName const& _teamTag);
+	bool sweepForInstancedStaticMesh(class UInstancedStaticMeshComponent*& _mesh, TArray<FVector_NetQuantize>& _replicated, TArray<FVector_NetQuantize>& _removeReplicated, FVector const& _scale, FName const& _profile, FName const& _teamTag, TArray<FVector_NetQuantize> const& _emergency = {});
 
 	/* call for add score to game state */
 	void addScore(TArray<FHitResult> const& _hits, EScoreType _type) const;
 
 	void killersProcess(TArray<FHitResult> const& _hits);
 	void spawnMatiere();
+
+	void checkGold(int32 _otherPlayerId);
 
 private:
 	/* matiere manager */

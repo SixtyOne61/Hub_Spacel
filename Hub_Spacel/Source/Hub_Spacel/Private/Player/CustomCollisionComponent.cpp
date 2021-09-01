@@ -15,6 +15,8 @@
 #include "Util/Tag.h"
 #include "DrawDebugHelpers.h"
 #include "GameState/SpacelGameState.h"
+#include "Gameplay/Skill/HealPackBullet.h"
+#include "Gameplay/Skill/EmpBullet.h"
 
 // Sets default values for this component's properties
 UCustomCollisionComponent::UCustomCollisionComponent()
@@ -113,7 +115,7 @@ void UCustomCollisionComponent::dispatch(TArray<FHitResult> const& _items) const
 	}
 }
 
-bool UCustomCollisionComponent::sweepForInstancedStaticMesh(UInstancedStaticMeshComponent*& _mesh, TArray<FVector_NetQuantize>& _replicated, TArray<FVector_NetQuantize>& _removeReplicated, FVector const& _scale, FName const& _profile, FName const& _teamTag)
+bool UCustomCollisionComponent::sweepForInstancedStaticMesh(UInstancedStaticMeshComponent*& _mesh, TArray<FVector_NetQuantize>& _replicated, TArray<FVector_NetQuantize>& _removeReplicated, FVector const& _scale, FName const& _profile, FName const& _teamTag, TArray<FVector_NetQuantize> const& _emergency /*= {}*/)
 {
 	if (_mesh == nullptr || _mesh->GetInstanceCount() == 0) return false;
 
@@ -146,6 +148,15 @@ bool UCustomCollisionComponent::sweepForInstancedStaticMesh(UInstancedStaticMesh
 			FVector const& location = localTransform.GetLocation();
 			_replicated.Remove(location);
 			_removeReplicated.Add(location);
+
+			int emergencyIndex {};
+			if (_emergency.Find(location, emergencyIndex))
+			{
+				if (shipPawn != nullptr)
+				{
+					shipPawn->emergencyRedCube(location);
+				}
+			}
 
 			addScore(hits, EScoreType::Hit);
 
@@ -184,6 +195,10 @@ void UCustomCollisionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 	hitMatiere(ownerLocation, profileCollision);
 	// resolve mission
 	hitMission(ownerLocation, profileCollision);
+	// hit heal
+	hitHeal(ownerLocation, profileCollision);
+	// hit emp
+	hitEmp(ownerLocation, profileCollision);
 
 	TArray<FHitResult> hits;
 	if (sweepByProfile(hits, ownerLocation, profileCollision, { FCollisionShape::MakeBox({400, 350, 200}) }))
@@ -197,13 +212,13 @@ void UCustomCollisionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 			{
 				FName prot = moduleComponent->ProtectionMeshComponent->GetCollisionProfileName();
 				// for each module, we need to check each instance
-				if (sweepForInstancedStaticMesh(moduleComponent->ProtectionMeshComponent, moduleComponent->RU_ProtectionLocations, moduleComponent->RemovedProtectionLocations, scale, profileCollision, *tagTeam))
+				if (sweepForInstancedStaticMesh(moduleComponent->ProtectionMeshComponent, moduleComponent->RU_ProtectionLocations, moduleComponent->RemovedProtectionLocations, scale, profileCollision, *tagTeam, moduleComponent->EmergencyLocations))
 				{
-					pawn->RPCClientPlayCameraShake();
+					pawn->RPCClientPlayCameraShake(EImpactType::Obstacle);
 				}
 				if (sweepForInstancedStaticMesh(moduleComponent->SupportMeshComponent, moduleComponent->RU_SupportLocations, moduleComponent->RemovedSupportLocations, scale, profileCollision, *tagTeam))
 				{
-					pawn->RPCClientPlayCameraShake();
+					pawn->RPCClientPlayCameraShake(EImpactType::Obstacle);
 				}
 
 				// end check red zone
@@ -288,11 +303,7 @@ void UCustomCollisionComponent::hitMission(FVector const& _ownerLocation, FName 
 	{
 		hits.RemoveAll([](FHitResult const& _item)
 			{
-				if (_item.Actor.IsValid() && _item.Actor.Get()->ActorHasTag(Tags::Mission))
-				{
-					return false;
-				}
-				return true;
+				return !(_item.Actor.IsValid() && _item.Actor.Get()->ActorHasTag(Tags::Mission));
 			});
 
 		ASpacelPlayerState const* spacelPlayerState = get()->GetPlayerState<ASpacelPlayerState>();
@@ -338,7 +349,112 @@ void UCustomCollisionComponent::hitMatiere(FVector const& _ownerLocation, FName 
 		{
 			if (addMatiere != int{})
 			{
-				pawn->OnUpdateMatiereDelegate.Broadcast(addMatiere);
+				pawn->OnUpdateMatiereDelegate.Broadcast(addMatiere, EMatiereOrigin::Kill);
+			}
+		}
+	}
+}
+
+void UCustomCollisionComponent::hitHeal(FVector const& _ownerLocation, FName const& _profileCollision) const
+{
+	TArray<FHitResult> hits;
+	if (sweepByProfile(hits, _ownerLocation, _profileCollision, { FCollisionShape::MakeBox({600, 600, 600}) }))
+	{
+		hits.RemoveAll([](FHitResult const& _item)
+			{
+				return !(_item.Actor.IsValid() && _item.Actor.Get()->ActorHasTag(Tags::HealPack));
+			});
+
+		ASpacelPlayerState const* spacelPlayerState = get()->GetPlayerState<ASpacelPlayerState>();
+		if (spacelPlayerState == nullptr) return;
+
+		FString const& team = spacelPlayerState->R_Team;
+
+		for (auto const& hit : hits)
+		{
+			if (AHealPackBullet* healPack = Cast<AHealPackBullet>(hit.Actor))
+			{
+				if (!healPack->IsPendingKill())
+				{
+					if (healPack->R_Team == *team)
+					{
+						// heal
+						if (AShipPawn* pawn = get<AShipPawn>())
+						{
+							pawn->heal(healPack->Value);
+						}
+					}
+
+					healPack->Destroy();
+				}
+			}
+		}
+	}
+}
+
+void UCustomCollisionComponent::hitEmp(FVector const& _ownerLocation, FName const& _profileCollision) const
+{
+	TArray<FHitResult> hits;
+	if (sweepByProfile(hits, _ownerLocation, _profileCollision, { FCollisionShape::MakeBox({400, 400, 400}) }))
+	{
+		hits.RemoveAll([](FHitResult const& _item)
+			{
+				return !(_item.Actor.IsValid() && _item.Actor.Get()->ActorHasTag(Tags::EmpBullet));
+			});
+
+		if(get() == nullptr) return;
+
+		ASpacelPlayerState const* spacelPlayerState = get()->GetPlayerState<ASpacelPlayerState>();
+		if (spacelPlayerState == nullptr) return;
+
+		FString const& team = spacelPlayerState->R_Team;
+
+		for (auto const& hit : hits)
+		{
+			if (hit.Actor.IsValid())
+			{
+				if (AEmpBullet* empBullet = Cast<AEmpBullet>(hit.Actor))
+				{
+					if (!empBullet->IsPendingKill())
+					{
+						if (empBullet->R_Team != *team)
+						{
+							// emp
+							if (AShipPawn* pawn = get<AShipPawn>())
+							{
+								pawn->emp(empBullet->EffectDuration, empBullet->R_Team, empBullet->PlayerIdOwner);
+							}
+						}
+
+						empBullet->Destroy();
+					}
+				}
+			}
+		}
+	}
+}
+
+void UCustomCollisionComponent::checkGold(int32 _otherPlayerId)
+{
+	if (AShipPawn* shipPawn = get<AShipPawn>())
+	{
+		if (shipPawn->hasEffect(EEffect::Gold))
+		{
+			if (ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld())))
+			{
+				TArray<APlayerState*> playerStates = spacelGameState->PlayerArray;
+				for (auto* playerState : playerStates)
+				{
+					if (playerState->PlayerId == _otherPlayerId)
+					{
+						if (AShipPawn* otherPawn = playerState->GetPawn<AShipPawn>())
+						{
+							otherPawn->addEffect(EEffect::Gold);
+							shipPawn->removeEffect(EEffect::Gold);
+							break;
+						}
+					}
+				}
 			}
 		}
 	}
@@ -356,7 +472,7 @@ void UCustomCollisionComponent::hit(FString const& _team, int32 _playerId, class
 
 	uint32 uniqueId { _comp->GetUniqueID() };
 
-	auto lb_removeInstance = [&](UInstancedStaticMeshComponent*& _mesh, TArray<FVector_NetQuantize>& _replicated, TArray<FVector_NetQuantize>& _removeReplicated)
+	auto lb_removeInstance = [&](UInstancedStaticMeshComponent*& _mesh, TArray<FVector_NetQuantize>& _replicated, TArray<FVector_NetQuantize>& _removeReplicated, TArray<FVector_NetQuantize> const& _emergency = {})
 	{
 		if (_mesh == nullptr || _mesh->GetInstanceCount() == 0) return;
 
@@ -373,6 +489,13 @@ void UCustomCollisionComponent::hit(FString const& _team, int32 _playerId, class
 			FVector_NetQuantize const& location = localTransform.GetLocation();
 			_replicated.Remove(location);
 			_removeReplicated.Add(location);
+
+			int index{};
+			if (_emergency.Find(location, index))
+			{
+				shipPawn->emergencyRedCube(location);
+			}
+
 		}
 	};
 
@@ -387,15 +510,17 @@ void UCustomCollisionComponent::hit(FString const& _team, int32 _playerId, class
 		}
 	};
 
-	auto lb_generic = [&](UInstancedStaticMeshComponent*& _mesh, TArray<FVector_NetQuantize>& _replicated, TArray<FVector_NetQuantize>& _removeReplicated)
+	auto lb_generic = [&](UInstancedStaticMeshComponent*& _mesh, TArray<FVector_NetQuantize>& _replicated, TArray<FVector_NetQuantize>& _removeReplicated, TArray<FVector_NetQuantize> const& _emergency = {})
 	{
 		if (!shipPawn->canTank(1))
 		{
-			lb_removeInstance(_mesh, _replicated, _removeReplicated);
+			checkGold(_playerId);
+			lb_removeInstance(_mesh, _replicated, _removeReplicated, _emergency);
 			lb_addScore(EScoreType::Hit);
 
 			// for feedback
 			shipPawn->RPCClientDamageIndicator(_otherLocation);
+			shipPawn->RPCClientPlayCameraShake(EImpactType::Hit);
 		}
 	};
 
@@ -404,7 +529,8 @@ void UCustomCollisionComponent::hit(FString const& _team, int32 _playerId, class
 	{
 		lb_generic(moduleComponent->ProtectionMeshComponent,
 					moduleComponent->RU_ProtectionLocations,
-					moduleComponent->RemovedProtectionLocations);
+					moduleComponent->RemovedProtectionLocations,
+					moduleComponent->EmergencyLocations);
 	}
 	else if (uniqueId == get()->ModuleComponent->SupportMeshComponent->GetUniqueID())
 	{
@@ -416,6 +542,7 @@ void UCustomCollisionComponent::hit(FString const& _team, int32 _playerId, class
 	{
 		if (!shipPawn->canTank(1) && !shipPawn->hasEffect(EEffect::Killed))
 		{
+			checkGold(_playerId);
 			if (m_matiereManager.IsValid())
 			{
 				if (ASpacelPlayerState const* spacelPlayerState = get()->GetPlayerState<ASpacelPlayerState>())
@@ -428,6 +555,14 @@ void UCustomCollisionComponent::hit(FString const& _team, int32 _playerId, class
 			shipPawn->OnKill.broadcast(shipPawn->Team.ToString(), _team);
 
 			shipPawn->kill();
+
+			if (ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld())))
+			{
+				if (ASpacelPlayerState const* spacelPlayerState = get()->GetPlayerState<ASpacelPlayerState>())
+				{
+					spacelGameState->RPCNetMulticastKill(_playerId, spacelPlayerState->PlayerId);
+				}
+			}
 		}
 	}
 }
@@ -450,7 +585,7 @@ void UCustomCollisionComponent::addScore(TArray<FHitResult> const& _hits, EScore
 					TTuple<int32, FString> playerInfo;
 					if (AProjectileBase* projectileBase = Cast<AProjectileBase>(hit.GetActor()))
 					{
-						playerInfo.Key = projectileBase->R_PlayerIdOwner;
+						playerInfo.Key = projectileBase->PlayerIdOwner;
 					}
 
 					for (FName const& tag : hit.GetActor()->Tags)

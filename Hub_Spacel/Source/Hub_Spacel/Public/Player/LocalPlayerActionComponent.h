@@ -4,8 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "Player/PlayerActorComponent.h"
-#include "Gameplay/Metric/LocalMetric.h"
-#include <memory>
 #include "LocalPlayerActionComponent.generated.h"
 
 /**
@@ -33,8 +31,12 @@ private:
 	UFUNCTION()
 	void RemoveEffect(EEffect _effect);
 
+	UFUNCTION()
+	void CountDownRespawn(float _deltaSeconde);
+
 private:
 	class UMaterialInstanceDynamic* m_speedLineMaterial { nullptr };
 
-	std::unique_ptr<LocalMetric> m_metric { nullptr };
+	// count time when respawn
+	float m_countDownRespawn { 0.0f };
 };

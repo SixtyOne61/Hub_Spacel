@@ -20,9 +20,16 @@ public:
 	/* override */
 	void applyHit(TArray<int32>& _instance) override;
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void BP_OnBegin();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void BP_OnDestroy();
+
 protected:
 	// Called when the game starts or when spawned
 	void BeginPlay() override;
+	void Destroyed() override;
 
 	virtual bool OnHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit);
 
@@ -38,10 +45,9 @@ public:
 	UPROPERTY(Replicated)
 	FName R_Team {};
 
-	UPROPERTY(Replicated)
-	int32 R_PlayerIdOwner {};
+	UPROPERTY()
+	int32 PlayerIdOwner {};
 
-protected:
-	UPROPERTY(EditAnywhere)
-	class UNiagaraSystem* FireFx{ nullptr };
+	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
+	class UEditorHackDataAsset* HackDataAsset{ nullptr };
 };

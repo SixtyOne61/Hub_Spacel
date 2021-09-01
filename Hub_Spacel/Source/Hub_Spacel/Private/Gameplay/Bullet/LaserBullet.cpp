@@ -3,12 +3,20 @@
 
 #include "LaserBullet.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "GameFramework/PlayerController.h"
+#include "GameFramework/GameStateBase.h"
+#include "GameFramework/PlayerState.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/SphereComponent.h"
 #include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
 #include "Util/Tag.h"
 #include "Player/ModuleComponent.h"
+#include "Player/ShipPawn.h"
+#include "Player/MetricComponent.h"
 #include "DataAsset/TeamColorDataAsset.h"
+#include "Kismet/GameplayStatics.h"
+#include "Enum/SpacelEnum.h"
 
 ALaserBullet::ALaserBullet()
     : AProjectileBase()
@@ -29,5 +37,59 @@ void ALaserBullet::BeginPlay()
             comp->SetVectorParameterValueOnMaterials("Color", FVector(color.R / 255.0f, color.G / 255.0f, color.B / 255.0f));
         }
     }
+
+    if (UNiagaraComponent* trail = Cast<UNiagaraComponent>(this->GetComponentByClass(UNiagaraComponent::StaticClass())))
+    {
+        if (this->Colors != nullptr)
+        {
+            FString team = getLocalTeam();
+            FLinearColor color = this->Colors->GetColor<FColor>(team);
+
+            trail->SetNiagaraVariableLinearColor("User.TrailColor", color);
+        }
+    }
 }
 
+void ALaserBullet::LifeSpanExpired()
+{
+    if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
+    {
+        m_hasExpired = true;
+    }
+
+    Super::LifeSpanExpired();
+}
+
+void ALaserBullet::Destroyed()
+{
+    if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
+    {
+        TArray<APlayerState*> playerStates = this->GetWorld()->GetGameState()->PlayerArray;
+        for (APlayerState* playerState : playerStates)
+        {
+            if (playerState != nullptr && playerState->PlayerId == this->PlayerIdOwner)
+            {
+                if (AShipPawn* pawn = playerState->GetPawn<AShipPawn>())
+                {
+                    if (UMetricComponent* metricComponent = Cast<UMetricComponent>(pawn->GetComponentByClass(UMetricComponent::StaticClass())))
+                    {
+                        metricComponent->createPrecisionData(!m_hasExpired);
+                    }
+                    break;
+                }
+            }
+        }
+    }
+
+    Super::Destroyed();
+}
+
+FLinearColor ALaserBullet::GetColor() const
+{
+    if (this->Colors != nullptr)
+    {
+        return FLinearColor(this->Colors->GetColor<FColor>(getLocalTeam()));
+    }
+
+    return FLinearColor{};
+}

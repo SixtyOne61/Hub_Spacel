@@ -19,6 +19,9 @@ struct HUB_SPACEL_API FMission
 	FString MissionTitle { };
 
 	UPROPERTY(EditAnywhere)
+	FString MissionDesc { };
+
+	UPROPERTY(EditAnywhere)
 	int32 RewardValue { 0 };
 	
 	UPROPERTY(EditAnywhere)
@@ -29,6 +32,9 @@ struct HUB_SPACEL_API FMission
 
 	UPROPERTY(EditAnywhere)
 	FString Team {};
+
+	UPROPERTY(EditAnywhere)
+	class UParamMissionDataAsset* Param { nullptr };
 };
 
 /**
@@ -52,6 +58,11 @@ public:
 
 		ensure(false);
 		return {};
+	}
+
+	inline FMission* getMissionModify(EMission _type)
+	{
+		return Missions.FindByPredicate([&_type](auto const& _mission) { return _mission.Type == _type; });
 	}
 
 public:

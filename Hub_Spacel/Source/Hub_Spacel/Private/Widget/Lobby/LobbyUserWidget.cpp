@@ -12,6 +12,7 @@
 #include "DataAsset/TeamColorDataAsset.h"
 #include "DataAsset/UniqueSkillDataAsset.h"
 #include "DataAsset/FlyingGameModeDataAsset.h"
+#include "DataAsset/EditorHackDataAsset.h"
 #include "Player/SpacelPlayerState.h"
 #include "Components/TextBlock.h"
 
@@ -30,6 +31,7 @@ void ULobbyUserWidget::NativeConstruct()
     if (Carrousel != nullptr)
     {
         Carrousel->OnCarrouselMoveDelegate.AddDynamic(this, &ULobbyUserWidget::OnCurrentSkillChange);
+        Carrousel->OnValidChooseDelegate.AddDynamic(this, &ULobbyUserWidget::OnValidChoose);
     }
 
     TimeTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("TextBlock_Time"));
@@ -107,6 +109,7 @@ void ULobbyUserWidget::StartLobby(EGameState _state)
 {
     if (_state == EGameState::Prepare)
     {
+        m_isChoose = false;
         SpawnLobby3D();
         SetupOwningTeam();
         // setup carrousel with low module
@@ -122,13 +125,22 @@ void ULobbyUserWidget::StartLobby(EGameState _state)
         world->GetTimerManager().SetTimer(TimeHandle, this, &ULobbyUserWidget::SetTime, 1.0f, true, 0.0f);
 
         m_currentSkillType = ESkillType::Low;
+        OnCurrentSkillChange();
     }
     else if (_state == EGameState::LockLowModule)
     {
+        m_isChoose = false;
         // save low module choice
         if (ASpacelPlayerState* owningPlayerState = Cast<ASpacelPlayerState>(this->GetOwningPlayerState()))
         {
-            owningPlayerState->RPCServerAddSkill(this->Carrousel->getIdSelected(), m_currentSkillType);
+            uint8 id = this->Carrousel->getId();
+#if WITH_EDITOR
+            if (HackDataAsset != nullptr && HackDataAsset->UseHack)
+            {
+                id = (uint8)HackDataAsset->LowSkillId;
+            }
+#endif
+            owningPlayerState->RPCServerAddSkill(id, m_currentSkillType);
         }
 
         // setup carrousel with medium module
@@ -138,14 +150,24 @@ void ULobbyUserWidget::StartLobby(EGameState _state)
             setTimer(this->GameModeDataAsset->RemainingChooseModuleTime);
         }
 
+        BP_Valid(m_currentSkillType);
         m_currentSkillType = ESkillType::Medium;
+        OnCurrentSkillChange();
     }
     else if (_state == EGameState::LockMediumModule)
     {
+        m_isChoose = false;
         // save medium module choice
         if (ASpacelPlayerState* owningPlayerState = Cast<ASpacelPlayerState>(this->GetOwningPlayerState()))
         {
-            owningPlayerState->RPCServerAddSkill(this->Carrousel->getIdSelected(), m_currentSkillType);
+            uint8 id = this->Carrousel->getId();
+#if WITH_EDITOR
+            if (HackDataAsset != nullptr && HackDataAsset->UseHack)
+            {
+                id = (uint8)HackDataAsset->MediumSkillId;
+            }
+#endif
+            owningPlayerState->RPCServerAddSkill(id, m_currentSkillType);
         }
 
         // setup carrousel with hight module
@@ -155,14 +177,25 @@ void ULobbyUserWidget::StartLobby(EGameState _state)
             setTimer(this->GameModeDataAsset->RemainingChooseModuleTime);
         }
 
+        BP_Valid(m_currentSkillType);
         m_currentSkillType = ESkillType::Hight;
+        OnCurrentSkillChange();
     }
     else if (_state == EGameState::LockPrepare)
     {
+        BP_Valid(m_currentSkillType);
+        m_isChoose = false;
         // save hight module choice
         if (ASpacelPlayerState* owningPlayerState = Cast<ASpacelPlayerState>(this->GetOwningPlayerState()))
         {
-            owningPlayerState->RPCServerAddSkill(this->Carrousel->getIdSelected(), m_currentSkillType);
+            uint8 id = this->Carrousel->getId();
+#if WITH_EDITOR
+            if (HackDataAsset != nullptr && HackDataAsset->UseHack)
+            {
+                id = (uint8)HackDataAsset->HightSkillId;
+            }
+#endif
+            owningPlayerState->RPCServerAddSkill(id, m_currentSkillType);
         }
 
         if (this->GameModeDataAsset != nullptr)
@@ -183,7 +216,7 @@ void ULobbyUserWidget::setupSkill(TArray<ESkill> const& _skills)
         if (UUniqueSkillDataAsset const* skill = this->SkillDataAsset->getSKill(type))
         {
             uint8 id = (uint8)type;
-            datas.Add({ id, skill->BackgroundColorLobby, skill->Desc, skill->IconeLarge });
+            datas.Add({ id, skill->BackgroundColorLobby, skill->Title, skill->Desc, skill->IconeBtn });
         }
     }
 
@@ -194,7 +227,7 @@ void ULobbyUserWidget::saveLocalSkillChoosen()
 {
     if (ASpacelPlayerState* owningPlayerState = Cast<ASpacelPlayerState>(this->GetOwningPlayerState()))
     {
-        owningPlayerState->LocalAddSkill(this->Carrousel->getIdSelected(), m_currentSkillType);
+        owningPlayerState->LocalAddSkill(this->Carrousel->getId(), m_currentSkillType);
     }
 }
 
@@ -224,5 +257,36 @@ void ULobbyUserWidget::SetupOwningTeam()
 
 void ULobbyUserWidget::OnCurrentSkillChange()
 {
+    if (!m_isChoose)
+    {
+        saveLocalSkillChoosen();
+
+        if (this->SkillDataAsset == nullptr) return;
+        if (this->Carrousel == nullptr) return;
+
+        uint8 id = this->Carrousel->getId();
+
+        if (UUniqueSkillDataAsset const* skill = this->SkillDataAsset->getSKill((ESkill)id))
+        {
+            BP_SetChoose(skill->IconeBtn, m_currentSkillType);
+        }
+    }
+}
+
+void ULobbyUserWidget::OnValidChoose()
+{
     saveLocalSkillChoosen();
+
+    if (this->SkillDataAsset == nullptr) return;
+    if (this->Carrousel == nullptr) return;
+
+    uint8 id = this->Carrousel->getId();
+
+    if (UUniqueSkillDataAsset const* skill = this->SkillDataAsset->getSKill((ESkill)id))
+    {
+        BP_SetChoose(skill->IconeBtn, m_currentSkillType);
+        BP_Valid(m_currentSkillType);
+    }
+
+    m_isChoose = true;
 }

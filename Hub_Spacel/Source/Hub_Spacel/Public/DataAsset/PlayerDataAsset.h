@@ -82,20 +82,23 @@ public:
     UPROPERTY(Category = "Skill", EditAnywhere, BlueprintReadWrite)
     int SupportRatioEffect{};
 
-    UPROPERTY(Category = "Skill", EditAnywhere, BlueprintReadWrite)
-    int MaxGiveMatiere{};
+    UPROPERTY(Category = "Skill", EditAnywhere, BlueprintReadOnly)
+    TSubclassOf<class AActor> EmpClass { nullptr };
 
     UPROPERTY(Category = "Skill", EditAnywhere, BlueprintReadWrite)
-    int NbMatiereForNinePack{};
-
-    UPROPERTY(Category = "Skill", EditAnywhere, BlueprintReadWrite)
-    TSubclassOf<class AActor> NinePackClass { nullptr };
+    TSubclassOf<class AActor> HealPackClass { nullptr };
 
     UPROPERTY(Category = "Skill", EditAnywhere, BlueprintReadOnly)
     TSubclassOf<class AActor> MetaSupportPostProcessClass;
 
     UPROPERTY(Category = "Skill", EditAnywhere, BlueprintReadOnly)
     TSubclassOf<class AActor> EmpPostProcessClass;
+
+    UPROPERTY(Category = "Skill", EditAnywhere, BlueprintReadOnly)
+    uint8 TresholdForEmergency { 2 };
+
+    UPROPERTY(Category = "Skill", EditAnywhere, BlueprintReadOnly)
+    uint8 TresholdForSwapEmergencyPercent { 10 };
 
     UPROPERTY(Category = "Farm", EditAnywhere, BlueprintReadWrite)
     int NbAsteroideForMatiere{};

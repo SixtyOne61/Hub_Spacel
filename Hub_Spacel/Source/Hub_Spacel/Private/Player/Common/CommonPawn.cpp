@@ -19,6 +19,7 @@
 #include "Player/RepairComponent.h"
 #include "Player/LocalPlayerActionComponent.h"
 #include "Player/PlayerNameActor.h"
+#include "Player/MetricComponent.h"
 #include "DataAsset/PlayerDataAsset.h"
 #include "DataAsset/TeamColorDataAsset.h"
 #include "Gameplay/SkillComponent.h"
@@ -81,6 +82,13 @@ ACommonPawn::ACommonPawn()
     if (!ensure(ShieldComponent != nullptr)) return;
     ShieldComponent->SetupAttachment(RootComponent);
 
+    MetaFormProtectionComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MetaFormProtection_00"));
+    if (!ensure(MetaFormProtectionComponent != nullptr)) return;
+    MetaFormProtectionComponent->SetupAttachment(RootComponent);
+
+    MetricComponent = CreateDefaultSubobject<UMetricComponent>(TEXT("Metric_00"));
+    if(!ensure(MetricComponent != nullptr)) return;
+
     Tags.Add(Tags::Player);
 }
 
@@ -98,7 +106,40 @@ void ACommonPawn::lookAt(FVector const& _loc, FVector const& _dir, FVector const
 void ACommonPawn::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+    auto lb = [&](FName _tag) -> UNiagaraComponent*
+    {
+        TArray<UActorComponent*> out;
+        out = this->GetComponentsByTag(UNiagaraComponent::StaticClass(), "RightTrail");
+        for (auto comp : out)
+        {
+            if (comp != nullptr)
+            {
+                return Cast<UNiagaraComponent>(comp);
+            }
+        }
+
+        return nullptr;
+    };
+
+    RightTrailComponent = lb("RightTrail");
+    LeftTrailComponent = lb("LeftTrail");
+}
+
+void ACommonPawn::OnRep_RightTrail()
+{
+    if (this->RightTrailComponent == nullptr) return;
+    FVector dirRight { 0.0f, 1.0f, 0.0f };
+    this->RightTrailComponent->SetActive(RU_RightTrail, true);
+    this->RightTrailComponent->SetNiagaraVariableVec3("User.Velocity", RU_RightTrail ? dirRight : FVector::ZeroVector);
+}
+
+void ACommonPawn::OnRep_LeftTrail()
+{
+    if (this->LeftTrailComponent == nullptr) return;
+    FVector dirLeft { 0.0f, -1.0f, 0.0f };
+    this->RightTrailComponent->SetActive(RU_LeftTrail, true);
+    this->LeftTrailComponent->SetNiagaraVariableVec3("User.Velocity", RU_LeftTrail ? dirLeft : FVector::ZeroVector);
 }
 
 void ACommonPawn::moveShip(float _deltaTime)
@@ -116,6 +157,8 @@ void ACommonPawn::moveShip(float _deltaTime)
         coefSpeed = this->PlayerDataAsset->EscapeModeCoef;
     }
 
+    coefSpeed += (m_bonusSpeed / 100.0f);
+
     // roll rotation
     FRotator rotation = this->GetActorRotation();
     rotation.Add(0.0f, 0.0f, this->PercentFlightAttitude * FMath::Max(coefSpeed, 1.0f) * this->PlayerDataAsset->MaxFlightAttitudeSpeed);
@@ -124,7 +167,7 @@ void ACommonPawn::moveShip(float _deltaTime)
     // linear
     FVector const& linearVelocity = this->DriverMeshComponent->GetPhysicsLinearVelocity(NAME_None);
 
-    float percentSpeed = this->R_OverDrive != 0.0f ? this->R_OverDrive : this->RU_PercentSpeed;
+    float percentSpeed = this->R_OverDrive != 0.0f ? (this->R_OverDrive / 10.0f) : this->RU_PercentSpeed;
     FVector newVelocity = this->DriverMeshComponent->GetForwardVector() * this->PlayerDataAsset->MaxForwardSpeed * percentSpeed * coefSpeed;
     newVelocity += this->DriverMeshComponent->GetRightVector() * this->PlayerDataAsset->MaxHorizontalSpeed * this->PercentHorizontalStraf * coefSpeed;
     newVelocity += this->DriverMeshComponent->GetUpVector() * this->PlayerDataAsset->MaxVerticalSpeed * this->PercentVerticalStraf * coefSpeed;
@@ -159,14 +202,25 @@ void ACommonPawn::removeEffect(EEffect _type)
 
 void ACommonPawn::OnRep_PercentSpeed()
 {
-    if (this->ExhaustFxComponent == nullptr)
+    if (this->ExhaustFxComponents.Num() == 0)
     {
-        this->ExhaustFxComponent = Cast<UNiagaraComponent>(this->GetComponentByClass(UNiagaraComponent::StaticClass()));
+        TArray<UActorComponent*> out;
+        this->GetComponents(UNiagaraComponent::StaticClass(), out);
+        for (auto com : out)
+        {
+            if (com != nullptr && com->GetFName().ToString().Contains("Exhaust"))
+            {
+                this->ExhaustFxComponents.Add(Cast<UNiagaraComponent>(com));
+            }
+        }
     }
 
-    if (this->ExhaustFxComponent != nullptr)
+    for (auto exhaust : this->ExhaustFxComponents)
     {
-        this->ExhaustFxComponent->SetNiagaraVariableFloat("User.Velocity", this->RU_PercentSpeed);
+        if (exhaust != nullptr && exhaust->IsActive())
+        {
+            exhaust->SetNiagaraVariableFloat("User.Velocity", this->RU_PercentSpeed);
+        }
     }
 }
 
@@ -218,5 +272,8 @@ void ACommonPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
     DOREPLIFETIME(ACommonPawn, R_Effect);
     DOREPLIFETIME(ACommonPawn, RU_PercentSpeed);
     DOREPLIFETIME(ACommonPawn, R_OverDrive);
+    DOREPLIFETIME(ACommonPawn, RU_RightTrail);
+    DOREPLIFETIME(ACommonPawn, RU_LeftTrail);
+    DOREPLIFETIME(ACommonPawn, R_BonusCountDown);
 }
 

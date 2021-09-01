@@ -61,4 +61,5 @@ public:
     FOnSkillLobbyChange OnSkillLobbyChangeDelegate {};
 
     std::function<void(class SkillCountDown*)> OnAddSkillUniqueDelegate { nullptr };
+    std::function<void(ESkill _type)> OnRemoveSkillUniqueDelegate { nullptr };
 };

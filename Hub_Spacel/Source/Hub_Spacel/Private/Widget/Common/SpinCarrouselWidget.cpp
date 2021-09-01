@@ -26,7 +26,7 @@ void USpinCarrouselWidget::NativeDestruct()
 
 void USpinCarrouselWidget::setDesc()
 {
-    BP_SetDesc(this->Items[1]->m_data.m_text);
+    BP_SetTitle(this->Items[1]->m_data.m_title);
 }
 
 void USpinCarrouselWidget::setupItems(TArray<UItemCarrouselWidget::FData> const& _data)
@@ -40,6 +40,7 @@ void USpinCarrouselWidget::setupItems(TArray<UItemCarrouselWidget::FData> const&
     }
 
     setDesc();
+    m_idChoose = MAX_uint8;
 }
 
 void USpinCarrouselWidget::SpinRight()
@@ -97,4 +98,22 @@ uint8 USpinCarrouselWidget::getIdSelected() const
 
     ensure(false);
     return 0;
+}
+
+void USpinCarrouselWidget::ValidChoose()
+{
+    m_idChoose = getIdSelected();
+    OnValidChooseDelegate.Broadcast();
+}
+
+uint8 USpinCarrouselWidget::getId() const
+{
+    if (m_idChoose == MAX_uint8)
+    {
+        return getIdSelected();
+    }
+    else
+    {
+        return m_idChoose;
+    }
 }

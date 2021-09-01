@@ -36,4 +36,7 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Settings")
 	TSubclassOf<class AActor> PointStartCometClass { nullptr };
+
+	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
+	class UEditorHackDataAsset* HackDataAsset{ nullptr };
 };

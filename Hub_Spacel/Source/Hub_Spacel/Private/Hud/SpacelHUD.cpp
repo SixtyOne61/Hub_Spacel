@@ -9,8 +9,6 @@
 
 ASpacelHUD::ASpacelHUD()
 {
-    GameWidgetClass = SpacelFactory::FindClass<UUserWidget>(TEXT("/Game/Blueprint/UI/Widgets/WBP_Game"));
-    LobbyWidgetClass = SpacelFactory::FindClass<UUserWidget>(TEXT("/Game/Blueprint/UI/Widgets/Lobby/WBP_Lobby"));
 }
 
 void ASpacelHUD::BeginPlay()
@@ -38,11 +36,11 @@ void ASpacelHUD::BeginPlay()
 
 void ASpacelHUD::StartGame(EGameState _state)
 {
+    UWorld* world = this->GetWorld();
+    if (!ensure(world != nullptr)) return;
+
     if (_state == EGameState::InGame)
     {
-        UWorld* world = this->GetWorld();
-        if (!ensure(world != nullptr)) return;
-
         APlayerController* playerController = world->GetFirstPlayerController();
         if (!ensure(playerController != nullptr)) return;
 
@@ -50,5 +48,9 @@ void ASpacelHUD::StartGame(EGameState _state)
         FInputModeGameAndUI mode{};
         mode.SetLockMouseToViewportBehavior(EMouseLockMode::LockAlways);
         playerController->SetInputMode(mode);
+    }
+    else if (_state == EGameState::EndGame)
+    {
+        SpacelFactory::createWidget<UUserWidget>(world, this->EndMenuWidgetClass, false);
     }
 }

@@ -8,6 +8,7 @@
 #include "SpinCarrouselWidget.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnCarrouselMove);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnValidChoose);
 
 /**
  * 
@@ -20,17 +21,17 @@ class HUB_SPACEL_API USpinCarrouselWidget : public UUserWidget
 public:
 	void setupItems(TArray<UItemCarrouselWidget::FData> const& _data);
 
-	uint8 getIdSelected() const;
-
 	UFUNCTION(BlueprintImplementableEvent)
 	void BP_SetTeamColor(FSlateColor _color);
+
+	uint8 getId() const;
 
 protected:
 	void NativeConstruct() override;
 	void NativeDestruct() override;
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void BP_SetDesc(FString const& _desc);
+	void BP_SetTitle(FString const& _title);
 
 	UFUNCTION(BlueprintCallable)
 	void SpinRight();
@@ -38,14 +39,24 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void SpinLeft();
 
+	UFUNCTION(BlueprintCallable)
+	void ValidChoose();
+
 	void setDesc();
+
+	uint8 getIdSelected() const;
 
 public:
 	UPROPERTY()
-	FOnCarrouselMove OnCarrouselMoveDelegate{};
+	FOnCarrouselMove OnCarrouselMoveDelegate {};
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, BlueprintAssignable)
+	FOnValidChoose OnValidChooseDelegate {};
 
 protected:
 	TArray<class UItemCarrouselWidget*> Items {};
 	class UGridPanel* GridCarrousel { nullptr };
+
+	uint8 m_idChoose { MAX_uint8 };
 };
 

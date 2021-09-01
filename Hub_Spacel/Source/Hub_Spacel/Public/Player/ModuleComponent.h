@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/SceneComponent.h"
+#include "Enum/SpacelEnum.h"
 #include "ModuleComponent.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnUpdateCountProtection, int32, _value, int32, _max);
@@ -26,6 +27,8 @@ public:
 
     float getPercentProtection() const;
     float getPercentSupport() const;
+
+    ESkillReturn onSwapEmergency(uint32 _value, uint8 _tresholdPercent);
 
 protected:
 	// Called when the game starts
@@ -52,6 +55,9 @@ protected:
 
     UFUNCTION()
     void BuildShipLobby();
+
+    void activeMetaForm(EEffect _type);
+    void removeMetaForm();
 
 private:
     void buildShip(class UInstancedStaticMeshComponent*& _mesh, class UStaticMeshDataAsset* _staticMesh, TArray<FVector_NetQuantize> const& _locations);
@@ -80,6 +86,9 @@ public:
     UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
     class USetupAttributeDataAsset* SupportDataAsset{ nullptr };
 
+    UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
+    class UMetaFormSetupDataAsset* MetaFormDataAsset{ nullptr };
+
     UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)
     class UInstancedStaticMeshComponent* SupportMeshComponent{ nullptr };
 
@@ -102,6 +111,12 @@ private:
 
     UPROPERTY(ReplicatedUsing = "OnRep_Protection")
     TArray<FVector_NetQuantize> RU_ProtectionLocations{};
+
+    UPROPERTY()
+    TArray<FVector_NetQuantize> EmergencyLocations{};
+
+    UPROPERTY()
+    TArray<FVector_NetQuantize> EmergencyLocationsRemove{};
 
     UPROPERTY()
     TArray<FVector_NetQuantize> RemovedProtectionLocations{};

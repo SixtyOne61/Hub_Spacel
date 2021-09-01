@@ -17,6 +17,11 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	void BeginPlay() override;
+	void LifeSpanExpired() override;
+	void Destroyed() override;
+
+	UFUNCTION(BlueprintCallable)
+	FLinearColor GetColor() const;
 
 protected:
 	UPROPERTY(EditAnywhere, Category = "Default")
@@ -24,4 +29,6 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	class UTeamColorDataAsset* Colors{ nullptr };
+
+	bool m_hasExpired { false };
 };

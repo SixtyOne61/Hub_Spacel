@@ -45,4 +45,10 @@ public:
 public:
 	UPROPERTY(EditAnywhere)
 	TArray<FScoreByType> Scores;
+
+	UPROPERTY(EditAnywhere)
+	TArray<int> TimerMissions { 180 };
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<EMission> RandomMissions{ EMission::Comet, EMission::Pirate, EMission::TakeGold };
 };

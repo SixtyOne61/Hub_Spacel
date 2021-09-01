@@ -12,7 +12,7 @@ class HUB_SPACEL_API AComet : public AMissionActor
 {
 	GENERATED_BODY()
 
-	friend class AMissionManager;
+	friend class MissionComet;
 	
 public:	
 	// Sets default values for this actor's properties
@@ -32,7 +32,7 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Default")
 	class UProjectileMovementComponent* ProjectileMovementComponent{ nullptr };
 
-	Util::Event<FString const&> m_onIntercep {};
+	Util::Event<FString const&> OnIntercepDelegate {};
 
 	int32 m_speedRoll { 0 };
 };

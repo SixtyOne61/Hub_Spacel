@@ -25,7 +25,7 @@ void AKatyusha::BeginPlay()
     {
         if (this->DataAsset == nullptr) return;
 
-        this->R_IsSeek = false;
+        this->RU_IsSeek = false;
         FTimerHandle handle;
         this->GetWorldTimerManager().SetTimer(handle, this, &AKatyusha::Seek, this->DataAsset->TimeBeforeLock, false);
     }
@@ -40,7 +40,7 @@ void AKatyusha::Tick(float _deltaTime)
     FVector dir = this->GetActorForwardVector();
     FVector const& actorLocation = this->GetActorLocation();
     float speed = this->DataAsset->SpeedPreLock;
-    if (this->R_IsSeek)
+    if (this->RU_IsSeek)
     {
         dir = (this->R_TargetLocation - actorLocation).GetSafeNormal();
         speed = this->DataAsset->SpeedAfterLock;
@@ -51,33 +51,33 @@ void AKatyusha::Tick(float _deltaTime)
 
     if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
     {
-        int64 syncTime = FDateTime::Now().ToUnixTimestamp();
+        int64 syncTime = FDateTime::UtcNow().ToUnixTimestamp();
         RPCNetMulticastSync(syncTime, this->GetActorLocation());
     }
 }
 
 void AKatyusha::Seek()
 {
-    this->R_IsSeek = true;
+    this->RU_IsSeek = true;
 }
 
 void AKatyusha::RPCNetMulticastSync_Implementation(int64 _syncPoint, FVector_NetQuantize const& _location)
 {
     if (this->DataAsset == nullptr) return;
 
-    int64 time = FDateTime::Now().ToUnixTimestamp();
+    int64 time = FDateTime::UtcNow().ToUnixTimestamp();
     // readjust location with sync time
-    int64 deltaTime = time - _syncPoint;
+    int64 deltaSecond = time - _syncPoint;
 
     FVector dir = this->GetActorForwardVector();
     float speed = this->DataAsset->SpeedPreLock;
-    if (this->R_IsSeek)
+    if (this->RU_IsSeek)
     {
         dir = (this->R_TargetLocation - _location).GetSafeNormal();
         speed = this->DataAsset->SpeedAfterLock;
     }
 
-    FVector nextLocation = _location + dir * speed * deltaTime;
+    FVector nextLocation = _location + dir * speed * deltaSecond;
     this->SetActorLocation(nextLocation);
 }
 
@@ -85,6 +85,6 @@ void AKatyusha::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
     DOREPLIFETIME(AKatyusha, R_TargetLocation);
-    DOREPLIFETIME(AKatyusha, R_IsSeek);
+    DOREPLIFETIME(AKatyusha, RU_IsSeek);
 }
 

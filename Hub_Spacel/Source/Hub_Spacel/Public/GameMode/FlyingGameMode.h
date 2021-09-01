@@ -89,16 +89,11 @@ public:
 	FTransform GetSpawnLocation(FName const& _team);
 
 protected:
-	virtual void BeginPlay() override;
-	virtual FString InitNewPlayer(class APlayerController* _newPlayerController, FUniqueNetIdRepl const& _uniqueId, FString const& _options, FString const& _portal) override;
+	void BeginPlay() override;
+	FString InitNewPlayer(class APlayerController* _newPlayerController, FUniqueNetIdRepl const& _uniqueId, FString const& _options, FString const& _portal) override;
+	void Tick(float _deltaSeconde) override;
 
 private:
-	UFUNCTION()
-	void CountDownUntilGameOver();
-
-	UFUNCTION()
-	void PreparePhaseUntilLock();
-
 	UFUNCTION()
 	void EndLobby();
 
@@ -128,13 +123,7 @@ private:
 
 public:
 	UPROPERTY()
-	FTimerHandle CountDownUntilGameOverHandle {};
-
-	UPROPERTY()
 	FTimerHandle EndGameHandle {};
-
-	UPROPERTY()
-	FTimerHandle LeaveLevelHandle {};
 
 	UPROPERTY()
 	FTimerHandle HandleProcessTerminationHandle {};
@@ -146,24 +135,16 @@ public:
 	FTimerHandle SuspendBackfillHandle {};
 
 	UPROPERTY()
-	FTimerHandle PreparePhaseUntilLockHandle {};
-
-	UPROPERTY()
 	FTimerHandle UnlockInputHandle {};
 
 	UPROPERTY()
-	int RemainingGameTime { }; // 11'30
+	int RemainingGameTime { }; // 10'00
 
 	UPROPERTY()
-	int RemainingChooseModuleTime { }; // 60
-
-	UPROPERTY()
-	int NbStep { 0 };
+	int RemainingChooseModuleTime { }; // 20
 
 	UPROPERTY()
 	int RemainingLeaveTime { };
-
-	int m_nextStepTime { };
 
 	UPROPERTY()
 	int SuspendBackfillTime { 45 };
@@ -175,6 +156,8 @@ protected:
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
 	class UFlyingGameModeDataAsset* GameModeDataAsset{ nullptr };
 
+	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
+	class UEditorHackDataAsset* HackDataAsset { nullptr };
 
 private:
 	class FHttpModule* HttpModule { nullptr };
@@ -218,4 +201,6 @@ private:
 	};
 
 	TMap<FName, TArray<FStartLocation>> m_startLocation {};
+
+	float m_timerSeconde { 0.0f };
 };

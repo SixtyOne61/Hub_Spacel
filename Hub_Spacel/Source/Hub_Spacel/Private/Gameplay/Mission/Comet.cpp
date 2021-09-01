@@ -23,6 +23,7 @@ AComet::AComet()
 void AComet::BeginPlay()
 {
 	Super::BeginPlay();
+	Tags.Add(Tags::Comet);
 
 	m_speedRoll = FMath::RandRange(10, 60);
 	m_speedRoll *= FMath::RandRange(-1, 1);
@@ -46,6 +47,6 @@ void AComet::hit(AShipPawn * _pawn, FString const& _team)
 		{
 			_pawn->kill();
 		}
-		m_onIntercep.broadcast(_team);
+		OnIntercepDelegate.broadcast(_team);
 	}
 }

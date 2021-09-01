@@ -35,10 +35,7 @@ protected:
 	void NativeTick(const FGeometry& _myGeometry, float _deltaTime) override;
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Setup")
-	void SetBackgroundRanking(FSlateColor const& _teamColor);
-
-	UFUNCTION(BlueprintImplementableEvent, Category = "Setup")
-	void SetRanking(uint8 _rank);
+	void SetBackgroundTeamColor(FSlateColor const& _teamColor);
 
 	UFUNCTION()
 	void OnChangeState(EGameState _state);
@@ -77,16 +74,7 @@ protected:
 	void BP_RedLight(int32 _level);
 
 	UFUNCTION()
-	void ShowDidactitial();
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void ShowDidactitialFx();
-
-	UFUNCTION()
-	void ShowRandomTips();
-
-	UFUNCTION()
-	void OnShowScore(bool _show);
+	void OnShowMission(bool _show);
 
 	UFUNCTION()
 	void OnAddEffect(EEffect _type);
@@ -107,7 +95,7 @@ protected:
 	void OnStartMission(EMission _type);
 
 	UFUNCTION()
-	void OnStartMissionTwoParam(EMission _type, FName const& _team);
+	void OnStartMissionTwoParam(EMission _type, FName const& _team, FName const& _targetTeam);
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void BP_ShowMissionPanel();
@@ -115,30 +103,28 @@ protected:
 	UFUNCTION()
 	void OnEndMission(EMission _type);
 
+	UFUNCTION()
+	void OnResetTimerMission(EMission _type);
+
 	UFUNCTION(BlueprintImplementableEvent)
 	void HideMissionPanel();
 
-	template<class T>
-	void setVisibility(T* _widget, bool _show)
-	{
-		if (_widget == nullptr) return;
-
-		if (_show)
-		{
-			_widget->SetVisibility(ESlateVisibility::Visible);
-		}
-		else
-		{
-			_widget->SetVisibility(ESlateVisibility::Hidden);
-		}
-	}
-
-	void OnLoadGame(const FString& _slotName, const int32 _userIndex, class USaveGame* _loadedGameData);
-
 	void addSkill(class SkillCountDown * _skill);
+
+	void removeSkill(ESkill _type);
 
 	UFUNCTION()
 	void RegisterPlayerState();
+
+	UFUNCTION()
+	void InitTargetArrow(FName const& _tag);
+
+	void updateArrow();
+
+	void updateLocalTimer(float _deltaSeconde);
+
+	UFUNCTION()
+	void OnStartLocalTimer(int _startTime);
 
 protected:
 	UPROPERTY(EditAnywhere)
@@ -151,13 +137,10 @@ protected:
 	class UTeamColorDataAsset* TeamColorDataAsset{ nullptr };
 
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
-	class UDitactitialDataAsset* TipsDataAsset { nullptr };
-	
-	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
-	class UDitactitialDataAsset* RandomTipsDataAsset { nullptr };
+	class UMissionDataAsset* MissionDataAsset { nullptr };
 
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
-	class UMissionDataAsset* MissionDataAsset { nullptr };
+	class USkillDataAsset* SkillDataAsset { nullptr };
 
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
 	class UFlyingGameModeDataAsset* GameModeDataAsset{ nullptr };
@@ -165,12 +148,18 @@ protected:
 	UPROPERTY()
 	FTimerHandle RedLightAnimationHandle {};
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FKey KeyMissionPanel { };
+
 private:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class UEffectWidget> EffectWidgetClass { nullptr };
 
 	UPROPERTY()
 	class UTextBlock* EventTextBlock { nullptr };
+
+	UPROPERTY()
+	class UTextBlock* TimerTextBlock{ nullptr };
 
 	UPROPERTY()
 	class UTextBlock* PingTextBlock { nullptr };
@@ -197,10 +186,10 @@ private:
 	TArray<class UAllyWidget*> AllyWidgets { };
 
 	UPROPERTY()
-	class UScoreUserWidget* ScoreWidget { nullptr };
+	TArray<class UBorder*> TeamScoreColorWidgets { };
 
 	UPROPERTY()
-	class UTutorialUserWidget* TutorialWidget { nullptr };
+	TArray<class UTextBlock*> TeamScoreWidgets{ };
 
 	FString Team {};
 
@@ -208,4 +197,8 @@ private:
 	int8 m_currentIdRedLight { 0 };
 
 	TSet<EMission> m_currentMission {};
+
+	class AActor* m_arrowTarget { nullptr };
+
+	float m_localTimer { 0.0f };
 };
