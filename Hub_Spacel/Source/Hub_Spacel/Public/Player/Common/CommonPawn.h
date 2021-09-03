@@ -153,6 +153,9 @@ public:
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
     FOnSendInfoPlayer OnSendInfoPlayerDelegate {};
 
+    UPROPERTY(BlueprintReadOnly, VisibleAnywhere, meta = (ClampMin = "0", ClampMax = "101"))
+    int ExposePercentSpeed { 0 };
+
 protected:
     UPROPERTY()
     TArray<class UNiagaraComponent*> ExhaustFxComponents { };

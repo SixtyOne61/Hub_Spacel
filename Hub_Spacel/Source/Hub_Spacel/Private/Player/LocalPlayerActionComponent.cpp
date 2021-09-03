@@ -58,6 +58,9 @@ void ULocalPlayerActionComponent::TickComponent(float _deltaTime, ELevelTick _ti
             // override speed max
             coefSpeed = pawn->PlayerDataAsset->EscapeModeCoef;
         }
+
+        pawn->ExposePercentSpeed = (int)FMath::Clamp(coefSpeed * 100, 0.0f, 101.0f);
+
         // set material parameter
         float speedRef = FMath::Max(pawn->RU_PercentSpeed, (pawn->R_OverDrive / 10.0f));
         float percent = FMath::Clamp(speedRef * coefSpeed, 0.0f, 2.6f);
