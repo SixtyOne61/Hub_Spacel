@@ -536,14 +536,6 @@ void AShipPawn::kill()
 
         this->RU_Matiere = 0;
         OnRep_Matiere();
-
-        if (ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld())))
-        {
-            if (spacelGameState->RU_GameState == (uint8)EGameState::InGame)
-            {
-                spacelGameState->GoToUnlockMedium();
-            }
-        }
     }
 }
 
@@ -910,7 +902,6 @@ void AShipPawn::behaviourAddEffect(EEffect _type)
 
         if (_type == EEffect::Killed)
         {
-            RPCNetMulticastFxKilled();
             this->RU_LeftTrail = false;
             this->RU_RightTrail = false;
         }
@@ -984,11 +975,6 @@ void AShipPawn::behaviourAddEffect(EEffect _type)
 void AShipPawn::RPCNetMultiCastFxGold_Implementation(bool _activate)
 {
     BP_GoldFx(_activate);
-}
-
-void AShipPawn::RPCNetMulticastFxKilled_Implementation()
-{
-    BP_FxKilled();
 }
 
 void AShipPawn::BackToGame()

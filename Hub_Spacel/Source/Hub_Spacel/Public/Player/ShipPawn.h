@@ -85,9 +85,6 @@ protected:
     void BP_FxAddMatiere(int32 _val);
 
     UFUNCTION(BlueprintImplementableEvent)
-    void BP_FxKilled();
-
-    UFUNCTION(BlueprintImplementableEvent)
     void BP_FxAddEffect(EEffect _effect);
 
     UFUNCTION(BlueprintImplementableEvent)
@@ -178,9 +175,6 @@ private:
 
     UFUNCTION(Reliable, Client)
     void RPCClientRemoveEffect(EEffect _effect);
-
-    UFUNCTION(UnReliable, NetMulticast)
-    void RPCNetMulticastFxKilled();
 
     UFUNCTION(UnReliable, NetMulticast)
     void RPCNetMulticastFxExploseHeal();

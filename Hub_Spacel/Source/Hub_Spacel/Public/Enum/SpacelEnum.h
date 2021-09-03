@@ -15,8 +15,6 @@ enum class EGameState : uint8
     LockMediumModule,
     LockPrepare,
     InGame,
-    UnlockMedium,
-    UnlockUltimate,
     EndGame,
 };
 

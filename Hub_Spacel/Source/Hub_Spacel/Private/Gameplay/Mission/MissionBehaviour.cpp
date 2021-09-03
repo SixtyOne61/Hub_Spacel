@@ -12,16 +12,51 @@
 #include "Kismet/GameplayStatics.h"
 #include "Util/Tag.h"
 
-void MissionFirstBlood::tick(float _deltaTime, UWorld* _world)
+void MissionFirstBlood::start(class UWorld* _world)
 {
-    MissionBehaviour::tick(_deltaTime, _world);
-    if(_world == nullptr) return;
+    MissionBehaviour::start(_world);
 
     if (ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(_world->GetGameState()))
     {
-        if (spacelGameState->GetState() == EGameState::UnlockMedium)
+        TArray<APlayerState*> playerStates = spacelGameState->PlayerArray;
+        for (auto* playerState : playerStates)
         {
-            end(_world);
+            if (AShipPawn* shipPawn = playerState->GetPawn<AShipPawn>())
+            {
+                shipPawn->OnKill.add(std::bind(&MissionFirstBlood::onKill, this, std::placeholders::_1, std::placeholders::_2));
+            }
+        }
+    }
+}
+
+void MissionFirstBlood::onKill(FString const& _victim, FString const& _killer)
+{
+    m_killDone = true;
+}
+
+void MissionFirstBlood::tick(float _deltaTime, UWorld* _world)
+{
+    MissionBehaviour::tick(_deltaTime, _world);
+
+    if (m_killDone)
+    {
+        end(_world);
+    }
+}
+
+void MissionFirstBlood::end(class UWorld* _world)
+{
+    MissionBehaviour::end(_world);
+
+    if (ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(_world->GetGameState()))
+    {
+        TArray<APlayerState*> playerStates = spacelGameState->PlayerArray;
+        for (auto* playerState : playerStates)
+        {
+            if (AShipPawn* shipPawn = playerState->GetPawn<AShipPawn>())
+            {
+                shipPawn->OnKill.clean();
+            }
         }
     }
 }
@@ -38,7 +73,6 @@ void MissionRaceScore::tick(float _deltaTime, UWorld* _world)
 
         if (score >= m_mission.RewardValue)
         {
-            spacelGameState->GoToUnlockUltimate();
             end(_world);
         }
     }

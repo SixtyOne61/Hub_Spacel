@@ -61,7 +61,15 @@ class HUB_SPACEL_API MissionFirstBlood : public MissionBehaviour
 	using MissionBehaviour::MissionBehaviour;
 
 public:
+	void start(class UWorld* _world) override;
 	void tick(float _deltaTime, UWorld* _world) override;
+	void end(class UWorld* _world) override;
+
+private:
+	void onKill(FString const& _victim, FString const& _killer);
+
+private:
+	bool m_killDone { false };
 };
 
 class HUB_SPACEL_API MissionRaceScore : public MissionBehaviour

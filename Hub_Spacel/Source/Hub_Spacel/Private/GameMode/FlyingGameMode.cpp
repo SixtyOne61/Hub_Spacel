@@ -309,8 +309,6 @@ void AFlyingGameMode::Tick(float _deltaSeconde)
                 }
 
                 case EGameState::InGame:
-                case EGameState::UnlockMedium:
-                case EGameState::UnlockUltimate:
                 {
                     this->PickAWinningTeam();
                     break;
