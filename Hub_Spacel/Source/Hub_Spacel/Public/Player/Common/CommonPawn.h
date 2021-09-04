@@ -87,10 +87,16 @@ public:
     UPROPERTY(Category = "Ship", VisibleAnywhere, BlueprintReadOnly)
     class UPoseableMeshComponent* BaseShipMeshComponent{ nullptr };
 
-    UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadOnly)
-    class USpringArmComponent* SpringArmComponent{ nullptr };
+    //UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadOnly)
+    //class USpringArmComponent* SpringArmComponent{ nullptr };
 
-    UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadOnly)
+    UPROPERTY(Category = "Component", EditAnywhere, BlueprintReadWrite)
+    class USceneComponent* CameraTarget { nullptr };
+
+    UPROPERTY(Category = "Component", EditAnywhere, BlueprintReadWrite)
+    class USceneComponent* RestPoint { nullptr };
+
+    UPROPERTY(Category = "Component", EditAnywhere, BlueprintReadWrite)
     class UCameraComponent* CameraComponent{ nullptr };
 
     UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)

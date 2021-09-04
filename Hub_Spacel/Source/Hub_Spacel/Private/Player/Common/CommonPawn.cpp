@@ -46,14 +46,23 @@ ACommonPawn::ACommonPawn()
     ModuleComponent->SetupAttachment(BaseShipMeshComponent);
 
     // Create a spring arm component
-    SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm_00"));
-    if (!ensure(SpringArmComponent != nullptr)) return;
-    SpringArmComponent->SetupAttachment(BaseShipMeshComponent);
+    //SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm_00"));
+    //if (!ensure(SpringArmComponent != nullptr)) return;
+    //SpringArmComponent->SetupAttachment(BaseShipMeshComponent);
+
+    CameraTarget = CreateDefaultSubobject<USceneComponent>(TEXT("CameraTarget_00"));
+    if (!ensure(CameraTarget != nullptr)) return;
+    CameraTarget->SetupAttachment(BaseShipMeshComponent);
+
+    RestPoint = CreateDefaultSubobject<USceneComponent>(TEXT("RestPoint_00"));
+    if (!ensure(RestPoint != nullptr)) return;
+    RestPoint->SetupAttachment(CameraTarget);
 
     // Create camera component 
     CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera_00"));
     if (!ensure(CameraComponent != nullptr)) return;
-    CameraComponent->SetupAttachment(SpringArmComponent, USpringArmComponent::SocketName); // Attach the camera
+    CameraComponent->SetupAttachment(RestPoint);
+    //CameraComponent->SetupAttachment(SpringArmComponent, USpringArmComponent::SocketName); // Attach the camera
 
     FireComponent = CreateDefaultSubobject<UFireComponent>(TEXT("Fire_00"));
     if (!ensure(FireComponent != nullptr)) return;
