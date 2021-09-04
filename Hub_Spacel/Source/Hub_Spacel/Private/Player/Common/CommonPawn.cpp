@@ -149,6 +149,9 @@ void ACommonPawn::moveShip(float _deltaTime)
     if (!ensure(this->ModuleComponent != nullptr)) return;
     if (!ensure(this->ModuleComponent->SupportMeshComponent != nullptr)) return;
 
+    // stun
+    if(hasEffect(EEffect::Emp)) return;
+
     // 9, default support size
     float coefSpeed = FMath::Max((this->ModuleComponent->SupportMeshComponent->GetInstanceCount() / 9.0f), this->PlayerDataAsset->MinCoefSpeed);
     if (hasEffect(EEffect::MetaFormAttack) || hasEffect(EEffect::MetaFormProtection) || hasEffect(EEffect::MetaFormSupport) || hasEffect(EEffect::EscapeMode))
