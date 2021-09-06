@@ -195,3 +195,10 @@ enum class EMatiereOrigin : uint8
     Kill UMETA(DisplayName = "Kill"),
     Lost UMETA(DisplayName = "Lost"),
 };
+
+UENUM(BlueprintType)
+enum class EAnimationCurveType : uint8
+{
+    Default  UMETA(DisplayName = "Default"),
+    SlowFastSlow  UMETA(DisplayName = "SlowFastSlow"),
+};
