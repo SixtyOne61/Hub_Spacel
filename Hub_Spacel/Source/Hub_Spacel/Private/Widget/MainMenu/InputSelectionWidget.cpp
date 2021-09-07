@@ -41,8 +41,8 @@ void UInputSelectionWidget::Setup()
                     }
 
                     inputWidget->KeyDataAsset = this->KeyDataAsset;
-                    inputWidget->ActionName = hideSkill->ActionName;
-                    inputWidget->Value = hideSkill->Value;
+                    inputWidget->ActionNames = hideSkill->ActionNames;
+                    inputWidget->Values = hideSkill->Values;
                     inputWidget->Key = hideSkill->Key;
                     inputWidget->BP_Setup(*hideSkill->Desc, icons, this->KeyDataAsset->get(hideSkill->Key), hideSkill->Key);
                     inputWidget->UpdateInputDelegate.AddDynamic(this, &UInputSelectionWidget::OnUpdateInput);

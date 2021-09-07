@@ -16,6 +16,8 @@ void ACommonPlayerController::SetupInputComponent()
     this->InputComponent->BindAction("Fire", IE_Released, this, &ACommonPlayerController::fireOff);
     this->InputComponent->BindAction("ReturnToMainMenu", IE_Pressed, this, &ACommonPlayerController::returnToMainMenu);
     this->InputComponent->BindAction("Lock", IE_Pressed, this, &ACommonPlayerController::lock);
+
+    this->InputComponent->BindAction("HalfTurn", IE_Pressed, this, &ACommonPlayerController::halfTurn);
 }
 
 void ACommonPlayerController::Tick(float _deltaTime)

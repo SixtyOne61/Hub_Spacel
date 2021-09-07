@@ -13,19 +13,30 @@ void UInputWidget::OnNewKeySelected(FKey const& _key)
         BP_UpdateKeyTexture(this->KeyDataAsset->get(_key));
     }
 
-    if (this->ActionName != FString{})
+    if(this->ActionNames.Num() != this->Values.Num()) return;
+
+    if (this->ActionNames.Num() == 0)
     {
-        if (this->Value != 0.0f)
+        this->UpdateInputDelegate.Broadcast(this->Type, this->Key);
+    }
+
+    for (int i = 0; i < this->ActionNames.Num(); ++i)
+    {
+        FString const& name = this->ActionNames[i];
+        if (name != FString{})
         {
-            BP_UpdateBindingAction(this->ActionName, this->Key);
+            if (this->Values[i] != 0.0f)
+            {
+                BP_UpdateBindingAction(name, this->Key);
+            }
+            else
+            {
+                BP_UpdateBindingAxis(name, this->Key, this->Values[i]);
+            }
         }
         else
         {
-            BP_UpdateBindingAxis(this->ActionName, this->Key, this->Value);
+            this->UpdateInputDelegate.Broadcast(this->Type, this->Key);
         }
-    }
-    else
-    {
-        this->UpdateInputDelegate.Broadcast(this->Type, this->Key);
     }
 }

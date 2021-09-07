@@ -91,6 +91,10 @@ void AGamePlayerController::RPCServerForward_Implementation(float _val)
 {
     if (isAvailable())
     {
+        if (AShipPawn* shipPawn = Cast<AShipPawn>(this->GetPawn()))
+        {
+            if (shipPawn->hasEffect(EEffect::EscapeMode) && _val < 0) return;
+        }
         m_data.m_lastForwardInput = _val;
     }
 }
@@ -149,6 +153,20 @@ void AGamePlayerController::RPCServerFire_Implementation(bool _is)
     }
 }
 
+void AGamePlayerController::RPCServerHalfTurn_Implementation()
+{
+    if (isAvailable())
+    {
+        if (AShipPawn* shipPawn = Cast<AShipPawn>(this->GetPawn()))
+        {
+            if (shipPawn->hasEffect(EEffect::EscapeMode))
+            {
+                shipPawn->halfTurn();
+            }
+        }
+    }
+}
+
 void AGamePlayerController::forward(float _value)
 {
     if (isAvailable())
@@ -203,6 +221,14 @@ void AGamePlayerController::lock()
     {
         UHub_SpacelGameInstance* spacelGameInstance{ Cast<UHub_SpacelGameInstance>(this->GetGameInstance()) };
         spacelGameInstance->OnTryLockDelegate.Broadcast();
+    }
+}
+
+void AGamePlayerController::halfTurn()
+{
+    if (isAvailable())
+    {
+        this->RPCServerHalfTurn();
     }
 }
 

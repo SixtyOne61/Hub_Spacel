@@ -61,6 +61,7 @@ protected:
 	virtual void fireOff() {};
 	virtual void returnToMainMenu();
 	virtual void lock() {};
+	virtual void halfTurn() {};
 };
 
 template<class T>

@@ -42,10 +42,10 @@ public:
 	EInput Type {};
 
 	UPROPERTY(Category = "Param", BlueprintReadWrite)
-	FString ActionName {};
+	TArray<FString> ActionNames {};
 
 	UPROPERTY(Category = "Param", BlueprintReadWrite)
-	float Value {};
+	TArray<float> Values {};
 
 	UPROPERTY(Category = "Param", BlueprintReadWrite)
 	FKey Key {};

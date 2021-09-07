@@ -99,7 +99,7 @@ void ACommonPawn::lookAt(FVector const& _loc, FVector const& _dir, FVector const
     this->TargetLocation = _hitLoc.IsNearlyZero() ? bigFar : _hitLoc;
 
     FRotator rotation = SimplyMath::MyLookRotation(bigFar, this->GetActorUpVector(), this->GetActorLocation());
-    this->SetActorRotation(rotation);
+    setActorRotation(rotation);
 }
 
 // Called when the game starts or when spawned
@@ -165,7 +165,7 @@ void ACommonPawn::moveShip(float _deltaTime)
     // roll rotation
     FRotator rotation = this->GetActorRotation();
     rotation.Add(0.0f, 0.0f, this->PercentFlightAttitude * FMath::Max(coefSpeed, 1.0f) * this->PlayerDataAsset->MaxFlightAttitudeSpeed);
-    this->SetActorRotation(rotation);
+    setActorRotation(rotation);
 
     // linear
     FVector const& linearVelocity = this->DriverMeshComponent->GetPhysicsLinearVelocity(NAME_None);
@@ -266,6 +266,34 @@ void ACommonPawn::RPCClientDamageIndicator_Implementation(FVector_NetQuantize co
     if (this->IsLocallyControlled())
     {
         BP_DamageIndicator(_location);
+    }
+}
+
+void ACommonPawn::halfTurn()
+{
+    FVector const& loc = this->GetActorLocation();
+    FVector dir = this->GetActorForwardVector() * -1.0f;
+
+    FVector farpoint = loc + dir * 100000;
+
+    FRotator rotation = SimplyMath::MyLookRotation(farpoint, this->GetActorUpVector(), this->GetActorLocation());
+    this->SetActorRotation(rotation);
+
+    m_freezeRotation = true;
+    FTimerHandle handle;
+    this->GetWorldTimerManager().SetTimer(handle, this, &ACommonPawn::UnFreezeRotation, 1.0f, false);
+}
+
+void ACommonPawn::UnFreezeRotation()
+{
+    m_freezeRotation = false;
+}
+
+void ACommonPawn::setActorRotation(FRotator const& _rotator)
+{
+    if (!m_freezeRotation)
+    {
+        this->SetActorRotation(_rotator);
     }
 }
 

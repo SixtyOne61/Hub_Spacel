@@ -24,6 +24,8 @@ public:
 	// Sets default values for this pawn's properties
 	ACommonPawn();
 
+    void setActorRotation(FRotator const& _rotator);
+
 	void lookAt(FVector const& _loc, FVector const& _dir, FVector const& _hitLoc);
 
     // effect part
@@ -48,6 +50,8 @@ public:
 
     UFUNCTION(BlueprintImplementableEvent)
     void BP_HitIndicator();
+
+    void halfTurn();
 
 protected:
 	// Called when the game starts or when spawned
@@ -156,6 +160,9 @@ public:
     UPROPERTY(BlueprintReadOnly, VisibleAnywhere, meta = (ClampMin = "0", ClampMax = "101"))
     int ExposePercentSpeed { 0 };
 
+    UFUNCTION()
+    void UnFreezeRotation();
+
 protected:
     UPROPERTY()
     TArray<class UNiagaraComponent*> ExhaustFxComponents { };
@@ -193,4 +200,6 @@ protected:
 private:
     UPROPERTY()
     TArray<int32> PlayerFocusOnYou{};
+
+    bool m_freezeRotation{ false };
 };

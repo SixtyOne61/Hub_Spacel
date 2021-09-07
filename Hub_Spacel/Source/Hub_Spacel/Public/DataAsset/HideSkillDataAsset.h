@@ -22,10 +22,10 @@ struct HUB_SPACEL_API FHideSkill
 	FString Desc { };
 
 	UPROPERTY(EditAnywhere)
-	FString ActionName { };
+	TArray<FString> ActionNames { };
 
 	UPROPERTY(EditAnywhere)
-	float Value { };
+	TArray<float> Values { };
 };
 
 /**

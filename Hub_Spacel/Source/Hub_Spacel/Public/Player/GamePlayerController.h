@@ -49,6 +49,9 @@ private:
 	UFUNCTION(Reliable, Server)
 	void RPCServerEndGame();
 
+	UFUNCTION(Reliable, Server)
+	void RPCServerHalfTurn();
+
 	/* input callback */
 	void forward(float _value) override;
 	void horizontalStraf(float _value) override;
@@ -57,6 +60,7 @@ private:
 	void fireOn() override;
 	void fireOff() override;
 	void lock() override;
+	void halfTurn() override;
 
 	void showMission();
 	void hideMission();
