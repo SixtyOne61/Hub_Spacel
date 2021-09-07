@@ -40,3 +40,5 @@ https://whatismyipaddress.com/
 aws gamelift describe-instances --fleet-id [fleet-id]
 aws gamelift get-instance-access --fleet-id [fleet-id] --instance-id [instance-id]
 aws gamelift update-fleet-port-settings --fleet-id [fleet-id] --inbound-permission-authorizations "FromPort=3389,ToPort=3389,IpRange=[ip-address]/32,Protocol=TCP"
+
+

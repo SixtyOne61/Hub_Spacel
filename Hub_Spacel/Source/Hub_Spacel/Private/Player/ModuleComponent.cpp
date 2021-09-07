@@ -404,6 +404,11 @@ void UModuleComponent::activeMetaForm(EEffect _type)
         tag = "Support";
         mesh = this->MetaFormDataAsset->SupportStaticMesh;
     }
+    else if (_type == EEffect::EscapeMode)
+    {
+        tag = "Escape";
+        mesh = this->MetaFormDataAsset->ProtectionStaticMesh;
+    }
 
     FString const& path { this->MetaFormDataAsset->DefaultPath };
 

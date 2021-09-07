@@ -1064,6 +1064,13 @@ void AShipPawn::behaviourRemoveEffect(EEffect _type)
             this->ModuleComponent->removeMetaForm();
         }
     }
+    else if (_type == EEffect::EscapeMode)
+    {
+        if (this->ModuleComponent != nullptr)
+        {
+            this->ModuleComponent->removeMetaForm();
+        }
+    }
     else if (_type == EEffect::TargetLock)
     {
         if (ACommonPawn* commonPawn = Cast<ACommonPawn>(this->FireComponent->m_target))
