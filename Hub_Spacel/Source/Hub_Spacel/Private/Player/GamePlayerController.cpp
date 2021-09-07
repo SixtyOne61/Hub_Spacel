@@ -91,10 +91,6 @@ void AGamePlayerController::RPCServerForward_Implementation(float _val)
 {
     if (isAvailable())
     {
-        if (AShipPawn* shipPawn = Cast<AShipPawn>(this->GetPawn()))
-        {
-            if (shipPawn->hasEffect(EEffect::EscapeMode) && _val < 0) return;
-        }
         m_data.m_lastForwardInput = _val;
     }
 }

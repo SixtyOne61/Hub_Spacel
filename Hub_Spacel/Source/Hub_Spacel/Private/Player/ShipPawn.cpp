@@ -970,6 +970,13 @@ void AShipPawn::behaviourAddEffect(EEffect _type)
     {
         RPCNetMultiCastFxGold(true);
     }
+    else if (_type == EEffect::EscapeMode)
+    {
+        if (this->ModuleComponent != nullptr)
+        {
+            this->ModuleComponent->activeMetaForm(EEffect::EscapeMode);
+        }
+    }
 }
 
 void AShipPawn::RPCNetMultiCastFxGold_Implementation(bool _activate)
