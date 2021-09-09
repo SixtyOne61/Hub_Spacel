@@ -29,12 +29,24 @@ protected:
 	void NativeConstruct() override;
 	void NativeDestruct() override;
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void BP_MatchmakingState(FString const& _title);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void BP_Timer(bool _start);
+
 private:
+	// callback handle timer
 	UFUNCTION()
 	void SetAveragePlayerLatency();
 
 	UFUNCTION()
 	void HandleLoginUrlChange();
+
+	UFUNCTION()
+	void PollMatchmaking();
+
+	//
 
 	void onExchangeCodeForTokensResponseReceived(FHttpRequestPtr _request, FHttpResponsePtr _response, bool _bWasSuccessful);
 	void onGetPlayerDataResponseReceived(FHttpRequestPtr _request, FHttpResponsePtr _response, bool _bWasSuccessful);
@@ -43,13 +55,17 @@ private:
 	void onPollMatchmakingReceived(FHttpRequestPtr _request, FHttpResponsePtr _response, bool _bWasSuccessful);
 
 	UFUNCTION(BlueprintCallable, Category = "UIEvent")
-	void OnPlay();
+	bool OnPlay();
 
 	UFUNCTION(BlueprintCallable, Category = "UISetup")
 	void SetPlayerProfile(FString & _playerName, FString & _win, FString& _lost);
 
 	UFUNCTION()
 	void OnLoadGame(const FString& _slotName, const int32 _userIndex, USaveGame* _loadedGameData);
+
+	// start / cancel match making
+	void startSearch();
+	void cancelSearch();
 
 public:
 	UPROPERTY()
@@ -81,4 +97,6 @@ private:
 
 	UPROPERTY()
 	float AveragePlayerLatency{};
+
+	bool SearchingForGame {};
 };

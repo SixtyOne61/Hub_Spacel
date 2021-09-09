@@ -159,6 +159,31 @@ void UGlobalMainMenu::HandleLoginUrlChange()
     }
 }
 
+void UGlobalMainMenu::PollMatchmaking()
+{
+    UHub_SpacelGameInstance* spacelGameInstance{ Cast<UHub_SpacelGameInstance>(this->GetGameInstance()) };
+    if (!ensure(spacelGameInstance != nullptr)) return;
+
+    FString accessToken{ spacelGameInstance->AccessToken },
+        matchmakingTicketId{ spacelGameInstance->MatchmakingTicketId };
+
+    if (accessToken.Len() > 0 && matchmakingTicketId.Len() > 0 && this->SearchingForGame)
+    {
+        TSharedPtr<FJsonObject> requestObj{ MakeShareable(new FJsonObject) };
+        requestObj->SetStringField("ticketId", matchmakingTicketId);
+
+        FString requestBody{};
+        TSharedRef<TJsonWriter<>> writer{ TJsonWriterFactory<>::Create(&requestBody) };
+        if (FJsonSerializer::Serialize(requestObj.ToSharedRef(), writer))
+        {
+            SimplyHttpRequest::processRequest(this->HttpModule, this,
+                &UGlobalMainMenu::onPollMatchmakingReceived,
+                this->ApiUrl + "/pollmatchmaking", "POST",
+                TArray<FString>{"Content-Type", "application/json", "Authorization", accessToken}, requestBody);
+        }
+    }
+}
+
 void UGlobalMainMenu::onExchangeCodeForTokensResponseReceived(FHttpRequestPtr _request, FHttpResponsePtr _response, bool _bWasSuccessful)
 {
     if (!_bWasSuccessful)
@@ -234,8 +259,6 @@ void UGlobalMainMenu::SetPlayerProfile(FString& _playerName, FString& _win, FStr
 
 void UGlobalMainMenu::onStartMatchmakingResponseReceived(FHttpRequestPtr _request, FHttpResponsePtr _response, bool _bWasSuccessful)
 {
-    //this->MatchmakingButton->SetIsEnabled(true);
-
     if (!_bWasSuccessful)
     {
         return;
@@ -259,10 +282,9 @@ void UGlobalMainMenu::onStartMatchmakingResponseReceived(FHttpRequestPtr _reques
     UWorld* world{ this->GetWorld() };
     if (!ensure(world != nullptr)) return;
 
-    //world->GetTimerManager().SetTimer(this->PollMatchmakingHandle, this, &UMainMenuWidget::PollMatchmaking, 1.0f, true, 1.0f);
-    //this->SearchingForGame = true;
+    world->GetTimerManager().SetTimer(this->PollMatchmakingHandle, this, &UGlobalMainMenu::PollMatchmaking, 1.0f, true, 1.0f);
 
-    //setMatchkingTextBlock(FText::FromString("Cancel"), FText::FromString("Currently looking for a match"));
+    BP_MatchmakingState("Search an epic battle");
 }
 
 void UGlobalMainMenu::onStopMatchmakingResponseReceived(FHttpRequestPtr _request, FHttpResponsePtr _response, bool _bWasSuccessful)
@@ -272,14 +294,13 @@ void UGlobalMainMenu::onStopMatchmakingResponseReceived(FHttpRequestPtr _request
 
     spacelGameInstance->MatchmakingTicketId = {};
 
-    //setMatchkingTextBlock(FText::FromString("Join Game"), FText::FromString(""));
-
-    //this->MatchmakingButton->SetIsEnabled(true);
+    BP_MatchmakingState("Join Game");
+    BP_Timer(false);
 }
 
 void UGlobalMainMenu::onPollMatchmakingReceived(FHttpRequestPtr _request, FHttpResponsePtr _response, bool _bWasSuccessful)
 {
-    /*if (!_bWasSuccessful || !this->SearchingForGame)
+    if (!_bWasSuccessful || !this->SearchingForGame)
     {
         return;
     }
@@ -309,8 +330,7 @@ void UGlobalMainMenu::onPollMatchmakingReceived(FHttpRequestPtr _request, FHttpR
 
         if (ticketType.Equals("MatchmakingSucceeded"))
         {
-            this->MatchmakingButton->SetIsEnabled(false);
-            setMatchkingTextBlock({}, FText::FromString("Successfully found a match. Now connecting to the server..."));
+            BP_MatchmakingState("Let's go !");
 
             TSharedPtr<FJsonObject> gameSessionInfo{ ticket->GetObjectField("GameSessionInfo")->GetObjectField("M") };
             FString ipAddress{ gameSessionInfo->GetObjectField("IpAddress")->GetStringField("S") },
@@ -329,18 +349,33 @@ void UGlobalMainMenu::onPollMatchmakingReceived(FHttpRequestPtr _request, FHttpR
         }
         else
         {
-            setMatchkingTextBlock(FText::FromString("Join Game"), FText::FromString(ticketType + ". Please try again"));
+            BP_MatchmakingState("Join Game");
+            BP_Timer(false);
         }
-    }*/
+    }
 }
 
-void UGlobalMainMenu::OnPlay()
+bool UGlobalMainMenu::OnPlay()
 {
-    UHub_SpacelGameInstance* spacelGameInstance { Cast<UHub_SpacelGameInstance>(this->GetGameInstance()) };
+    if (this->SearchingForGame)
+    {
+        cancelSearch();
+    }
+    else
+    {
+        startSearch();
+    }
+
+    return this->SearchingForGame;
+}
+
+void UGlobalMainMenu::startSearch()
+{
+    UHub_SpacelGameInstance* spacelGameInstance{ Cast<UHub_SpacelGameInstance>(this->GetGameInstance()) };
     if (!ensure(spacelGameInstance != nullptr)) return;
 
-    FString accessToken { spacelGameInstance->AccessToken };
-    FString matchmakingTicketId { spacelGameInstance->MatchmakingTicketId };
+    FString accessToken{ spacelGameInstance->AccessToken };
+    FString matchmakingTicketId{ spacelGameInstance->MatchmakingTicketId };
 
     if (accessToken.Len() > 0)
     {
@@ -357,6 +392,41 @@ void UGlobalMainMenu::OnPlay()
             SimplyHttpRequest::processRequest(this->HttpModule, this,
                 &UGlobalMainMenu::onStartMatchmakingResponseReceived,
                 this->ApiUrl + "/startmatchmaking", "POST",
+                TArray<FString>{"Content-Type", "application/json", "Authorization", accessToken},
+                requestBody);
+
+            BP_MatchmakingState("Start matchmaking");
+            BP_Timer(true);
+            this->SearchingForGame = true;
+        }
+    }
+}
+
+void UGlobalMainMenu::cancelSearch()
+{
+    UWorld* world{ this->GetWorld() };
+    if (!ensure(world != nullptr)) return;
+
+    world->GetTimerManager().ClearTimer(this->PollMatchmakingHandle);
+
+    UHub_SpacelGameInstance* spacelGameInstance{ Cast<UHub_SpacelGameInstance>(this->GetGameInstance()) };
+    if (!ensure(spacelGameInstance != nullptr)) return;
+
+    FString accessToken { spacelGameInstance->AccessToken };
+    FString matchmakingTicketId { spacelGameInstance->MatchmakingTicketId };
+
+    if (accessToken.Len() > 0 && matchmakingTicketId.Len() > 0)
+    {
+        TSharedPtr<FJsonObject> requestObj{ MakeShareable(new FJsonObject) };
+        requestObj->SetStringField("ticketId", matchmakingTicketId);
+
+        FString requestBody;
+        TSharedRef<TJsonWriter<>> writer = TJsonWriterFactory<>::Create(&requestBody);
+        if (FJsonSerializer::Serialize(requestObj.ToSharedRef(), writer))
+        {
+            SimplyHttpRequest::processRequest(this->HttpModule, this,
+                &UGlobalMainMenu::onStopMatchmakingResponseReceived,
+                this->ApiUrl + "/stopmatchmaking", "POST",
                 TArray<FString>{"Content-Type", "application/json", "Authorization", accessToken},
                 requestBody);
         }
