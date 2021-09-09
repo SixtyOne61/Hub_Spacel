@@ -243,18 +243,24 @@ void UGlobalMainMenu::onGetPlayerDataResponseReceived(FHttpRequestPtr _request, 
 
     TSharedPtr<FJsonObject> playerData{ jsonObject->GetObjectField("playerData") };
 
-    m_playerProfile.m_win = playerData->GetObjectField("Wins")->GetStringField("N");
-    m_playerProfile.m_lost = playerData->GetObjectField("Losses")->GetStringField("N");
+    m_playerProfile.m_win = playerData->GetObjectField("Wins")->GetStringField("N") + " win(s)";
+    FString const& lostStr = playerData->GetObjectField("Losses")->GetStringField("N");
 
+    int win = UKismetStringLibrary::Conv_StringToInt(m_playerProfile.m_win);
+    int lost = UKismetStringLibrary::Conv_StringToInt(lostStr);
+
+    m_playerProfile.m_ratio = "Win ratio " + FString::FromInt( ((float)win / (float)(lost + win)) * 100 ) + "%";
+    m_playerProfile.m_nbGame = FString::FromInt(win + lost) + " game played";
     SimplyUI::setVisibility({ ESlateVisibility::Hidden },
         std::make_tuple(this->WebBrowser));
 }
 
-void UGlobalMainMenu::SetPlayerProfile(FString& _playerName, FString& _win, FString& _lost)
+void UGlobalMainMenu::SetPlayerProfile(FString& _playerName, FString& _win, FString& _ratio, FString& _nbGame)
 {
     _playerName = m_playerProfile.m_playerName;
     _win = m_playerProfile.m_win;
-    _lost = m_playerProfile.m_lost;
+    _ratio = m_playerProfile.m_ratio;
+    _nbGame = m_playerProfile.m_nbGame;
 }
 
 void UGlobalMainMenu::RefreshPlayerName()

@@ -19,7 +19,8 @@ class HUB_SPACEL_API UGlobalMainMenu : public UUserWidget
 	{
 		FString m_playerName {};
 		FString m_win {};
-		FString m_lost {};
+		FString m_ratio {};
+		FString m_nbGame {};
 	} m_playerProfile;
 	
 public:
@@ -58,7 +59,7 @@ private:
 	bool OnPlay();
 
 	UFUNCTION(BlueprintCallable, Category = "UISetup")
-	void SetPlayerProfile(FString & _playerName, FString & _win, FString& _lost);
+	void SetPlayerProfile(FString & _playerName, FString & _win, FString& _ratio, FString& _nbGame);
 
 	UFUNCTION(BlueprintCallable, Category = "UISetup")
 	void RefreshPlayerName();
