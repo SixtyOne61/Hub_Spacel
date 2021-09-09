@@ -14,6 +14,13 @@ UCLASS()
 class HUB_SPACEL_API UGlobalMainMenu : public UUserWidget
 {
 	GENERATED_BODY()
+
+	struct SPlayerProfile
+	{
+		FString m_playerName {};
+		FString m_win {};
+		FString m_lost {};
+	} m_playerProfile;
 	
 public:
 	UGlobalMainMenu(FObjectInitializer const& _objectInitializer);
@@ -37,6 +44,12 @@ private:
 
 	UFUNCTION(BlueprintCallable, Category = "UIEvent")
 	void OnPlay();
+
+	UFUNCTION(BlueprintCallable, Category = "UISetup")
+	void SetPlayerProfile(FString & _playerName, FString & _win, FString& _lost);
+
+	UFUNCTION()
+	void OnLoadGame(const FString& _slotName, const int32 _userIndex, USaveGame* _loadedGameData);
 
 public:
 	UPROPERTY()

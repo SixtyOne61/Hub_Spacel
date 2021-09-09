@@ -13,6 +13,9 @@
 #include "Util/SimplyHttpRequest.h"
 #include "Components/TextBlock.h"
 #include "Hub_SpacelGameInstance.h"
+#include "Player/Save/SpacelSaveGame.h"
+#include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetStringLibrary.h"
 
 UGlobalMainMenu::UGlobalMainMenu(FObjectInitializer const& _objectInitializer)
     : Super(_objectInitializer)
@@ -72,10 +75,10 @@ void UGlobalMainMenu::NativeConstruct()
         WebBrowser->OnUrlChanged.Add(loginDelegate);
     }
 
-    //FAsyncLoadGameFromSlotDelegate LoadedDelegate;
-    //// USomeUObjectClass::LoadGameDelegateFunction is a void function that takes the following parameters: const FString& SlotName, const int32 UserIndex, USaveGame* LoadedGameData
-    //LoadedDelegate.BindUObject(this, &UMainMenuWidget::OnLoadGame);
-    //UGameplayStatics::AsyncLoadGameFromSlot("Save", 0, LoadedDelegate);
+    FAsyncLoadGameFromSlotDelegate LoadedDelegate;
+    // USomeUObjectClass::LoadGameDelegateFunction is a void function that takes the following parameters: const FString& SlotName, const int32 UserIndex, USaveGame* LoadedGameData
+    LoadedDelegate.BindUObject(this, &UGlobalMainMenu::OnLoadGame);
+    UGameplayStatics::AsyncLoadGameFromSlot("Save", 0, LoadedDelegate);
 }
 
 void UGlobalMainMenu::NativeDestruct()
@@ -83,8 +86,21 @@ void UGlobalMainMenu::NativeDestruct()
     UWorld* world{ this->GetWorld() };
     if (!ensure(world != nullptr)) return;
 
-    //world->GetTimerManager().ClearTimer(this->PollMatchmakingHandle);
-    //world->GetTimerManager().ClearTimer(this->SetAveragePlayerLatencyHandle);
+    world->GetTimerManager().ClearTimer(this->PollMatchmakingHandle);
+    world->GetTimerManager().ClearTimer(this->SetAveragePlayerLatencyHandle);
+}
+
+void UGlobalMainMenu::OnLoadGame(const FString& _slotName, const int32 _userIndex, USaveGame* _loadedGameData)
+{
+    if (USpacelSaveGame* spacelSaveGame = Cast<USpacelSaveGame>(_loadedGameData))
+    {
+        if (UHub_SpacelGameInstance* spacelGameInstance = Cast<UHub_SpacelGameInstance>(this->GetGameInstance()))
+        {
+            // Set data on the savegame object.
+            spacelGameInstance->CustomPlayerName = spacelSaveGame->PlayerName;
+            m_playerProfile.m_playerName = spacelSaveGame->PlayerName;
+        }
+    }
 }
 
 void UGlobalMainMenu::SetAveragePlayerLatency()
@@ -202,23 +218,18 @@ void UGlobalMainMenu::onGetPlayerDataResponseReceived(FHttpRequestPtr _request, 
 
     TSharedPtr<FJsonObject> playerData{ jsonObject->GetObjectField("playerData") };
 
-    auto lb_set = [&playerData](UTextBlock* _text, FString&& _name)
-    {
-        if (!ensure(_text != nullptr)) return;
-        if (playerData->HasField(_name))
-        {
-            FString txt = playerData->GetObjectField(_name)->GetStringField("N");
-            _text->SetText(FText::FromString(_name + ": " + txt));
-        }
-    };
+    m_playerProfile.m_win = playerData->GetObjectField("Wins")->GetStringField("N");
+    m_playerProfile.m_lost = playerData->GetObjectField("Losses")->GetStringField("N");
 
-    //lb_set(this->WinsTextBlock, "Wins");
-    //lb_set(this->LossesTextBlock, "Losses");
-    //
     SimplyUI::setVisibility({ ESlateVisibility::Hidden },
         std::make_tuple(this->WebBrowser));
-    //SimplyUI::setVisibility({ ESlateVisibility::Visible },
-    //    std::make_tuple(this->MatchmakingButton, this->WinsTextBlock, this->LossesTextBlock, this->PingTextBlock, this->MatchmakingEventTextBlock, this->BorderName, this->ScrollBox, this->InputSelection));
+}
+
+void UGlobalMainMenu::SetPlayerProfile(FString& _playerName, FString& _win, FString& _lost)
+{
+    _playerName = m_playerProfile.m_playerName;
+    _win = m_playerProfile.m_win;
+    _lost = m_playerProfile.m_lost;
 }
 
 void UGlobalMainMenu::onStartMatchmakingResponseReceived(FHttpRequestPtr _request, FHttpResponsePtr _response, bool _bWasSuccessful)
