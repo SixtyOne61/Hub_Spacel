@@ -20,7 +20,7 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = Basic)
 	bool HasSeeDitactitial { false };
 
-	UPROPERTY(VisibleAnywhere, Category = Basic)
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category = Basic)
 	FString PlayerName;
 
 	UPROPERTY(VisibleAnywhere, Category = Basic)

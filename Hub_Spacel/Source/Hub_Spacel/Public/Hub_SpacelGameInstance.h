@@ -64,7 +64,7 @@ public:
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
     FOnTryLock OnTryLockDelegate {};
 
-    UPROPERTY()
+    UPROPERTY(BlueprintReadWrite)
     FString CustomPlayerName { "BoB" };
 
 private:

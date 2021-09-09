@@ -60,6 +60,9 @@ private:
 	UFUNCTION(BlueprintCallable, Category = "UISetup")
 	void SetPlayerProfile(FString & _playerName, FString & _win, FString& _lost);
 
+	UFUNCTION(BlueprintCallable, Category = "UISetup")
+	void RefreshPlayerName();
+
 	UFUNCTION()
 	void OnLoadGame(const FString& _slotName, const int32 _userIndex, USaveGame* _loadedGameData);
 

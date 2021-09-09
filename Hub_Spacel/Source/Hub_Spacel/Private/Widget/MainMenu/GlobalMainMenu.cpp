@@ -257,6 +257,14 @@ void UGlobalMainMenu::SetPlayerProfile(FString& _playerName, FString& _win, FStr
     _lost = m_playerProfile.m_lost;
 }
 
+void UGlobalMainMenu::RefreshPlayerName()
+{
+    UHub_SpacelGameInstance* spacelGameInstance{ Cast<UHub_SpacelGameInstance>(this->GetGameInstance()) };
+    if (!ensure(spacelGameInstance != nullptr)) return;
+
+    m_playerProfile.m_playerName = spacelGameInstance->CustomPlayerName;
+}
+
 void UGlobalMainMenu::onStartMatchmakingResponseReceived(FHttpRequestPtr _request, FHttpResponsePtr _response, bool _bWasSuccessful)
 {
     if (!_bWasSuccessful)
