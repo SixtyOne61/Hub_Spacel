@@ -38,6 +38,8 @@ BP_ devant les méthodes blueprintImplementable
 this devant les membres public
 this devant les methodes public
 
+On revient à l'indentation à chaque accolade. 
+
 Asset dans l'editor :
 
 BP_ devant les blueprints
