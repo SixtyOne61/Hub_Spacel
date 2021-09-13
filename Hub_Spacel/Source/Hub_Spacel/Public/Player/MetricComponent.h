@@ -19,14 +19,25 @@ class HUB_SPACEL_API UMetricComponent : public UPlayerActorComponent
 public:
 	void BeginPlay() override;
 
-	void createPrecisionData(bool _success);
-	void createFogData();
-	void createKillData();
-	void createEmpPointData(uint16 _value);
-	void createTankPointData(uint16 _value);
-	void createMatiereWinData(uint16 _value);
-	void createMatiereRepair(uint16 _value);
-	void createTotalPointData(uint16 _value);
+	template<class DataType, class ... ts>
+	inline void updateMetric(EMetric _type, std::tuple<ts...>&& _vals)
+	{
+		using Ttuple = std::tuple<ts...>;
+
+		if (auto* data = m_metric->getData<DataType>(_type))
+		{
+			data->operator()(std::forward<Ttuple>(_vals));
+		}
+	}
+
+	template<class DataType = SMetricIncrease>
+	inline void updateMetric(EMetric _type)
+	{
+		if (auto* data = m_metric->getData<DataType>(_type))
+		{
+			data->operator()();
+		}
+	}
 
 	UFUNCTION()
 	void OnScored(EScoreType _type, int32 _value);

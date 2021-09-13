@@ -114,7 +114,7 @@ ESkillReturn URepairComponent::repair(TArray<FVector_NetQuantize>& _removedLocat
 
                 if (UMetricComponent* component = Cast<UMetricComponent>(pawn->GetComponentByClass(UMetricComponent::StaticClass())))
                 {
-                    component->createMatiereRepair(nbRepair);
+                    component->updateMetric<SMetricAdd, uint8>(EMetric::MatiereUseForRepair, { nbRepair });
                 }
 
                 this->OnUpdateMatiere(-1 * _minMatiere, EMatiereOrigin::Lost);

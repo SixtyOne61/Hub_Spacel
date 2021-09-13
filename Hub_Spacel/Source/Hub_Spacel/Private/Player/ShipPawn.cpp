@@ -1159,7 +1159,7 @@ void AShipPawn::addMatiere(int32 _val, EMatiereOrigin _type)
     {
         if (UMetricComponent* component = Cast<UMetricComponent>(this->GetComponentByClass(UMetricComponent::StaticClass())))
         {
-            component->createMatiereWinData((uint16)_val);
+            component->updateMetric<SMetricAdd, uint16>(EMetric::MatiereWin, { (uint16)_val });
         }
     }
 
