@@ -81,10 +81,7 @@ public:
 		m_metric.insert({ EMetric::TotalScore, SMetricAdd {} });
 	}
 
-	~LocalMetric()
-	{
-
-	}
+	~LocalMetric() = default;
 
 	template<class T>
 	inline T* getData(EMetric _type)
