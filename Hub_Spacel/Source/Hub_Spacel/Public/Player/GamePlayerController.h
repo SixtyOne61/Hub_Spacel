@@ -32,13 +32,22 @@ private:
 	void RPCServerForward(float _val);
 
 	UFUNCTION(Reliable, Server)
-	void RPCServerHorizontalStraf(float _val);
+	void RPCServerBackward(float _val);
+
+	UFUNCTION(Reliable, Server)
+	void RPCServerHorizontalStrafRight(float _val);
+
+	UFUNCTION(Reliable, Server)
+	void RPCServerHorizontalStrafLeft(float _val);
 
 	UFUNCTION(Reliable, Server)
 	void RPCServerVerticalStraf(float _val);
 
 	UFUNCTION(Reliable, Server)
-	void RPCServerFlightAttitude(float _val);
+	void RPCServerFlightAttitudeRight(float _val);
+
+	UFUNCTION(Reliable, Server)
+	void RPCServerFlightAttitudeLeft(float _val);
 
 	UFUNCTION(Reliable, Server)
 	void RPCServerFire(bool _is);
@@ -54,9 +63,13 @@ private:
 
 	/* input callback */
 	void forward(float _value) override;
-	void horizontalStraf(float _value) override;
+	void backward(float _value) override;
+	void horizontalStrafRight(float _value) override;
+	void horizontalStrafLeft(float _value) override;
 	void verticalStraf(float _value) override;
-	void flightAttitude(float _value) override;
+	void flightAttitudeRight(float _value) override;
+	void flightAttitudeLeft(float _value) override;
+
 	void fireOn() override;
 	void fireOff() override;
 	void lock() override;

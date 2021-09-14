@@ -95,11 +95,19 @@ void AGamePlayerController::RPCServerForward_Implementation(float _val)
     }
 }
 
-void AGamePlayerController::RPCServerHorizontalStraf_Implementation(float _val)
+void AGamePlayerController::RPCServerBackward_Implementation(float _val)
 {
     if (isAvailable())
     {
-        m_data.m_lastHorizontalStrafInput = _val;
+        m_data.m_lastBackwardInput = _val;
+    }
+}
+
+void AGamePlayerController::RPCServerHorizontalStrafRight_Implementation(float _val)
+{
+    if (isAvailable())
+    {
+        m_data.m_lastHorizontalStrafRightInput = _val;
 
         if (AShipPawn* shipPawn = Cast<AShipPawn>(this->GetPawn()))
         {
@@ -108,7 +116,23 @@ void AGamePlayerController::RPCServerHorizontalStraf_Implementation(float _val)
                 shipPawn->RU_RightTrail = true;
                 shipPawn->RU_LeftTrail = false;
             }
-            else if (_val < 0)
+            else
+            {
+                shipPawn->RU_RightTrail = false;
+            }
+        }
+    }
+}
+
+void AGamePlayerController::RPCServerHorizontalStrafLeft_Implementation(float _val)
+{
+    if (isAvailable())
+    {
+        m_data.m_lastHorizontalStrafLeftInput = _val;
+
+        if (AShipPawn* shipPawn = Cast<AShipPawn>(this->GetPawn()))
+        {
+            if (_val > 0.0f)
             {
                 shipPawn->RU_LeftTrail = true;
                 shipPawn->RU_RightTrail = false;
@@ -116,7 +140,6 @@ void AGamePlayerController::RPCServerHorizontalStraf_Implementation(float _val)
             else
             {
                 shipPawn->RU_LeftTrail = false;
-                shipPawn->RU_RightTrail = false;
             }
         }
     }
@@ -130,11 +153,19 @@ void AGamePlayerController::RPCServerVerticalStraf_Implementation(float _val)
     }
 }
 
-void AGamePlayerController::RPCServerFlightAttitude_Implementation(float _val)
+void AGamePlayerController::RPCServerFlightAttitudeRight_Implementation(float _val)
 {
     if (isAvailable())
     {
-        m_data.m_lastFlightAttitudeInput = _val;
+        m_data.m_lastFlightAttitudeRightInput = _val;
+    }
+}
+
+void AGamePlayerController::RPCServerFlightAttitudeLeft_Implementation(float _val)
+{
+    if (isAvailable())
+    {
+        m_data.m_lastFlightAttitudeLeftInput = _val;
     }
 }
 
@@ -171,11 +202,27 @@ void AGamePlayerController::forward(float _value)
     }
 }
 
-void AGamePlayerController::horizontalStraf(float _value)
+void AGamePlayerController::backward(float _value)
 {
     if (isAvailable())
     {
-        this->RPCServerHorizontalStraf(_value);
+        this->RPCServerBackward(_value);
+    }
+}
+
+void AGamePlayerController::horizontalStrafRight(float _value)
+{
+    if (isAvailable())
+    {
+        this->RPCServerHorizontalStrafRight(_value);
+    }
+}
+
+void AGamePlayerController::horizontalStrafLeft(float _value)
+{
+    if (isAvailable())
+    {
+        this->RPCServerHorizontalStrafLeft(_value);
     }
 }
 
@@ -187,11 +234,19 @@ void AGamePlayerController::verticalStraf(float _value)
     }
 }
 
-void AGamePlayerController::flightAttitude(float _value)
+void AGamePlayerController::flightAttitudeRight(float _value)
 {
     if (isAvailable())
     {
-        this->RPCServerFlightAttitude(_value);
+        this->RPCServerFlightAttitudeRight(_value);
+    }
+}
+
+void AGamePlayerController::flightAttitudeLeft(float _value)
+{
+    if (isAvailable())
+    {
+        this->RPCServerFlightAttitudeLeft(_value);
     }
 }
 
@@ -273,9 +328,11 @@ void AGamePlayerController::RPCServerStartGame_Implementation()
     };
 
     lb_init(shipPawn->PlayerDataAsset->ForwardInput, m_data.m_forward);
-    lb_init(shipPawn->PlayerDataAsset->HorizontalStrafInput, m_data.m_horizontalStraf);
+    lb_init(shipPawn->PlayerDataAsset->HorizontalStrafInput, m_data.m_horizontalStrafRight);
+    lb_init(shipPawn->PlayerDataAsset->HorizontalStrafInput, m_data.m_horizontalStrafLeft);
     lb_init(shipPawn->PlayerDataAsset->VerticalStrafInput, m_data.m_verticalStraf);
-    lb_init(shipPawn->PlayerDataAsset->FlightAttitudeInput, m_data.m_flightAttitude);
+    lb_init(shipPawn->PlayerDataAsset->FlightAttitudeInput, m_data.m_flightAttitudeRight);
+    lb_init(shipPawn->PlayerDataAsset->FlightAttitudeInput, m_data.m_flightAttitudeLeft);
 
     R_EnableInput = true;
 }

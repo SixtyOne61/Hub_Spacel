@@ -96,7 +96,8 @@ enum class EInput : uint8
     HealSkill UMETA(DisplayName = "HealSkill"),
     RepairProtection UMETA(DisplayName = "RepairProtection"),
     RepairEngine UMETA(DisplayName = "RepairEngine"),
-    Emergency UMETA(DisplayName = "Emergency")
+    Emergency UMETA(DisplayName = "Emergency"),
+    Unset UMETA(DisplayName = "Unset"),
 };
 
 UENUM(BlueprintType, meta = (Bitflags, UseEnumValuesAsMaskValuesInEditor = "true"))

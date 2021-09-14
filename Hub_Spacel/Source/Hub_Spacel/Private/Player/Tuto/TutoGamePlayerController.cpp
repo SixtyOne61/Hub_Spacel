@@ -27,9 +27,19 @@ void ATutoGamePlayerController::forward(float _value)
     m_data.m_lastForwardInput = _value;
 }
 
-void ATutoGamePlayerController::horizontalStraf(float _value)
+void ATutoGamePlayerController::backward(float _value)
 {
-    m_data.m_lastHorizontalStrafInput = _value;
+    m_data.m_lastBackwardInput = _value;
+}
+
+void ATutoGamePlayerController::horizontalStrafRight(float _value)
+{
+    m_data.m_lastHorizontalStrafRightInput = _value;
+}
+
+void ATutoGamePlayerController::horizontalStrafLeft(float _value)
+{
+    m_data.m_lastHorizontalStrafLeftInput = _value;
 }
 
 void ATutoGamePlayerController::verticalStraf(float _value)
@@ -37,9 +47,14 @@ void ATutoGamePlayerController::verticalStraf(float _value)
     m_data.m_lastVerticalStrafInput = _value;
 }
 
-void ATutoGamePlayerController::flightAttitude(float _value)
+void ATutoGamePlayerController::flightAttitudeRight(float _value)
 {
-    m_data.m_lastFlightAttitudeInput = _value;
+    m_data.m_lastFlightAttitudeRightInput = _value;
+}
+
+void ATutoGamePlayerController::flightAttitudeLeft(float _value)
+{
+    m_data.m_lastFlightAttitudeLeftInput = _value;
 }
 
 void ATutoGamePlayerController::fireOn()

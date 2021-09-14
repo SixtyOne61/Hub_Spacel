@@ -16,6 +16,11 @@
 #include "Player/Save/SpacelSaveGame.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetStringLibrary.h"
+#include "DataAsset/HideSkillDataAsset.h"
+#include "DataAsset/SkillDataAsset.h"
+#include "DataAsset/UniqueSkillDataAsset.h"
+#include "GameFramework/PlayerInput.h"
+#include "GameFramework/InputSettings.h"
 
 UGlobalMainMenu::UGlobalMainMenu(FObjectInitializer const& _objectInitializer)
     : Super(_objectInitializer)
@@ -381,6 +386,86 @@ bool UGlobalMainMenu::OnPlay()
     }
 
     return this->SearchingForGame;
+}
+
+void UGlobalMainMenu::OnRefreshInput(class UInputSettings* _inputSettings)
+{
+    if (this->SkillDataAsset == nullptr) return;
+    if (this->HideSkillDataAsset == nullptr) return;
+
+    USkillDataAsset* skillDataAsset = this->SkillDataAsset;
+    UHideSkillDataAsset* hideSkillDataAsset = this->HideSkillDataAsset;
+
+    auto lbsetAction = [&_inputSettings, &skillDataAsset, &hideSkillDataAsset](FName&& _actionName, EInput _type)
+    {
+        if (FHideSkill* hideSkill = hideSkillDataAsset->get(_type))
+        {
+            TArray<FInputActionKeyMapping> _outMappings;
+            _inputSettings->GetActionMappingByName(_actionName, _outMappings);
+            for (auto mapping : _outMappings)
+            {
+                hideSkill->Key = mapping.Key;
+
+                auto const& skills = skillDataAsset->getSkillByInput(_type);
+                for (auto skill : skills)
+                {
+                    if (skill != nullptr)
+                    {
+                        skill->Key = mapping.Key;
+                    }
+                }
+
+                break;
+            }
+        }
+    };
+
+    auto lbsetAxis = [&_inputSettings, &skillDataAsset, &hideSkillDataAsset](FName&& _axisName, EInput _type)
+    {
+        if (FHideSkill* hideSkill = hideSkillDataAsset->get(_type))
+        {
+            TArray<FInputAxisKeyMapping> _outMappings;
+            _inputSettings->GetAxisMappingByName(_axisName, _outMappings);
+            for (auto mapping : _outMappings)
+            {
+                hideSkill->Key = mapping.Key;
+            }
+        }
+    };
+
+    lbsetAction("EscapeMode", EInput::EscapeMode);
+    lbsetAction("Heal", EInput::HealSkill);
+    lbsetAction("SecondaryShot", EInput::SecondaryShot);
+    lbsetAction("RepairProtection", EInput::RepairProtection);
+    lbsetAction("RepairEngine", EInput::RepairEngine);
+    lbsetAction("Emergency", EInput::Emergency);
+    lbsetAction("MediumSkill", EInput::MediumSkill);
+    lbsetAction("HightSkill", EInput::HightSkill);
+
+    lbsetAxis("Forward", EInput::Forward);
+    lbsetAxis("Backward", EInput::Backward);
+    lbsetAxis("FlightAttitudeLeft", EInput::FlightAltitudeLeft);
+    lbsetAxis("FlightAttitudeRight", EInput::FlightAltitudeRight);
+    lbsetAxis("HorizontalStrafRight", EInput::Right);
+    lbsetAxis("HorizontalStrafLeft", EInput::Left);
+
+    // special case for HalfTurn
+    TArray<FInputAxisKeyMapping> outMappingsBackward;
+    _inputSettings->GetAxisMappingByName("Backward", outMappingsBackward);
+
+    for (auto mapping : outMappingsBackward)
+    {
+        TArray<FInputActionKeyMapping> outMappingsHalfTurn;
+        _inputSettings->GetActionMappingByName("HalfTurn", outMappingsHalfTurn);
+
+        for (auto halfTurnMapping : outMappingsHalfTurn)
+        {
+            _inputSettings->RemoveActionMapping(halfTurnMapping, false);
+        }
+
+        FInputActionKeyMapping newKeyMapping = FInputActionKeyMapping("HalfTurn", mapping.Key);
+        _inputSettings->AddActionMapping(newKeyMapping, true);
+    }
 }
 
 void UGlobalMainMenu::startSearch()

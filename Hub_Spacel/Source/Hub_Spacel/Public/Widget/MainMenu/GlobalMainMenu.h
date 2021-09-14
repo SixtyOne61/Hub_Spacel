@@ -58,6 +58,9 @@ private:
 	UFUNCTION(BlueprintCallable, Category = "UIEvent")
 	bool OnPlay();
 
+	UFUNCTION(BlueprintCallable, Category = "UIEvent")
+	void OnRefreshInput(class UInputSettings* _inputSettings);
+
 	UFUNCTION(BlueprintCallable, Category = "UISetup")
 	void SetPlayerProfile(FString & _playerName, FString & _win, FString& _ratio, FString& _nbGame);
 
@@ -77,6 +80,13 @@ public:
 
 	UPROPERTY()
 	FTimerHandle PollMatchmakingHandle {};
+
+protected:
+	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
+	class USkillDataAsset* SkillDataAsset{ nullptr };
+
+	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
+	class UHideSkillDataAsset* HideSkillDataAsset{ nullptr };
 
 private:
 	// widget component
