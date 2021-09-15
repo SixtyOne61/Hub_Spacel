@@ -79,11 +79,6 @@ void UGlobalMainMenu::NativeConstruct()
         loginDelegate.BindUFunction(this, "HandleLoginUrlChange");
         WebBrowser->OnUrlChanged.Add(loginDelegate);
     }
-
-    FAsyncLoadGameFromSlotDelegate LoadedDelegate;
-    // USomeUObjectClass::LoadGameDelegateFunction is a void function that takes the following parameters: const FString& SlotName, const int32 UserIndex, USaveGame* LoadedGameData
-    LoadedDelegate.BindUObject(this, &UGlobalMainMenu::OnLoadGame);
-    UGameplayStatics::AsyncLoadGameFromSlot("Save", 0, LoadedDelegate);
 }
 
 void UGlobalMainMenu::NativeDestruct()
@@ -95,17 +90,9 @@ void UGlobalMainMenu::NativeDestruct()
     world->GetTimerManager().ClearTimer(this->SetAveragePlayerLatencyHandle);
 }
 
-void UGlobalMainMenu::OnLoadGame(const FString& _slotName, const int32 _userIndex, USaveGame* _loadedGameData)
+void UGlobalMainMenu::OnLoadGame(FString const& _playerName)
 {
-    if (USpacelSaveGame* spacelSaveGame = Cast<USpacelSaveGame>(_loadedGameData))
-    {
-        if (UHub_SpacelGameInstance* spacelGameInstance = Cast<UHub_SpacelGameInstance>(this->GetGameInstance()))
-        {
-            // Set data on the savegame object.
-            spacelGameInstance->CustomPlayerName = spacelSaveGame->PlayerName;
-            m_playerProfile.m_playerName = spacelSaveGame->PlayerName;
-        }
-    }
+    m_playerProfile.m_playerName = _playerName;
 }
 
 void UGlobalMainMenu::SetAveragePlayerLatency()

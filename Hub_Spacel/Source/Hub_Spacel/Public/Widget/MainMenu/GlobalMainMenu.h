@@ -67,8 +67,8 @@ private:
 	UFUNCTION(BlueprintCallable, Category = "UISetup")
 	void RefreshPlayerName();
 
-	UFUNCTION()
-	void OnLoadGame(const FString& _slotName, const int32 _userIndex, USaveGame* _loadedGameData);
+	UFUNCTION(BlueprintCallable, Category = "Save")
+	void OnLoadGame(FString const& _playerName);
 
 	// start / cancel match making
 	void startSearch();

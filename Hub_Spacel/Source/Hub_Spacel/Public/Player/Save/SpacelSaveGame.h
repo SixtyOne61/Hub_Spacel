@@ -21,11 +21,11 @@ public:
 	bool HasSeeDitactitial { false };
 
 	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category = Basic)
-	FString PlayerName;
+	FString PlayerName { };
 
-	UPROPERTY(VisibleAnywhere, Category = Basic)
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category = Basic)
 	FString SaveSlotName;
 
-	UPROPERTY(VisibleAnywhere, Category = Basic)
-	uint32 UserIndex;
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category = Basic)
+	int UserIndex;
 };
