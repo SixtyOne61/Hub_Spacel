@@ -5,7 +5,7 @@ Go -> https://eu-central-1.console.aws.amazon.com/gamelift/home?region=eu-centra
 
 Clic sur la  build, Actions -> Créer une flotte depuis une build
 
-Nom de la build : Spacel c5.large Windows On Demand(free) Fleet 1.7.16
+Nom de la build : Spacel c5.large Windows On Demand(free) Fleet 1.8.0
 Path : Hub_Spacel\Binaries\Win64\Hub_SpacelServer.exe
 ou en shipping : Hub_Spacel\Binaries\Win64\Hub_SpacelServer-Win64-Shipping.exe
 Paramètre : -port=7777 -password=SBLA
