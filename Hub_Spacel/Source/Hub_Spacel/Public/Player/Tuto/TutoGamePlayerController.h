@@ -21,9 +21,12 @@ public:
 protected:
 	/* input callback */
 	void forward(float _value) override;
-	void horizontalStraf(float _value) override;
+	void backward(float _value) override;
+	void horizontalStrafRight(float _value) override;
+	void horizontalStrafLeft(float _value) override;
 	void verticalStraf(float _value) override;
-	void flightAttitude(float _value) override;
+	void flightAttitudeRight(float _value) override;
+	void flightAttitudeLeft(float _value) override;
 	void fireOn() override;
 	void fireOff() override;
 	void lock() override;
