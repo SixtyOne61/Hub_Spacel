@@ -52,14 +52,11 @@ void ULocalPlayerActionComponent::TickComponent(float _deltaTime, ELevelTick _ti
     ACommonPawn* pawn = get();
     if (m_speedLineMaterial != nullptr && pawn != nullptr && pawn->CameraComponent != nullptr)
     {
-        pawn->ExposePercentSpeed = (int)FMath::Clamp((FMath::Abs(pawn->RU_PercentSpeed) + pawn->R_OverDrive) * 100, 0.0f, 100.0f);
-
         float coefSpeed = FMath::Max((pawn->ModuleComponent->SupportMeshComponent->GetInstanceCount() / 9.0f), pawn->PlayerDataAsset->MinCoefSpeed);
         if (pawn->hasEffect(EEffect::MetaFormAttack) || pawn->hasEffect(EEffect::MetaFormProtection) || pawn->hasEffect(EEffect::MetaFormSupport) || pawn->hasEffect(EEffect::EscapeMode))
         {
             // override speed max
             coefSpeed = pawn->PlayerDataAsset->EscapeModeCoef;
-            pawn->ExposePercentSpeed = 101;
         }
 
         // set material parameter

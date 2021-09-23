@@ -415,6 +415,23 @@ void AShipPawn::Tick(float _deltaTime)
             moveShip(_deltaTime);
         }
     }
+    else
+    {
+        computeSoundData();
+    }
+}
+
+void AShipPawn::computeSoundData()
+{
+    int percentSpeed = (int)FMath::Clamp((FMath::Abs(RU_PercentSpeed) + R_OverDrive) * 100, 0.0f, 100.0f);
+    if (hasEffect(EEffect::MetaFormAttack) || hasEffect(EEffect::MetaFormProtection) || hasEffect(EEffect::MetaFormSupport) || hasEffect(EEffect::EscapeMode))
+    {
+        // override speed max
+        percentSpeed = 101 * FMath::Abs(RU_PercentSpeed);
+    }
+
+    BP_SpeedSound(percentSpeed, FMath::IsNearlyEqual(m_lastPercentSpeed, 0.0f) && !FMath::IsNearlyEqual(RU_PercentSpeed, 0.0f) && RU_PercentSpeed > 0.0f);
+    m_lastPercentSpeed = RU_PercentSpeed;
 }
 
 void AShipPawn::emergencyRedCube(FVector const& _location)

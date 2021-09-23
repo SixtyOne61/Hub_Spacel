@@ -105,6 +105,9 @@ protected:
     UFUNCTION(BlueprintImplementableEvent)
     void BP_GoldFx(bool _activate);
 
+    UFUNCTION(BlueprintImplementableEvent)
+    void BP_SpeedSound(int _percentSpeed, bool _start);
+
     UFUNCTION()
     void OnEndMission(EMission _type);
 
@@ -193,6 +196,8 @@ private:
     UFUNCTION()
     void BackToGame();
 
+    void computeSoundData();
+
 public:
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
     FOnFeedbackScore OnFeedbackScoreDelegate {};
@@ -211,6 +216,8 @@ protected:
 
     FName m_lastTeamEmp {};
     int32 m_lastPlayerIdEmp {};
+
+    int m_lastPercentSpeed {};
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FTransform StartTransform {};
