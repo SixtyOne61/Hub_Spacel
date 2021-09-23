@@ -184,7 +184,8 @@ enum class EMetric : uint8
     TankPoint,
     MatiereWin,
     MatiereUseForRepair,
-    TotalScore,
+	TotalScore,
+	ShieldedEnemyDamage, // Damage dealt by enemy and absorb shields
 };
 
 UENUM(BlueprintType)

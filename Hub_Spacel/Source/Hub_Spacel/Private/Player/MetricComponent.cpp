@@ -57,7 +57,7 @@ void UMetricComponent::OnChangeState(EGameState _state)
         RPCNetMulticastSendData(precision, nbKill, totalScore);
 
         uint8 nbFog {};
-        uint16 empPoint {}, tankPoint {}, matiereWin {}, matiereUseForRepair {};
+        uint16 empPoint{}, tankPoint{}, matiereWin{}, matiereUseForRepair{}, shieldedDamages{};
         if (auto* data = m_metric->getData<SMetricIncrease>(EMetric::Fog))
         {
             auto const& result = data->get();
@@ -88,7 +88,14 @@ void UMetricComponent::OnChangeState(EGameState _state)
             matiereUseForRepair = std::get<0>(result);
         }
 
-        RPCClientSendData(nbFog, empPoint, tankPoint, matiereWin, matiereUseForRepair);
+        if (auto* data = m_metric->getData<SMetricAdd>(EMetric::ShieldedEnemyDamage))
+        {
+            auto const& result = data->get();
+            shieldedDamages = std::get<0>(result);
+        }
+
+        RPCClientSendData(nbFog, empPoint, tankPoint, matiereWin, matiereUseForRepair, shieldedDamages);
+
     }
 }
 
@@ -100,13 +107,15 @@ void UMetricComponent::RPCNetMulticastSendData_Implementation(uint8 _precision, 
     this->HasInit = true;
 }
 
-void UMetricComponent::RPCClientSendData_Implementation(uint8 _nbFog, uint16 _empPoint, uint16 _tankPoint, uint16 _matiereWin, uint16 _matiereUseForRepair)
+void UMetricComponent::RPCClientSendData_Implementation(uint8 _nbFog, uint16 _empPoint, uint16 _tankPoint, uint16 _matiereWin, uint16 _matiereUseForRepair, uint16 _shieldedDamages)
 {
     this->NbFog = _nbFog;
     this->EmpPoint = _empPoint;
     this->TankPoint = _tankPoint;
     this->MatiereWin = _matiereWin;
     this->MatiereUseForRepair = _matiereUseForRepair;
+    this->ShieldedDamages = _shieldedDamages;
+    
 }
 
 void UMetricComponent::OnScored(EScoreType _type, int32 _value)

@@ -752,12 +752,18 @@ bool AShipPawn::canTank(int32 _val)
     }
     else
     {
-        int32 newValue = this->R_ShieldLife - _val;
-        newValue = FMath::Max(0, newValue);
+		if (UMetricComponent* component = Cast<UMetricComponent>(this->GetComponentByClass(UMetricComponent::StaticClass())))
+		{
+			int16 dmgShielded = FMath::Min((int32)this->R_ShieldLife, _val);
+			component->updateMetric<SMetricAdd, uint16>(EMetric::ShieldedEnemyDamage, { dmgShielded });
+		}
 
-        lb_addScore(this->R_ShieldLife - newValue);
+		int32 newValue = this->R_ShieldLife - _val;
+		newValue = FMath::Max(0, newValue);
 
-        if (newValue == 0 && this->R_ShieldLife > 0)
+		lb_addScore(this->R_ShieldLife - newValue);
+
+		if (newValue == 0 && this->R_ShieldLife > 0)
         {
             removeEffect(EEffect::Shield);
             if (this->ShieldComponent != nullptr)

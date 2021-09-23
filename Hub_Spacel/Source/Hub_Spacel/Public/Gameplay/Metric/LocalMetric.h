@@ -79,6 +79,7 @@ public:
 		m_metric.insert({ EMetric::MatiereWin, SMetricAdd {} });
 		m_metric.insert({ EMetric::MatiereUseForRepair, SMetricAdd {} });
 		m_metric.insert({ EMetric::TotalScore, SMetricAdd {} });
+		m_metric.insert({ EMetric::ShieldedEnemyDamage, SMetricAdd {} });
 	}
 
 	~LocalMetric() = default;

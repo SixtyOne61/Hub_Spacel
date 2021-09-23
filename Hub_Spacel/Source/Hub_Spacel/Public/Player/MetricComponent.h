@@ -53,7 +53,7 @@ private:
 	void RPCNetMulticastSendData(uint8 _precision, uint8 _nbKill, uint16 _totalScore);
 	
 	UFUNCTION(Reliable, Client)
-	void RPCClientSendData(uint8 _nbFog, uint16 _empPoint, uint16 _tankPoint, uint16 _matiereWin, uint16 _matiereUseForRepair);
+	void RPCClientSendData(uint8 _nbFog, uint16 _empPoint, uint16 _tankPoint, uint16 _matiereWin, uint16 _matiereUseForRepair, uint16 _shieldedDamages);
 
 public:
 	UPROPERTY()
@@ -79,6 +79,9 @@ public:
 
 	UPROPERTY()
 	uint16 MatiereUseForRepair { 0 };
+
+	UPROPERTY()
+	uint16 ShieldedDamages { 0 };
 
 	UPROPERTY()
 	bool HasInit { false };

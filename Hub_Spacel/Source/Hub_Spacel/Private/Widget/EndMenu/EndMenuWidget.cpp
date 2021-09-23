@@ -80,7 +80,7 @@ void UEndMenuWidget::FillStat()
         {
             if (component->HasInit)
             {
-                BP_SetLocalStat(component->NbKill, component->Precision, component->TotalScore, FMath::Max(component->EmpPoint, component->TankPoint), component->MatiereWin, component->MatiereUseForRepair);
+                BP_SetLocalStat(component->NbKill, component->Precision, component->TotalScore, FMath::Max(component->EmpPoint, component->TankPoint), component->MatiereWin, component->MatiereUseForRepair, component->ShieldedDamages);
             }
         }
     }
