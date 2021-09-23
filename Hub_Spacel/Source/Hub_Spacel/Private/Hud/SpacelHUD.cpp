@@ -24,8 +24,7 @@ void ASpacelHUD::BeginPlay()
     playerController->bShowMouseCursor = true;
 
     // add user widget to viewport
-    SpacelFactory::createWidget<UUserWidget>(world, this->LobbyWidgetClass, false);
-    SpacelFactory::createWidget<UUserWidget>(world, this->GameWidgetClass, false);
+    SpacelFactory::createWidget<UUserWidget>(world, this->InGameWidgetClass, false);
 
     ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld()));
     if (spacelGameState != nullptr)
