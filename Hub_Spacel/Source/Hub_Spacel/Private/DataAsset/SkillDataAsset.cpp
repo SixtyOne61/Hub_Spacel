@@ -30,5 +30,20 @@ TArray<class UUniqueSkillDataAsset*> USkillDataAsset::getSkillByInput(EInput _in
         }
     }
 
-    return skills;
+    return std::move(skills);
+}
+
+TArray<class UUniqueSkillDataAsset*> USkillDataAsset::getSkillByType(ESkillType _type)
+{
+    TArray<class UUniqueSkillDataAsset*> skills{};
+
+    for (UUniqueSkillDataAsset* skill : this->Skills)
+    {
+        if (skill && skill->SkillType == _type)
+        {
+            skills.Add(skill);
+        }
+    }
+
+    return std::move(skills);
 }

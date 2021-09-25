@@ -55,4 +55,7 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	EInput InputType {};
+
+	UPROPERTY(EditAnywhere)
+	ESkillType SkillType {};
 };

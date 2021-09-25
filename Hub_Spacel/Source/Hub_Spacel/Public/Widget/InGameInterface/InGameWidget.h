@@ -23,6 +23,9 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void BP_SetupOutline(FSlateColor _color);
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void BP_SetupSkillCarrousel(ESkillType _type);
+
 private:
 	UFUNCTION()
 	void OnChangeState(EGameState _state);

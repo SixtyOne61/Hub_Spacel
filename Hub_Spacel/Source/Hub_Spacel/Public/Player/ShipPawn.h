@@ -77,6 +77,8 @@ public:
 
     void boostPassive(EMission _type, int32 _rewardValue);
 
+    void buildLobbyShip(ESkill _skillId, ESkillType _type);
+
 protected:
     UFUNCTION(BlueprintImplementableEvent)
     void BP_OnStartGame();
@@ -116,9 +118,6 @@ private:
     /* only use for debug in editor */
     UFUNCTION(BlueprintCallable)
     void BuildDefaultShip();
-
-    UFUNCTION()
-    void BuildShip();
 
     /* target system */
     UFUNCTION(Reliable, Server)

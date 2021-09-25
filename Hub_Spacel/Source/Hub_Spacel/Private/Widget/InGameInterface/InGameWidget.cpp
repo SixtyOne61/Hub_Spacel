@@ -47,6 +47,7 @@ void UInGameWidget::WaitPlayerState()
     {
         spawnLobby3D(owningPlayerState);
         setupColor(owningPlayerState);
+        BP_SetupSkillCarrousel(ESkillType::Low);
     }
 }
 

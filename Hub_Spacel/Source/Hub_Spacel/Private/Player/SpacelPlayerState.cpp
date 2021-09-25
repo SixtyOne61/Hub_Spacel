@@ -18,26 +18,14 @@ void ASpacelPlayerState::BeginPlay()
 #endif
 }
 
-void ASpacelPlayerState::RPCServerAddSkill_Implementation(uint8 const& _id, ESkillType _type)
+void ASpacelPlayerState::RPCServerAddSkill_Implementation(ESkill _id, ESkillType _type)
 {
     switch (_type)
     {
-        case ESkillType::Low: R_LowSkill = _id; break;
-        case ESkillType::Medium: R_MediumSkill = _id; break;
-        case ESkillType::Hight: R_HightSkill = _id; break;
+        case ESkillType::Low: R_LowSkill = (uint8)_id; break;
+        case ESkillType::Medium: R_MediumSkill = (uint8)_id; break;
+        case ESkillType::Hight: R_HightSkill = (uint8)_id; break;
     }
-}
-
-void ASpacelPlayerState::LocalAddSkill(uint8 const& _id, ESkillType _type)
-{
-    switch (_type)
-    {
-    case ESkillType::Low: R_LowSkill = _id; break;
-    case ESkillType::Medium: R_MediumSkill = _id; break;
-    case ESkillType::Hight: R_HightSkill = _id; break;
-    }
-
-    OnSkillLobbyChangeDelegate.Broadcast();
 }
 
 void ASpacelPlayerState::SetTeam(FString const& _team)
