@@ -22,8 +22,14 @@ void USkillCarrouselWidget::SetupCarrousel(ESkillType _type)
             if (widget != nullptr)
             {
                 widget->setupItems({ skill->Skill, skill->BackgroundColorLobby, skill->Title, skill->Desc, skill->IconeBtn, skill->SkillType });
+                widget->OnChooseSkillDelegate.AddDynamic(this, &USkillCarrouselWidget::OnChooseSkill);
             }
         }
     }
+}
+
+void USkillCarrouselWidget::OnChooseSkill(ESkill _skillId, ESkillType _type)
+{
+    this->OnChangeCarrouselDelegate.Broadcast();
 }
 

@@ -26,6 +26,9 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void BP_SetupSkillCarrousel(ESkillType _type);
 
+	UFUNCTION(BlueprintCallable)
+	void OnChangeCarrousel();
+
 private:
 	UFUNCTION()
 	void OnChangeState(EGameState _state);

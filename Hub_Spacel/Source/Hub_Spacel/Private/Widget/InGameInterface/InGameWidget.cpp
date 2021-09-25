@@ -81,3 +81,9 @@ void UInGameWidget::setupColor(class ASpacelPlayerState const* _owningPlayerStat
         this->BP_SetupOutline(color);
     }
 }
+
+void UInGameWidget::OnChangeCarrousel()
+{
+    m_currentSkillType = (ESkillType)((uint8)m_currentSkillType + 1);
+    BP_SetupSkillCarrousel(m_currentSkillType);
+}

@@ -7,7 +7,8 @@
 #include "Enum/SpacelEnum.h"
 #include "SkillItemWidget.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnChooseSkill);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnChooseSkill, ESkill, _skillId, ESkillType, _type);
+
 
 /**
  * 

@@ -7,6 +7,8 @@
 #include "Enum/SpacelEnum.h"
 #include "SkillCarrouselWidget.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnChangeCarrousel);
+
 /**
  * 
  */
@@ -24,6 +26,14 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "UI|Carrousel")
 	void BP_CreateSkillItemCarrousel(class USkillItemWidget*& _widget);
+
+public:
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, BlueprintAssignable)
+	FOnChangeCarrousel OnChangeCarrouselDelegate {};
+
+protected:
+	UFUNCTION()
+	void OnChooseSkill(ESkill _skillId, ESkillType _type);
 
 protected:
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)

@@ -16,7 +16,7 @@ void USkillItemWidget::OnChooseSkill()
     {
         owningPlayerState->RPCServerAddSkill(m_data.m_id, m_data.m_type);
 
-        OnChooseSkillDelegate.Broadcast();
+        this->OnChooseSkillDelegate.Broadcast(m_data.m_id, m_data.m_type);
     }
 }
 
