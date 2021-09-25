@@ -6,6 +6,8 @@
 #include "GameState/SpacelGameState.h"
 #include "Player/SpacelPlayerState.h"
 #include "Kismet/GameplayStatics.h"
+#include "Util/SimplyUI.h"
+#include "Widget/InGameInterface/SkillCarrouselWidget.h"
 
 void UInGameWidget::NativeConstruct()
 {
@@ -16,6 +18,11 @@ void UInGameWidget::NativeConstruct()
     if (spacelGameState != nullptr)
     {
         spacelGameState->OnChangeStateDelegate.AddDynamic(this, &UInGameWidget::OnChangeState);
+    }
+
+    if (USkillCarrouselWidget* carrousel = SimplyUI::initSafetyFromName<UUserWidget, USkillCarrouselWidget>(this, TEXT("WBP_SkillCarrousel")))
+    {
+        carrousel->OnChangeCarrouselDelegate.AddDynamic(this, &UInGameWidget::OnChangeCarrousel);
     }
 }
 
