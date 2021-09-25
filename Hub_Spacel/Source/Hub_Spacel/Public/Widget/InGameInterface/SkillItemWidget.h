@@ -7,6 +7,8 @@
 #include "Enum/SpacelEnum.h"
 #include "SkillItemWidget.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnChooseSkill);
+
 /**
  * 
  */
@@ -56,4 +58,8 @@ protected:
 
 	UFUNCTION(BlueprintCallable, Category = "UI|Event")
 	void OnHover();
+
+public:
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, BlueprintAssignable)
+	FOnChooseSkill OnChooseSkillDelegate {};
 };

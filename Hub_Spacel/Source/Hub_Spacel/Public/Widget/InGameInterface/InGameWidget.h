@@ -43,4 +43,7 @@ protected:
 
 	UPROPERTY(Category = "Setup", EditAnywhere, BlueprintReadWrite)
 	TSubclassOf<class AActor> LobbyClass { nullptr };
+
+private:
+	ESkillType m_currentSkillType {};
 };

@@ -15,6 +15,8 @@ void USkillItemWidget::OnChooseSkill()
     if (ASpacelPlayerState* owningPlayerState = Cast<ASpacelPlayerState>(this->GetOwningPlayerState()))
     {
         owningPlayerState->RPCServerAddSkill(m_data.m_id, m_data.m_type);
+
+        OnChooseSkillDelegate.Broadcast();
     }
 }
 

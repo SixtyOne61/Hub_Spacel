@@ -28,6 +28,7 @@ void UInGameWidget::OnChangeState(EGameState _state)
 {
     if (_state == EGameState::Prepare)
     {
+        m_currentSkillType = ESkillType::Low;
         WaitPlayerState();
     }
 }
@@ -47,7 +48,8 @@ void UInGameWidget::WaitPlayerState()
     {
         spawnLobby3D(owningPlayerState);
         setupColor(owningPlayerState);
-        BP_SetupSkillCarrousel(ESkillType::Low);
+        // must be low skill
+        BP_SetupSkillCarrousel(m_currentSkillType);
     }
 }
 
