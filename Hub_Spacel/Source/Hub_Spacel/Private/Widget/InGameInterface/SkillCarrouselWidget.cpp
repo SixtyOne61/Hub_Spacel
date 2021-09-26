@@ -23,6 +23,7 @@ void USkillCarrouselWidget::SetupCarrousel(ESkillType _type)
             {
                 widget->setupItems({ skill->Skill, skill->BackgroundColorLobby, skill->Title, skill->Desc, skill->IconeBtn, skill->SkillType });
                 widget->OnChooseSkillDelegate.AddDynamic(this, &USkillCarrouselWidget::OnChooseSkill);
+                widget->OnHoverSkillDelegate.AddDynamic(this, &USkillCarrouselWidget::OnHoverSkill);
             }
         }
     }
@@ -30,6 +31,11 @@ void USkillCarrouselWidget::SetupCarrousel(ESkillType _type)
 
 void USkillCarrouselWidget::OnChooseSkill(ESkill _skillId, ESkillType _type)
 {
-    this->OnChangeCarrouselDelegate.Broadcast();
+    this->OnChangeCarrouselDelegate.Broadcast(_skillId, _type);
+}
+
+void USkillCarrouselWidget::OnHoverSkill(ESkill _skillId, ESkillType _type)
+{
+    this->OnHoverCarrouselDelegate.Broadcast(_skillId, _type);
 }
 

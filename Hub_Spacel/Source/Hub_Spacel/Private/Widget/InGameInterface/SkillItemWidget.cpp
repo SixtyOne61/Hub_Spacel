@@ -29,4 +29,6 @@ void USkillItemWidget::OnHover()
             shipPawn->buildLobbyShip(m_data.m_id, m_data.m_type);
         }
     }
+
+    this->OnHoverSkillDelegate.Broadcast(m_data.m_id, m_data.m_type);
 }

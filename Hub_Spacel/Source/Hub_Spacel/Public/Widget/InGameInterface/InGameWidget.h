@@ -19,6 +19,12 @@ protected:
 	void NativeConstruct() override;
 	void NativeDestruct() override;
 
+	UFUNCTION()
+	void OnChangeCarrousel(ESkill _skillId, ESkillType _type);
+
+	UFUNCTION()
+	void OnHoverCarrousel(ESkill _skillId, ESkillType _type);
+
 protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void BP_SetupOutline(FSlateColor _color);
@@ -26,8 +32,8 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void BP_SetupSkillCarrousel(ESkillType _type);
 
-	UFUNCTION(BlueprintCallable)
-	void OnChangeCarrousel();
+	UFUNCTION(BlueprintImplementableEvent)
+	void BP_SetupSkill(ESkillType _type, UTexture2D * _icon);
 
 private:
 	UFUNCTION()
@@ -43,6 +49,9 @@ private:
 protected:
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
 	class UTeamColorDataAsset* TeamColorDataAsset { nullptr };
+
+	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
+	class USkillDataAsset* SkillDataAsset { nullptr };
 
 	UPROPERTY(Category = "Setup", EditAnywhere, BlueprintReadWrite)
 	TSubclassOf<class AActor> LobbyClass { nullptr };

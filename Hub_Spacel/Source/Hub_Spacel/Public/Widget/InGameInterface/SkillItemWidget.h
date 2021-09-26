@@ -8,6 +8,7 @@
 #include "SkillItemWidget.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnChooseSkill, ESkill, _skillId, ESkillType, _type);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnHoverSkill, ESkill, _skillId, ESkillType, _type);
 
 
 /**
@@ -63,4 +64,7 @@ protected:
 public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, BlueprintAssignable)
 	FOnChooseSkill OnChooseSkillDelegate {};
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, BlueprintAssignable)
+	FOnHoverSkill OnHoverSkillDelegate {};
 };

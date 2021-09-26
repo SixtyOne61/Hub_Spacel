@@ -7,7 +7,8 @@
 #include "Enum/SpacelEnum.h"
 #include "SkillCarrouselWidget.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnChangeCarrousel);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnChangeCarrousel, ESkill, _skillId, ESkillType, _type);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnHoverCarrousel, ESkill, _skillId, ESkillType, _type);
 
 /**
  * 
@@ -31,9 +32,15 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, BlueprintAssignable)
 	FOnChangeCarrousel OnChangeCarrouselDelegate {};
 
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, BlueprintAssignable)
+	FOnHoverCarrousel OnHoverCarrouselDelegate {};
+
 protected:
 	UFUNCTION()
 	void OnChooseSkill(ESkill _skillId, ESkillType _type);
+
+	UFUNCTION()
+	void OnHoverSkill(ESkill _skillId, ESkillType _type);
 
 protected:
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)

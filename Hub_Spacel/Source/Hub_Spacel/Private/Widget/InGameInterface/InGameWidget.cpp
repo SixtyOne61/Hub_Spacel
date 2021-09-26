@@ -3,6 +3,9 @@
 
 #include "InGameWidget.h"
 #include "DataAsset/TeamColorDataAsset.h"
+#include "DataAsset/EffectDataAsset.h"
+#include "DataAsset/SkillDataAsset.h"
+#include "DataAsset/UniqueSkillDataAsset.h"
 #include "GameState/SpacelGameState.h"
 #include "Player/SpacelPlayerState.h"
 #include "Kismet/GameplayStatics.h"
@@ -23,6 +26,7 @@ void UInGameWidget::NativeConstruct()
     if (USkillCarrouselWidget* carrousel = SimplyUI::initSafetyFromName<UUserWidget, USkillCarrouselWidget>(this, TEXT("WBP_SkillCarrousel")))
     {
         carrousel->OnChangeCarrouselDelegate.AddDynamic(this, &UInGameWidget::OnChangeCarrousel);
+        carrousel->OnHoverCarrouselDelegate.AddDynamic(this, &UInGameWidget::OnHoverCarrousel);
     }
 }
 
@@ -89,8 +93,18 @@ void UInGameWidget::setupColor(class ASpacelPlayerState const* _owningPlayerStat
     }
 }
 
-void UInGameWidget::OnChangeCarrousel()
+void UInGameWidget::OnChangeCarrousel(ESkill _skillId, ESkillType _type)
 {
-    m_currentSkillType = (ESkillType)((uint8)m_currentSkillType + 1);
+    m_currentSkillType = (ESkillType)((uint8)_type + 1);
     BP_SetupSkillCarrousel(m_currentSkillType);
+}
+
+void UInGameWidget::OnHoverCarrousel(ESkill _skillId, ESkillType _type)
+{
+    if (this->SkillDataAsset == nullptr) return;
+
+    if (auto uniqueSkillDataAsset = this->SkillDataAsset->getSKill(_skillId))
+    {
+        BP_SetupSkill(_type, uniqueSkillDataAsset->IconeBtn);
+    }
 }
