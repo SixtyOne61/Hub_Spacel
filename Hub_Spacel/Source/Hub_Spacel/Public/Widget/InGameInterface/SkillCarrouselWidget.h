@@ -18,6 +18,8 @@ class HUB_SPACEL_API USkillCarrouselWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
+	friend class UInGameWidget;
+
 public:
 	UFUNCTION(BlueprintCallable, Category = "UI|Setup")
 	void SetupCarrousel(ESkillType _type);

@@ -38,4 +38,3 @@ void USkillCarrouselWidget::OnHoverSkill(ESkill _skillId, ESkillType _type)
 {
     this->OnHoverCarrouselDelegate.Broadcast(_skillId, _type);
 }
-

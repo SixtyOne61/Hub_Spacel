@@ -6,6 +6,7 @@
 #include "DataAsset/EffectDataAsset.h"
 #include "DataAsset/SkillDataAsset.h"
 #include "DataAsset/UniqueSkillDataAsset.h"
+#include "DataAsset/FlyingGameModeDataAsset.h"
 #include "GameState/SpacelGameState.h"
 #include "Player/SpacelPlayerState.h"
 #include "Kismet/GameplayStatics.h"
@@ -23,16 +24,29 @@ void UInGameWidget::NativeConstruct()
         spacelGameState->OnChangeStateDelegate.AddDynamic(this, &UInGameWidget::OnChangeState);
     }
 
-    if (USkillCarrouselWidget* carrousel = SimplyUI::initSafetyFromName<UUserWidget, USkillCarrouselWidget>(this, TEXT("WBP_SkillCarrousel")))
+    this->CarrouselWidget = SimplyUI::initSafetyFromName<UUserWidget, USkillCarrouselWidget>(this, TEXT("WBP_SkillCarrousel"));
+    if (this->CarrouselWidget != nullptr)
     {
-        carrousel->OnChangeCarrouselDelegate.AddDynamic(this, &UInGameWidget::OnChangeCarrousel);
-        carrousel->OnHoverCarrouselDelegate.AddDynamic(this, &UInGameWidget::OnHoverCarrousel);
+        this->CarrouselWidget->OnChangeCarrouselDelegate.AddDynamic(this, &UInGameWidget::OnChangeCarrousel);
+        this->CarrouselWidget->OnHoverCarrouselDelegate.AddDynamic(this, &UInGameWidget::OnHoverCarrousel);
+    }
+
+    if (this->FlyingModeDataAsset != nullptr)
+    {
+        m_currentTimer = this->FlyingModeDataAsset->RemainingChooseModuleTime;
     }
 }
 
 void UInGameWidget::NativeDestruct()
 {
     Super::NativeDestruct();
+}
+
+void UInGameWidget::NativeTick(const FGeometry& _myGeometry, float _deltaSeconde)
+{
+    Super::NativeTick(_myGeometry, _deltaSeconde);
+
+    tickTimer(_deltaSeconde);
 }
 
 void UInGameWidget::OnChangeState(EGameState _state)
@@ -97,6 +111,21 @@ void UInGameWidget::OnChangeCarrousel(ESkill _skillId, ESkillType _type)
 {
     m_currentSkillType = (ESkillType)((uint8)_type + 1);
     BP_SetupSkillCarrousel(m_currentSkillType);
+
+    // go to next state
+    m_internState = (EInternState)((uint8)m_internState + 1);
+
+    if (this->FlyingModeDataAsset != nullptr)
+    {
+        switch (m_internState)
+        {
+        case EInternState::ChooseLow:
+        case EInternState::ChooseMedium:
+        case EInternState::ChooseHight:
+            m_currentTimer = this->FlyingModeDataAsset->RemainingChooseModuleTime;
+            break;
+        }
+    }
 }
 
 void UInGameWidget::OnHoverCarrousel(ESkill _skillId, ESkillType _type)
@@ -107,4 +136,43 @@ void UInGameWidget::OnHoverCarrousel(ESkill _skillId, ESkillType _type)
     {
         BP_SetupSkill(_type, uniqueSkillDataAsset->IconeBtn, uniqueSkillDataAsset->BackgroundColorBtn);
     }
+}
+
+void UInGameWidget::tickTimer(float _deltaSeconde)
+{
+    m_currentTimer -= _deltaSeconde;
+
+    if (m_currentTimer <= 0.0f)
+    {
+        switch (m_internState)
+        {
+        case EInternState::ChooseLow:
+            this->CarrouselWidget->OnChooseSkill(ESkill::DefaultLow, ESkillType::Low);
+            break;
+
+        case EInternState::ChooseMedium:
+            this->CarrouselWidget->OnChooseSkill(ESkill::DefaultMedium, ESkillType::Medium);
+            break;
+
+        case EInternState::ChooseHight:
+            this->CarrouselWidget->OnChooseSkill(ESkill::DefaultHight, ESkillType::Hight);
+            break;
+
+        case EInternState::Go:
+            break;
+
+        case EInternState::InGame:
+            break;
+
+        default:
+            break;
+        }
+    }
+
+    int min = (int)m_currentTimer / 60;
+    int sec = (int)m_currentTimer % 60;
+    FString minStr = min < 10 ? "0" + FString::FromInt(min) : FString::FromInt(min);
+    FString secStr = sec < 10 ? "0" + FString::FromInt(sec) : FString::FromInt(sec);
+
+    BP_UpdateTimer(minStr + ":" + secStr);
 }

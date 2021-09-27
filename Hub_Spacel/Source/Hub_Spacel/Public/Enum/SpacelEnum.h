@@ -76,6 +76,10 @@ enum class ESkill : uint8
     Katyusha UMETA(DisplayName = "Katyusha"),
     HealPack UMETA(DisplayName = "HealPack"),
     Emergency UMETA(DisplayName = "Emergency"),
+
+    DefaultLow = FireRate,
+    DefaultMedium = Missile,
+    DefaultHight = MetaFormAttack,
 };
 
 UENUM(BlueprintType)
