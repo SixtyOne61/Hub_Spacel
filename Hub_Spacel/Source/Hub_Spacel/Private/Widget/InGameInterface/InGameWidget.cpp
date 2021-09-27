@@ -122,7 +122,10 @@ void UInGameWidget::OnChangeCarrousel(ESkill _skillId, ESkillType _type)
         case EInternState::ChooseLow:
         case EInternState::ChooseMedium:
         case EInternState::ChooseHight:
-            m_currentTimer = this->FlyingModeDataAsset->RemainingChooseModuleTime;
+            m_currentTimer += this->FlyingModeDataAsset->RemainingChooseModuleTime;
+            break;
+        case EInternState::Go:
+            m_currentTimer += this->FlyingModeDataAsset->EndModuleTime;
             break;
         }
     }
@@ -144,6 +147,7 @@ void UInGameWidget::tickTimer(float _deltaSeconde)
 
     if (m_currentTimer <= 0.0f)
     {
+        m_currentTimer = 0.0f;
         switch (m_internState)
         {
         case EInternState::ChooseLow:
