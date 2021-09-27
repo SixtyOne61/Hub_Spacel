@@ -17,7 +17,7 @@ class HUB_SPACEL_API UEffectWidget : public UUserWidget
 	
 public:
 	UFUNCTION(BlueprintImplementableEvent)
-	void SetEffect(FLinearColor _color, UTexture2D* _texture);
+	void BP_SetEffect(FLinearColor _color, UTexture2D* _texture);
 
 public:
 	UPROPERTY()

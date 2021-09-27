@@ -105,6 +105,6 @@ void UInGameWidget::OnHoverCarrousel(ESkill _skillId, ESkillType _type)
 
     if (auto uniqueSkillDataAsset = this->SkillDataAsset->getSKill(_skillId))
     {
-        BP_SetupSkill(_type, uniqueSkillDataAsset->IconeBtn);
+        BP_SetupSkill(_type, uniqueSkillDataAsset->IconeBtn, uniqueSkillDataAsset->BackgroundColorBtn);
     }
 }

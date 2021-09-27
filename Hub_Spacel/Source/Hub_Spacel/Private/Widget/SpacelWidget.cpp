@@ -513,7 +513,7 @@ void USpacelWidget::OnAddEffect(EEffect _type)
     {
         effectWidget->Effect = _type;
         FEffect const& effectParam = this->EffectDataAsset->getEffect(_type);
-        effectWidget->SetEffect(effectParam.BackgroundColor, effectParam.Icone);
+        effectWidget->BP_SetEffect(effectParam.BackgroundColor, effectParam.Icone);
         this->EffectBarHorizontalBox->AddChildToHorizontalBox(effectWidget);
     }
 }

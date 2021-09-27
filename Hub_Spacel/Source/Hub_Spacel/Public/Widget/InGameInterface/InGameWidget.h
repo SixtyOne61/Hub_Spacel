@@ -33,7 +33,7 @@ protected:
 	void BP_SetupSkillCarrousel(ESkillType _type);
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void BP_SetupSkill(ESkillType _type, UTexture2D * _icon);
+	void BP_SetupSkill(ESkillType _type, UTexture2D * _icon, FSlateColor const& _backgroundColor);
 
 private:
 	UFUNCTION()
