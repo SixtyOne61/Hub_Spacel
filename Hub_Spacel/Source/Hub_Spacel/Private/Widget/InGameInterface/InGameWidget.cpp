@@ -56,6 +56,10 @@ void UInGameWidget::OnChangeState(EGameState _state)
         m_currentSkillType = ESkillType::Low;
         WaitPlayerState();
     }
+    else if (_state == EGameState::LockPrepare)
+    {
+        BP_GoAnimation();
+    }
 }
 
 void UInGameWidget::WaitPlayerState()

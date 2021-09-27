@@ -48,6 +48,9 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void BP_UpdateTimer(FString const& _str);
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void BP_GoAnimation();
+
 private:
 	UFUNCTION()
 	void OnChangeState(EGameState _state);
