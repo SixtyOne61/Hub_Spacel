@@ -60,6 +60,10 @@ void UInGameWidget::OnChangeState(EGameState _state)
     {
         BP_GoAnimation();
     }
+    else if (_state == EGameState::InGame)
+    {
+        // prepare game interface 
+    }
 }
 
 void UInGameWidget::WaitPlayerState()
