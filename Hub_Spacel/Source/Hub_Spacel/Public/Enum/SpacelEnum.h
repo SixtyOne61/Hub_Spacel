@@ -135,9 +135,6 @@ enum class EEffect : uint8
     PassiveFireRate UMETA(DisplayName = "PassiveFireRate"),
     PassiveCountDown UMETA(DisplayName = "PassiveCountDown"),
     PassiveSpeed UMETA(DisplayName = "PassiveSpeed"),
-    SkillPassiveFireRate UMETA(DisplayName = "PassiveFireRate"),
-    SkillPassiveProtection UMETA(DisplayName = "PassiveCountDown"),
-    SkillPassiveSpeed UMETA(DisplayName = "PassiveSpeed"),
 };
 
 UENUM(BlueprintType)
