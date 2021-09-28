@@ -54,6 +54,9 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void BP_SetupTeam(class UTexture2D* _logo, FSlateColor _color, FString const& _team);
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void BP_UpdateScore(FString const& _team, int32 _value, bool _isBest);
+
 private:
 	UFUNCTION()
 	void OnChangeState(EGameState _state);
@@ -66,6 +69,7 @@ private:
 	void setupColor(class ASpacelPlayerState const* _owningPlayerState);
 	void setupEnnemyTeam();
 	void tickTimer(float _deltaSeconde);
+	void tickScore();
 
 protected:
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)

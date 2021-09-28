@@ -48,6 +48,7 @@ void UInGameWidget::NativeTick(const FGeometry& _myGeometry, float _deltaSeconde
     Super::NativeTick(_myGeometry, _deltaSeconde);
 
     tickTimer(_deltaSeconde);
+    tickScore();
 }
 
 void UInGameWidget::OnChangeState(EGameState _state)
@@ -227,6 +228,19 @@ void UInGameWidget::setupEnnemyTeam()
         {
             FColorsType const& teamInfo = this->TeamColorDataAsset->GetColorType(team);
             BP_SetupTeam(teamInfo.Logo, teamInfo.SlateColor, team);
+        }
+    }
+}
+
+void UInGameWidget::tickScore()
+{
+    if (ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld())))
+    {
+        FString const& bestTeam = spacelGameState->GetBestTeam();
+        TArray<FScore> scores = spacelGameState->R_Scores;
+        for (auto score : scores)
+        {
+            BP_UpdateScore(score.Team, score.Score, bestTeam == score.Team);
         }
     }
 }
