@@ -7,6 +7,7 @@
 #include "DataAsset/SkillDataAsset.h"
 #include "DataAsset/UniqueSkillDataAsset.h"
 #include "DataAsset/FlyingGameModeDataAsset.h"
+#include "DataAsset/TeamColorDataAsset.h"
 #include "GameState/SpacelGameState.h"
 #include "Player/SpacelPlayerState.h"
 #include "Kismet/GameplayStatics.h"
@@ -62,7 +63,8 @@ void UInGameWidget::OnChangeState(EGameState _state)
     }
     else if (_state == EGameState::InGame)
     {
-        // prepare game interface 
+        // prepare game interface
+        setupEnnemyTeam();
     }
 }
 
@@ -83,6 +85,13 @@ void UInGameWidget::WaitPlayerState()
         setupColor(owningPlayerState);
         // must be low skill
         BP_SetupSkillCarrousel(m_currentSkillType);
+
+        if (this->TeamColorDataAsset != nullptr)
+        {
+            FColorsType const& teamInfo = this->TeamColorDataAsset->GetColorType(owningPlayerState->R_Team);
+            // setup team
+            BP_SetupTeam(teamInfo.Logo, teamInfo.SlateColor, owningPlayerState->R_Team);
+        }
     }
 }
 
@@ -187,4 +196,37 @@ void UInGameWidget::tickTimer(float _deltaSeconde)
     FString secStr = sec < 10 ? "0" + FString::FromInt(sec) : FString::FromInt(sec);
 
     BP_UpdateTimer(minStr + ":" + secStr);
+}
+
+void UInGameWidget::setupEnnemyTeam()
+{
+    if (ASpacelPlayerState* owningPlayerState = Cast<ASpacelPlayerState>(this->GetOwningPlayerState()))
+    {
+        if(this->TeamColorDataAsset == nullptr) return;
+
+        FString const& localTeam = owningPlayerState->R_Team;
+
+        UWorld* world { this->GetWorld() };
+        if (!ensure(world != nullptr)) return;
+        if (world->GetGameState() == nullptr) return;
+
+        TSet<FString> uniqueTeams { };
+
+        TArray<APlayerState*> const& playerStates { world->GetGameState()->PlayerArray };
+        for (auto playerState : playerStates)
+        {
+            if (ASpacelPlayerState* spacelPlayerState = Cast<ASpacelPlayerState>(playerState))
+            {
+                uniqueTeams.Add(spacelPlayerState->R_Team);
+            }
+        }
+
+        uniqueTeams.Remove(localTeam);
+
+        for (auto team : uniqueTeams)
+        {
+            FColorsType const& teamInfo = this->TeamColorDataAsset->GetColorType(team);
+            BP_SetupTeam(teamInfo.Logo, teamInfo.SlateColor, team);
+        }
+    }
 }

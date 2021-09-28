@@ -51,6 +51,9 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void BP_GoAnimation();
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void BP_SetupTeam(class UTexture2D* _logo, FSlateColor _color, FString const& _team);
+
 private:
 	UFUNCTION()
 	void OnChangeState(EGameState _state);
@@ -61,6 +64,7 @@ private:
 private:
 	void spawnLobby3D(class ASpacelPlayerState const* _owningPlayerState);
 	void setupColor(class ASpacelPlayerState const* _owningPlayerState);
+	void setupEnnemyTeam();
 	void tickTimer(float _deltaSeconde);
 
 protected:
