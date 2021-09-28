@@ -8,11 +8,17 @@
 #include "DataAsset/UniqueSkillDataAsset.h"
 #include "DataAsset/FlyingGameModeDataAsset.h"
 #include "DataAsset/TeamColorDataAsset.h"
+#include "DataAsset/KeyDataAsset.h"
+#include "DataAsset/EditorHackDataAsset.h"
 #include "GameState/SpacelGameState.h"
+#include "Gameplay/Skill/SkillCountDown.h"
 #include "Player/SpacelPlayerState.h"
 #include "Kismet/GameplayStatics.h"
-#include "Util/SimplyUI.h"
 #include "Widget/InGameInterface/SkillCarrouselWidget.h"
+#include "Widget/SkillWidget.h"
+#include "Widget/SkillProgressWidget.h"
+#include "Components/ProgressBar.h"
+#include "Util/SimplyUI.h"
 
 void UInGameWidget::NativeConstruct()
 {
@@ -64,8 +70,25 @@ void UInGameWidget::OnChangeState(EGameState _state)
     }
     else if (_state == EGameState::InGame)
     {
+        // update game timer
+        if (this->FlyingModeDataAsset != nullptr)
+        {
+            m_currentTimer = this->FlyingModeDataAsset->RemainingGameTime;
+
+#if WITH_EDITOR
+            if (this->HackDataAsset != nullptr)
+            {
+                if (this->HackDataAsset->UseHack)
+                {
+                    m_currentTimer = this->HackDataAsset->RemainingGameTime;
+                }
+            }
+#endif
+        }
+
         // prepare game interface
         setupEnnemyTeam();
+        setupInGame();
     }
 }
 
@@ -93,6 +116,10 @@ void UInGameWidget::WaitPlayerState()
             // setup team
             BP_SetupTeam(teamInfo.Logo, teamInfo.SlateColor, owningPlayerState->R_Team);
         }
+
+        // register skill
+        owningPlayerState->OnAddSkillUniqueDelegate = std::bind(&UInGameWidget::addSkill, this, std::placeholders::_1);
+        owningPlayerState->OnRemoveSkillUniqueDelegate = std::bind(&UInGameWidget::removeSkill, this, std::placeholders::_1);
     }
 }
 
@@ -125,6 +152,11 @@ void UInGameWidget::setupColor(class ASpacelPlayerState const* _owningPlayerStat
     }
 }
 
+void UInGameWidget::setupInGame()
+{
+    BP_SetupInGame();
+}
+
 void UInGameWidget::OnChangeCarrousel(ESkill _skillId, ESkillType _type)
 {
     m_currentSkillType = (ESkillType)((uint8)_type + 1);
@@ -141,6 +173,15 @@ void UInGameWidget::OnChangeCarrousel(ESkill _skillId, ESkillType _type)
         case EInternState::ChooseMedium:
         case EInternState::ChooseHight:
             m_currentTimer += this->FlyingModeDataAsset->RemainingChooseModuleTime;
+#if WITH_EDITOR
+            if (this->HackDataAsset != nullptr)
+            {
+                if (this->HackDataAsset->UseHack)
+                {
+                    m_currentTimer = this->HackDataAsset->ChooseModuleTime;
+                }
+            }
+#endif
             break;
         case EInternState::Go:
             m_currentTimer += this->FlyingModeDataAsset->EndModuleTime;
@@ -241,6 +282,41 @@ void UInGameWidget::tickScore()
         for (auto score : scores)
         {
             BP_UpdateScore(score.Team, score.Score, bestTeam == score.Team);
+        }
+    }
+}
+
+void UInGameWidget::addSkill(class SkillCountDown* _skill)
+{
+    if (_skill == nullptr) return;
+
+    if (UUniqueSkillDataAsset const* skill = _skill->getParam())
+    {
+        if (USkillWidget* skillWidget = SimplyUI::initUnSafeFromName<UUserWidget, USkillWidget>(this, skill->WidgetName))
+        {
+            if (this->KeyDataAsset != nullptr)
+            {
+                skillWidget->BP_Setup(skill->BackgroundColorBtn, skill->IconeBtn, this->KeyDataAsset->get(skill->Key));
+            }
+
+            if (UProgressBar* progress = SimplyUI::initUnSafeFromName<UUserWidget, UProgressBar>(skillWidget, TEXT("ProgressBar_Skill")))
+            {
+                _skill->addProgressBar(progress);
+            }
+        }
+    }
+}
+
+void UInGameWidget::removeSkill(ESkill _type)
+{
+    if (this->SkillDataAsset != nullptr)
+    {
+        if (UUniqueSkillDataAsset* skillParam = this->SkillDataAsset->getSKill(_type))
+        {
+            if (USkillWidget* skillWidget = SimplyUI::initUnSafeFromName<UUserWidget, USkillWidget>(this, skillParam->WidgetName))
+            {
+                skillWidget->BP_Remove();
+            }
         }
     }
 }

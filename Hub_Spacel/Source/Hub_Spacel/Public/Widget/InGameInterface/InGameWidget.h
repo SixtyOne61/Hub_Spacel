@@ -57,6 +57,9 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void BP_UpdateScore(FString const& _team, int32 _value, bool _isBest);
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void BP_SetupInGame();
+
 private:
 	UFUNCTION()
 	void OnChangeState(EGameState _state);
@@ -65,11 +68,21 @@ private:
 	void WaitPlayerState();
 
 private:
+	/* spawn method */
 	void spawnLobby3D(class ASpacelPlayerState const* _owningPlayerState);
+	
+	/* setup method */
 	void setupColor(class ASpacelPlayerState const* _owningPlayerState);
 	void setupEnnemyTeam();
+	void setupInGame();
+
+	/* tick method */
 	void tickTimer(float _deltaSeconde);
 	void tickScore();
+
+	/* skill method */
+	void addSkill(class SkillCountDown* _skill);
+	void removeSkill(ESkill _type);
 
 protected:
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
@@ -80,6 +93,12 @@ protected:
 
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
 	class UFlyingGameModeDataAsset* FlyingModeDataAsset { nullptr };
+
+	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
+	class UKeyDataAsset* KeyDataAsset { nullptr };
+
+	UPROPERTY(Category = "Hack", EditAnywhere, BlueprintReadWrite)
+	class UEditorHackDataAsset* HackDataAsset{ nullptr };
 
 	UPROPERTY(Category = "Setup", EditAnywhere, BlueprintReadWrite)
 	TSubclassOf<class AActor> LobbyClass { nullptr };
