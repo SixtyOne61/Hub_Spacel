@@ -1107,20 +1107,11 @@ void AShipPawn::heal(uint8 _value)
     RPCNetMulticastFxExploseHeal();
 }
 
-ESkillReturn AShipPawn::onRepairProtection()
+ESkillReturn AShipPawn::onRepair()
 {
     if (this->RepairComponent != nullptr)
     {
-        return this->RepairComponent->onRepairProtection();
-    }
-    return ESkillReturn::InternError;
-}
-
-ESkillReturn AShipPawn::onRepairSupport()
-{
-    if (this->RepairComponent != nullptr)
-    {
-        return this->RepairComponent->onRepairSupport();
+        return this->RepairComponent->onRepair();
     }
     return ESkillReturn::InternError;
 }

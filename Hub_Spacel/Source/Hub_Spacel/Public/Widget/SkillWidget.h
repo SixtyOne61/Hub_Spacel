@@ -19,5 +19,8 @@ public:
 	void BP_Setup(FSlateColor _color, class UTexture2D* _texture, class UTexture2D* _name);
 
 	UFUNCTION(BlueprintImplementableEvent)
+	void BP_SetupMatere(int32 _value);
+
+	UFUNCTION(BlueprintImplementableEvent)
 	void BP_Remove();
 };

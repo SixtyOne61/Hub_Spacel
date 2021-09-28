@@ -63,8 +63,7 @@ public:
     ESkillReturn spawnEmp();
     void emp(uint32 _duration, FName const& _team, int32 _playerId);
 
-    ESkillReturn onRepairProtection();
-    ESkillReturn onRepairSupport();
+    ESkillReturn onRepair();
     ESkillReturn onSwapEmergency();
     void onEmergencyCountDownEnd();
 

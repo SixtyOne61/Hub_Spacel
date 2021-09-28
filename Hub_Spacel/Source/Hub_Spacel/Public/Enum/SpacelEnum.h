@@ -76,6 +76,7 @@ enum class ESkill : uint8
     Katyusha UMETA(DisplayName = "Katyusha"),
     HealPack UMETA(DisplayName = "HealPack"),
     Emergency UMETA(DisplayName = "Emergency"),
+    Repair UMETA(DisplayName = "Repair"),
 
     DefaultLow = FireRate,
     DefaultMedium = Missile,
@@ -102,6 +103,7 @@ enum class EInput : uint8
     RepairProtection UMETA(DisplayName = "RepairProtection"),
     RepairEngine UMETA(DisplayName = "RepairEngine"),
     Emergency UMETA(DisplayName = "Emergency"),
+    Repair UMETA(DisplayName = "Repair"),
     Unset UMETA(DisplayName = "Unset"),
 };
 

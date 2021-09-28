@@ -299,9 +299,14 @@ void UInGameWidget::addSkill(class SkillCountDown* _skill)
                 skillWidget->BP_Setup(skill->BackgroundColorBtn, skill->IconeBtn, this->KeyDataAsset->get(skill->Key));
             }
 
-            if (UProgressBar* progress = SimplyUI::initUnSafeFromName<UUserWidget, UProgressBar>(skillWidget, TEXT("ProgressBar_Skill")))
+            if (UProgressBar* progress = SimplyUI::initUnSafeFromName<UUserWidget, UProgressBar>(skillWidget, TEXT("PB_Skill")))
             {
                 _skill->addProgressBar(progress);
+            }
+
+            if (skill->Value != 0)
+            {
+                skillWidget->BP_SetupMatere(skill->Value);
             }
         }
     }
