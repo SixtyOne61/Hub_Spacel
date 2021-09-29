@@ -25,6 +25,7 @@ class HUB_SPACEL_API AShipPawn : public ACommonPawn
 
     friend class AGamePlayerController;
     friend class USpacelWidget;
+    friend class UInGameWidget;
     friend class UFireComponent;
     friend class UCustomCollisionComponent;
     friend class URepairComponent;

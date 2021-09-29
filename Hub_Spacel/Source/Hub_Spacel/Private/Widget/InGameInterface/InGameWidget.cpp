@@ -13,6 +13,7 @@
 #include "GameState/SpacelGameState.h"
 #include "Gameplay/Skill/SkillCountDown.h"
 #include "Player/SpacelPlayerState.h"
+#include "Player/ShipPawn.h"
 #include "Kismet/GameplayStatics.h"
 #include "Widget/InGameInterface/SkillCarrouselWidget.h"
 #include "Widget/SkillWidget.h"
@@ -41,6 +42,11 @@ void UInGameWidget::NativeConstruct()
     if (this->FlyingModeDataAsset != nullptr)
     {
         m_currentTimer = this->FlyingModeDataAsset->RemainingChooseModuleTime;
+    }
+
+    if (AShipPawn* shipPawn = this->GetOwningPlayerPawn<AShipPawn>())
+    {
+        shipPawn->OnEndUpdateMatiereDelegate.AddDynamic(this, &UInGameWidget::BP_OnUpdateMatiere);
     }
 }
 
