@@ -63,6 +63,9 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void BP_OnUpdateMatiere(int32 _value, FString const& _deltaStr);
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void BP_OnSendInfoPlayer(FString const& _str);
+
 private:
 	UFUNCTION()
 	void OnChangeState(EGameState _state);

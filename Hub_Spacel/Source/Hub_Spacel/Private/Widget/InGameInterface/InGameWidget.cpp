@@ -47,6 +47,7 @@ void UInGameWidget::NativeConstruct()
     if (AShipPawn* shipPawn = this->GetOwningPlayerPawn<AShipPawn>())
     {
         shipPawn->OnEndUpdateMatiereDelegate.AddDynamic(this, &UInGameWidget::BP_OnUpdateMatiere);
+        shipPawn->OnSendInfoPlayerDelegate.AddDynamic(this, &UInGameWidget::BP_OnSendInfoPlayer);
     }
 }
 
