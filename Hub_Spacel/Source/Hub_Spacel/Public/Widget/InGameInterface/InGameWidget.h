@@ -66,6 +66,12 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void BP_OnSendInfoPlayer(FString const& _str);
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void BP_OnUpdateCountProtection(int32 _value, int32 _max);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void BP_OnUpdateCountSupport(int32 _value, int32 _max);
+
 private:
 	UFUNCTION()
 	void OnChangeState(EGameState _state);

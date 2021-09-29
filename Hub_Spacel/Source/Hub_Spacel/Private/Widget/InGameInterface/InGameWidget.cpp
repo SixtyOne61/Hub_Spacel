@@ -14,6 +14,7 @@
 #include "Gameplay/Skill/SkillCountDown.h"
 #include "Player/SpacelPlayerState.h"
 #include "Player/ShipPawn.h"
+#include "Player/ModuleComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Widget/InGameInterface/SkillCarrouselWidget.h"
 #include "Widget/SkillWidget.h"
@@ -48,6 +49,12 @@ void UInGameWidget::NativeConstruct()
     {
         shipPawn->OnEndUpdateMatiereDelegate.AddDynamic(this, &UInGameWidget::BP_OnUpdateMatiere);
         shipPawn->OnSendInfoPlayerDelegate.AddDynamic(this, &UInGameWidget::BP_OnSendInfoPlayer);
+
+        if (UModuleComponent* moduleComponent = shipPawn->ModuleComponent)
+        {
+            moduleComponent->OnUpdateCountProtectionDelegate.AddDynamic(this, &UInGameWidget::BP_OnUpdateCountProtection);
+            moduleComponent->OnUpdateCountSupportDelegate.AddDynamic(this, &UInGameWidget::BP_OnUpdateCountSupport);
+        }
     }
 }
 
