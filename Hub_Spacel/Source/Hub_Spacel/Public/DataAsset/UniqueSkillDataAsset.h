@@ -61,4 +61,7 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	FString VerboseEffect {};
+
+	UPROPERTY(EditAnywhere)
+	uint32 MatiereNeeded { 0 };
 };

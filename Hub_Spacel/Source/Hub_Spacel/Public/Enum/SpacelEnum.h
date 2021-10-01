@@ -124,7 +124,7 @@ UENUM(BlueprintType, meta = (Bitflags, UseEnumValuesAsMaskValuesInEditor = "true
 enum class EEffect : uint8
 {
     None UMETA(DisplayName = "None"),
-    TargetLock UMETA(DisplayName = "TargetLock"),
+    TargetLock UMETA(DisplayName = "TargetLock"), // to remove
     Fog UMETA(DisplayName = "Fog"),
     Shield UMETA(DisplayName = "Shield"),
     Emp UMETA(DisplayName = "Emp"),
@@ -135,7 +135,7 @@ enum class EEffect : uint8
     MetaFormProtection UMETA(DisplayName = "MetaFormProtection"),
     MetaFormSupport UMETA(DisplayName = "MetaFormSupport"),
     Respawned UMETA(DisplayName = "Respawned"),
-    Targeted UMETA(DisplayName = "Targeted"),
+    Targeted UMETA(DisplayName = "Targeted"), // to remove
     StartGame UMETA(DisplayName = "StartGame"),
     Gold UMETA(DisplayName = "Gold"),
     PassiveFireRate UMETA(DisplayName = "PassiveFireRate"),

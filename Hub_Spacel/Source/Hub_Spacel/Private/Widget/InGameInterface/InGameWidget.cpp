@@ -320,9 +320,9 @@ void UInGameWidget::addSkill(class SkillCountDown* _skill)
                 _skill->addProgressBar(progress);
             }
 
-            if (skill->Value != 0)
+            if (skill->MatiereNeeded != 0)
             {
-                skillWidget->BP_SetupMatere(skill->Value);
+                skillWidget->BP_SetupMatere(skill->MatiereNeeded);
             }
         }
     }
