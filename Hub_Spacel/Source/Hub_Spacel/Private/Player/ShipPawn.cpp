@@ -1171,7 +1171,7 @@ ESkillReturn AShipPawn::spawnHealPack()
     {
         if (UUniqueSkillDataAsset const* uniqueSkillDataAsset = this->SkillComponent->getSkill(ESkill::HealPack))
         {
-            int healPackMatiere = uniqueSkillDataAsset->Value;
+            int healPackMatiere = uniqueSkillDataAsset->MatiereNeeded;
             if (this->RU_Matiere >= healPackMatiere)
             {
                 addMatiere(healPackMatiere * -1, EMatiereOrigin::Lost);

@@ -45,7 +45,7 @@ ESkillReturn URepairComponent::onRepair()
 
         if (UModuleComponent* moduleComponent = pawn->ModuleComponent)
         {
-            if(pawn->RU_Matiere < (int16)this->RepairSkillDataAsset->Value) return ESkillReturn::NoMater;
+            if(pawn->RU_Matiere < (int16)this->RepairSkillDataAsset->MatiereNeeded) return ESkillReturn::NoMater;
 
             int32 lostProtection = moduleComponent->RemovedProtectionLocations.Num();
             int32 lostEngine = moduleComponent->RemovedSupportLocations.Num();
