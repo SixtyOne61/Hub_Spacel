@@ -144,6 +144,14 @@ enum class EEffect : uint8
 };
 
 UENUM(BlueprintType)
+enum class EEffectLocation : uint8
+{
+    Skill UMETA(DisplayName = "Skill"),
+    Right UMETA(DisplayName = "Right"),
+    Left UMETA(DisplayName = "Left")
+};
+
+UENUM(BlueprintType)
 enum class ECountDown : uint8
 {
     Available UMETA(DisplayName = "Available"),

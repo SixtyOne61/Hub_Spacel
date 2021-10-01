@@ -3,7 +3,6 @@
 
 #include "InGameWidget.h"
 #include "DataAsset/TeamColorDataAsset.h"
-#include "DataAsset/EffectDataAsset.h"
 #include "DataAsset/SkillDataAsset.h"
 #include "DataAsset/UniqueSkillDataAsset.h"
 #include "DataAsset/FlyingGameModeDataAsset.h"
@@ -49,6 +48,9 @@ void UInGameWidget::NativeConstruct()
     {
         shipPawn->OnEndUpdateMatiereDelegate.AddDynamic(this, &UInGameWidget::BP_OnUpdateMatiere);
         shipPawn->OnSendInfoPlayerDelegate.AddDynamic(this, &UInGameWidget::BP_OnSendInfoPlayer);
+
+        shipPawn->OnAddEffectDelegate.AddDynamic(this, &UInGameWidget::BP_OnAddEffect);
+        shipPawn->OnRemoveEffectDelegate.AddDynamic(this, &UInGameWidget::BP_OnRemoveEffect);
 
         if (UModuleComponent* moduleComponent = shipPawn->ModuleComponent)
         {
@@ -210,7 +212,7 @@ void UInGameWidget::OnHoverCarrousel(ESkill _skillId, ESkillType _type)
 
     if (auto uniqueSkillDataAsset = this->SkillDataAsset->getSKill(_skillId))
     {
-        BP_SetupSkill(_type, uniqueSkillDataAsset->IconeBtn, uniqueSkillDataAsset->BackgroundColorBtn);
+        BP_SetupSkill(_type, uniqueSkillDataAsset->IconeBtn, uniqueSkillDataAsset->BackgroundColorBtn, uniqueSkillDataAsset->VerboseEffect);
     }
 }
 

@@ -58,4 +58,7 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	ESkillType SkillType {};
+
+	UPROPERTY(EditAnywhere)
+	FString VerboseEffect {};
 };

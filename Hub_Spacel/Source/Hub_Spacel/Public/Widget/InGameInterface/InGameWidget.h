@@ -43,7 +43,7 @@ protected:
 	void BP_SetupSkillCarrousel(ESkillType _type);
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void BP_SetupSkill(ESkillType _type, UTexture2D * _icon, FSlateColor const& _backgroundColor);
+	void BP_SetupSkill(ESkillType _type, UTexture2D * _icon, FSlateColor const& _backgroundColor, FString const& _title);
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void BP_UpdateTimer(FString const& _str);
@@ -71,6 +71,12 @@ protected:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void BP_OnUpdateCountSupport(int32 _value, int32 _max);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void BP_OnAddEffect(EEffect _type);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void BP_OnRemoveEffect(EEffect _type);
 
 private:
 	UFUNCTION()

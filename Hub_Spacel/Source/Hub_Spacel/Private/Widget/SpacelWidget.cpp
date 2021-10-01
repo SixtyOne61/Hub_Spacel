@@ -32,7 +32,7 @@
 #include "Widget/AllyWidget.h"
 #include "Widget/SkillWidget.h"
 #include "Widget/SkillProgressWidget.h"
-#include "Widget/EffectWidget.h"
+#include "Widget/InGameInterface/Effect/EffectWidget.h"
 #include "Widget/TutorialUserWidget.h"
 #include "Widget/MissionPanelUserWidget.h"
 #include "Factory/SpacelFactory.h"
@@ -508,14 +508,16 @@ void USpacelWidget::OnAddEffect(EEffect _type)
 
     FString name = "Effect";
     name.Append(FString::FromInt((int)_type));
-    UEffectWidget* effectWidget = CreateWidget<UEffectWidget, UHorizontalBox>(this->EffectBarHorizontalBox, this->EffectWidgetClass, *name);
-    if (effectWidget != nullptr)
-    {
-        effectWidget->Effect = _type;
-        FEffect const& effectParam = this->EffectDataAsset->getEffect(_type);
-        effectWidget->BP_SetEffect(effectParam.BackgroundColor, effectParam.Icone);
-        this->EffectBarHorizontalBox->AddChildToHorizontalBox(effectWidget);
-    }
+    //UEffectWidget* effectWidget = CreateWidget<UEffectWidget, UHorizontalBox>(this->EffectBarHorizontalBox, this->EffectWidgetClass, *name);
+    //if (effectWidget != nullptr)
+    //{
+    //    effectWidget->Effect = _type;
+    //    if (FEffect const* effectParam = this->EffectDataAsset->getEffect(_type))
+    //    {
+    //        effectWidget->BP_SetEffect(effectParam->BackgroundColor, effectParam->Icone);
+    //        this->EffectBarHorizontalBox->AddChildToHorizontalBox(effectWidget);
+    //    }
+    //}
 }
 
 void USpacelWidget::OnRemoveEffect(EEffect _type)
@@ -525,19 +527,21 @@ void USpacelWidget::OnRemoveEffect(EEffect _type)
     TArray<UWidget*> widgets = this->EffectBarHorizontalBox->GetAllChildren();
     for (UWidget* widget : widgets)
     {
-        if (UEffectWidget * effect = Cast<UEffectWidget>(widget))
-        {
-            if (effect->Effect == _type)
-            {
-                this->EffectBarHorizontalBox->RemoveChild(widget);
-                if (this->EffectDataAsset != nullptr)
-                {
-                    FEffect const& param = this->EffectDataAsset->getEffect(_type);
-                    OnRemoveEffectFx(param.Icone);
-                }
-                break;
-            }
-        }
+        //if (UEffectWidget * effect = Cast<UEffectWidget>(widget))
+        //{
+        //    if (effect->Effect == _type)
+        //    {
+        //        this->EffectBarHorizontalBox->RemoveChild(widget);
+        //        if (this->EffectDataAsset != nullptr)
+        //        {
+        //            if (FEffect const* param = this->EffectDataAsset->getEffect(_type))
+        //            {
+        //                OnRemoveEffectFx(param->Icone);
+        //            }
+        //        }
+        //        break;
+        //    }
+        //}
     }
 
     if (_type == EEffect::Killed)

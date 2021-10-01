@@ -12,14 +12,20 @@ struct HUB_SPACEL_API FEffect
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BitmaskEnum = "EEffect"))
-	int32 Effect {};
+	UPROPERTY(EditAnywhere)
+	EEffect Type {};
+
+	UPROPERTY(EditAnywhere)
+	EEffectLocation TypeLocation {};
 
 	UPROPERTY(EditAnywhere)
 	class UTexture2D* Icone { nullptr };
 
 	UPROPERTY(EditAnywhere)
 	FLinearColor BackgroundColor { };
+
+	UPROPERTY(EditAnywhere)
+	FString Title {};
 };
 
 /**
@@ -31,7 +37,7 @@ class HUB_SPACEL_API UEffectDataAsset : public UDataAsset
 	GENERATED_BODY()
 	
 public:
-	FEffect getEffect(EEffect _type) const;
+	FEffect const* getEffect(EEffect _type) const;
 
 public:
 	UPROPERTY(EditAnywhere)
