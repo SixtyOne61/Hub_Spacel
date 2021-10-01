@@ -64,12 +64,6 @@ public:
     UPROPERTY(Category = "Fire", EditAnywhere, BlueprintReadWrite)
     float TimeBetweenFire = 0.3f;
 
-    UPROPERTY(Category = "Fire", EditAnywhere, BlueprintReadWrite)
-    float ReduceTimeBetweenFireWithLevel = 0.7f;
-
-    UPROPERTY(Category = "Fire", EditAnywhere, BlueprintReadWrite)
-    float ReduceTimeBetweenFireWithMetaForm = 0.2f;
-
     UPROPERTY(Category = "Skill", EditAnywhere, BlueprintReadWrite)
     float RepairRatio { 0.5f };
 

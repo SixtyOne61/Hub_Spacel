@@ -6,6 +6,7 @@
 #include "Player/SpacelPlayerState.h"
 #include "Player/ModuleComponent.h"
 #include "DataAsset/PlayerDataAsset.h"
+#include "DataAsset/UniqueSkillDataAsset.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "GameFramework/ProjectileMovementComponent.h"
@@ -63,11 +64,24 @@ void UFireComponent::TickComponent(float _deltaTime, ELevelTick _tickType, FActo
         if (ASpacelPlayerState* spacelPlayerState = get()->GetPlayerState<ASpacelPlayerState>())
         {
             uint8 lowSkillId = spacelPlayerState->getSkillId(ESkillType::Low);
-            float coef = lowSkillId == (uint8)ESkill::FireRate ? get()->PlayerDataAsset->ReduceTimeBetweenFireWithLevel : 1.0f;
+            float coef = 1.0f;
+            // check if we override this
+            if (this->FireRateDataAsset != nullptr)
+            {
+                if (lowSkillId == (uint8)ESkill::FireRate)
+                {
+                    coef = this->FireRateDataAsset->Value / 100.0f;
+                }
+            }
+
             if (get()->hasEffect(EEffect::MetaFormAttack))
             {
-                coef = get()->PlayerDataAsset->ReduceTimeBetweenFireWithMetaForm;
+                if (this->MetaFormAttackDataAsset != nullptr)
+                {
+                    coef = this->MetaFormAttackDataAsset->Value / 100.0f;
+                }
             }
+
             m_fireCountDown = get()->PlayerDataAsset->TimeBetweenFire * coef * ((100.0f - get<AShipPawn>()->m_bonusFireRate) / 100.0f);
         }
         else

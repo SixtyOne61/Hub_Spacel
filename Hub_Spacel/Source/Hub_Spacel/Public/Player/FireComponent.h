@@ -35,6 +35,12 @@ private:
 	void SpawnKatyusha();
 
 protected:
+	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
+	class UUniqueSkillDataAsset* FireRateDataAsset { nullptr };
+	
+	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
+	class UUniqueSkillDataAsset* MetaFormAttackDataAsset { nullptr };
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Setup")
 	TArray<USceneComponent*> DummyKatyushaLocations {};
 
