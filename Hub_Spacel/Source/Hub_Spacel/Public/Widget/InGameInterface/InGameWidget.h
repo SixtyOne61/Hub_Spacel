@@ -82,6 +82,9 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void BP_StartMission(FMission const& _mission);
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void BP_OnEndMission(EMission _type);
+
 private:
 	UFUNCTION()
 	void OnChangeState(EGameState _state);
