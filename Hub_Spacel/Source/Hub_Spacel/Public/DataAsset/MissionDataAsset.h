@@ -38,6 +38,12 @@ struct HUB_SPACEL_API FMission
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	class UTexture2D* Logo  { nullptr };
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	class UTexture2D* RewardLogo { nullptr };
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString RewardText {};
 };
 
 /**
