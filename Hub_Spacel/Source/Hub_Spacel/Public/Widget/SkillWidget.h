@@ -23,4 +23,7 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void BP_Remove();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void BP_Lock(bool _isUnlock);
 };

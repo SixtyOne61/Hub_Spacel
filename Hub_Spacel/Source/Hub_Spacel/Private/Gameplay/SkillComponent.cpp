@@ -64,6 +64,8 @@ void USkillComponent::SetupSpecialSkill()
             {
                 spacelPlayerState->OnAddSkillUniqueDelegate(m_skills.Last().Get());
             }
+
+            m_skills.Last()->setActive(false);
         };
 
         lb(ESkillType::Medium);
