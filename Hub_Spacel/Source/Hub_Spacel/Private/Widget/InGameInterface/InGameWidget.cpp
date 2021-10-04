@@ -378,6 +378,8 @@ void UInGameWidget::OnStartMissionTwoParam(EMission _type, FName const& _team, F
 
 void UInGameWidget::startMission(FMission* _mission)
 {
+    if(_mission == nullptr) return;
+
     FString desc = _mission->MissionDesc;
     desc = desc.Replace(*FString("%reward%"), *FString::FromInt(_mission->RewardValue));
     desc = desc.Replace(*FString("%condition%"), *FString::FromInt(_mission->ConditionValue));
@@ -388,5 +390,6 @@ void UInGameWidget::startMission(FMission* _mission)
         desc = desc.Replace(*FString("%team%"), *info.ShortName);
     }
 
+    _mission->MissionDesc = desc;
     BP_StartMission(*_mission);
 }
