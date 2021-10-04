@@ -75,6 +75,7 @@ private:
 	void lock() override;
 	void halfTurn() override;
 
+	// deprecated to do remove
 	void showMission();
 	void hideMission();
 

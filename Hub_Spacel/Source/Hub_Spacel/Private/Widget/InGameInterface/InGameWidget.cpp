@@ -30,6 +30,10 @@ void UInGameWidget::NativeConstruct()
     if (spacelGameState != nullptr)
     {
         spacelGameState->OnChangeStateDelegate.AddDynamic(this, &UInGameWidget::OnChangeState);
+
+        // mission
+        spacelGameState->OnStartMissionDelegate.AddDynamic(this, &UInGameWidget::OnStartMission);
+        spacelGameState->OnStartMissionTwoParamDelegate.AddDynamic(this, &UInGameWidget::OnStartMissionTwoParam);
     }
 
     this->CarrouselWidget = SimplyUI::initSafetyFromName<UUserWidget, USkillCarrouselWidget>(this, TEXT("WBP_SkillCarrousel"));
@@ -342,4 +346,17 @@ void UInGameWidget::removeSkill(ESkill _type)
             }
         }
     }
+}
+
+void UInGameWidget::OnStartMission(EMission _type)
+{
+    if (this->MissionDataAsset != nullptr)
+    {
+        BP_StartMission(this->MissionDataAsset->getMission(_type));
+    }
+}
+
+void UInGameWidget::OnStartMissionTwoParam(EMission _type, FName const& _team, FName const& _targetTeam)
+{
+
 }

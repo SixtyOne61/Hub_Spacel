@@ -16,6 +16,7 @@ void AGamePlayerController::SetupInputComponent()
 {
     Super::SetupInputComponent();
 
+    // deprecated to do remove
     this->InputComponent->BindAction("Mission", IE_Pressed, this, &AGamePlayerController::showMission);
     this->InputComponent->BindAction("Mission", IE_Released, this, &AGamePlayerController::hideMission);
 }

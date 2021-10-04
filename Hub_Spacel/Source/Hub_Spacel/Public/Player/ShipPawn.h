@@ -237,7 +237,7 @@ private:
     FOnEndUpdateMatiere OnEndUpdateMatiereDelegate {};
 
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
-    FOnShowMission OnShowMissionDelegate {};
+    FOnShowMission OnShowMissionDelegate {}; // deprecated to do remove
 
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
     FOnLocalTeamUpdate OnLocalTeamUpdateDelegate {};

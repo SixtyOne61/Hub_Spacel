@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "Enum/SpacelEnum.h"
+#include "DataAsset/MissionDataAsset.h"
 #include "InGameWidget.generated.h"
 
 /**
@@ -78,12 +79,21 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void BP_OnRemoveEffect(EEffect _type);
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void BP_StartMission(FMission const& _mission);
+
 private:
 	UFUNCTION()
 	void OnChangeState(EGameState _state);
 
 	UFUNCTION()
 	void WaitPlayerState();
+
+	UFUNCTION()
+	void OnStartMission(EMission _type);
+
+	UFUNCTION()
+	void OnStartMissionTwoParam(EMission _type, FName const& _team, FName const& _targetTeam);
 
 private:
 	/* spawn method */
@@ -114,6 +124,9 @@ protected:
 
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
 	class UKeyDataAsset* KeyDataAsset { nullptr };
+
+	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
+	class UMissionDataAsset* MissionDataAsset { nullptr };
 
 	UPROPERTY(Category = "Hack", EditAnywhere, BlueprintReadWrite)
 	class UEditorHackDataAsset* HackDataAsset{ nullptr };
