@@ -352,11 +352,40 @@ void UInGameWidget::OnStartMission(EMission _type)
 {
     if (this->MissionDataAsset != nullptr)
     {
-        BP_StartMission(this->MissionDataAsset->getMission(_type));
+        startMission(this->MissionDataAsset->getMissionModify(_type));
     }
 }
 
 void UInGameWidget::OnStartMissionTwoParam(EMission _type, FName const& _team, FName const& _targetTeam)
 {
+    if (this->MissionDataAsset != nullptr)
+    {
+        if (ASpacelPlayerState* owningPlayerState = Cast<ASpacelPlayerState>(this->GetOwningPlayerState()))
+        {
+            FString const& localTeam = owningPlayerState->R_Team;
+            if (*localTeam == _team)
+            {
+                if (FMission* mission = this->MissionDataAsset->getMissionModify(_type))
+                {
+                    mission->Team = _targetTeam.ToString();
+                    startMission(mission);
+                }
+            }
+        }
+    }
+}
 
+void UInGameWidget::startMission(FMission* _mission)
+{
+    FString desc = _mission->MissionDesc;
+    desc = desc.Replace(*FString("%reward%"), *FString::FromInt(_mission->RewardValue));
+    desc = desc.Replace(*FString("%condition%"), *FString::FromInt(_mission->ConditionValue));
+    desc = desc.Replace(*FString("%time%"), *(FString::FromInt(_mission->DurationValue) + "s"));
+    if (this->TeamColorDataAsset != nullptr && !_mission->Team.IsEmpty())
+    {
+        FColorsType const& info = this->TeamColorDataAsset->GetColorType(_mission->Team);
+        desc = desc.Replace(*FString("%team%"), *info.ShortName);
+    }
+
+    BP_StartMission(*_mission);
 }

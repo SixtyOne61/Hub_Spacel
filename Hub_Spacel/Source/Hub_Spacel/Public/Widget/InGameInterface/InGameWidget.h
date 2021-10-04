@@ -112,6 +112,9 @@ private:
 	void addSkill(class SkillCountDown* _skill);
 	void removeSkill(ESkill _type);
 
+	/* mission */
+	void startMission(FMission * _mission);
+
 protected:
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
 	class UTeamColorDataAsset* TeamColorDataAsset { nullptr };
