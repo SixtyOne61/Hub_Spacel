@@ -101,6 +101,9 @@ private:
 	UFUNCTION()
 	void OnEndMission(EMission _type, bool _succeed, FName _succeedForTeam);
 
+	UFUNCTION()
+	void InitMissionArrow(FName const& _tag);
+
 private:
 	/* spawn method */
 	void spawnLobby3D(class ASpacelPlayerState const* _owningPlayerState);
@@ -120,6 +123,7 @@ private:
 
 	/* mission */
 	void startMission(FMission * _mission);
+	void updateMissionArrowOrientation();
 
 protected:
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
@@ -148,10 +152,13 @@ protected:
 	class USkillCarrouselWidget* CarrouselWidget { nullptr };
 
 private:
-	// lobby part
+	/* lobby part */
 	ESkillType m_currentSkillType {};
 
-	// timer part
+	/* timer part */
 	EInternState m_internState { EInternState::ChooseLow };
 	float m_currentTimer { 0.0f };
+
+	/* mission */
+	class AActor* m_arrowTarget { nullptr };
 };

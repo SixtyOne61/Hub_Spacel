@@ -15,11 +15,13 @@
 #include "Player/ShipPawn.h"
 #include "Player/ModuleComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Widget/InGameInterface/SkillCarrouselWidget.h"
 #include "Widget/SkillWidget.h"
 #include "Widget/SkillProgressWidget.h"
 #include "Components/ProgressBar.h"
 #include "Util/SimplyUI.h"
+#include "Util/Tag.h"
 
 void UInGameWidget::NativeConstruct()
 {
@@ -76,6 +78,7 @@ void UInGameWidget::NativeTick(const FGeometry& _myGeometry, float _deltaSeconde
 
     tickTimer(_deltaSeconde);
     tickScore();
+    updateMissionArrowOrientation();
 }
 
 void UInGameWidget::OnChangeState(EGameState _state)
@@ -392,6 +395,22 @@ void UInGameWidget::startMission(FMission* _mission)
 
     _mission->MissionDesc = desc;
     BP_StartMission(*_mission);
+
+    if (_mission->Type == EMission::Pirate)
+    {
+        // find pirate
+        InitMissionArrow(Tags::Pirate);
+    }
+    else if (_mission->Type == EMission::Comet)
+    {
+        // find comet
+        InitMissionArrow(Tags::Comet);
+    }
+    else if (_mission->Type == EMission::TakeGold)
+    {
+        // find gold
+        InitMissionArrow(Tags::Gold);
+    }
 }
 
 void UInGameWidget::OnEndMission(EMission _type, bool _succeed, FName _succeedForTeam)
@@ -409,6 +428,55 @@ void UInGameWidget::OnEndMission(EMission _type, bool _succeed, FName _succeedFo
             }
 
             BP_OnEndMission(*mission);
+        }
+    }
+}
+
+void UInGameWidget::InitMissionArrow(FName const& _tag)
+{
+    TArray<AActor*> out;
+    UGameplayStatics::GetAllActorsWithTag(this->GetWorld(), _tag, out);
+
+    for (auto act : out)
+    {
+        if (act != nullptr && !act->IsPendingKill())
+        {
+            m_arrowTarget = act;
+            return;
+        }
+    }
+
+    FTimerDelegate timerDelegate;
+    timerDelegate.BindUFunction(this, FName("InitMissionArrow"), _tag);
+
+    UWorld* world{ this->GetWorld() };
+    if (!ensure(world != nullptr)) return;
+
+    FTimerHandle handle;
+    world->GetTimerManager().SetTimer(handle, timerDelegate, 1.0f, false, 0.0f);
+}
+
+void UInGameWidget::updateMissionArrowOrientation()
+{
+    if (AShipPawn* shipPawn = this->GetOwningPlayerPawn<AShipPawn>())
+    {
+        TArray<UActorComponent*> components = shipPawn->GetComponentsByTag(USceneComponent::StaticClass(), Tags::Arrow);
+        for (auto component : components)
+        {
+            if (USceneComponent* sceneComponent = Cast<USceneComponent>(component))
+            {
+                if (m_arrowTarget != nullptr && !m_arrowTarget->IsPendingKill())
+                {
+                    FRotator rot = UKismetMathLibrary::FindLookAtRotation(sceneComponent->GetComponentLocation(), m_arrowTarget->GetActorLocation());
+                    sceneComponent->SetWorldRotation(rot.Quaternion());
+                    sceneComponent->SetVisibility(true);
+                }
+                else
+                {
+                    sceneComponent->SetVisibility(false);
+                }
+                break;
+            }
         }
     }
 }
