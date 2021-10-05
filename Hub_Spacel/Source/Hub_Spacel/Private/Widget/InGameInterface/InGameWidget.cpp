@@ -39,6 +39,9 @@ void UInGameWidget::NativeConstruct()
         spacelGameState->OnStartMissionTwoParamDelegate.AddDynamic(this, &UInGameWidget::OnStartMissionTwoParam);
         spacelGameState->OnEndMissionDelegate.AddDynamic(this, &UInGameWidget::OnEndMission);
         spacelGameState->OnResetTimerMissionDelegate.AddDynamic(this, &UInGameWidget::OnResetTimerMission);
+
+        // clean field
+        spacelGameState->OnWhoKillWhoDelegate.AddDynamic(this, &UInGameWidget::OnKill);
     }
 
     this->CarrouselWidget = SimplyUI::initSafetyFromName<UUserWidget, USkillCarrouselWidget>(this, TEXT("WBP_SkillCarrousel"));
@@ -498,4 +501,38 @@ void UInGameWidget::OnScored(EScoreType _type, int32 _value)
 
     FVector2D mousePosition = UWidgetLayoutLibrary::GetMousePositionOnViewport(this->GetWorld());
     BP_OnScored(_type, value, mousePosition);
+}
+
+void UInGameWidget::OnKill(int32 _killer, int32 _killed)
+{
+    if (this->TeamColorDataAsset == nullptr) return;
+
+    UWorld* world{ this->GetWorld() };
+    if (!ensure(world != nullptr)) return;
+
+    TArray<APlayerState*> const& playerStates{ world->GetGameState()->PlayerArray };
+
+    FString killerName, killedName{};
+    FSlateColor killerColor, killedColor{};
+
+    for (auto playerState : playerStates)
+    {
+        if (ASpacelPlayerState* spacelPlayerState = Cast<ASpacelPlayerState>(playerState))
+        {
+            int32 playerId = spacelPlayerState->PlayerId;
+            FString const& name = spacelPlayerState->GetPlayerName();
+            if (playerId == _killer)
+            {
+                killerName = name;
+                killerColor = this->TeamColorDataAsset->GetColor<FSlateColor>(spacelPlayerState->R_Team);
+            }
+            else if (playerId == _killed)
+            {
+                killedName = name;
+                killedColor = this->TeamColorDataAsset->GetColor<FSlateColor>(spacelPlayerState->R_Team);
+            }
+        }
+    }
+
+    BP_CreateKillField(killerName, killerColor, killedName, killedColor);
 }

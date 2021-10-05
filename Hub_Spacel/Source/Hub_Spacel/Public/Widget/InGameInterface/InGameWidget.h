@@ -91,6 +91,9 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void BP_OnScored(EScoreType _type, FString const& _value, FVector2D const& _position);
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void BP_CreateKillField(FString const& _killerName, FSlateColor const& _killerColor, FString const& _killedName, FSlateColor const& _killedColor);
+
 private:
 	UFUNCTION()
 	void OnChangeState(EGameState _state);
@@ -115,6 +118,9 @@ private:
 
 	UFUNCTION()
 	void OnScored(EScoreType _type, int32 _value);
+
+	UFUNCTION()
+	void OnKill(int32 _killer, int32 _killed);
 
 private:
 	/* spawn method */
