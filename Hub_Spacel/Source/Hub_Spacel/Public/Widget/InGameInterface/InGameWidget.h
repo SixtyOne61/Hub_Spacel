@@ -88,6 +88,9 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void BP_OnResetTimerMission(FMission const& _mission);
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void BP_OnScored(EScoreType _type, FString const& _value, FVector2D const& _position);
+
 private:
 	UFUNCTION()
 	void OnChangeState(EGameState _state);
@@ -109,6 +112,9 @@ private:
 
 	UFUNCTION()
 	void OnResetTimerMission(EMission _type);
+
+	UFUNCTION()
+	void OnScored(EScoreType _type, int32 _value);
 
 private:
 	/* spawn method */

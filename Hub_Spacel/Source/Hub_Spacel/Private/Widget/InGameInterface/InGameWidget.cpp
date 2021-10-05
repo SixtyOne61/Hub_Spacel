@@ -16,6 +16,7 @@
 #include "Player/ModuleComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Blueprint/WidgetLayoutLibrary.h"
 #include "Widget/InGameInterface/SkillCarrouselWidget.h"
 #include "Widget/SkillWidget.h"
 #include "Widget/SkillProgressWidget.h"
@@ -65,6 +66,9 @@ void UInGameWidget::NativeConstruct()
             moduleComponent->OnUpdateCountProtectionDelegate.AddDynamic(this, &UInGameWidget::BP_OnUpdateCountProtection);
             moduleComponent->OnUpdateCountSupportDelegate.AddDynamic(this, &UInGameWidget::BP_OnUpdateCountSupport);
         }
+
+        // Feedback Scoring
+        shipPawn->OnFeedbackScoreDelegate.AddDynamic(this, &UInGameWidget::OnScored);
     }
 }
 
@@ -485,4 +489,13 @@ void UInGameWidget::updateMissionArrowOrientation()
             }
         }
     }
+}
+
+void UInGameWidget::OnScored(EScoreType _type, int32 _value)
+{
+    FString value = "+";
+    value += FString::FromInt(_value);
+
+    FVector2D mousePosition = UWidgetLayoutLibrary::GetMousePositionOnViewport(this->GetWorld());
+    BP_OnScored(_type, value, mousePosition);
 }
