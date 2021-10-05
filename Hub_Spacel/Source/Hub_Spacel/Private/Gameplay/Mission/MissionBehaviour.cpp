@@ -189,6 +189,8 @@ void MissionComet::start(class UWorld* _world)
                 comet->OnIntercepDelegate.add(std::bind(&MissionComet::onCometDestroy, this, std::placeholders::_1));
 
                 comet->FinishSpawning(transform);
+
+                m_comets.Add(comet);
             }
 
             if (delta.Num() > 0)
@@ -224,6 +226,13 @@ void MissionComet::tick(float _deltaTime, UWorld* _world)
             }
         }
         m_teams.Empty();
+
+        // remove comet
+        for (auto* comet : m_comets)
+        {
+            comet->Destroy();
+        }
+        m_nbComet = 0;
     }
 
     if (m_nbComet == 0)

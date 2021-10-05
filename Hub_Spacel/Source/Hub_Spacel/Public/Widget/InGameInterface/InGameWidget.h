@@ -83,7 +83,7 @@ protected:
 	void BP_StartMission(FMission const& _mission);
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void BP_OnEndMission(EMission _type);
+	void BP_OnEndMission(FMission const& _mission);
 
 private:
 	UFUNCTION()
@@ -97,6 +97,9 @@ private:
 
 	UFUNCTION()
 	void OnStartMissionTwoParam(EMission _type, FName const& _team, FName const& _targetTeam);
+
+	UFUNCTION()
+	void OnEndMission(EMission _type);
 
 private:
 	/* spawn method */

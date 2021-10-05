@@ -117,6 +117,7 @@ public:
 private:
 	int m_nbComet { 0 };
 	TSet<FString> m_teams {};
+	TArray<class AActor*> m_comets {};
 };
 
 class HUB_SPACEL_API MissionPirate : public MissionBehaviour
