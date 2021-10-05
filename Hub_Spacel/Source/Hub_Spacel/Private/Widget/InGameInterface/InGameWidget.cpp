@@ -394,10 +394,21 @@ void UInGameWidget::startMission(FMission* _mission)
     BP_StartMission(*_mission);
 }
 
-void UInGameWidget::OnEndMission(EMission _type)
+void UInGameWidget::OnEndMission(EMission _type, bool _succeed, FName _succeedForTeam)
 {
     if (this->MissionDataAsset != nullptr)
     {
-        BP_OnEndMission(*this->MissionDataAsset->getMissionModify(_type));
+        if (FMission* mission = this->MissionDataAsset->getMissionModify(_type))
+        {
+            mission->IsSucceed = _succeed;
+
+            if (AShipPawn* shipPawn = this->GetOwningPlayerPawn<AShipPawn>())
+            {
+                // override for passive
+                mission->IsSucceed = shipPawn->Team == _succeedForTeam;
+            }
+
+            BP_OnEndMission(*mission);
+        }
     }
 }

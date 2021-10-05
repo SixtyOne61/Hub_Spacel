@@ -97,7 +97,7 @@ void USkillComponent::SetDelegateForPlayerState()
     }
 }
 
-void USkillComponent::OnMissionEnd(EMission _type)
+void USkillComponent::OnMissionEnd(EMission _type, bool _succeed, FName _succeedForTeam)
 {
     if (_type != EMission::FirstBlood && _type != EMission::ScoreRace) return;
 

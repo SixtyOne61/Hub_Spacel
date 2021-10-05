@@ -108,7 +108,7 @@ protected:
     void BP_GoldFx(bool _activate);
 
     UFUNCTION()
-    void OnEndMission(EMission _type);
+    void OnEndMission(EMission _type, bool _succeed, FName _succeedForTeam);
 
     void emergencyRedCube(FVector const& _location);
 

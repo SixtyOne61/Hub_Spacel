@@ -99,7 +99,7 @@ private:
 	void OnStartMissionTwoParam(EMission _type, FName const& _team, FName const& _targetTeam);
 
 	UFUNCTION()
-	void OnEndMission(EMission _type);
+	void OnEndMission(EMission _type, bool _succeed, FName _succeedForTeam);
 
 private:
 	/* spawn method */

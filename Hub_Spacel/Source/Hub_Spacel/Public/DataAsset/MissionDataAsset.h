@@ -44,6 +44,12 @@ struct HUB_SPACEL_API FMission
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString RewardText {};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool IsSucceed {};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FName SucceedForTeam {};
 };
 
 /**

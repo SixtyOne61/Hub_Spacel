@@ -247,7 +247,7 @@ void AShipPawn::BeginPlay()
     }
 }
 
-void AShipPawn::OnEndMission(EMission _type)
+void AShipPawn::OnEndMission(EMission _type, bool _succeed, FName _succeedForTeam)
 {
     if (_type == EMission::HoldGold)
     {

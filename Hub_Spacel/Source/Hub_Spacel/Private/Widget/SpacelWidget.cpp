@@ -78,7 +78,7 @@ void USpacelWidget::NativeConstruct()
         // mission
         spacelGameState->OnStartMissionDelegate.AddDynamic(this, &USpacelWidget::OnStartMission);
         spacelGameState->OnStartMissionTwoParamDelegate.AddDynamic(this, &USpacelWidget::OnStartMissionTwoParam);
-        spacelGameState->OnEndMissionDelegate.AddDynamic(this, &USpacelWidget::OnEndMission);
+        //spacelGameState->OnEndMissionDelegate.AddDynamic(this, &USpacelWidget::OnEndMission);
         spacelGameState->OnResetTimerMissionDelegate.AddDynamic(this, &USpacelWidget::OnResetTimerMission);
         spacelGameState->OnStartLocalTimerDelegate.AddDynamic(this, &USpacelWidget::OnStartLocalTimer);
     }
