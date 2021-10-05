@@ -85,6 +85,9 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void BP_OnEndMission(FMission const& _mission);
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void BP_OnResetTimerMission(FMission const& _mission);
+
 private:
 	UFUNCTION()
 	void OnChangeState(EGameState _state);
@@ -103,6 +106,9 @@ private:
 
 	UFUNCTION()
 	void InitMissionArrow(FName const& _tag);
+
+	UFUNCTION()
+	void OnResetTimerMission(EMission _type);
 
 private:
 	/* spawn method */

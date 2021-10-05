@@ -37,6 +37,7 @@ void UInGameWidget::NativeConstruct()
         spacelGameState->OnStartMissionDelegate.AddDynamic(this, &UInGameWidget::OnStartMission);
         spacelGameState->OnStartMissionTwoParamDelegate.AddDynamic(this, &UInGameWidget::OnStartMissionTwoParam);
         spacelGameState->OnEndMissionDelegate.AddDynamic(this, &UInGameWidget::OnEndMission);
+        spacelGameState->OnResetTimerMissionDelegate.AddDynamic(this, &UInGameWidget::OnResetTimerMission);
     }
 
     this->CarrouselWidget = SimplyUI::initSafetyFromName<UUserWidget, USkillCarrouselWidget>(this, TEXT("WBP_SkillCarrousel"));
@@ -430,6 +431,11 @@ void UInGameWidget::OnEndMission(EMission _type, bool _succeed, FName _succeedFo
             BP_OnEndMission(*mission);
         }
     }
+}
+
+void UInGameWidget::OnResetTimerMission(EMission _type)
+{
+    BP_OnResetTimerMission(*this->MissionDataAsset->getMissionModify(_type));
 }
 
 void UInGameWidget::InitMissionArrow(FName const& _tag)
