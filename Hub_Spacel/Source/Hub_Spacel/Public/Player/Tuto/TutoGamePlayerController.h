@@ -29,5 +29,4 @@ protected:
 	void flightAttitudeLeft(float _value) override;
 	void fireOn() override;
 	void fireOff() override;
-	void lock() override;
 };

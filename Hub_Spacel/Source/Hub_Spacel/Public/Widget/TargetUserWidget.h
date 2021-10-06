@@ -21,7 +21,6 @@ public:
 	{
 		StateNormal,
 		StateHover,
-		StateLock
 	};
 
 	void showTarget(bool _show);
@@ -39,26 +38,20 @@ private:
 	/* check distance with local player for hide or scale target */
 	void adjust();
 
-	UFUNCTION()
-	void OnTryLock();
-
 	/* callback method when state change */
 	void onChangeStateNormal();
 	void onChangeStateHover();
-	void onChangeStateLock();
 
 	/* set color of target image*/
 	void setTargetImage(FLinearColor const& _color);
 
+	/* send target */
+	void sendTarget();
+	void resetTarget();
+
 	/* event button */
 	UFUNCTION()
-	void OnPressed();
-
-	UFUNCTION()
 	void OnHovered();
-
-	UFUNCTION()
-	void OnTargetPlayer(int32 _playerId, bool _lock);
 
 public:
 	UPROPERTY(VisibleAnywhere)
@@ -93,5 +86,5 @@ private:
 namespace EnumUtil
 {
 	template<>
-	inline int count<UTargetUserWidget::EState>() { return (int)UTargetUserWidget::EState::StateLock; }
+	inline int count<UTargetUserWidget::EState>() { return (int)UTargetUserWidget::EState::StateHover; }
 }

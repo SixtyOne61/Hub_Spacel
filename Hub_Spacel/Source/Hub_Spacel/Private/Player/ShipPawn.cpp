@@ -284,52 +284,6 @@ void AShipPawn::LinkPawn()
     }
 }
 
-void AShipPawn::lockTarget(int32 _playerId, bool _lock)
-{
-    // call event on client for UI
-    UHub_SpacelGameInstance* spacelGameInstance{ Cast<UHub_SpacelGameInstance>(this->GetGameInstance()) };
-    spacelGameInstance->OnTargetPlayerDelegate.Broadcast(_playerId, _lock);
-
-    RPCServerTargetPlayer(_playerId, _lock);
-}
-
-void AShipPawn::RPCServerTargetPlayer_Implementation(int32 _playerId, bool _lock)
-{
-    if (!ensure(this->FireComponent != nullptr)) return;
-
-    if (_lock)
-    {
-        if (AGameStateBase* gameState = UGameplayStatics::GetGameState(this->GetWorld()))
-        {
-            for (APlayerState const* playerState : gameState->PlayerArray)
-            {
-                if (playerState)
-                {
-                    if (playerState->PlayerId == _playerId)
-                    {
-                        AActor* act = playerState->GetPawn();
-                        if (ACommonPawn* commonPawn = Cast<ACommonPawn>(act))
-                        {
-                            if (APlayerState const* ourPlayerState = this->GetPlayerState<APlayerState>())
-                            {
-                                commonPawn->addPlayerFocusOnMe(ourPlayerState->PlayerId);
-                            }
-                        }
-
-                        this->FireComponent->m_target = act;
-                        addEffect(EEffect::TargetLock);
-                        break;
-                    }
-                }
-            }
-        }
-    }
-    else
-    {
-        removeEffect(EEffect::TargetLock);
-    }
-}
-
 void AShipPawn::launchMissile()
 {
     if (!ensure(this->FireComponent != nullptr)) return;
@@ -540,7 +494,6 @@ void AShipPawn::kill()
         addEffect(EEffect::Killed);
         removeEffect(EEffect::Emp);
         removeEffect(EEffect::BackToGame);
-        removeAllPlayerFocusOnMe();
 
         // replace actor to spawn
         this->SetActorLocationAndRotation(StartTransform.GetLocation(), StartTransform.GetRotation());
@@ -579,22 +532,6 @@ void AShipPawn::Restarted()
 
 void AShipPawn::OnPlayerEnterFog(int32 _playerId, bool _enter)
 {
-    // server side, check if it's my target
-    if (_enter && this->FireComponent != nullptr && this->FireComponent->m_target != nullptr)
-    {
-        if (AShipPawn* pawn = Cast<AShipPawn>(this->FireComponent->m_target))
-        {
-            if (APlayerState* playerState = pawn->GetPlayerState())
-            {
-                if (playerState->PlayerId == _playerId)
-                {
-                    // remove target
-                    removeEffect(EEffect::TargetLock);
-                }
-            }
-        }
-    }
-
     if (APlayerState* playerState = this->GetPlayerState())
     {
         if (playerState->PlayerId == _playerId)
@@ -1083,17 +1020,6 @@ void AShipPawn::behaviourRemoveEffect(EEffect _type)
             this->ModuleComponent->removeMetaForm();
         }
     }
-    else if (_type == EEffect::TargetLock)
-    {
-        if (ACommonPawn* commonPawn = Cast<ACommonPawn>(this->FireComponent->m_target))
-        {
-            if (APlayerState* playerState = this->GetPlayerState<APlayerState>())
-            {
-                commonPawn->removePlayerFocusOnMe(playerState->PlayerId);
-            }
-        }
-        this->FireComponent->m_target = nullptr;
-    }
     else if (_type == EEffect::StartGame)
     {
         if (this->PlayerDataAsset != nullptr)
@@ -1227,6 +1153,29 @@ ESkillReturn AShipPawn::spawnHealPack()
         }
     }
     return ESkillReturn::InternError;
+}
+
+void AShipPawn::RPCServerSendTarget_Implementation(int32 _playerId)
+{
+    if(this->FireComponent == nullptr) return;
+
+    if (AGameStateBase* gameState = UGameplayStatics::GetGameState(this->GetWorld()))
+    {
+        for (APlayerState const* playerState : gameState->PlayerArray)
+        {
+            if (playerState != nullptr && playerState->PlayerId == _playerId)
+            {
+                this->FireComponent->m_target = playerState->GetPawn();
+                break;
+            }
+        }
+    }
+}
+
+void AShipPawn::RPCServerResetTarget_Implementation()
+{
+    if (this->FireComponent == nullptr) return;
+    this->FireComponent->m_target = nullptr;
 }
 
 void AShipPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetimeProps) const

@@ -76,7 +76,6 @@ protected:
 	virtual void fireOn() {};
 	virtual void fireOff() {};
 	virtual void returnToMainMenu();
-	virtual void lock() {};
 	virtual void halfTurn() {};
 };
 

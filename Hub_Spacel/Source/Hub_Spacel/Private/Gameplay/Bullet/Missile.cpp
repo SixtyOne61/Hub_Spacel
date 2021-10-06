@@ -46,33 +46,19 @@ void AMissile::Tick(float _deltaTime)
 
     if(this->DataAsset == nullptr) return;
 
-    if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
+    FVector dir = this->GetActorForwardVector();
+    FVector const& actorLocation = this->GetActorLocation();
+    float speed = this->DataAsset->SpeedPreLock;
+    if (this->R_IsSeekPlayer && this->R_Target != nullptr)
     {
-        if (this->R_IsSeekPlayer)
-        {
-            if (this->R_Target == nullptr)
-            {
-                this->Destroy();
-            }
-        }
+        FVector const& targetLocation = this->R_Target->GetActorLocation();
+        dir = (targetLocation - actorLocation).GetSafeNormal();
+        speed = this->DataAsset->SpeedAfterLock;
     }
 
-    if (this->R_Target != nullptr)
-    {
-        FVector dir = this->GetActorForwardVector();
-        FVector const& actorLocation = this->GetActorLocation();
-        float speed = this->DataAsset->SpeedPreLock;
-        if (this->R_IsSeekPlayer)
-        {
-            FVector const& targetLocation = this->R_Target->GetActorLocation();
-            dir = (targetLocation - actorLocation).GetSafeNormal();
-            speed = this->DataAsset->SpeedAfterLock;
-        }
-
-        FVector const& currentLocation = actorLocation;
-        FVector nextLocation = currentLocation + dir * speed * _deltaTime;
-        this->SetActorLocation(nextLocation);
-    }
+    FVector const& currentLocation = actorLocation;
+    FVector nextLocation = currentLocation + dir * speed * _deltaTime;
+    this->SetActorLocation(nextLocation);
 }
 
 void AMissile::OnTargetEffect(EEffect _type)

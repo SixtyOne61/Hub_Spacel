@@ -7,9 +7,6 @@
 #include "Runtime/Online/HTTP/Public/Http.h"
 #include "Hub_SpacelGameInstance.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnTargetPlayer, int32, _playerId, bool, _lock);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnTryLock);
-
 /**
  * 
  */
@@ -57,12 +54,6 @@ public:
     FTimerHandle GetResponseTimeHandle {};
 
     TDoubleLinkedList<float> PlayerLatencies {};
-
-    UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
-    FOnTargetPlayer OnTargetPlayerDelegate {};
-
-    UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
-    FOnTryLock OnTryLockDelegate {};
 
     UPROPERTY(BlueprintReadWrite)
     FString CustomPlayerName { "BoB" };

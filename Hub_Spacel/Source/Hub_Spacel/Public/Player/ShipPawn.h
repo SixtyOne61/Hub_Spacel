@@ -35,6 +35,7 @@ class HUB_SPACEL_API AShipPawn : public ACommonPawn
     friend class UModuleComponent;
     friend class AMissionManager;
     friend class AComet;
+    friend class UTargetUserWidget;
 
 public:
     // Called when the game starts or when spawned
@@ -49,9 +50,6 @@ public:
 
     float getPercentProtection() const;
     float getPercentSupport() const;
-
-    /* client side */
-    void lockTarget(int32 _playerId, bool _lock);
 
     /* server side */
     void addEffectSuccess(EEffect _type) override;
@@ -122,10 +120,6 @@ private:
     UFUNCTION(BlueprintCallable)
     void BuildDefaultShip();
 
-    /* target system */
-    UFUNCTION(Reliable, Server)
-    void RPCServerTargetPlayer(int32 _playerId, bool _lock);
-
     /* set fire boolean on component fire */
     void setFire(bool _on);
 
@@ -183,6 +177,12 @@ private:
 
     UFUNCTION(UnReliable, NetMulticast)
     void RPCNetMultiCastFxGold(bool _activate);
+
+    UFUNCTION(Reliable, Server)
+    void RPCServerSendTarget(int32 _playerId);
+
+    UFUNCTION(Reliable, Server)
+    void RPCServerResetTarget();
 
     bool canTank(int32 _val);
 

@@ -112,22 +112,19 @@ void UFireComponent::spawnBullet(FTransform const& _transform) const
 
 void UFireComponent::launchMissile(FTransform const _transform) const
 {
-    if (m_target != nullptr && !m_target->IsPendingKill())
+    AActor* actor = Cast<AActor>(UGameplayStatics::BeginDeferredActorSpawnFromClass(this->GetWorld(), get()->PlayerDataAsset->MissileClass, _transform));
+    if (AMissile* missile = Cast<AMissile>(actor))
     {
-        AActor* actor = Cast<AActor>(UGameplayStatics::BeginDeferredActorSpawnFromClass(this->GetWorld(), get()->PlayerDataAsset->MissileClass, _transform));
-        if (AMissile* missile = Cast<AMissile>(actor))
+        missile->R_Target = m_target;
+
+        missile->R_Team = get()->Team;
+        if (get<AShipPawn>() != nullptr)
         {
-            missile->R_Target = m_target;
-
-            missile->R_Team = get()->Team;
-            if (get<AShipPawn>() != nullptr)
-            {
-                get<AShipPawn>()->OnAddEffectDelegate.AddDynamic(missile, &AMissile::OnTargetEffect);
-            }
-
-            UGameplayStatics::FinishSpawningActor(missile, _transform);
-            setupProjectile(missile);
+            get<AShipPawn>()->OnAddEffectDelegate.AddDynamic(missile, &AMissile::OnTargetEffect);
         }
+
+        UGameplayStatics::FinishSpawningActor(missile, _transform);
+        setupProjectile(missile);
     }
 }
 

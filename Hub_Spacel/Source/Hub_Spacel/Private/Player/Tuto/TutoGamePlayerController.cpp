@@ -66,8 +66,3 @@ void ATutoGamePlayerController::fireOff()
 {
 
 }
-
-void ATutoGamePlayerController::lock()
-{
-
-}

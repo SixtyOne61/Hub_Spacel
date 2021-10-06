@@ -267,15 +267,6 @@ void AGamePlayerController::fireOff()
     }
 }
 
-void AGamePlayerController::lock()
-{
-    if (isAvailable())
-    {
-        UHub_SpacelGameInstance* spacelGameInstance{ Cast<UHub_SpacelGameInstance>(this->GetGameInstance()) };
-        spacelGameInstance->OnTryLockDelegate.Broadcast();
-    }
-}
-
 void AGamePlayerController::halfTurn()
 {
     if (isAvailable())

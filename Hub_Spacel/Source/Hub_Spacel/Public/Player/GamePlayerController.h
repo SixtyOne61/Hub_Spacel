@@ -72,7 +72,6 @@ private:
 
 	void fireOn() override;
 	void fireOff() override;
-	void lock() override;
 	void halfTurn() override;
 
 	// deprecated to do remove

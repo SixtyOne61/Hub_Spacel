@@ -38,10 +38,6 @@ public:
     /* set collision profile name */
     void setCollisionProfile(FString _team);
 
-    void addPlayerFocusOnMe(int32 _playerId);
-    void removePlayerFocusOnMe(int32 _playerId);
-    void removeAllPlayerFocusOnMe();
-
     UFUNCTION(UnReliable, Client)
     void RPCClientDamageIndicator(FVector_NetQuantize const& _location);
 

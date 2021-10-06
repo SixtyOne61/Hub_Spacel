@@ -72,7 +72,6 @@ void SkillEscapeMode::onEndCountDown()
 ESkillReturn SkillSpecialAttack::onStart()
 {
     if (get<AShipPawn>() == nullptr) return ESkillReturn::InternError;
-    if (!get<AShipPawn>()->hasEffect(EEffect::TargetLock)) return ESkillReturn::Unavailable;
 
     get<AShipPawn>()->launchMissile();
     return ESkillReturn::Success;
@@ -187,7 +186,6 @@ void SkillMetaFormSupport::onEnd()
 ESkillReturn SkillKatyusha::onStart()
 {
     if (get<AShipPawn>() == nullptr) return ESkillReturn::InternError;
-    if (!get<AShipPawn>()->hasEffect(EEffect::TargetLock)) return ESkillReturn::Unavailable;
 
     get<AShipPawn>()->spawnKatyusha();
     return ESkillReturn::Success;
