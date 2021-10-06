@@ -47,4 +47,7 @@ protected:
 protected:
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
 	class USkillDataAsset* SkillDataAsset { nullptr };
+
+	UPROPERTY(Category = "Hack", EditAnywhere, BlueprintReadWrite)
+	class UEditorHackDataAsset* HackDataAsset { nullptr };
 };

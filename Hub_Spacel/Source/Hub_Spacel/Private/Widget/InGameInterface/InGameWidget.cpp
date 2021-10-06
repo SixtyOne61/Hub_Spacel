@@ -94,6 +94,7 @@ void UInGameWidget::OnChangeState(EGameState _state)
     if (_state == EGameState::Prepare)
     {
         m_currentSkillType = ESkillType::Low;
+        setupDefaultSkill();
         WaitPlayerState();
     }
     else if (_state == EGameState::LockPrepare)
@@ -214,9 +215,36 @@ void UInGameWidget::setupInGame()
     }
 }
 
+void UInGameWidget::setupDefaultSkill()
+{
+    if (this->SkillDataAsset == nullptr) return;
+    ESkill skill = ESkill::Max;
+    switch (m_currentSkillType)
+    {
+        case ESkillType::Low:
+            skill = ESkill::DefaultLow;
+        break;
+        case ESkillType::Medium:
+            skill = ESkill::DefaultMedium;
+        break;
+        case ESkillType::Hight:
+            skill = ESkill::DefaultHight;
+        break;
+    }
+
+    if (skill != ESkill::Max)
+    {
+        if (auto uniqueSkillDataAsset = this->SkillDataAsset->getSKill(skill))
+        {
+            BP_SetupSkill(m_currentSkillType, uniqueSkillDataAsset->IconeBtn, uniqueSkillDataAsset->BackgroundColorBtn, uniqueSkillDataAsset->VerboseEffect);
+        }
+    }
+}
+
 void UInGameWidget::OnChangeCarrousel(ESkill _skillId, ESkillType _type)
 {
     m_currentSkillType = (ESkillType)((uint8)_type + 1);
+    setupDefaultSkill();
     BP_SetupSkillCarrousel(m_currentSkillType);
 
     // go to next state

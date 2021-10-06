@@ -72,6 +72,7 @@ enum class ESkill : uint8
     HealPack UMETA(DisplayName = "HealPack"),
     Emergency UMETA(DisplayName = "Emergency"),
     Repair UMETA(DisplayName = "Repair"),
+    Max,
 
     DefaultLow = FireRate,
     DefaultMedium = Missile,

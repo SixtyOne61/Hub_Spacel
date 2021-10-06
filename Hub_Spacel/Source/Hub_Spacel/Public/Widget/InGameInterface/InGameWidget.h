@@ -133,6 +133,7 @@ private:
 	void setupColor(class ASpacelPlayerState const* _owningPlayerState);
 	void setupEnnemyTeam();
 	void setupInGame();
+	void setupDefaultSkill();
 
 	/* tick method */
 	void tickTimer(float _deltaSeconde);
