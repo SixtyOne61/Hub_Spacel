@@ -454,10 +454,13 @@ void UInGameWidget::OnEndMission(EMission _type, bool _succeed, FName _succeedFo
         {
             mission->IsSucceed = _succeed;
 
-            if (AShipPawn* shipPawn = this->GetOwningPlayerPawn<AShipPawn>())
+            if (!_succeedForTeam.IsNone())
             {
-                // override for passive
-                mission->IsSucceed = shipPawn->Team == _succeedForTeam;
+                if (AShipPawn* shipPawn = this->GetOwningPlayerPawn<AShipPawn>())
+                {
+                    // override for passive
+                    mission->IsSucceed = shipPawn->Team == _succeedForTeam;
+                }
             }
 
             BP_OnEndMission(*mission);
