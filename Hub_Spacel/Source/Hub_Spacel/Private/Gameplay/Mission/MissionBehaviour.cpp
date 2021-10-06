@@ -40,13 +40,13 @@ void MissionFirstBlood::tick(float _deltaTime, UWorld* _world)
 
     if (m_killDone)
     {
-        end(_world);
+        end(_world, true);
     }
 }
 
-void MissionFirstBlood::end(class UWorld* _world)
+void MissionFirstBlood::end(class UWorld* _world, bool _succeed)
 {
-    MissionBehaviour::end(_world);
+    MissionBehaviour::end(_world, _succeed);
 
     if (ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(_world->GetGameState()))
     {
@@ -73,7 +73,7 @@ void MissionRaceScore::tick(float _deltaTime, UWorld* _world)
 
         if (score >= m_mission.RewardValue)
         {
-            end(_world);
+            end(_world, true);
         }
     }
 }
@@ -124,13 +124,13 @@ void MissionEcartType::tick(float _deltaTime, UWorld* _world)
         {
             spacelGameState->AddScore(m_loosingTeam, m_mission.RewardValue);
         }
-        end(_world);
+        end(_world, true);
     }
 }
 
-void MissionEcartType::end(UWorld* _world)
+void MissionEcartType::end(UWorld* _world, bool _succeed)
 {
-    MissionSilence::end(_world);
+    MissionSilence::end(_world, _succeed);
 
     if(_world == nullptr) return;
 
@@ -189,6 +189,8 @@ void MissionComet::start(class UWorld* _world)
                 comet->OnIntercepDelegate.add(std::bind(&MissionComet::onCometDestroy, this, std::placeholders::_1));
 
                 comet->FinishSpawning(transform);
+
+                m_comets.Add(comet);
             }
 
             if (delta.Num() > 0)
@@ -218,17 +220,25 @@ void MissionComet::tick(float _deltaTime, UWorld* _world)
                         if (shipPawn->Team == *team)
                         {
                             shipPawn->boostPassive(m_mission.Type, m_mission.RewardValue);
+                            m_succeedForTeam = *team;
                         }
                     }
                 }
             }
         }
         m_teams.Empty();
+
+        // remove comet
+        for (auto* comet : m_comets)
+        {
+            comet->Destroy();
+        }
+        m_nbComet = 0;
     }
 
     if (m_nbComet == 0)
     {
-        end(_world);
+        end(_world, true);
     }
 }
 
@@ -277,11 +287,12 @@ void MissionPirate::tick(float _deltaTime, UWorld* _world)
                     if (shipPawn->Team == m_team)
                     {
                         shipPawn->boostPassive(m_mission.Type, m_mission.RewardValue);
+                        m_succeedForTeam = m_team;
                     }
                 }
             }
         }
-        end(_world);
+        end(_world, true);
     }
 }
 
@@ -327,7 +338,7 @@ void MissionTakeGold::tick(float _deltaTime, UWorld* _world)
         {
             spacelGameState->OnAskMissionDelegate.Broadcast(EMission::HoldGold);
         }
-        end(_world);
+        end(_world, true);
     }
 }
 
@@ -373,9 +384,9 @@ void MissionHoldGold::findGold(class UWorld* _world)
     }
 }
 
-void MissionHoldGold::end(UWorld* _world)
+void MissionHoldGold::end(UWorld* _world, bool _succeed)
 {
-    MissionBehaviour::end(_world);
+    MissionBehaviour::end(_world, true);
 
     // clean event
     if (ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(_world->GetGameState()))
@@ -386,6 +397,11 @@ void MissionHoldGold::end(UWorld* _world)
             if (AShipPawn* shipPawn = playerState->GetPawn<AShipPawn>())
             {
                 shipPawn->OnLostGoldDelegate.clean();
+
+                if (shipPawn->hasEffect(EEffect::Gold))
+                {
+                    m_succeedForTeam = shipPawn->Team;
+                }
             }
         }
     }

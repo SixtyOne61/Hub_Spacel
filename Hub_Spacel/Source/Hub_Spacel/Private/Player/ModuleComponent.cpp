@@ -110,7 +110,7 @@ void UModuleComponent::SetMax_Implementation(int32 _maxProtection, int32 _maxSup
     this->OnUpdateCountSupportDelegate.Broadcast(this->RU_SupportLocations.Num(), m_maxSupport);
 }
 
-void UModuleComponent::BuildShipLobby()
+void UModuleComponent::buildLobbyShip(ESkill _skillId, ESkillType _type)
 {
     auto lb_readXml = [](bool _isHeavy, USetupAttributeDataAsset* _dataAsset, TArray<FVector_NetQuantize>& _out, FString&& _name)
     {
@@ -130,28 +130,21 @@ void UModuleComponent::BuildShipLobby()
 
     if (APawn* pawn = Cast<APawn>(this->GetOwner()))
     {
-        if (ASpacelPlayerState* spacelPlayerState = pawn->GetPlayerState<ASpacelPlayerState>())
+        switch (_type)
         {
-            uint8 lowSkillId = spacelPlayerState->getSkillId(ESkillType::Low);
-            uint8 mediumSkillId = spacelPlayerState->getSkillId(ESkillType::Medium);
+            case ESkillType::Low:
+                lb_readXml(_skillId == ESkill::FireRate, this->WeaponDataAsset, this->RU_AttackLocations, "Location");
+                buildShip(this->WeaponMeshComponent, this->WeaponDataAsset, this->RU_AttackLocations);
 
-            lb_readXml(lowSkillId == (uint8)ESkill::FireRate, this->WeaponDataAsset, this->RU_AttackLocations, "Location");
-            buildShip(this->WeaponMeshComponent, this->WeaponDataAsset, this->RU_AttackLocations);
+                lb_readXml(_skillId == ESkill::HeavyProtection, this->ProtectionDataAsset, this->RU_ProtectionLocations, "Location");
+                buildShip(this->ProtectionMeshComponent, this->ProtectionDataAsset, this->RU_ProtectionLocations);
 
-            lb_readXml(lowSkillId == (uint8)ESkill::HeavyProtection, this->ProtectionDataAsset, this->RU_ProtectionLocations, "Location");
-            buildShip(this->ProtectionMeshComponent, this->ProtectionDataAsset, this->RU_ProtectionLocations);
+                lb_readXml(_skillId == ESkill::Speedy, this->SupportDataAsset, this->RU_SupportLocations, "Location");
+                buildShip(this->SupportMeshComponent, this->SupportDataAsset, this->RU_SupportLocations);
+                setLocationExhaustFx();
 
-            lb_readXml(lowSkillId == (uint8)ESkill::Speedy, this->SupportDataAsset, this->RU_SupportLocations, "Location");
-            buildShip(this->SupportMeshComponent, this->SupportDataAsset, this->RU_SupportLocations);
-            setLocationExhaustFx();
-
-            lb_readXml(mediumSkillId == (uint8)ESkill::Missile, this->WeaponDataAsset, R_MissileLocations, "Missile");
-            if (this->MissileMeshComponent != nullptr && this->R_MissileLocations.Num() != 0)
-            {
-                this->MissileMeshComponent->SetRelativeLocation(this->R_MissileLocations[0]);
-            }
-
-            this->SetMax(this->RU_ProtectionLocations.Num(), this->RU_SupportLocations.Num());
+                this->SetMax(this->RU_ProtectionLocations.Num(), this->RU_SupportLocations.Num());
+            break;
         }
     }
 }
@@ -212,23 +205,6 @@ void UModuleComponent::OnStartGame(EGameState _state)
             lb_readXml(lowSkillId == (uint8)ESkill::Speedy, this->SupportDataAsset, this->RU_SupportLocations, "Location");
             buildShip(this->SupportMeshComponent, this->SupportDataAsset, this->RU_SupportLocations);
             setLocationExhaustFx();
-
-            // add effect for low skill
-            if (AShipPawn* shipPawn = Cast<AShipPawn>(pawn))
-            {
-                switch (lowSkillId)
-                {
-                case (uint8)ESkill::FireRate:
-                    shipPawn->addEffect(EEffect::SkillPassiveFireRate);
-                    break;
-                case (uint8)ESkill::HeavyProtection:
-                    shipPawn->addEffect(EEffect::SkillPassiveProtection);
-                    break;
-                case (uint8)ESkill::Speedy:
-                    shipPawn->addEffect(EEffect::SkillPassiveSpeed);
-                    break;
-                }
-            }
 
             lb_readXml(mediumSkillId == (uint8)ESkill::Missile, this->WeaponDataAsset, R_MissileLocations, "Missile");
             if (this->MissileMeshComponent != nullptr && this->R_MissileLocations.Num() != 0)

@@ -25,6 +25,7 @@ class HUB_SPACEL_API AShipPawn : public ACommonPawn
 
     friend class AGamePlayerController;
     friend class USpacelWidget;
+    friend class UInGameWidget;
     friend class UFireComponent;
     friend class UCustomCollisionComponent;
     friend class URepairComponent;
@@ -63,8 +64,7 @@ public:
     ESkillReturn spawnEmp();
     void emp(uint32 _duration, FName const& _team, int32 _playerId);
 
-    ESkillReturn onRepairProtection();
-    ESkillReturn onRepairSupport();
+    ESkillReturn onRepair();
     ESkillReturn onSwapEmergency();
     void onEmergencyCountDownEnd();
 
@@ -76,6 +76,8 @@ public:
     ESkillReturn spawnHealPack();
 
     void boostPassive(EMission _type, int32 _rewardValue);
+
+    void buildLobbyShip(ESkill _skillId, ESkillType _type);
 
 protected:
     UFUNCTION(BlueprintImplementableEvent)
@@ -109,7 +111,7 @@ protected:
     void BP_SpeedSound(int _percentSpeed, bool _start);
 
     UFUNCTION()
-    void OnEndMission(EMission _type);
+    void OnEndMission(EMission _type, bool _succeed, FName _succeedForTeam);
 
     void emergencyRedCube(FVector const& _location);
 
@@ -119,9 +121,6 @@ private:
     /* only use for debug in editor */
     UFUNCTION(BlueprintCallable)
     void BuildDefaultShip();
-
-    UFUNCTION()
-    void BuildShip();
 
     /* target system */
     UFUNCTION(Reliable, Server)
@@ -245,7 +244,7 @@ private:
     FOnEndUpdateMatiere OnEndUpdateMatiereDelegate {};
 
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
-    FOnShowMission OnShowMissionDelegate {};
+    FOnShowMission OnShowMissionDelegate {}; // deprecated to do remove
 
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
     FOnLocalTeamUpdate OnLocalTeamUpdateDelegate {};

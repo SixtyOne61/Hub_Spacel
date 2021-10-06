@@ -26,11 +26,8 @@ private:
 
 protected:
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<class UUserWidget> GameWidgetClass { nullptr };
+	TSubclassOf<class UUserWidget> InGameWidgetClass { nullptr };
 
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<class UUserWidget> LobbyWidgetClass { nullptr };
-
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<class UUserWidget> EndMenuWidgetClass{ nullptr };
+	TSubclassOf<class UUserWidget> EndMenuWidgetClass { nullptr };
 };

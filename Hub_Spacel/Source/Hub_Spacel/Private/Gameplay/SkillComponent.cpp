@@ -28,8 +28,7 @@ void USkillComponent::setupSkill()
     auto callbackFailed = std::bind(&USkillComponent::RPCClientFailed, this, std::placeholders::_1, std::placeholders::_2);
 
     m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::EscapeMode), get(), mode, callbackSucced, callbackFailed, true));
-    m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::RepairProtection), get(), mode, callbackSucced, callbackFailed, true));
-    m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::RepairSupport), get(), mode, callbackSucced, callbackFailed, true));
+    m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::Repair), get(), mode, callbackSucced, callbackFailed, true));
     m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::Katyusha), get(), mode, callbackSucced, callbackFailed, true));
     m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::HealPack), get(), mode, callbackSucced, callbackFailed, true));
 
@@ -65,6 +64,8 @@ void USkillComponent::SetupSpecialSkill()
             {
                 spacelPlayerState->OnAddSkillUniqueDelegate(m_skills.Last().Get());
             }
+
+            m_skills.Last()->setActive(false);
         };
 
         lb(ESkillType::Medium);
@@ -96,7 +97,7 @@ void USkillComponent::SetDelegateForPlayerState()
     }
 }
 
-void USkillComponent::OnMissionEnd(EMission _type)
+void USkillComponent::OnMissionEnd(EMission _type, bool _succeed, FName _succeedForTeam)
 {
     if (_type != EMission::FirstBlood && _type != EMission::ScoreRace) return;
 

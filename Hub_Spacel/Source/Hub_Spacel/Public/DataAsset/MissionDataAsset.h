@@ -15,26 +15,41 @@ struct HUB_SPACEL_API FMission
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	EMission Type {};
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString MissionTitle { };
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString MissionDesc { };
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 RewardValue { 0 };
 	
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 ConditionValue { 0 };
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 DurationValue { 0 };
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString Team {};
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	class UParamMissionDataAsset* Param { nullptr };
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	class UTexture2D* Logo  { nullptr };
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	class UTexture2D* RewardLogo { nullptr };
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString RewardText {};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool IsSucceed {};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FName SucceedForTeam {};
 };
 
 /**

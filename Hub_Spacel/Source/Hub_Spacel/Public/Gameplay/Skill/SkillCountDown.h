@@ -26,6 +26,7 @@ public:
 	bool& isDown() { return m_isDown; }
 	bool isActive() const { return m_isActive; }
 
+	inline void setSkillWidget(class USkillWidget* _widget) { m_widget = _widget; }
 	void setActive(bool _val);
 
 	ESkill getSkillType() const;
@@ -41,7 +42,10 @@ private:
 	class UUniqueSkillDataAsset const* m_param { nullptr };
 	EnumUtil::EnumCallback<ECountDown> m_state { };
 	class ACommonPawn* m_pawn { nullptr };
+
 	class UProgressBar* m_progressBar { nullptr };
+	class USkillWidget* m_widget { nullptr };
+
 	float m_currentTime{ 0.0f };
 
 	TUniquePtr<class SkillBehaviour> m_behaviour {};

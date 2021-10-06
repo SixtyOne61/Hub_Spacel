@@ -8,6 +8,7 @@
 #include "DataAsset/UniqueSkillDataAsset.h"
 #include "Components/ProgressBar.h"
 #include "Player/Common/CommonPawn.h"
+#include "Widget/SkillWidget.h"
 
 SkillCountDown::SkillCountDown(SkillCountDown const& _cpy)
     : m_netMode(_cpy.m_netMode)
@@ -124,6 +125,11 @@ void SkillCountDown::setActive(bool _val)
     if (m_progressBar != nullptr)
     {
         m_progressBar->SetPercent(m_isActive ? 0.0f : 1.0f);
+    }
+
+    if (m_widget != nullptr)
+    {
+        m_widget->BP_Lock(_val);
     }
 }
 

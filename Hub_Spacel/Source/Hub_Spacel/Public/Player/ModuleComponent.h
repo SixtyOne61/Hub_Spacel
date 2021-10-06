@@ -53,8 +53,7 @@ protected:
     /* set collision profile name */
     void setCollisionProfile(FString _team);
 
-    UFUNCTION()
-    void BuildShipLobby();
+    void buildLobbyShip(ESkill _skillId, ESkillType _type);
 
     void activeMetaForm(EEffect _type);
     void removeMetaForm();

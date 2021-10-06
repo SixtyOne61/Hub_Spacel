@@ -45,7 +45,7 @@ private:
 	void RPCClientFailed(ESkill _skill, ESkillReturn _returnValue);
 
 	UFUNCTION()
-	void OnMissionEnd(EMission _type);
+	void OnMissionEnd(EMission _type, bool _succeed, FName _succeedForTeam);
 
 	class UUniqueSkillDataAsset const* getSkill(ESkill _skill) const;
 

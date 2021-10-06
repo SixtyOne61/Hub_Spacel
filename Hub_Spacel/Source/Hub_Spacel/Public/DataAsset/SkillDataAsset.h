@@ -21,6 +21,8 @@ public:
 
 	TArray<class UUniqueSkillDataAsset*> getSkillByInput(EInput _input);
 
+	TArray<class UUniqueSkillDataAsset*> getSkillByType(ESkillType _type);
+
 public:
 	UPROPERTY(EditAnywhere)
 	TArray<class UUniqueSkillDataAsset*> Skills;

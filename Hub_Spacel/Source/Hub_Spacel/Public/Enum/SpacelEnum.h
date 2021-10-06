@@ -51,7 +51,8 @@ enum class ESkillType : uint8
     None UMETA(DisplayName = "None"),
     Low UMETA(DisplayName = "Low"),
     Medium UMETA(DisplayName = "Medium"),
-    Hight UMETA(DisplayName = "Hight")
+    Hight UMETA(DisplayName = "Hight"),
+    Max
 };
 
 UENUM(BlueprintType)
@@ -75,6 +76,11 @@ enum class ESkill : uint8
     Katyusha UMETA(DisplayName = "Katyusha"),
     HealPack UMETA(DisplayName = "HealPack"),
     Emergency UMETA(DisplayName = "Emergency"),
+    Repair UMETA(DisplayName = "Repair"),
+
+    DefaultLow = FireRate,
+    DefaultMedium = Missile,
+    DefaultHight = MetaFormAttack,
 };
 
 UENUM(BlueprintType)
@@ -97,6 +103,7 @@ enum class EInput : uint8
     RepairProtection UMETA(DisplayName = "RepairProtection"),
     RepairEngine UMETA(DisplayName = "RepairEngine"),
     Emergency UMETA(DisplayName = "Emergency"),
+    Repair UMETA(DisplayName = "Repair"),
     Unset UMETA(DisplayName = "Unset"),
 };
 
@@ -117,7 +124,7 @@ UENUM(BlueprintType, meta = (Bitflags, UseEnumValuesAsMaskValuesInEditor = "true
 enum class EEffect : uint8
 {
     None UMETA(DisplayName = "None"),
-    TargetLock UMETA(DisplayName = "TargetLock"),
+    TargetLock UMETA(DisplayName = "TargetLock"), // to remove
     Fog UMETA(DisplayName = "Fog"),
     Shield UMETA(DisplayName = "Shield"),
     Emp UMETA(DisplayName = "Emp"),
@@ -128,15 +135,20 @@ enum class EEffect : uint8
     MetaFormProtection UMETA(DisplayName = "MetaFormProtection"),
     MetaFormSupport UMETA(DisplayName = "MetaFormSupport"),
     Respawned UMETA(DisplayName = "Respawned"),
-    Targeted UMETA(DisplayName = "Targeted"),
+    Targeted UMETA(DisplayName = "Targeted"), // to remove
     StartGame UMETA(DisplayName = "StartGame"),
     Gold UMETA(DisplayName = "Gold"),
     PassiveFireRate UMETA(DisplayName = "PassiveFireRate"),
     PassiveCountDown UMETA(DisplayName = "PassiveCountDown"),
     PassiveSpeed UMETA(DisplayName = "PassiveSpeed"),
-    SkillPassiveFireRate UMETA(DisplayName = "PassiveFireRate"),
-    SkillPassiveProtection UMETA(DisplayName = "PassiveCountDown"),
-    SkillPassiveSpeed UMETA(DisplayName = "PassiveSpeed"),
+};
+
+UENUM(BlueprintType)
+enum class EEffectLocation : uint8
+{
+    Skill UMETA(DisplayName = "Skill"),
+    Right UMETA(DisplayName = "Right"),
+    Left UMETA(DisplayName = "Left")
 };
 
 UENUM(BlueprintType)

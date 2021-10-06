@@ -8,8 +8,6 @@
 #include <functional>
 #include "SpacelPlayerState.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnSkillLobbyChange);
-
 /**
  * 
  */
@@ -22,9 +20,7 @@ public:
     void BeginPlay() override;
 
     UFUNCTION(Reliable, Server)
-    void RPCServerAddSkill(uint8 const& _id, ESkillType _type);
-
-    void LocalAddSkill(uint8 const& _id, ESkillType _type);
+    void RPCServerAddSkill(ESkill _id, ESkillType _type);
 
     UFUNCTION()
     void SetTeam(FString const& _team);
@@ -56,9 +52,6 @@ public:
 
     UPROPERTY(Replicated)
     uint8 R_HightSkill {};
-
-    UPROPERTY()
-    FOnSkillLobbyChange OnSkillLobbyChangeDelegate {};
 
     std::function<void(class SkillCountDown*)> OnAddSkillUniqueDelegate { nullptr };
     std::function<void(ESkill _type)> OnRemoveSkillUniqueDelegate { nullptr };

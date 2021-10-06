@@ -51,6 +51,18 @@ public:
 	void onEndCountDown() override {};
 };
 
+class HUB_SPACEL_API SkillRepair : public SkillBehaviour
+{
+	using SkillBehaviour::SkillBehaviour;
+public:
+	virtual ~SkillRepair() {}
+
+	ESkillReturn onStart() override;
+	void onEnd() override {};
+	void onEndCountDown() override {};
+};
+
+// deprecated
 class HUB_SPACEL_API SkillRepairProtection : public SkillBehaviour
 {
 	using SkillBehaviour::SkillBehaviour;
@@ -62,6 +74,7 @@ public:
 	void onEndCountDown() override {};
 };
 
+// deprecated
 class HUB_SPACEL_API SkillRepairSupport : public SkillBehaviour
 {
 	using SkillBehaviour::SkillBehaviour;

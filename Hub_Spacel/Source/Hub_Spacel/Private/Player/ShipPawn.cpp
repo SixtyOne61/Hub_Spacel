@@ -247,7 +247,7 @@ void AShipPawn::BeginPlay()
     }
 }
 
-void AShipPawn::OnEndMission(EMission _type)
+void AShipPawn::OnEndMission(EMission _type, bool _succeed, FName _succeedForTeam)
 {
     if (_type == EMission::HoldGold)
     {
@@ -482,11 +482,6 @@ void AShipPawn::OnRep_PlayerState()
         }
 
         setCollisionProfile(teamName);
-
-        if (this->IsLocallyControlled())
-        {
-            spacelPlayerState->OnSkillLobbyChangeDelegate.AddDynamic(this, &AShipPawn::BuildShip);
-        }
     }
 }
 
@@ -497,9 +492,9 @@ void AShipPawn::BuildDefaultShip()
 #endif
 }
 
-void AShipPawn::BuildShip()
+void AShipPawn::buildLobbyShip(ESkill _skillId, ESkillType _type)
 {
-    this->ModuleComponent->BuildShipLobby();
+    this->ModuleComponent->buildLobbyShip(_skillId, _type);
 }
 
 void AShipPawn::setFire(bool _on)
@@ -1129,20 +1124,11 @@ void AShipPawn::heal(uint8 _value)
     RPCNetMulticastFxExploseHeal();
 }
 
-ESkillReturn AShipPawn::onRepairProtection()
+ESkillReturn AShipPawn::onRepair()
 {
     if (this->RepairComponent != nullptr)
     {
-        return this->RepairComponent->onRepairProtection();
-    }
-    return ESkillReturn::InternError;
-}
-
-ESkillReturn AShipPawn::onRepairSupport()
-{
-    if (this->RepairComponent != nullptr)
-    {
-        return this->RepairComponent->onRepairSupport();
+        return this->RepairComponent->onRepair();
     }
     return ESkillReturn::InternError;
 }
@@ -1202,7 +1188,7 @@ ESkillReturn AShipPawn::spawnHealPack()
     {
         if (UUniqueSkillDataAsset const* uniqueSkillDataAsset = this->SkillComponent->getSkill(ESkill::HealPack))
         {
-            int healPackMatiere = uniqueSkillDataAsset->Value;
+            int healPackMatiere = uniqueSkillDataAsset->MatiereNeeded;
             if (this->RU_Matiere >= healPackMatiere)
             {
                 addMatiere(healPackMatiere * -1, EMatiereOrigin::Lost);

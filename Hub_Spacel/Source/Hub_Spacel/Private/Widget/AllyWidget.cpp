@@ -8,6 +8,7 @@
 #include "Components/TextBlock.h"
 #include "Player/SpacelPlayerState.h"
 #include "Player/ShipPawn.h"
+#include "DataAsset/TeamColorDataAsset.h"
 
 void UAllyWidget::NativeConstruct()
 {
@@ -15,7 +16,6 @@ void UAllyWidget::NativeConstruct()
 
     NameTextBlock = SimplyUI::initSafetyFromName<UUserWidget, UTextBlock>(this, TEXT("Txt_Name"));
     ProtectionProgressBar = SimplyUI::initSafetyFromName<UUserWidget, UProgressBar>(this, TEXT("ProgressBar_Protection"));
-    SupportProgressBar = SimplyUI::initSafetyFromName<UUserWidget, UProgressBar>(this, TEXT("ProgressBar_Support"));
     DisconnectImage = SimplyUI::initSafetyFromName<UUserWidget, UImage>(this, TEXT("Image_Disconnect"));
 }
 
@@ -37,12 +37,17 @@ void UAllyWidget::updatePercent(class UProgressBar* _progressBar, float _value)
     }
 }
 
-void UAllyWidget::setWatcher(class ASpacelPlayerState* _state)
+void UAllyWidget::SetWatcher(class ASpacelPlayerState* _state)
 {
-    if (this->NameTextBlock != nullptr
-        && _state != nullptr)
+    if (this->NameTextBlock != nullptr && _state != nullptr)
     {
         this->NameTextBlock->SetText(FText::FromString(_state->GetPlayerName()));
+
+        if (this->TeamColorDataAsset != nullptr)
+        {
+            FSlateColor color = this->TeamColorDataAsset->GetColor<FSlateColor>(_state->R_Team);
+            this->NameTextBlock->SetColorAndOpacity(color);
+        }
     }
     m_watcher = _state;
 
@@ -60,7 +65,6 @@ void UAllyWidget::UpdateWatcher()
         if (AShipPawn* shipPawn = m_watcher.Get()->GetPawn<AShipPawn>())
         {
             updatePercent(this->ProtectionProgressBar, shipPawn->getPercentProtection());
-            updatePercent(this->SupportProgressBar, shipPawn->getPercentSupport());
             disconnect = ESlateVisibility::Hidden;
         }
 

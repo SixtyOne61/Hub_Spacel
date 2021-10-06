@@ -64,23 +64,8 @@ public:
     UPROPERTY(Category = "Fire", EditAnywhere, BlueprintReadWrite)
     float TimeBetweenFire = 0.3f;
 
-    UPROPERTY(Category = "Fire", EditAnywhere, BlueprintReadWrite)
-    float ReduceTimeBetweenFireWithLevel = 0.7f;
-
-    UPROPERTY(Category = "Fire", EditAnywhere, BlueprintReadWrite)
-    float ReduceTimeBetweenFireWithMetaForm = 0.2f;
-
     UPROPERTY(Category = "Skill", EditAnywhere, BlueprintReadWrite)
-    int ProtectionRatioMatiere {};
-
-    UPROPERTY(Category = "Skill", EditAnywhere, BlueprintReadWrite)
-    int ProtectionRatioEffect{};
-
-    UPROPERTY(Category = "Skill", EditAnywhere, BlueprintReadWrite)
-    int SupportRatioMatiere{};
-
-    UPROPERTY(Category = "Skill", EditAnywhere, BlueprintReadWrite)
-    int SupportRatioEffect{};
+    float RepairRatio { 0.5f };
 
     UPROPERTY(Category = "Skill", EditAnywhere, BlueprintReadOnly)
     TSubclassOf<class AActor> EmpClass { nullptr };

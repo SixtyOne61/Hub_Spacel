@@ -55,4 +55,13 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	EInput InputType {};
+
+	UPROPERTY(EditAnywhere)
+	ESkillType SkillType {};
+
+	UPROPERTY(EditAnywhere)
+	FString VerboseEffect {};
+
+	UPROPERTY(EditAnywhere)
+	uint32 MatiereNeeded { 0 };
 };

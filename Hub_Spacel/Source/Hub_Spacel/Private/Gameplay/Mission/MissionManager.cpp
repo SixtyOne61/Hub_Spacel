@@ -138,6 +138,8 @@ void AMissionManager::Tick(float DeltaTime)
 					mission->tick(DeltaTime, this->GetWorld());
 					if (mission->m_isEnd)
 					{
+						mission->m_mission.IsSucceed = mission->m_isSucceed;
+						mission->m_mission.SucceedForTeam = mission->m_succeedForTeam;
 						endMission(mission->m_mission);
 					}
 				}
@@ -153,7 +155,7 @@ void AMissionManager::Tick(float DeltaTime)
 			{
 				if (mission.IsValid())
 				{
-					mission->end(this->GetWorld());
+					mission->end(this->GetWorld(), true);
 				}
 			}
 		}
@@ -186,7 +188,7 @@ void AMissionManager::endMission(FMission const& _mission) const
 
 	if (ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(world->GetGameState()))
 	{
-		spacelGameState->RPCNetMulticastEndMission(_mission.Type);
+		spacelGameState->RPCNetMulticastEndMission(_mission.Type, _mission.IsSucceed, _mission.SucceedForTeam);
 	}
 }
 

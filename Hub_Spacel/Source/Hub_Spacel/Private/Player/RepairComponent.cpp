@@ -6,6 +6,7 @@
 #include "Player/ModuleComponent.h"
 #include "Player/MetricComponent.h"
 #include "DataAsset/PlayerDataAsset.h"
+#include "DataAsset/UniqueSkillDataAsset.h"
 #include "Net/UnrealNetwork.h"
 
 URepairComponent::URepairComponent()
@@ -34,17 +35,66 @@ void URepairComponent::OnUpdateMatiere(int _value, EMatiereOrigin _type)
     }
 }
 
-ESkillReturn URepairComponent::onRepairProtection()
+ESkillReturn URepairComponent::onRepair()
 {
-    if (get() != nullptr)
+    if(this->RepairSkillDataAsset == nullptr) return ESkillReturn::InternError;
+
+    if (AShipPawn* pawn = get<AShipPawn>())
     {
-        if (get<AShipPawn>() != nullptr && get<AShipPawn>()->PlayerDataAsset != nullptr)
+        if(pawn->PlayerDataAsset == nullptr) return ESkillReturn::InternError;
+
+        if (UModuleComponent* moduleComponent = pawn->ModuleComponent)
         {
-            int min = get<AShipPawn>()->PlayerDataAsset->ProtectionRatioMatiere;
-            int effect = get<AShipPawn>()->PlayerDataAsset->ProtectionRatioEffect;
-            return repair(get()->ModuleComponent->RemovedProtectionLocations, get()->ModuleComponent->RU_ProtectionLocations, std::bind(&UModuleComponent::OnRep_Protection, get()->ModuleComponent), min, effect);
+            if(pawn->RU_Matiere < (int16)this->RepairSkillDataAsset->MatiereNeeded) return ESkillReturn::NoMater;
+
+            int32 lostProtection = moduleComponent->RemovedProtectionLocations.Num();
+            int32 lostEngine = moduleComponent->RemovedSupportLocations.Num();
+
+            if(lostProtection == 0 && lostEngine == 0) return ESkillReturn::Unavailable;
+
+            float ratio = pawn->PlayerDataAsset->RepairRatio;
+            uint32 matiereUse = 0;
+
+            uint32 repair = this->RepairSkillDataAsset->Value * ratio;
+            int deltaMatiere = 1.0f / ratio;
+
+            auto lb = [&repair, &matiereUse, &deltaMatiere](int32& _lost, TArray<FVector_NetQuantize>& _removedLocations, TArray<FVector_NetQuantize>& _locations) -> bool
+            {
+                if (repair != 0 && _lost != 0)
+                {
+                    _locations.Add(_removedLocations[0]);
+                    _removedLocations.RemoveAt(0);
+                    --_lost;
+                    --repair;
+                    matiereUse += deltaMatiere;
+                    return true;
+                }
+                return false;
+            };
+
+            bool hasRepairProtection = false;
+            bool hasRepairSupport = false;
+
+            while (repair != 0 && !(lostProtection == 0 && lostEngine == 0))
+            {
+                hasRepairProtection |= lb(lostProtection, moduleComponent->RemovedProtectionLocations, moduleComponent->RU_ProtectionLocations);
+                hasRepairSupport |= lb(lostEngine, moduleComponent->RemovedSupportLocations, moduleComponent->RU_SupportLocations);
+            }
+
+            if (UMetricComponent* component = Cast<UMetricComponent>(pawn->GetComponentByClass(UMetricComponent::StaticClass())))
+            {
+                component->updateMetric<SMetricAdd, uint8>(EMetric::MatiereUseForRepair, { matiereUse });
+            }
+
+            this->OnUpdateMatiere(-1 * matiereUse, EMatiereOrigin::Lost);
+
+            if (hasRepairProtection) moduleComponent->OnRep_Protection();
+            if (hasRepairSupport) moduleComponent->OnRep_Support();
+
+            return ESkillReturn::Success;
         }
     }
+
     return ESkillReturn::InternError;
 }
 
@@ -68,62 +118,16 @@ void URepairComponent::heal(uint8 _value)
             get()->ModuleComponent->RU_ProtectionLocations,
             std::bind(&UModuleComponent::OnRep_Protection, get()->ModuleComponent));
     }
-    else if (get()->ModuleComponent->RemovedSupportLocations.Num() != 0)
+
+    if (get()->ModuleComponent->RemovedSupportLocations.Num() != 0)
     {
         lb(get()->ModuleComponent->RemovedSupportLocations,
             get()->ModuleComponent->RU_SupportLocations,
             std::bind(&UModuleComponent::OnRep_Support, get()->ModuleComponent));
     }
-    else
+
+    if (_value != 0)
     {
         this->OnUpdateMatiere(_value, EMatiereOrigin::Heal);
     }
-}
-
-ESkillReturn URepairComponent::onRepairSupport()
-{
-    if (get() != nullptr)
-    {
-        if (get<AShipPawn>() != nullptr && get<AShipPawn>()->PlayerDataAsset != nullptr)
-        {
-            int min = get<AShipPawn>()->PlayerDataAsset->SupportRatioMatiere;
-            int effect = get<AShipPawn>()->PlayerDataAsset->SupportRatioEffect;
-            return repair(get()->ModuleComponent->RemovedSupportLocations, get()->ModuleComponent->RU_SupportLocations, std::bind(&UModuleComponent::OnRep_Support, get()->ModuleComponent), min, effect);
-        }
-    }
-    return ESkillReturn::InternError;
-}
-
-ESkillReturn URepairComponent::repair(TArray<FVector_NetQuantize>& _removedLocations, TArray<FVector_NetQuantize>& _locations, std::function<void(void)> _onRep, int _minMatiere, int _effect)
-{
-    if (_removedLocations.Num() != 0)
-    {
-        if (AShipPawn* pawn = get<AShipPawn>())
-        {
-            if (pawn->RU_Matiere >= _minMatiere)
-            {
-                uint8 nbRepair { 0 };
-
-                while (_effect > 0 && _removedLocations.Num() > 0)
-                {
-                    _locations.Add(_removedLocations[0]);
-                    _removedLocations.RemoveAt(0);
-                    _effect--;
-                    ++nbRepair;
-                }
-
-                if (UMetricComponent* component = Cast<UMetricComponent>(pawn->GetComponentByClass(UMetricComponent::StaticClass())))
-                {
-                    component->updateMetric<SMetricAdd, uint8>(EMetric::MatiereUseForRepair, { nbRepair });
-                }
-
-                this->OnUpdateMatiere(-1 * _minMatiere, EMatiereOrigin::Lost);
-                _onRep();
-                return ESkillReturn::Success;
-            }
-        }
-
-        return ESkillReturn::NoMater;
-    }
-    return ESkillReturn::Unavailable;
 }

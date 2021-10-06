@@ -26,16 +26,20 @@ ESkillReturn SkillHealPack::onStart()
     return get<AShipPawn>()->spawnHealPack();
 }
 
+ESkillReturn SkillRepair::onStart()
+{
+    if (get<AShipPawn>() == nullptr) return ESkillReturn::InternError;
+    return get<AShipPawn>()->onRepair();
+}
+
 ESkillReturn SkillRepairProtection::onStart()
 {
-    if(get<AShipPawn>() == nullptr) return ESkillReturn::InternError;
-    return get<AShipPawn>()->onRepairProtection();
+    return ESkillReturn::InternError;
 }
 
 ESkillReturn SkillRepairSupport::onStart()
 {
-    if (get<AShipPawn>() == nullptr) return ESkillReturn::InternError;
-    return get<AShipPawn>()->onRepairSupport();
+    return ESkillReturn::InternError;
 }
 
 ESkillReturn SkillGiveAlly1::onStart()
@@ -220,6 +224,7 @@ TUniquePtr<SkillBehaviour> SkillFactory::create(ESkill _skill, class ACommonPawn
         case ESkill::Katyusha: return MakeUnique<SkillKatyusha>(_pawn, _netMode);
         case ESkill::HealPack: return MakeUnique<SkillHealPack>(_pawn, _netMode);
         case ESkill::Emergency: return MakeUnique<SkillEmergency>(_pawn, _netMode);
+        case ESkill::Repair: return MakeUnique<SkillRepair>(_pawn, _netMode);
         default: ensure(false); break;
     }
 
