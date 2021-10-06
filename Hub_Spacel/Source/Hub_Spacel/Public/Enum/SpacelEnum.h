@@ -58,10 +58,6 @@ enum class ESkillType : uint8
 UENUM(BlueprintType)
 enum class ESkill : uint8
 {
-    RepairProtection UMETA(DisplayName = "RepairProtection"),
-    RepairSupport UMETA(DisplayName = "RepairSupport"),
-    GiveAlly1 UMETA(DisplayName = "GiveAlly1"),
-    GiveAlly2 UMETA(DisplayName = "GiveAlly2"),
     Missile UMETA(DisplayName = "Missile"),
     ShieldTeam UMETA(DisplayName = "ShieldTeam"),
     Emp UMETA(DisplayName = "Emp"),
@@ -69,7 +65,6 @@ enum class ESkill : uint8
     MetaFormAttack UMETA(DisplayName = "MetaFormAttack"),
     MetaFormProtection UMETA(DisplayName = "MetaFormProtection"),
     MetaFormSupport UMETA(DisplayName = "MetaFormSupport"),
-    NinePack UMETA(DisplayName = "NinePack"),
     FireRate UMETA(DisplayName = "FireRate"),
     HeavyProtection UMETA(DisplayName = "HeavyProtection"),
     Speedy UMETA(DisplayName = "Speedy"),

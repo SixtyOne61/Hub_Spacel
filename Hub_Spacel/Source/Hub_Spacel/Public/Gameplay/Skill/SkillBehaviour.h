@@ -29,17 +29,6 @@ protected:
 	ENetMode m_netMode {};
 };
 
-class HUB_SPACEL_API SkillNinePack : public SkillBehaviour
-{
-	using SkillBehaviour::SkillBehaviour;
-public:
-	virtual ~SkillNinePack() {}
-
-	ESkillReturn onStart() override;
-	void onEnd() override {};
-	void onEndCountDown() override {};
-};
-
 class HUB_SPACEL_API SkillHealPack : public SkillBehaviour
 {
 	using SkillBehaviour::SkillBehaviour;
@@ -56,52 +45,6 @@ class HUB_SPACEL_API SkillRepair : public SkillBehaviour
 	using SkillBehaviour::SkillBehaviour;
 public:
 	virtual ~SkillRepair() {}
-
-	ESkillReturn onStart() override;
-	void onEnd() override {};
-	void onEndCountDown() override {};
-};
-
-// deprecated
-class HUB_SPACEL_API SkillRepairProtection : public SkillBehaviour
-{
-	using SkillBehaviour::SkillBehaviour;
-public:
-	virtual ~SkillRepairProtection() {}
-
-	ESkillReturn onStart() override;
-	void onEnd() override {};
-	void onEndCountDown() override {};
-};
-
-// deprecated
-class HUB_SPACEL_API SkillRepairSupport : public SkillBehaviour
-{
-	using SkillBehaviour::SkillBehaviour;
-public:
-	virtual ~SkillRepairSupport() {}
-
-	ESkillReturn onStart() override;
-	void onEnd() override {};
-	void onEndCountDown() override {};
-};
-
-class HUB_SPACEL_API SkillGiveAlly1 : public SkillBehaviour
-{
-	using SkillBehaviour::SkillBehaviour;
-public:
-	virtual ~SkillGiveAlly1() {}
-
-	ESkillReturn onStart() override;
-	void onEnd() override {};
-	void onEndCountDown() override {};
-};
-
-class HUB_SPACEL_API SkillGiveAlly2 : public SkillBehaviour
-{
-	using SkillBehaviour::SkillBehaviour;
-public:
-	virtual ~SkillGiveAlly2() {}
 
 	ESkillReturn onStart() override;
 	void onEnd() override {};
