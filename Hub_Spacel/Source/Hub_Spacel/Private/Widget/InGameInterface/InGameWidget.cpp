@@ -187,6 +187,31 @@ void UInGameWidget::setupColor(class ASpacelPlayerState const* _owningPlayerStat
 void UInGameWidget::setupInGame()
 {
     BP_SetupInGame();
+
+    // ally widget
+    UWorld* world { this->GetWorld() };
+    if (!ensure(world != nullptr)) return;
+
+    if (world->GetGameState() == nullptr) return;
+    TArray<APlayerState*> const& playerStates { world->GetGameState()->PlayerArray };
+
+    ASpacelPlayerState* owningPlayerState { Cast<ASpacelPlayerState>(this->GetOwningPlayerState()) };
+    if (owningPlayerState == nullptr) return;
+
+    FString owningPlayerTeam { owningPlayerState->R_Team };
+
+    for (APlayerState* playerState : playerStates)
+    {
+        if (ASpacelPlayerState* spacelPlayerState = Cast<ASpacelPlayerState>(playerState))
+        {
+            if (spacelPlayerState->GetUniqueID() == owningPlayerState->GetUniqueID()) continue;
+
+            if (spacelPlayerState->R_Team.Equals(owningPlayerTeam))
+            {
+                BP_CreateAllyWidget(spacelPlayerState);
+            }
+        }
+    }
 }
 
 void UInGameWidget::OnChangeCarrousel(ESkill _skillId, ESkillType _type)

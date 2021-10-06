@@ -37,7 +37,7 @@ void UAllyWidget::updatePercent(class UProgressBar* _progressBar, float _value)
     }
 }
 
-void UAllyWidget::setWatcher(class ASpacelPlayerState* _state)
+void UAllyWidget::SetWatcher(class ASpacelPlayerState* _state)
 {
     if (this->NameTextBlock != nullptr && _state != nullptr)
     {

@@ -94,6 +94,9 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void BP_CreateKillField(FString const& _killerName, FSlateColor const& _killerColor, FString const& _killedName, FSlateColor const& _killedColor);
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void BP_CreateAllyWidget(ASpacelPlayerState* _playerState);
+
 private:
 	UFUNCTION()
 	void OnChangeState(EGameState _state);

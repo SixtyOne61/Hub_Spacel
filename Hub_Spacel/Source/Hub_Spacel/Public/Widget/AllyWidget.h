@@ -16,7 +16,8 @@ class HUB_SPACEL_API UAllyWidget : public UUserWidget
 	GENERATED_BODY()
 
 public:
-	void setWatcher(class ASpacelPlayerState* _state);
+	UFUNCTION(BlueprintCallable)
+	void SetWatcher(class ASpacelPlayerState* _state);
 
 protected:
 	void NativeConstruct() override;
