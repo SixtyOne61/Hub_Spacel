@@ -384,8 +384,22 @@ void AShipPawn::computeSoundData()
         percentSpeed = 101 * FMath::Abs(RU_PercentSpeed);
     }
 
-    BP_SpeedSound(percentSpeed, FMath::IsNearlyEqual(m_lastPercentSpeed, 0.0f) && !FMath::IsNearlyEqual(RU_PercentSpeed, 0.0f) && RU_PercentSpeed > 0.0f);
-    m_lastPercentSpeed = RU_PercentSpeed;
+    bool playStart { false };
+    if (FMath::IsNearlyEqual(RU_PercentSpeed, 0.0f) && m_lastDirection != 0)
+    {
+        m_lastDirection = 0;
+    }
+    else if (RU_PercentSpeed > 0 && m_lastDirection != 1)
+    {
+        m_lastDirection = 1;
+        playStart = true;
+    }
+    else if (RU_PercentSpeed < 0 && m_lastDirection != -1)
+    {
+        m_lastDirection = -1;
+    }
+
+    BP_SpeedSound(percentSpeed, playStart);
 }
 
 void AShipPawn::emergencyRedCube(FVector const& _location)

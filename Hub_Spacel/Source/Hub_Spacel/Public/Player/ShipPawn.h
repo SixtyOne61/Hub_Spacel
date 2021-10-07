@@ -216,7 +216,7 @@ protected:
     FName m_lastTeamEmp {};
     int32 m_lastPlayerIdEmp {};
 
-    int m_lastPercentSpeed {};
+    short m_lastDirection { 0 };
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FTransform StartTransform {};
