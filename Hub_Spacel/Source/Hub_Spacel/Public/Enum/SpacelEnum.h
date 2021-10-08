@@ -202,3 +202,11 @@ enum class EMatiereOrigin : uint8
     Kill UMETA(DisplayName = "Kill"),
     Lost UMETA(DisplayName = "Lost"),
 };
+
+UENUM(BlueprintType)
+enum class EBuilderType : uint8
+{
+    Attack UMETA(DisplayName = "Attack"),
+    Protection UMETA(DisplayName = "Protection"),
+    Engine UMETA(DisplayName = "Engine"),
+};
