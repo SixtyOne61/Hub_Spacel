@@ -18,11 +18,11 @@ public:
 
 protected:
 	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+	void BeginPlay() override;
 
 public:	
 	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+	void Tick(float DeltaTime) override;
 
 public:
 	UFUNCTION(BlueprintCallable)
@@ -38,13 +38,26 @@ protected:
 	/* return component for a type */
 	class UXmlInstancedStaticMeshComponent* get(EBuilderType _type) const;
 
+	template<class T>
+	void createComponent(T *& _component, FName&& _name)
+	{
+		_component = CreateDefaultSubobject<T>(_name);
+		if (!ensure(_component != nullptr)) return;
+
+		_component->SetRenderCustomDepth(true);
+		_component->SetupAttachment(RootComponent);
+	}
+
 protected:
-	UPROPERTY(Category = "Component", EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	class UStaticMeshComponent* RedCubeComponent { nullptr };
+
+	UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	class UXmlInstancedStaticMeshComponent* WeaponComponent { nullptr };
 
-	UPROPERTY(Category = "Component", EditAnywhere, BlueprintReadWrite)
-	class UXmlInstancedStaticMeshComponent* ProtectionComponent{ nullptr };
+	UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	class UXmlInstancedStaticMeshComponent* ProtectionComponent { nullptr };
 
-	UPROPERTY(Category = "Component", EditAnywhere, BlueprintReadWrite)
-	class UXmlInstancedStaticMeshComponent* EngineComponent{ nullptr };
+	UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	class UXmlInstancedStaticMeshComponent* EngineComponent { nullptr };
 };

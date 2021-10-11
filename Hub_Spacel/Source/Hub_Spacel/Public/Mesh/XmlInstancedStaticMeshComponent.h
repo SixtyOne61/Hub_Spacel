@@ -9,19 +9,34 @@
 /**
  * 
  */
-UCLASS()
+UCLASS(ClassGroup = Rendering, meta = (BlueprintSpawnableComponent), Blueprintable)
 class HUB_SPACEL_API UXmlInstancedStaticMeshComponent : public UInstancedStaticMeshComponent
 {
-	GENERATED_BODY()
+	GENERATED_UCLASS_BODY()
+
+	UXmlInstancedStaticMeshComponent(FVTableHelper& _helper);
+	virtual ~UXmlInstancedStaticMeshComponent();
 
 public:
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Components|Xml")
 	void Read();
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Components|Xml")
 	void Export() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Components|Action")
+	void Add(FVector_NetQuantize const& _location);
+
+	UFUNCTION(BlueprintCallable, Category = "Components|Action")
+	void Remove(FVector_NetQuantize const& _location);
 	
 protected:
 	UPROPERTY(Category = "Param", EditAnywhere, BlueprintReadWrite)
+	bool IsOffline {};
+
+	UPROPERTY(Category = "Param", EditAnywhere, BlueprintReadWrite)
 	FString Path {};
+
+	UPROPERTY(Category = "Array", EditAnywhere, BlueprintReadWrite)
+	TArray<FVector_NetQuantize> Locations {};
 };

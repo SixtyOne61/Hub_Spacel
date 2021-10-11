@@ -10,17 +10,12 @@ ABuilderActor::ABuilderActor()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
 
-	auto lb_init = [&](UXmlInstancedStaticMeshComponent* _component, FName && _name)
-	{
-		_component = CreateDefaultSubobject<UXmlInstancedStaticMeshComponent>(_name);
-		if (!ensure(_component != nullptr)) return;
-		_component->SetRenderCustomDepth(true);
-	};
-
-	lb_init(WeaponComponent, TEXT("WeaponMeshComponent"));
-	lb_init(ProtectionComponent, TEXT("ProtectionMeshComponent"));
-	lb_init(EngineComponent, TEXT("EngineMeshComponent"));
+	createComponent(RedCubeComponent, TEXT("RedCube"));
+	createComponent(WeaponComponent, TEXT("Weapon"));
+	createComponent(ProtectionComponent, TEXT("Protection"));
+	createComponent(EngineComponent, TEXT("Engine"));
 
 	Tags.Add(Tags::Builder);
 }
@@ -58,13 +53,16 @@ void ABuilderActor::Add(EBuilderType _type, FVector const& _location)
 {
 	if (auto* component = get(_type))
 	{
-		component->AddInstance(FTransform(_location));
+		component->Add(_location);
 	}
 }
 
 void ABuilderActor::Remove(EBuilderType _type, FVector const& _location)
 {
-
+	if (auto* component = get(_type))
+	{
+		component->Remove(_location);
+	}
 }
 
 UXmlInstancedStaticMeshComponent* ABuilderActor::get(EBuilderType _type) const
