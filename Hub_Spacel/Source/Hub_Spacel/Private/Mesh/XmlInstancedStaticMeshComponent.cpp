@@ -23,19 +23,6 @@ void UXmlInstancedStaticMeshComponent::Read()
 
 }
 
-void UXmlInstancedStaticMeshComponent::Export() const
-{
-    int32 instanceCount = this->GetInstanceCount();
-
-    TArray<FVector> transforms; transforms.Reserve(instanceCount);
-    while (--instanceCount >= 0)
-    {
-        FTransform out {};
-        this->GetInstanceTransform(instanceCount, out);
-        transforms.Add(out.GetLocation());
-    }
-}
-
 void UXmlInstancedStaticMeshComponent::Add(FVector_NetQuantize const& _location)
 {
     this->Locations.Add(_location);

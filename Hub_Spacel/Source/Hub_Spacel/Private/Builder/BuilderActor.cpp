@@ -3,7 +3,7 @@
 
 #include "BuilderActor.h"
 #include "Util/Tag.h"
-#include "Mesh/XmlInstancedStaticMeshComponent.h"
+#include "Mesh/BuilderInstancedMeshComponent.h"
 
 // Sets default values
 ABuilderActor::ABuilderActor()
@@ -36,7 +36,7 @@ void ABuilderActor::Tick(float DeltaTime)
 
 void ABuilderActor::Export() const
 {
-	auto lb_call = [](UXmlInstancedStaticMeshComponent* _component)
+	auto lb_call = [](UBuilderInstancedMeshComponent* _component)
 	{
 		if (_component != nullptr)
 		{
@@ -65,7 +65,7 @@ void ABuilderActor::Remove(EBuilderType _type, FVector const& _location)
 	}
 }
 
-UXmlInstancedStaticMeshComponent* ABuilderActor::get(EBuilderType _type) const
+UBuilderInstancedMeshComponent* ABuilderActor::get(EBuilderType _type) const
 {
 	switch (_type)
 	{

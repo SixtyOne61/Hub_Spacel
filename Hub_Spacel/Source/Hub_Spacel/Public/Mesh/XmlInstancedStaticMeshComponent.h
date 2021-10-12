@@ -9,7 +9,7 @@
 /**
  * 
  */
-UCLASS(ClassGroup = Rendering, meta = (BlueprintSpawnableComponent), Blueprintable)
+UCLASS(ClassGroup = Mesh, meta = (BlueprintSpawnableComponent), Blueprintable)
 class HUB_SPACEL_API UXmlInstancedStaticMeshComponent : public UInstancedStaticMeshComponent
 {
 	GENERATED_UCLASS_BODY()
@@ -20,9 +20,6 @@ class HUB_SPACEL_API UXmlInstancedStaticMeshComponent : public UInstancedStaticM
 public:
 	UFUNCTION(BlueprintCallable, Category = "Components|Xml")
 	void Read();
-
-	UFUNCTION(BlueprintCallable, Category = "Components|Xml")
-	void Export() const;
 
 	UFUNCTION(BlueprintCallable, Category = "Components|Action")
 	void Add(FVector_NetQuantize const& _location);

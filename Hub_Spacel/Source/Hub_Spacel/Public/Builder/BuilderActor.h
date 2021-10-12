@@ -36,7 +36,7 @@ public:
 
 protected:
 	/* return component for a type */
-	class UXmlInstancedStaticMeshComponent* get(EBuilderType _type) const;
+	class UBuilderInstancedMeshComponent* get(EBuilderType _type) const;
 
 	template<class T>
 	void createComponent(T *& _component, FName&& _name)
@@ -53,11 +53,11 @@ protected:
 	class UStaticMeshComponent* RedCubeComponent { nullptr };
 
 	UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	class UXmlInstancedStaticMeshComponent* WeaponComponent { nullptr };
+	class UBuilderInstancedMeshComponent* WeaponComponent { nullptr };
 
 	UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	class UXmlInstancedStaticMeshComponent* ProtectionComponent { nullptr };
+	class UBuilderInstancedMeshComponent* ProtectionComponent { nullptr };
 
 	UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	class UXmlInstancedStaticMeshComponent* EngineComponent { nullptr };
+	class UBuilderInstancedMeshComponent* EngineComponent { nullptr };
 };
