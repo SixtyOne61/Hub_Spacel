@@ -26,6 +26,9 @@ public:
 
 public:
 	UFUNCTION(BlueprintCallable)
+	void Read();
+
+	UFUNCTION(BlueprintCallable)
 	void Export() const;
 
 	UFUNCTION(BlueprintCallable)
@@ -51,6 +54,9 @@ protected:
 protected:
 	UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	class UStaticMeshComponent* RedCubeComponent { nullptr };
+
+	UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	class UBuilderInstancedMeshComponent* EmergencyComponent { nullptr };
 
 	UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	class UBuilderInstancedMeshComponent* WeaponComponent { nullptr };

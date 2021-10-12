@@ -2,6 +2,7 @@
 
 
 #include "BuilderInstancedMeshComponent.h"
+#include "Util/SimplyXml.h"
 
 UBuilderInstancedMeshComponent::UBuilderInstancedMeshComponent(const FObjectInitializer& ObjectInitializer)
     : Super(ObjectInitializer)
@@ -20,13 +21,9 @@ UBuilderInstancedMeshComponent::~UBuilderInstancedMeshComponent()
 
 void UBuilderInstancedMeshComponent::Export() const
 {
-    int32 instanceCount = this->GetInstanceCount();
+    SimplyXml::FContainer<FVector_NetQuantize> locationInformation { "Location" };
+    locationInformation.Values = this->Locations;
 
-    TArray<FVector> transforms; transforms.Reserve(instanceCount);
-    while (--instanceCount >= 0)
-    {
-        FTransform out{};
-        this->GetInstanceTransform(instanceCount, out);
-        transforms.Add(out.GetLocation());
-    }
+    SimplyXml::FWriter writer { FPaths::ProjectDir() + this->Path };
+    writer.write(locationInformation);
 }

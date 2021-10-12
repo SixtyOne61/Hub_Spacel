@@ -15,6 +15,67 @@ namespace SimplyXml
 		TArray<T> Values {};
 	};
 
+	struct FWriter
+	{
+		FWriter(FWriter&&) = default;
+		FWriter& operator=(FWriter&&) = default;
+
+		FWriter(FString&& _path) : m_path(std::move(_path)) {};
+
+		~FWriter() { delete m_file; m_file = nullptr; }
+
+		FString m_path{};
+
+		template<class ... Ts>
+		void write(Ts const&... _containers)
+		{
+			FString const fileTemplate = "<?xml version=\"1.0\" encoding=\"UTF - 8\"?>\n<root>\n</root>";
+			m_file = new FXmlFile(fileTemplate, EConstructMethod::ConstructFromBuffer);
+
+			if (m_file != nullptr)
+			{
+				write_impl(_containers...);
+			}
+		}
+
+	private:
+		template<class T, class ... Ts>
+		void write_impl(T const& _t, Ts&& ... _containers)
+		{
+			write_impl(std::forward<T>(_t));
+			write_impl(std::forward<Ts>(_containers)...);
+		}
+
+		template<class T>
+		void write_impl(T const& _t)
+		{
+			FXmlNode* rootNode { m_file->GetRootNode() };
+			if (rootNode == nullptr) return;
+
+			writeNode(_t, rootNode);
+		}
+
+		template<typename T>
+		void writeNode(FContainer<T> const& _container, FXmlNode * _node)
+		{
+			ensure(true);
+		}
+
+		template<>
+		void writeNode(FContainer<FVector_NetQuantize> const& _container, FXmlNode * _node)
+		{
+			if (_node == nullptr) return;
+
+			for (auto loc : _container.Values)
+			{
+				_node->AppendChildNode(_container.Tag, loc.ToString());
+			}
+		}
+
+	private:
+		FXmlFile* m_file { nullptr };
+	};
+
 	struct FReader
 	{
 		FReader(FReader&&) = default;
@@ -71,6 +132,15 @@ namespace SimplyXml
 		{
 			if (_node == nullptr) return;
 			FVector location{};
+			location.InitFromString(_node->GetAttribute("val"));
+			_container.Values.Add(location);
+		}
+
+		template<>
+		void readNode(FContainer<FVector_NetQuantize>& _container, FXmlNode const* _node)
+		{
+			if (_node == nullptr) return;
+			FVector_NetQuantize location{};
 			location.InitFromString(_node->GetAttribute("val"));
 			_container.Values.Add(location);
 		}

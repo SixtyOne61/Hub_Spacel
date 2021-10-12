@@ -13,6 +13,7 @@ ABuilderActor::ABuilderActor()
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
 
 	createComponent(RedCubeComponent, TEXT("RedCube"));
+	createComponent(EmergencyComponent, TEXT("Emergency"));
 	createComponent(WeaponComponent, TEXT("Weapon"));
 	createComponent(ProtectionComponent, TEXT("Protection"));
 	createComponent(EngineComponent, TEXT("Engine"));
@@ -25,6 +26,7 @@ void ABuilderActor::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	Read();
 }
 
 // Called every frame
@@ -32,6 +34,22 @@ void ABuilderActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+}
+
+void ABuilderActor::Read()
+{
+	auto lb_call = [](UBuilderInstancedMeshComponent* _component)
+	{
+		if (_component != nullptr)
+		{
+			_component->Read();
+		}
+	};
+
+	lb_call(EmergencyComponent);
+	lb_call(WeaponComponent);
+	lb_call(ProtectionComponent);
+	lb_call(EngineComponent);
 }
 
 void ABuilderActor::Export() const

@@ -28,6 +28,10 @@ public:
 	void Remove(FVector_NetQuantize const& _location);
 	
 protected:
+	/* take Locations and add it to instance static mesh */
+	void resetBuild();
+
+protected:
 	UPROPERTY(Category = "Param", EditAnywhere, BlueprintReadWrite)
 	bool IsOffline {};
 
