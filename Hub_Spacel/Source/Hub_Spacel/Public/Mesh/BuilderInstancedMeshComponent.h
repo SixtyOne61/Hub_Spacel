@@ -20,4 +20,8 @@ class HUB_SPACEL_API UBuilderInstancedMeshComponent : public UXmlInstancedStatic
 public:
 	UFUNCTION(BlueprintCallable, Category = "Components|Xml")
 	void Export() const;
+
+public:
+	UPROPERTY(Category = "Param", EditAnywhere, BlueprintReadWrite)
+	int MaxVoxel {};
 };

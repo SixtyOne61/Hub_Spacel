@@ -35,6 +35,7 @@ namespace SimplyXml
 			if (m_file != nullptr)
 			{
 				write_impl(_containers...);
+				m_file->Save(m_path);
 			}
 		}
 
