@@ -22,10 +22,13 @@ public:
 
 protected:
 	UFUNCTION(Reliable, NetMulticast, Category = "Components|Replication")
-	void RPCNetMulticastUseForm(EFormType _type);
+	void RPCNetMulticastUseForm(EFormType _type, uint8 _ignoreLast);
 
 	UFUNCTION(Reliable, NetMulticast, Category = "Components|Replication")
-	void RPCNetMulticastAddForm(EFormType _type, TArray<FVector_NetQuantize> const& _locations);
+	void RPCNetMulticastAddForm(EFormType _type, TArray<FVector_NetQuantize> const& _locations, uint8 _ignoreLast);
+
+protected:
+	int Remove(FVector_NetQuantize const& _location) override { m_removedLocations.Add(_location); return Super::Remove(_location); }
 
 protected:
 	UPROPERTY(Category = "Param", EditAnywhere, BlueprintReadWrite)
@@ -37,4 +40,7 @@ protected:
 private:
 	/* form already loaded and send to client */
 	std::unordered_map<EFormType, TArray<FVector_NetQuantize>> m_loaded;
+
+	/* remove location, only use server side */
+	TArray<FVector_NetQuantize> m_removedLocations;
 };
