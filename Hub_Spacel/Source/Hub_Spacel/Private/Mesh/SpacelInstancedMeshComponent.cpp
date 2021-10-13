@@ -30,6 +30,17 @@ void USpacelInstancedMeshComponent::UseForm(EFormType _type)
     _type != EFormType::Base ? UseForm(EFormType::Base) : ensure(false);
 }
 
+uint8 USpacelInstancedMeshComponent::Repair(uint8 _nbRepair)
+{
+    while (_nbRepair > 0 || m_removedLocations.Num() != 0)
+    {
+        RPCNetMulticastAdd(m_removedLocations.Pop());
+        --_nbRepair;
+    }
+
+    return _nbRepair;
+}
+
 void USpacelInstancedMeshComponent::RPCNetMulticastUseForm_Implementation(EFormType _type, uint8 _ignoreLast)
 {
     if (m_loaded.find(_type) != m_loaded.end())

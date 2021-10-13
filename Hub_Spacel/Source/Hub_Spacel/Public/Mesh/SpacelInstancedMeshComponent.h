@@ -20,6 +20,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Components|Form")
 	void UseForm(EFormType _type);
 
+	UFUNCTION(BlueprintCallable, Category = "Components|Repair")
+	uint8 Repair(uint8 _nbRepair);
+
 protected:
 	UFUNCTION(Reliable, NetMulticast, Category = "Components|Replication")
 	void RPCNetMulticastUseForm(EFormType _type, uint8 _ignoreLast);
