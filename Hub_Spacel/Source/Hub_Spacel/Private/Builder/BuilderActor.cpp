@@ -42,7 +42,7 @@ void ABuilderActor::Read()
 	{
 		if (_component != nullptr)
 		{
-			_component->Read();
+			_component->Read(true);
 		}
 	};
 

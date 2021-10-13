@@ -210,3 +210,9 @@ enum class EBuilderType : uint8
     Protection UMETA(DisplayName = "Protection"),
     Engine UMETA(DisplayName = "Engine"),
 };
+
+UENUM(BlueprintType)
+enum class EFormType : uint8
+{
+    Base UMETA(DisplayName = "Base")
+};

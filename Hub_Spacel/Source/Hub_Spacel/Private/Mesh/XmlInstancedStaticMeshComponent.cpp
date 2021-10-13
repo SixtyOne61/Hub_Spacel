@@ -19,13 +19,24 @@ UXmlInstancedStaticMeshComponent::~UXmlInstancedStaticMeshComponent()
 {
 }
 
-void UXmlInstancedStaticMeshComponent::Read()
+void UXmlInstancedStaticMeshComponent::Read(bool _useBonus)
 {
-    SimplyXml::FContainer<FVector_NetQuantize> locationInformation { "Location" };
-    SimplyXml::FReader reader { FPaths::ProjectDir() + this->Path };
-    reader.read(locationInformation);
+    SimplyXml::FContainer<FVector_NetQuantize> baseLocationInformation { "Location" };
+    SimplyXml::FContainer<FVector_NetQuantize> bonusLocationInformation{ "Bonus" };
 
-    this->Locations = locationInformation.Values;
+    SimplyXml::FReader reader{ FPaths::ProjectDir() + this->Path };
+
+    reader.read(baseLocationInformation, bonusLocationInformation);
+
+    m_baseLocations = baseLocationInformation.Values;
+    m_bonusLocations = bonusLocationInformation.Values;
+
+    this->Locations = m_baseLocations;
+    if (_useBonus)
+    {
+        this->Locations.Append(m_bonusLocations);
+    }
+
     resetBuild();
 }
 
@@ -33,11 +44,9 @@ void UXmlInstancedStaticMeshComponent::Add(FVector_NetQuantize const& _location)
 {
     this->Locations.Add(_location);
     this->AddInstance(FTransform(_location));
-
-    // TO DO manage online
 }
 
-void UXmlInstancedStaticMeshComponent::Remove(FVector_NetQuantize const& _location)
+int UXmlInstancedStaticMeshComponent::Remove(FVector_NetQuantize const& _location)
 {
     int i {0};
     for (auto loc : this->Locations)
@@ -51,7 +60,7 @@ void UXmlInstancedStaticMeshComponent::Remove(FVector_NetQuantize const& _locati
     }
 
     this->RemoveInstance(i);
-    // TO DO manage online
+    return i;
 }
 
 void UXmlInstancedStaticMeshComponent::resetBuild()
@@ -61,6 +70,4 @@ void UXmlInstancedStaticMeshComponent::resetBuild()
     {
         this->AddInstance(FTransform { loc });
     }
-
-    // TO DO manage online
 }
