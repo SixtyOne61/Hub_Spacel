@@ -24,4 +24,7 @@ public:
 public:
 	UPROPERTY(Category = "Param", EditAnywhere, BlueprintReadWrite)
 	int MaxVoxel {};
+
+	UPROPERTY(Category = "Param", EditAnywhere, BlueprintReadWrite)
+	int ThresholdBonus {};
 };

@@ -27,7 +27,7 @@ namespace SimplyXml
 		FString m_path{};
 
 		template<class ... Ts>
-		void write(Ts const&... _containers)
+		void write(Ts &&... _containers)
 		{
 			FString const fileTemplate = "<?xml version=\"1.0\" encoding=\"UTF - 8\"?>\n<root>\n</root>";
 			m_file = new FXmlFile(fileTemplate, EConstructMethod::ConstructFromBuffer);
@@ -41,19 +41,19 @@ namespace SimplyXml
 
 	private:
 		template<class T, class ... Ts>
-		void write_impl(T const& _t, Ts&& ... _containers)
+		void write_impl(T && _t, Ts&& ... _containers)
 		{
 			write_impl(std::forward<T>(_t));
 			write_impl(std::forward<Ts>(_containers)...);
 		}
 
 		template<class T>
-		void write_impl(T const& _t)
+		void write_impl(T && _t)
 		{
 			FXmlNode* rootNode { m_file->GetRootNode() };
 			if (rootNode == nullptr) return;
 
-			writeNode(_t, rootNode);
+			writeNode(std::forward<T>(_t), rootNode);
 		}
 
 		template<typename T>

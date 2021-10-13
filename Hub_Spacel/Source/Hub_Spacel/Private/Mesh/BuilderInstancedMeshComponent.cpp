@@ -21,9 +21,22 @@ UBuilderInstancedMeshComponent::~UBuilderInstancedMeshComponent()
 
 void UBuilderInstancedMeshComponent::Export() const
 {
-    SimplyXml::FContainer<FVector_NetQuantize> locationInformation { "Location" };
-    locationInformation.Values = this->Locations;
+    TArray<FVector_NetQuantize> locations;
+    locations.Reserve(this->ThresholdBonus);
+    for (int i = 0; i < this->ThresholdBonus; ++i)
+    {
+        locations.Add(this->Locations[i]);
+    }
+
+    TArray<FVector_NetQuantize> locationsBonus;
+    locationsBonus.Reserve(this->MaxVoxel - this->ThresholdBonus);
+
+    for (int i = 0; i < this->MaxVoxel; ++i)
+    {
+        locationsBonus.Add(this->Locations[i]);
+    }
 
     SimplyXml::FWriter writer { FPaths::ProjectDir() + this->Path };
-    writer.write(locationInformation);
+    writer.write(SimplyXml::FContainer<FVector_NetQuantize>{ "Location", locations},
+        SimplyXml::FContainer<FVector_NetQuantize>{ "Bonus", locationsBonus});
 }
