@@ -214,5 +214,9 @@ enum class EBuilderType : uint8
 UENUM(BlueprintType)
 enum class EFormType : uint8
 {
-    Base UMETA(DisplayName = "Base")
+    Base UMETA(DisplayName = "Base"),
+    MetaFormAttack UMETA(DisplayName = "MetaFormAttack"),
+    MetaFormProtection UMETA(DisplayName = "MetaFormProtection"),
+    MetaFormSupport UMETA(DisplayName = "MetaFormSupport"),
+    EscapeMode UMETA(DisplayName = "EscapeMode"),
 };

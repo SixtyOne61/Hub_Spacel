@@ -12,6 +12,7 @@
 #include "Net/UnrealNetwork.h"
 #include "NiagaraComponent.h"
 #include "Player/ShipPawn.h"
+#include "Mesh/SpacelInstancedMeshComponent.h"
 
 // Sets default values for this component's properties
 UModuleComponent::UModuleComponent()
@@ -20,19 +21,10 @@ UModuleComponent::UModuleComponent()
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = false;
 
-    ProtectionMeshComponent = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Protection_00"));
-    if (!ensure(ProtectionMeshComponent != nullptr)) return;
-    ProtectionMeshComponent->SetRenderCustomDepth(true);
-    ProtectionMeshComponent->AttachToComponent(this, FAttachmentTransformRules::KeepRelativeTransform);
-
-    WeaponMeshComponent = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Weapon_00"));
-    if (!ensure(WeaponMeshComponent != nullptr)) return;
-    WeaponMeshComponent->AttachToComponent(this, FAttachmentTransformRules::KeepRelativeTransform);
-
-    SupportMeshComponent = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Support_00"));
-    if (!ensure(SupportMeshComponent != nullptr)) return;
-    SupportMeshComponent->SetRenderCustomDepth(true);
-    SupportMeshComponent->AttachToComponent(this, FAttachmentTransformRules::KeepRelativeTransform);
+    createComponent(EmergencyComponent, TEXT("Emergency_00"));
+    createComponent(WeaponComponent, TEXT("Weapon_00"));
+    createComponent(ProtectionComponent, TEXT("Protection_00"));
+    createComponent(SupportComponent, TEXT("Engine_00"));
 
     MissileMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Missile_00"));
     if (!ensure(MissileMeshComponent != nullptr)) return;
@@ -49,65 +41,43 @@ void UModuleComponent::BeginPlay()
         ASpacelGameState* spacelGameState{ Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld())) };
         if (spacelGameState != nullptr)
         {
-            spacelGameState->OnChangeStateDelegate.AddDynamic(this, &UModuleComponent::OnStartGame);
+            spacelGameState->OnChangeStateDelegate.AddDynamic(this, &UModuleComponent::OnChangeState);
         }
     }
 
-    // if we reconnect array will be replicate
-    OnRep_Attack();
-    OnRep_Protection();
-    OnRep_Support();
-}
-
-void UModuleComponent::OnRep_Attack()
-{
-    buildShip(this->WeaponMeshComponent, this->WeaponDataAsset, RU_AttackLocations);
-}
-
-void UModuleComponent::OnRep_Protection()
-{
-    this->OnUpdateCountProtectionDelegate.Broadcast(this->RU_ProtectionLocations.Num(), m_maxProtection);
-    buildShip(this->ProtectionMeshComponent, this->ProtectionDataAsset, RU_ProtectionLocations);
-
-    if (AShipPawn* shipPawn = Cast<AShipPawn>(this->GetOwner()))
+    // setup events to update count voxel on component
+    if (this->SupportComponent != nullptr)
     {
-        if (this->MetaFormDataAsset != nullptr)
-        {
-            if (this->ProtectionMeshComponent != nullptr)
-            {
-                // check override
-                if (shipPawn->hasEffect(EEffect::MetaFormAttack))
-                {
-                    this->ProtectionMeshComponent->SetStaticMesh(this->MetaFormDataAsset->AttackStaticMesh);
-                }
-                else if (shipPawn->hasEffect(EEffect::MetaFormProtection))
-                {
-                    this->ProtectionMeshComponent->SetStaticMesh(this->MetaFormDataAsset->ProtectionStaticMesh);
-                }
-                else if (shipPawn->hasEffect(EEffect::MetaFormSupport))
-                {
-                    this->ProtectionMeshComponent->SetStaticMesh(this->MetaFormDataAsset->SupportStaticMesh);
-                }
-            }
-        }
+        this->SupportComponent->OnUpdateCountDelegate.AddDynamic(this, &UModuleComponent::OnUpdateCountSupport);
+    }
+
+    if (this->ProtectionComponent != nullptr)
+    {
+        this->ProtectionComponent->OnUpdateCountDelegate.AddDynamic(this, &UModuleComponent::OnUpdateCountProtection);
+    }
+
+    if (this->EmergencyComponent != nullptr)
+    {
+        this->EmergencyComponent->OnUpdateCountDelegate.AddDynamic(this, &UModuleComponent::OnUpdateCountEmergency);
     }
 }
 
-void UModuleComponent::OnRep_Support()
+void UModuleComponent::UseForm(EFormType _type, bool _refresh)
 {
-    this->OnUpdateCountSupportDelegate.Broadcast(this->RU_SupportLocations.Num(), m_maxSupport);
-    buildShip(this->SupportMeshComponent, this->SupportDataAsset, RU_SupportLocations);
-    setLocationExhaustFx();
-}
+    auto lb_call = [&_refresh, &_type](USpacelInstancedMeshComponent* _component)
+    {
+        if (_component != nullptr)
+        {
+            _component->UseForm(_type, _refresh);
+        }
+    };
 
-void UModuleComponent::SetMax_Implementation(int32 _maxProtection, int32 _maxSupport)
-{
-    m_maxProtection = _maxProtection;
-    m_maxSupport = _maxSupport;
+    lb_call(this->EmergencyComponent);
+    lb_call(this->WeaponComponent);
+    lb_call(this->ProtectionComponent);
+    lb_call(this->SupportComponent);
 
-    // force refresh UI
-    this->OnUpdateCountProtectionDelegate.Broadcast(this->RU_ProtectionLocations.Num(), m_maxProtection);
-    this->OnUpdateCountSupportDelegate.Broadcast(this->RU_SupportLocations.Num(), m_maxSupport);
+    m_activatedForms.AddUnique(_type);
 }
 
 void UModuleComponent::buildLobbyShip(ESkill _skillId, ESkillType _type)
@@ -149,25 +119,9 @@ void UModuleComponent::buildLobbyShip(ESkill _skillId, ESkillType _type)
     }
 }
 
-void UModuleComponent::OnStartGame(EGameState _state)
+void UModuleComponent::OnChangeState(EGameState _state)
 {
     if(_state != EGameState::InGame) return;
-
-    auto lb_readXml = [](bool _isHeavy, USetupAttributeDataAsset* _dataAsset, TArray<FVector_NetQuantize>& _out, FString && _name)
-    {
-        if (!ensure(_dataAsset != nullptr)) return;
-        FString const& path{ _isHeavy ? _dataAsset->HeavyPath : _dataAsset->DefaultPath };
-
-        SimplyXml::FContainer<FVector> locationInformation{ _name };
-        SimplyXml::FReader reader{ FPaths::ProjectDir() + path };
-        reader.read(locationInformation);
-
-        _out.Empty();
-        for (FVector loc : locationInformation.Values)
-        {
-            _out.Add(loc);
-        }
-    };
 
     if (APawn* pawn = Cast<APawn>(this->GetOwner()))
     {
@@ -175,76 +129,86 @@ void UModuleComponent::OnStartGame(EGameState _state)
         if (spacelPlayerState == nullptr)
         {
 #if WITH_EDITOR
-            lb_readXml(false, this->WeaponDataAsset, RU_AttackLocations, "Location");
-            buildShip(this->WeaponMeshComponent, this->WeaponDataAsset, RU_AttackLocations);
-            lb_readXml(false, this->ProtectionDataAsset, RU_ProtectionLocations, "Location");
-            buildShip(this->ProtectionMeshComponent, this->ProtectionDataAsset, RU_ProtectionLocations);
-            lb_readXml(false, this->SupportDataAsset, RU_SupportLocations, "Location");
-            buildShip(this->SupportMeshComponent, this->SupportDataAsset, RU_SupportLocations);
+            UseForm(EFormType::Base, true);
 
-            lb_readXml(false, this->WeaponDataAsset, this->R_MissileLocations, "Missile");
-            if (this->MissileMeshComponent != nullptr && this->R_MissileLocations.Num() != 0)
-            {
-                this->MissileMeshComponent->SetRelativeLocation(this->R_MissileLocations[0]);
-            }
+            // TO DO
+            //lb_readXml(false, this->WeaponDataAsset, this->R_MissileLocations, "Missile");
+            //if (this->MissileMeshComponent != nullptr && this->R_MissileLocations.Num() != 0)
+            //{
+            //    this->MissileMeshComponent->SetRelativeLocation(this->R_MissileLocations[0]);
+            //}
 #endif // WITH_EDITOR
         }
         else
         {
-            uint8 lowSkillId = spacelPlayerState->getSkillId(ESkillType::Low);
-            uint8 mediumSkillId = spacelPlayerState->getSkillId(ESkillType::Medium);
+            ESkill lowSkillId = (ESkill)spacelPlayerState->getSkillId(ESkillType::Low);
 
-            lb_readXml(lowSkillId == (uint8)ESkill::FireRate, this->WeaponDataAsset, this->RU_AttackLocations, "Location");
-            buildShip(this->WeaponMeshComponent, this->WeaponDataAsset, this->RU_AttackLocations);
-
-            lb_readXml(lowSkillId == (uint8)ESkill::HeavyProtection, this->ProtectionDataAsset, this->RU_ProtectionLocations, "Location");
-            lb_readXml(lowSkillId == (uint8)ESkill::HeavyProtection, this->ProtectionDataAsset, this->EmergencyLocations, "Emergency");
-            this->RU_ProtectionLocations.Append(this->EmergencyLocations);
-            buildShip(this->ProtectionMeshComponent, this->ProtectionDataAsset, this->RU_ProtectionLocations);
-
-            lb_readXml(lowSkillId == (uint8)ESkill::Speedy, this->SupportDataAsset, this->RU_SupportLocations, "Location");
-            buildShip(this->SupportMeshComponent, this->SupportDataAsset, this->RU_SupportLocations);
-            setLocationExhaustFx();
-
-            lb_readXml(mediumSkillId == (uint8)ESkill::Missile, this->WeaponDataAsset, R_MissileLocations, "Missile");
-            if (this->MissileMeshComponent != nullptr && this->R_MissileLocations.Num() != 0)
+            switch (lowSkillId)
             {
-                this->MissileMeshComponent->SetRelativeLocation(this->R_MissileLocations[0]);
+                case ESkill::FireRate:
+                    if (this->WeaponComponent != nullptr) this->WeaponComponent->SetUseBonus(true);
+                    break;
+                case ESkill::HeavyProtection:
+                    if (this->ProtectionComponent != nullptr) this->ProtectionComponent->SetUseBonus(true);
+                    break;
+                case ESkill::Speedy:
+                    if (this->SupportComponent != nullptr) this->SupportComponent->SetUseBonus(true);
+                    break;
             }
 
-            this->SetMax(this->RU_ProtectionLocations.Num(), this->RU_SupportLocations.Num());
+            UseForm(EFormType::Base, true);
+
+            // TO DO
+            //lb_readXml(mediumSkillId == (uint8)ESkill::Missile, this->WeaponDataAsset, R_MissileLocations, "Missile");
+            //if (this->MissileMeshComponent != nullptr && this->R_MissileLocations.Num() != 0)
+            //{
+            //    this->MissileMeshComponent->SetRelativeLocation(this->R_MissileLocations[0]);
+            //}
         }
     }
 }
 
-void UModuleComponent::buildShip(UInstancedStaticMeshComponent*& _mesh, UStaticMeshDataAsset* _staticMesh, TArray<FVector_NetQuantize> const& _locations)
-{
-    if (_mesh && _staticMesh)
-    {
-        _mesh->ClearInstances();
-        _mesh->SetStaticMesh(_staticMesh->StaticMesh);
-        _mesh->SetEnableGravity(false);
-
-        for (auto const& _location : _locations)
-        {
-            FTransform voxelTransform{};
-            voxelTransform.SetLocation(_location);
-            _mesh->AddInstance(voxelTransform);
-        }
-    }
-}
-
-void UModuleComponent::setLocationExhaustFx()
+void UModuleComponent::OnUpdateCountSupport(TArray<FVector_NetQuantize> const& _locations, int32 _max)
 {
     if (AShipPawn* pawn = Cast<AShipPawn>(this->GetOwner()))
     {
-        pawn->setLocationExhaustFx(this->RU_SupportLocations);
+        pawn->setLocationExhaustFx(_locations);
     }
+
+    this->OnUpdateCountSupportDelegate.Broadcast(_locations.Num(), _max);
+}
+
+void UModuleComponent::OnUpdateCountProtection(TArray<FVector_NetQuantize> const& _locations, int32 _max)
+{
+    int32 curr = _locations.Num();
+    int32 max = _max;
+
+    if (this->EmergencyComponent != nullptr)
+    {
+        curr += this->EmergencyComponent->GetNum();
+        max += this->EmergencyComponent->GetMax();
+    }
+
+    this->OnUpdateCountProtectionDelegate.Broadcast(curr, max);
+}
+
+void UModuleComponent::OnUpdateCountEmergency(TArray<FVector_NetQuantize> const& _locations, int32 _max)
+{
+    int32 curr = _locations.Num();
+    int32 max = _max;
+
+    if (this->ProtectionComponent != nullptr)
+    {
+        curr += this->ProtectionComponent->GetNum();
+        max += this->ProtectionComponent->GetMax();
+    }
+
+    this->OnUpdateCountProtectionDelegate.Broadcast(curr, max);
 }
 
 void UModuleComponent::setCollisionProfile(FString _team)
 {
-    auto lb = [&_team](UInstancedStaticMeshComponent *& _component)
+    auto lb = [&_team](USpacelInstancedMeshComponent *& _component)
     {
         if (_component != nullptr)
         {
@@ -252,53 +216,32 @@ void UModuleComponent::setCollisionProfile(FString _team)
         }
     };
 
-    lb(this->ProtectionMeshComponent);
-    lb(this->WeaponMeshComponent);
-    lb(this->SupportMeshComponent);
+    lb(this->ProtectionComponent);
+    lb(this->EmergencyComponent);
+    lb(this->SupportComponent);
 }
 
 void UModuleComponent::kill()
 {
-    auto lb = [](TArray<FVector_NetQuantize>& _out, TArray<FVector_NetQuantize>& _in)
+    // call clean on all component
+    auto lb = [](USpacelInstancedMeshComponent*& _component)
     {
-        _out.Append(_in);
-        _in.Empty();
+        if (_component != nullptr)
+        {
+            _component->RPCNetMulticastClean();
+        }
     };
 
-    lb(this->RemovedProtectionLocations, this->RU_ProtectionLocations);
-    lb(this->RemovedSupportLocations, this->RU_SupportLocations);
-    lb(this->RemovedAttackLocations, this->RU_AttackLocations);
-
-    OnRep_Attack();
-    OnRep_Protection();
-    OnRep_Support();
+    lb(this->WeaponComponent);
+    lb(this->ProtectionComponent);
+    lb(this->EmergencyComponent);
+    lb(this->SupportComponent);
+    m_activatedForms.Empty();
 }
 
 void UModuleComponent::restarted()
 {
-    auto lb = [](TArray<FVector_NetQuantize>& _out, TArray<FVector_NetQuantize>& _in)
-    {
-        _out.Append(_in);
-        _in.Empty();
-    };
-
-    lb(this->RU_ProtectionLocations, this->RemovedProtectionLocations);
-    lb(this->RU_SupportLocations, this->RemovedSupportLocations);
-    lb(this->RU_AttackLocations, this->RemovedAttackLocations);
-
-    OnRep_Attack();
-    OnRep_Protection();
-    OnRep_Support();
-}
-
-float UModuleComponent::getPercentProtection() const
-{
-    return (float)this->RU_ProtectionLocations.Num() / m_maxProtection;
-}
-
-float UModuleComponent::getPercentSupport() const
-{
-    return (float)this->RU_SupportLocations.Num() / m_maxSupport;
+    UseForm(EFormType::Base, true);
 }
 
 ESkillReturn UModuleComponent::onSwapEmergency(uint32 _value, uint8 _tresholdPercent)
@@ -361,120 +304,52 @@ ESkillReturn UModuleComponent::onSwapEmergency(uint32 _value, uint8 _tresholdPer
 
 void UModuleComponent::activeMetaForm(EEffect _type)
 {
-    if (!ensure(this->MetaFormDataAsset != nullptr)) return;
-
-    FString tag {};
-    UStaticMesh* mesh { nullptr };
-    if (_type == EEffect::MetaFormProtection)
+    switch (_type)
     {
-        tag = "Protection";
-        mesh = this->MetaFormDataAsset->ProtectionStaticMesh;
+        case EEffect::MetaFormAttack:
+            UseForm(EFormType::MetaFormAttack, false);
+        break;
+
+        case EEffect::MetaFormProtection:
+            UseForm(EFormType::MetaFormProtection, false);
+        break;
+
+        case EEffect::MetaFormSupport:
+            UseForm(EFormType::MetaFormSupport, false);
+        break;
+
+        case EEffect::EscapeMode:
+            UseForm(EFormType::EscapeMode, false);
+        break;
     }
-    else if (_type == EEffect::MetaFormAttack)
-    {
-        tag = "Attack";
-        mesh = this->MetaFormDataAsset->AttackStaticMesh;
-    }
-    else if (_type == EEffect::MetaFormSupport)
-    {
-        tag = "Support";
-        mesh = this->MetaFormDataAsset->SupportStaticMesh;
-    }
-    else if (_type == EEffect::EscapeMode)
-    {
-        tag = "Escape";
-        mesh = this->MetaFormDataAsset->ProtectionStaticMesh;
-    }
-
-    FString const& path { this->MetaFormDataAsset->DefaultPath };
-
-    TArray<FVector_NetQuantize> out{};
-
-    auto lbread = [&out, &path](FString const& _tag)
-    {
-        SimplyXml::FContainer<FVector> locationInformation{ _tag };
-        SimplyXml::FReader reader{ FPaths::ProjectDir() + path };
-        reader.read(locationInformation);
-
-        for (FVector loc : locationInformation.Values)
-        {
-            out.Add(loc);
-        }
-    };
-
-    lbread("Emergency");
-    lbread(tag);
-
-    auto lb = [&out](TArray<FVector_NetQuantize>& _fill, int32 _max)
-    {
-        _fill.Empty();
-        while (_max != 0 && out.Num() != 0)
-        {
-            _fill.Add(out.Pop());
-            --_max;
-        }
-    };
-
-    lb(this->RU_ProtectionLocations, this->RU_ProtectionLocations.Num());
-    lb(this->RemovedProtectionLocations, this->RemovedProtectionLocations.Num());
-
-    OnRep_Protection();
 }
 
-void UModuleComponent::removeMetaForm()
+void UModuleComponent::removeMetaForm(EEffect _type)
 {
-    if (APawn* pawn = Cast<APawn>(this->GetOwner()))
+    switch (_type)
     {
-        if(ASpacelPlayerState* spacelPlayerState = pawn->GetPlayerState<ASpacelPlayerState>())
-        {
-            uint8 lowSkillId = spacelPlayerState->getSkillId(ESkillType::Low);
-            bool isHeavy = lowSkillId == (uint8)ESkill::HeavyProtection;
+    case EEffect::MetaFormAttack:
+        m_activatedForms.Remove(EFormType::MetaFormAttack);
+        break;
 
-            if (!ensure(this->ProtectionDataAsset != nullptr)) return;
-            FString const& path { isHeavy ? this->ProtectionDataAsset->HeavyPath : this->ProtectionDataAsset->DefaultPath };
+    case EEffect::MetaFormProtection:
+        m_activatedForms.Remove(EFormType::MetaFormProtection);
+        break;
 
-            TArray<FVector_NetQuantize> out{};
-            auto lbread = [&out, &path](FString const& _tag)
-            {
-                SimplyXml::FContainer<FVector> locationInformation{ _tag };
-                SimplyXml::FReader reader{ FPaths::ProjectDir() + path };
-                reader.read(locationInformation);
+    case EEffect::MetaFormSupport:
+        m_activatedForms.Remove(EFormType::MetaFormSupport);
+        break;
 
-                for (FVector loc : locationInformation.Values)
-                {
-                    out.Add(loc);
-                }
-            };
-
-            lbread("Emergency");
-            lbread("Location");
-
-            int32 maxProtection = this->RU_ProtectionLocations.Num();
-            int32 maxRemove = this->RemovedProtectionLocations.Num();
-
-            auto lb = [&out](TArray<FVector_NetQuantize>& _fill, int32 _max)
-            {
-                _fill.Empty();
-                while (_max != 0 && out.Num() != 0)
-                {
-                    _fill.Add(out.Pop());
-                    --_max;
-                }
-            };
-
-            lb(this->RU_ProtectionLocations, this->RU_ProtectionLocations.Num());
-            lb(this->RemovedProtectionLocations, this->RemovedProtectionLocations.Num());
-
-            OnRep_Protection();
-        }
+    case EEffect::EscapeMode:
+        m_activatedForms.Remove(EFormType::EscapeMode);
+        break;
     }
+
+    m_activatedForms.Num() ? UseForm(m_activatedForms.Pop(), false) : UseForm(EFormType::Base, false);
 }
 
 void UModuleComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-    DOREPLIFETIME(UModuleComponent, RU_AttackLocations);
-    DOREPLIFETIME(UModuleComponent, RU_ProtectionLocations);
-    DOREPLIFETIME(UModuleComponent, RU_SupportLocations);
     DOREPLIFETIME(UModuleComponent, R_MissileLocations);
 }

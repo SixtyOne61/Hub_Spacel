@@ -13,9 +13,20 @@ void UNetworkInstancedMeshComponent::RPCNetMulticastRemove_Implementation(FVecto
     this->Remove(_location);
 }
 
+void UNetworkInstancedMeshComponent::RPCNetMulticastClean()
+{
+    clean();
+}
+
 void UNetworkInstancedMeshComponent::resetBuild()
 {
     this->RPCNetMulticastResetBuild();
+}
+
+void UNetworkInstancedMeshComponent::clean()
+{
+    this->Locations.Empty();
+    this->ClearInstances();
 }
 
 void UNetworkInstancedMeshComponent::RPCNetMulticastResetBuild_Implementation()

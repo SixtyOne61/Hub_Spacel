@@ -25,10 +25,18 @@ public:
 	// Sets default values for this component's properties
 	UModuleComponent();
 
-    float getPercentProtection() const;
-    float getPercentSupport() const;
-
     ESkillReturn onSwapEmergency(uint32 _value, uint8 _tresholdPercent);
+
+protected:
+    template<class T>
+    void createComponent(T*& _component, FName&& _name)
+    {
+        _component = CreateDefaultSubobject<T>(_name);
+        if (!ensure(_component != nullptr)) return;
+
+        _component->SetRenderCustomDepth(true);
+        _component->AttachToComponent(this, FAttachmentTransformRules::KeepRelativeTransform);
+    }
 
 protected:
 	// Called when the game starts
@@ -36,19 +44,10 @@ protected:
 
     /* server side */
     UFUNCTION()
-    void OnStartGame(EGameState _state);
+    void OnChangeState(EGameState _state);
 
-    UFUNCTION()
-    void OnRep_Attack();
-
-    UFUNCTION()
-    void OnRep_Protection();
-
-    UFUNCTION()
-    void OnRep_Support();
-
-    UFUNCTION(Reliable, Client)
-    void SetMax(int32 _maxProtection, int32 _maxSupport);
+    UFUNCTION(BlueprintCallable, Category = "Components|Form")
+    void UseForm(EFormType _type, bool _refresh);
 
     /* set collision profile name */
     void setCollisionProfile(FString _team);
@@ -56,13 +55,18 @@ protected:
     void buildLobbyShip(ESkill _skillId, ESkillType _type);
 
     void activeMetaForm(EEffect _type);
-    void removeMetaForm();
+    void removeMetaForm(EEffect _type);
 
 private:
-    void buildShip(class UInstancedStaticMeshComponent*& _mesh, class UStaticMeshDataAsset* _staticMesh, TArray<FVector_NetQuantize> const& _locations);
-
     /* call ship pawn owner for set location of exhaust */
-    void setLocationExhaustFx();
+    UFUNCTION()
+    void OnUpdateCountSupport(TArray<FVector_NetQuantize> const& _locations, int32 _max);
+
+    UFUNCTION()
+    void OnUpdateCountProtection(TArray<FVector_NetQuantize> const& _locations, int32 _max);
+
+    UFUNCTION()
+    void OnUpdateCountEmergency(TArray<FVector_NetQuantize> const& _locations, int32 _max);
 
     /* call when red zone is hit */
     void kill();
@@ -70,26 +74,18 @@ private:
     void restarted();
 
 public:
-    UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
-    class USetupAttributeDataAsset* ProtectionDataAsset{ nullptr };
+    UPROPERTY(Category = "Component|Mesh", VisibleAnywhere, BlueprintReadWrite)
+    class USpacelInstancedMeshComponent* EmergencyComponent { nullptr };
 
-    UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)
-    class UInstancedStaticMeshComponent* ProtectionMeshComponent{ nullptr };
+    UPROPERTY(Category = "Component|Mesh", VisibleAnywhere, BlueprintReadWrite)
+    class USpacelInstancedMeshComponent* WeaponComponent{ nullptr };
 
-    UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
-    class USetupAttributeDataAsset* WeaponDataAsset{ nullptr };
+    UPROPERTY(Category = "Component|Mesh", VisibleAnywhere, BlueprintReadWrite)
+    class USpacelInstancedMeshComponent* ProtectionComponent{ nullptr };
 
-    UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)
-    class UInstancedStaticMeshComponent* WeaponMeshComponent{ nullptr };
+    UPROPERTY(Category = "Component|Mesh", VisibleAnywhere, BlueprintReadWrite)
+    class USpacelInstancedMeshComponent* SupportComponent{ nullptr };
 
-    UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
-    class USetupAttributeDataAsset* SupportDataAsset{ nullptr };
-
-    UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
-    class UMetaFormSetupDataAsset* MetaFormDataAsset{ nullptr };
-
-    UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)
-    class UInstancedStaticMeshComponent* SupportMeshComponent{ nullptr };
 
     UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)
     class UStaticMeshComponent* MissileMeshComponent { nullptr };
@@ -102,34 +98,10 @@ public:
     FOnUpdateCountSupport OnUpdateCountSupportDelegate {};
 
 private:
-    UPROPERTY(ReplicatedUsing = "OnRep_Attack")
-    TArray<FVector_NetQuantize> RU_AttackLocations{};
-
-    UPROPERTY()
-    TArray<FVector_NetQuantize> RemovedAttackLocations{};
-
-    UPROPERTY(ReplicatedUsing = "OnRep_Protection")
-    TArray<FVector_NetQuantize> RU_ProtectionLocations{};
-
-    UPROPERTY()
-    TArray<FVector_NetQuantize> EmergencyLocations{};
-
-    UPROPERTY()
-    TArray<FVector_NetQuantize> EmergencyLocationsRemove{};
-
-    UPROPERTY()
-    TArray<FVector_NetQuantize> RemovedProtectionLocations{};
-
-    UPROPERTY(ReplicatedUsing = "OnRep_Support")
-    TArray<FVector_NetQuantize> RU_SupportLocations{};
-
-    UPROPERTY()
-    TArray<FVector_NetQuantize> RemovedSupportLocations{};
 
     UPROPERTY(Replicated)
     TArray<FVector_NetQuantize> R_MissileLocations {};
 
-    /* max protection and support cube */
-    int32 m_maxProtection { -1 };
-    int32 m_maxSupport { -1 };
+    /* form currently activated */
+    TArray<EFormType> m_activatedForms;
 };

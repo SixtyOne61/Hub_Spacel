@@ -26,6 +26,12 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Components|Action")
 	virtual int Remove(FVector_NetQuantize const& _location);
+
+	UFUNCTION(BlueprintCallable, Category = "Components|Getteur")
+	inline int32 GetNum() const { return this->Locations.Num(); }
+
+	UFUNCTION(BlueprintCallable, Category = "Components|Getteur")
+	inline TArray<FVector_NetQuantize> const& GetLocations() const { return this->Locations; }
 	
 protected:
 	/* take Locations and add it to instance static mesh */

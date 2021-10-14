@@ -4,13 +4,19 @@
 #include "SpacelInstancedMeshComponent.h"
 #include "DataAsset/FormDataAsset.h"
 
-void USpacelInstancedMeshComponent::UseForm(EFormType _type)
+void USpacelInstancedMeshComponent::UseForm(EFormType _type, bool _refresh)
 {
     for (auto* dataAsset : this->Forms)
     {
         if (dataAsset != nullptr && dataAsset->Type == _type)
         {
+            if (_refresh)
+            {
+                m_removedLocations.Empty();
+            }
+
             this->SetStaticMesh(dataAsset->StaticMesh);
+            this->SetEnableGravity(false);
             if(m_loaded.find(_type) != m_loaded.end())
             {
                 RPCNetMulticastUseForm(_type, m_removedLocations.Num());
@@ -27,12 +33,12 @@ void USpacelInstancedMeshComponent::UseForm(EFormType _type)
         }
     }
 
-    _type != EFormType::Base ? UseForm(EFormType::Base) : ensure(false);
+    _type != EFormType::Base ? UseForm(EFormType::Base, _refresh) : ensure(false);
 }
 
 uint8 USpacelInstancedMeshComponent::Repair(uint8 _nbRepair)
 {
-    while (_nbRepair > 0 || m_removedLocations.Num() != 0)
+    while (_nbRepair > 0 && m_removedLocations.Num() != 0)
     {
         RPCNetMulticastAdd(m_removedLocations.Pop());
         --_nbRepair;
@@ -45,8 +51,8 @@ void USpacelInstancedMeshComponent::RPCNetMulticastUseForm_Implementation(EFormT
 {
     if (m_loaded.find(_type) != m_loaded.end())
     {
-        this->Locations = m_loaded[_type];
-        this->Locations.RemoveAt(this->Locations.Num() - _ignoreLast, _ignoreLast);
+        initArrays(m_loaded[_type], _ignoreLast);
+        BroadcastCount();
         resetBuild();
     }
     else
@@ -59,7 +65,33 @@ void USpacelInstancedMeshComponent::RPCNetMulticastAddForm_Implementation(EFormT
 {
     m_loaded.insert({ _type , _locations });
 
-    this->Locations = _locations;
-    this->Locations.RemoveAt(this->Locations.Num() - _ignoreLast, _ignoreLast);
+    initArrays(_locations, _ignoreLast);
+    BroadcastCount();
     resetBuild();
+}
+
+void USpacelInstancedMeshComponent::clean()
+{
+    m_removedLocations.Append(this->Locations);
+    Super::clean();
+    BroadcastCount();
+}
+
+void USpacelInstancedMeshComponent::initArrays(TArray<FVector_NetQuantize> const& _in, uint8 _ignoreLast)
+{
+    auto locations = _in;
+
+    auto lb_copyArray = [&locations](int32 _nb, TArray<FVector_NetQuantize>& _out)
+    {
+        _out.Empty();
+        _out.Reserve(_nb);
+        while (_nb != 0 && locations.Num())
+        {
+            _out.Add(locations[0]);
+            locations.RemoveAt(0);
+        }
+    };
+
+    lb_copyArray(_in.Num() - _ignoreLast, this->Locations);
+    lb_copyArray(_ignoreLast, m_removedLocations);
 }
