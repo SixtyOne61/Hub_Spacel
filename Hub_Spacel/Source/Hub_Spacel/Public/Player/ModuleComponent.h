@@ -25,7 +25,7 @@ public:
 	// Sets default values for this component's properties
 	UModuleComponent();
 
-    ESkillReturn onSwapEmergency(uint32 _value, uint8 _tresholdPercent);
+    ESkillReturn onSwapEmergency(uint32 _nbMatiereUseForOne);
 
 protected:
     template<class T>
@@ -52,10 +52,21 @@ protected:
     /* set collision profile name */
     void setCollisionProfile(FString _team);
 
+    /* build ship in lobby */
     void buildLobbyShip(ESkill _skillId, ESkillType _type);
 
+    /* change meta form */
     void activeMetaForm(EEffect _type);
     void removeMetaForm(EEffect _type);
+
+    /* activate bonus voxel on right component */
+    void activateBonus(ESkill _skillId);
+
+    /* get meta form matching with a skill */
+    EFormType getFormType(ESkill _skillId) const;
+
+    /* get meta form matching with an effect */
+    EFormType getFormType(EEffect _type) const;
 
 private:
     /* call ship pawn owner for set location of exhaust */

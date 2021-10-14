@@ -31,7 +31,7 @@ protected:
 	void RPCNetMulticastResetBuild();
 
 	UFUNCTION(BlueprintCallable, Category = "Components|Event")
-	inline virtual void BroadcastCount() const
+	virtual void BroadcastCount() const
 	{
 		OnUpdateCountDelegate.Broadcast(this->Locations, this->Locations.Num());
 	}

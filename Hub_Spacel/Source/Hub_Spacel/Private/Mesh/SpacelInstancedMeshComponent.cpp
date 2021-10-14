@@ -47,6 +47,15 @@ uint8 USpacelInstancedMeshComponent::Repair(uint8 _nbRepair)
     return _nbRepair;
 }
 
+void USpacelInstancedMeshComponent::RemoveRandom(uint8 _nbToRemove)
+{
+    while (_nbToRemove > 0 && this->Locations.Num() != 0)
+    {
+        RPCNetMulticastRemove(this->Locations.Last());
+        --_nbToRemove;
+    }
+}
+
 void USpacelInstancedMeshComponent::RPCNetMulticastUseForm_Implementation(EFormType _type, uint8 _ignoreLast)
 {
     if (m_loaded.find(_type) != m_loaded.end())

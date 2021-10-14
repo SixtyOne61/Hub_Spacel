@@ -23,11 +23,17 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Components|Repair")
 	uint8 Repair(uint8 _nbRepair);
 
+	UFUNCTION(BlueprintCallable, Category = "Components|Repair")
+	void RemoveRandom(uint8 _nbToRemove);
+
 	UFUNCTION(BlueprintCallable, Category = "Components|Setteur")
-	inline void SetUseBonus(bool _use) { UseBonus = _use; }
+	void SetUseBonus(bool _use) { UseBonus = _use; }
 
 	UFUNCTION(BlueprintCallable, Category = "Components|Getteur")
-	inline int32 GetMax() const { return Locations.Num() + m_removedLocations.Num(); }
+	int32 GetMax() const { return Locations.Num() + m_removedLocations.Num(); }
+
+	UFUNCTION(BlueprintCallable, Category = "Components|Getteur")
+	int32 GetNbRemoved() const { return m_removedLocations.Num(); }
 
 protected:
 	UFUNCTION(Reliable, NetMulticast, Category = "Components|Replication")

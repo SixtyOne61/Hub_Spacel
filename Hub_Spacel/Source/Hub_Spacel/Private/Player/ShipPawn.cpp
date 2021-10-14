@@ -1067,10 +1067,7 @@ ESkillReturn AShipPawn::onSwapEmergency()
         {
             if (UUniqueSkillDataAsset const* skillParam = this->SkillComponent->SkillDataAsset->getSKill(ESkill::Emergency))
             {
-                if (this->PlayerDataAsset != nullptr)
-                {
-                    return this->ModuleComponent->onSwapEmergency(skillParam->Value, this->PlayerDataAsset->TresholdForSwapEmergencyPercent);
-                }
+                return this->ModuleComponent->onSwapEmergency(skillParam->Value);
             }
         }
     }
@@ -1079,7 +1076,8 @@ ESkillReturn AShipPawn::onSwapEmergency()
 
 void AShipPawn::addMatiere(int32 _val, EMatiereOrigin _type)
 {
-    this->RU_Matiere += _val;
+    // don't keep a negative matiere value
+    this->RU_Matiere = FMath::Max(this->RU_Matiere + _val, 0);
 
     // in fact, _val > 0 is an useless test, because we have a type for lost matiere
     // therefor, we convert _val into uint so it's better to check if is not an negative number
