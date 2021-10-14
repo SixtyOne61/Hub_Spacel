@@ -9,7 +9,7 @@
 #include "Gameplay/DestroyActor.h"
 #include "Gameplay/Bullet/ProjectileBase.h"
 #include "Gameplay/Mission/MissionActor.h"
-#include "Components/InstancedStaticMeshComponent.h"
+#include "Mesh/SpacelInstancedMeshComponent.h"
 #include "World/MatiereManager.h"
 #include "Kismet/GameplayStatics.h"
 #include "Util/Tag.h"
@@ -115,7 +115,7 @@ void UCustomCollisionComponent::dispatch(TArray<FHitResult> const& _items) const
 	}
 }
 
-bool UCustomCollisionComponent::sweepForInstancedStaticMesh(UInstancedStaticMeshComponent*& _mesh, TArray<FVector_NetQuantize>& _replicated, TArray<FVector_NetQuantize>& _removeReplicated, FVector const& _scale, FName const& _profile, FName const& _teamTag, TArray<FVector_NetQuantize> const& _emergency /*= {}*/)
+bool UCustomCollisionComponent::sweepForInstancedStaticMesh(USpacelInstancedMeshComponent*& _mesh, FVector const& _scale, FName const& _profile, FName const& _teamTag)
 {
 	if (_mesh == nullptr || _mesh->GetInstanceCount() == 0) return false;
 
@@ -144,10 +144,7 @@ bool UCustomCollisionComponent::sweepForInstancedStaticMesh(UInstancedStaticMesh
 			}
 
 			// remove instance
-			_mesh->RemoveInstance(index);
-			FVector const& location = localTransform.GetLocation();
-			_replicated.Remove(location);
-			_removeReplicated.Add(location);
+			_mesh->RPCNetMulticastRemove(localTransform.GetLocation());
 
 			int emergencyIndex {};
 			if (_emergency.Find(location, emergencyIndex))
@@ -210,9 +207,9 @@ void UCustomCollisionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 
 			if (UModuleComponent* moduleComponent = pawn->ModuleComponent)
 			{
-				FName prot = moduleComponent->ProtectionMeshComponent->GetCollisionProfileName();
+				FName prot = moduleComponent->ProtectionComponent->GetCollisionProfileName();
 				// for each module, we need to check each instance
-				if (sweepForInstancedStaticMesh(moduleComponent->ProtectionMeshComponent, moduleComponent->RU_ProtectionLocations, moduleComponent->RemovedProtectionLocations, scale, profileCollision, *tagTeam, moduleComponent->EmergencyLocations))
+				if (sweepForInstancedStaticMesh(moduleComponent->ProtectionComponent, moduleComponent->RU_ProtectionLocations, moduleComponent->RemovedProtectionLocations, scale, profileCollision, *tagTeam, moduleComponent->EmergencyLocations))
 				{
 					pawn->RPCClientPlayCameraShake(EImpactType::Obstacle);
 				}

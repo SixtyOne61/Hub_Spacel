@@ -25,6 +25,7 @@
 #include "Gameplay/SkillComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "NiagaraComponent.h"
+#include "Mesh/SpacelInstancedMeshComponent.h"
 
 // Sets default values
 ACommonPawn::ACommonPawn()
@@ -147,13 +148,13 @@ void ACommonPawn::moveShip(float _deltaTime)
     if (!ensure(this->DriverMeshComponent != nullptr)) return;
     if (!ensure(this->PlayerDataAsset != nullptr)) return;
     if (!ensure(this->ModuleComponent != nullptr)) return;
-    if (!ensure(this->ModuleComponent->SupportMeshComponent != nullptr)) return;
+    if (!ensure(this->ModuleComponent->SupportComponent != nullptr)) return;
 
     // stun
     if(hasEffect(EEffect::Emp)) return;
 
     // 9, default support size
-    float coefSpeed = FMath::Max((this->ModuleComponent->SupportMeshComponent->GetInstanceCount() / 9.0f), this->PlayerDataAsset->MinCoefSpeed);
+    float coefSpeed = FMath::Max((this->ModuleComponent->SupportComponent->GetNum() / 9.0f), this->PlayerDataAsset->MinCoefSpeed);
     if (hasEffect(EEffect::MetaFormAttack) || hasEffect(EEffect::MetaFormProtection) || hasEffect(EEffect::MetaFormSupport) || hasEffect(EEffect::EscapeMode))
     {
         // override speed max

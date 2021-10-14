@@ -3,9 +3,6 @@
 
 #include "ModuleComponent.h"
 #include "Player/SpacelPlayerState.h"
-#include "DataAsset/SetupAttributeDataAsset.h"
-#include "DataAsset/MetaFormSetupDataAsset.h"
-#include "Components/InstancedStaticMeshComponent.h"
 #include "GameState/SpacelGameState.h"
 #include "Kismet/GameplayStatics.h"
 #include "Util/SimplyXml.h"
