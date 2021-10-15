@@ -8,6 +8,7 @@
 #include "DataAsset/PlayerDataAsset.h"
 #include "DataAsset/UniqueSkillDataAsset.h"
 #include "Net/UnrealNetwork.h"
+#include "Mesh/SpacelInstancedMeshComponent.h"
 
 URepairComponent::URepairComponent()
 {
@@ -47,50 +48,24 @@ ESkillReturn URepairComponent::onRepair()
         {
             if(pawn->RU_Matiere < (int16)this->RepairSkillDataAsset->MatiereNeeded) return ESkillReturn::NoMater;
 
-            int32 lostProtection = moduleComponent->RemovedProtectionLocations.Num();
-            int32 lostEngine = moduleComponent->RemovedSupportLocations.Num();
+            if (moduleComponent->ProtectionComponent == nullptr) return ESkillReturn::InternError;
+            if (moduleComponent->SupportComponent == nullptr) return ESkillReturn::InternError;
 
-            if(lostProtection == 0 && lostEngine == 0) return ESkillReturn::Unavailable;
-
-            float ratio = pawn->PlayerDataAsset->RepairRatio;
-            uint32 matiereUse = 0;
-
-            uint32 repair = this->RepairSkillDataAsset->Value * ratio;
-            int deltaMatiere = 1.0f / ratio;
-
-            auto lb = [&repair, &matiereUse, &deltaMatiere](int32& _lost, TArray<FVector_NetQuantize>& _removedLocations, TArray<FVector_NetQuantize>& _locations) -> bool
+            if (moduleComponent->ProtectionComponent->GetNbRemoved() == 0 && moduleComponent->SupportComponent->GetNbRemoved() == 0)
             {
-                if (repair != 0 && _lost != 0)
-                {
-                    _locations.Add(_removedLocations[0]);
-                    _removedLocations.RemoveAt(0);
-                    --_lost;
-                    --repair;
-                    matiereUse += deltaMatiere;
-                    return true;
-                }
-                return false;
-            };
-
-            bool hasRepairProtection = false;
-            bool hasRepairSupport = false;
-
-            while (repair != 0 && !(lostProtection == 0 && lostEngine == 0))
-            {
-                hasRepairProtection |= lb(lostProtection, moduleComponent->RemovedProtectionLocations, moduleComponent->RU_ProtectionLocations);
-                hasRepairSupport |= lb(lostEngine, moduleComponent->RemovedSupportLocations, moduleComponent->RU_SupportLocations);
+                return ESkillReturn::Unavailable;
             }
 
+            this->OnUpdateMatiere(-1 * this->RepairSkillDataAsset->MatiereNeeded, EMatiereOrigin::Lost);
             if (UMetricComponent* component = Cast<UMetricComponent>(pawn->GetComponentByClass(UMetricComponent::StaticClass())))
             {
-                component->updateMetric<SMetricAdd, uint8>(EMetric::MatiereUseForRepair, { matiereUse });
+                component->updateMetric<SMetricAdd, uint8>(EMetric::MatiereUseForRepair, { this->RepairSkillDataAsset->MatiereNeeded });
             }
 
-            this->OnUpdateMatiere(-1 * matiereUse, EMatiereOrigin::Lost);
+            float ratio = pawn->PlayerDataAsset->RepairRatio;
+            int maxRepair = this->RepairSkillDataAsset->Value * ratio;
 
-            if (hasRepairProtection) moduleComponent->OnRep_Protection();
-            if (hasRepairSupport) moduleComponent->OnRep_Support();
-
+            repair(maxRepair, moduleComponent);
             return ESkillReturn::Success;
         }
     }
@@ -98,36 +73,22 @@ ESkillReturn URepairComponent::onRepair()
     return ESkillReturn::InternError;
 }
 
+int URepairComponent::repair(int _nb, UModuleComponent *& _moduleComponent) const
+{
+    int maxRepairProtection = _nb * (2.0f / 3.0f); // TO DO expose this to player setting ?
+    int maxRepairSupport = _nb - maxRepairProtection;
+
+    // keep rest of protection repair for increase support rest
+    maxRepairSupport += _moduleComponent->ProtectionComponent->Repair(maxRepairProtection);
+    // call repair support, and use rest for increase repair protection
+    return _moduleComponent->ProtectionComponent->Repair(_moduleComponent->SupportComponent->Repair(maxRepairSupport));
+}
+
 void URepairComponent::heal(uint8 _value)
 {
-    auto lb = [&](TArray<FVector_NetQuantize>& _removedLocations, TArray<FVector_NetQuantize>& _locations, std::function<void(void)> _onRep)
+    int rest = repair(_value, get()->ModuleComponent);
+    if (rest != 0)
     {
-        while (_value > 0 && _removedLocations.Num() > 0)
-        {
-            _locations.Add(_removedLocations[0]);
-            _removedLocations.RemoveAt(0);
-            _value--;
-        }
-
-        _onRep();
-    };
-
-    if (get()->ModuleComponent->RemovedProtectionLocations.Num() != 0)
-    {
-        lb(get()->ModuleComponent->RemovedProtectionLocations,
-            get()->ModuleComponent->RU_ProtectionLocations,
-            std::bind(&UModuleComponent::OnRep_Protection, get()->ModuleComponent));
-    }
-
-    if (get()->ModuleComponent->RemovedSupportLocations.Num() != 0)
-    {
-        lb(get()->ModuleComponent->RemovedSupportLocations,
-            get()->ModuleComponent->RU_SupportLocations,
-            std::bind(&UModuleComponent::OnRep_Support, get()->ModuleComponent));
-    }
-
-    if (_value != 0)
-    {
-        this->OnUpdateMatiere(_value, EMatiereOrigin::Heal);
+        this->OnUpdateMatiere(rest, EMatiereOrigin::Heal);
     }
 }

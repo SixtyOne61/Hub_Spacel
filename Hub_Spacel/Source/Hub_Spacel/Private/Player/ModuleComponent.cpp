@@ -22,6 +22,12 @@ UModuleComponent::UModuleComponent()
     createComponent(WeaponComponent, TEXT("Weapon_00"));
     createComponent(ProtectionComponent, TEXT("Protection_00"));
     createComponent(SupportComponent, TEXT("Engine_00"));
+
+    MissileComponent = CreateDefaultSubobject<UXmlInstancedStaticMeshComponent>(TEXT("Missile_00"));
+    if (!ensure(MissileComponent != nullptr)) return;
+
+    MissileComponent->SetRenderCustomDepth(true);
+    MissileComponent->AttachToComponent(this, FAttachmentTransformRules::KeepRelativeTransform);
 }
 
 // Called when the game starts
@@ -36,6 +42,8 @@ void UModuleComponent::BeginPlay()
         {
             spacelGameState->OnChangeStateDelegate.AddDynamic(this, &UModuleComponent::OnChangeState);
         }
+
+        this->MissileComponent->Read(false);
     }
 
     // setup events to update count voxel on component

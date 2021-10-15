@@ -97,6 +97,9 @@ public:
     UPROPERTY(Category = "Component|Mesh", VisibleAnywhere, BlueprintReadWrite)
     class USpacelInstancedMeshComponent* SupportComponent{ nullptr };
 
+    UPROPERTY(Category = "Component|Mesh", VisibleAnywhere, BlueprintReadWrite)
+    class UXmlInstancedStaticMeshComponent* MissileComponent{ nullptr };
+
 public:
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
     FOnUpdateCountProtection OnUpdateCountProtectionDelegate {};

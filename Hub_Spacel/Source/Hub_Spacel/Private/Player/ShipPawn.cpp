@@ -11,7 +11,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "Components/WidgetInteractionComponent.h"
 #include "Components/PostProcessComponent.h"
-#include "Components/InstancedStaticMeshComponent.h"
+#include "Mesh/XmlInstancedStaticMeshComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "DataAsset/StaticMeshDataAsset.h"
@@ -288,8 +288,8 @@ void AShipPawn::launchMissile()
 {
     if (!ensure(this->FireComponent != nullptr)) return;
     if (!ensure(this->ModuleComponent != nullptr)) return;
-    if (!ensure(this->ModuleComponent->MissileMeshComponent != nullptr)) return;
-    this->FireComponent->launchMissile(this->ModuleComponent->MissileMeshComponent->GetComponentTransform());
+    if (!ensure(this->ModuleComponent->MissileComponent != nullptr)) return;
+    this->FireComponent->launchMissile(FTransform{*this->ModuleComponent->MissileComponent->GetLocations().begin()});
 }
 
 void AShipPawn::spawnKatyusha()
@@ -390,35 +390,21 @@ void AShipPawn::computeSoundData()
 
 void AShipPawn::emergencyRedCube(FVector const& _location)
 {
-    if (this->PlayerDataAsset == nullptr) return;
-    if (this->ModuleComponent != nullptr)
+    // enable emergency skill
+    if (this->SkillComponent != nullptr)
     {
-        this->ModuleComponent->EmergencyLocationsRemove.Add(_location);
-        if (this->ModuleComponent->EmergencyLocationsRemove.Num() >= this->PlayerDataAsset->TresholdForEmergency)
-        {
-            if (this->SkillComponent != nullptr)
-            {
-                this->SkillComponent->emergencyRedCube();
-                this->SkillComponent->RPCClientEmergencyRedCube();
-            }
-        }
+        this->SkillComponent->emergencyRedCube();
+        this->SkillComponent->RPCClientEmergencyRedCube();
     }
 }
 
 void AShipPawn::onEmergencyCountDownEnd()
 {
-    if(this->PlayerDataAsset == nullptr) return;
-    if (this->ModuleComponent != nullptr)
+    // remove skill
+    if (this->SkillComponent != nullptr)
     {
-        if (this->ModuleComponent->EmergencyLocationsRemove.Num() < this->PlayerDataAsset->TresholdForEmergency)
-        {
-            // remove skill
-            if (this->SkillComponent != nullptr)
-            {
-                this->SkillComponent->emergencyRedCubeRemove();
-                this->SkillComponent->RPCClientEmergencyRedCubeRemove();
-            }
-        }
+        this->SkillComponent->emergencyRedCubeRemove();
+        this->SkillComponent->RPCClientEmergencyRedCubeRemove();
     }
 }
 
@@ -442,7 +428,7 @@ void AShipPawn::OnRep_PlayerState()
 void AShipPawn::BuildDefaultShip()
 {
 #if WITH_EDITOR
-    this->ModuleComponent->OnStartGame(EGameState::InGame);
+    this->ModuleComponent->OnChangeState(EGameState::InGame);
 #endif
 }
 
@@ -647,15 +633,17 @@ void AShipPawn::RPCClientPlayCameraShake_Implementation(EImpactType _type)
 float AShipPawn::getPercentProtection() const
 {
     if(this->ModuleComponent == nullptr) return 0.0f;
+    if (this->ModuleComponent->ProtectionComponent == nullptr) return 0.0f;
 
-    return this->ModuleComponent->getPercentProtection();
+    return this->ModuleComponent->ProtectionComponent->GetNum() / this->ModuleComponent->ProtectionComponent->GetMax();
 }
 
 float AShipPawn::getPercentSupport() const
 {
     if (this->ModuleComponent == nullptr) return 0.0f;
+    if (this->ModuleComponent->SupportComponent == nullptr) return 0.0f;
 
-    return this->ModuleComponent->getPercentSupport();
+    return this->ModuleComponent->SupportComponent->GetNum() / this->ModuleComponent->SupportComponent->GetMax();
 }
 
 void AShipPawn::boostPassive(EMission _type, int32 _rewardValue)
@@ -785,10 +773,10 @@ void AShipPawn::RPCClientAddEffect_Implementation(EEffect _effect)
     {
         if (UModuleComponent* moduleComponent = this->ModuleComponent)
         {
-            if (UInstancedStaticMeshComponent* weaponMeshComponent = this->ModuleComponent->WeaponMeshComponent)
+            if (USpacelInstancedMeshComponent* weaponComponent = this->ModuleComponent->WeaponComponent)
             {
-                weaponMeshComponent->SetScalarParameterValueOnMaterials("Edge sharp max", 0.0f);
-                weaponMeshComponent->SetScalarParameterValueOnMaterials("Glow", 1200.0f);
+                weaponComponent->SetScalarParameterValueOnMaterials("Edge sharp max", 0.0f);
+                weaponComponent->SetScalarParameterValueOnMaterials("Glow", 1200.0f);
             }
         }
     }
@@ -817,10 +805,10 @@ void AShipPawn::RPCClientRemoveEffect_Implementation(EEffect _effect)
     {
         if (UModuleComponent* moduleComponent = this->ModuleComponent)
         {
-            if (UInstancedStaticMeshComponent* weaponMeshComponent = this->ModuleComponent->WeaponMeshComponent)
+            if (USpacelInstancedMeshComponent* weaponComponent = this->ModuleComponent->WeaponComponent)
             {
-                weaponMeshComponent->SetScalarParameterValueOnMaterials("Edge sharp max", 550.0f);
-                weaponMeshComponent->SetScalarParameterValueOnMaterials("Glow", 800.0f);
+                weaponComponent->SetScalarParameterValueOnMaterials("Edge sharp max", 550.0f);
+                weaponComponent->SetScalarParameterValueOnMaterials("Glow", 800.0f);
             }
         }
     }
@@ -991,7 +979,7 @@ void AShipPawn::behaviourRemoveEffect(EEffect _type)
 
         if (this->ModuleComponent != nullptr)
         {
-            this->ModuleComponent->removeMetaForm();
+            this->ModuleComponent->removeMetaForm(_type);
         }
     }
     else if (_type == EEffect::MetaFormProtection)
@@ -1003,21 +991,21 @@ void AShipPawn::behaviourRemoveEffect(EEffect _type)
 
         if (this->ModuleComponent != nullptr)
         {
-            this->ModuleComponent->removeMetaForm();
+            this->ModuleComponent->removeMetaForm(_type);
         }
     }
     else if (_type == EEffect::MetaFormAttack)
     {
         if (this->ModuleComponent != nullptr)
         {
-            this->ModuleComponent->removeMetaForm();
+            this->ModuleComponent->removeMetaForm(_type);
         }
     }
     else if (_type == EEffect::EscapeMode)
     {
         if (this->ModuleComponent != nullptr)
         {
-            this->ModuleComponent->removeMetaForm();
+            this->ModuleComponent->removeMetaForm(_type);
         }
     }
     else if (_type == EEffect::StartGame)
