@@ -12,7 +12,7 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Components/SphereComponent.h"
 #include "Components/StaticMeshComponent.h"
-#include "Components/InstancedStaticMeshComponent.h"
+#include "Mesh/SpacelInstancedMeshComponent.h"
 #include "Gameplay/Bullet/Missile.h"
 #include "Gameplay/Bullet/Katyusha.h"
 
@@ -36,7 +36,7 @@ void UFireComponent::TickComponent(float _deltaTime, ELevelTick _tickType, FActo
 	if (!ensure(get()->PlayerDataAsset != nullptr)) return;
 	if (!ensure(get()->PlayerDataAsset->BulletClass != nullptr)) return;
 	if (!ensure(get()->ModuleComponent != nullptr)) return;
-    if (!ensure(get()->ModuleComponent->WeaponMeshComponent != nullptr)) return;
+    if (!ensure(get()->ModuleComponent->WeaponComponent != nullptr)) return;
 
 	UWorld* world { this->GetWorld() };
 	if (!ensure(world != nullptr)) return;
@@ -45,12 +45,12 @@ void UFireComponent::TickComponent(float _deltaTime, ELevelTick _tickType, FActo
     if (m_isFire.hasValue() && m_isFire.value() && m_fireCountDown <= 0.0f)
     {
         FTransform transform{};
-        get()->ModuleComponent->WeaponMeshComponent->GetInstanceTransform(m_fireIndex, transform, true);
+        get()->ModuleComponent->WeaponComponent->GetInstanceTransform(m_fireIndex, transform, true);
         // reset scale
         transform.SetScale3D({ 1.0f, 1.0f, 1.0f });
 
         ++m_fireIndex;
-        if (m_fireIndex >= get()->ModuleComponent->WeaponMeshComponent->GetInstanceCount())
+        if (m_fireIndex >= get()->ModuleComponent->WeaponComponent->GetNum())
         {
             m_fireIndex = 0;
         }

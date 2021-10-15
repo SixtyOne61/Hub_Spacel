@@ -86,7 +86,7 @@ private:
 
 public:
     UPROPERTY(Category = "Component|Mesh", VisibleAnywhere, BlueprintReadWrite)
-    class USpacelInstancedMeshComponent* EmergencyComponent { nullptr };
+    class USpacelInstancedMeshComponent* EmergencyComponent{ nullptr };
 
     UPROPERTY(Category = "Component|Mesh", VisibleAnywhere, BlueprintReadWrite)
     class USpacelInstancedMeshComponent* WeaponComponent{ nullptr };
@@ -97,10 +97,6 @@ public:
     UPROPERTY(Category = "Component|Mesh", VisibleAnywhere, BlueprintReadWrite)
     class USpacelInstancedMeshComponent* SupportComponent{ nullptr };
 
-
-    UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)
-    class UStaticMeshComponent* MissileMeshComponent { nullptr };
-
 public:
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
     FOnUpdateCountProtection OnUpdateCountProtectionDelegate {};
@@ -109,10 +105,6 @@ public:
     FOnUpdateCountSupport OnUpdateCountSupportDelegate {};
 
 private:
-
-    UPROPERTY(Replicated)
-    TArray<FVector_NetQuantize> R_MissileLocations {};
-
     /* form currently activated */
     TArray<EFormType> m_activatedForms;
 };

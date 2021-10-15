@@ -22,10 +22,6 @@ UModuleComponent::UModuleComponent()
     createComponent(WeaponComponent, TEXT("Weapon_00"));
     createComponent(ProtectionComponent, TEXT("Protection_00"));
     createComponent(SupportComponent, TEXT("Engine_00"));
-
-    MissileMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Missile_00"));
-    if (!ensure(MissileMeshComponent != nullptr)) return;
-    MissileMeshComponent->AttachToComponent(this, FAttachmentTransformRules::KeepRelativeTransform);
 }
 
 // Called when the game starts
@@ -98,26 +94,12 @@ void UModuleComponent::OnChangeState(EGameState _state)
         {
 #if WITH_EDITOR
             UseForm(EFormType::Base, true);
-
-            // TO DO
-            //lb_readXml(false, this->WeaponDataAsset, this->R_MissileLocations, "Missile");
-            //if (this->MissileMeshComponent != nullptr && this->R_MissileLocations.Num() != 0)
-            //{
-            //    this->MissileMeshComponent->SetRelativeLocation(this->R_MissileLocations[0]);
-            //}
 #endif // WITH_EDITOR
         }
         else
         {
             activateBonus((ESkill)spacelPlayerState->getSkillId(ESkillType::Low));
             UseForm(EFormType::Base, true);
-
-            // TO DO
-            //lb_readXml(mediumSkillId == (uint8)ESkill::Missile, this->WeaponDataAsset, R_MissileLocations, "Missile");
-            //if (this->MissileMeshComponent != nullptr && this->R_MissileLocations.Num() != 0)
-            //{
-            //    this->MissileMeshComponent->SetRelativeLocation(this->R_MissileLocations[0]);
-            //}
         }
     }
 }
@@ -284,10 +266,4 @@ EFormType UModuleComponent::getFormType(EEffect _type) const
     }
 
     return EFormType::Base;
-}
-
-void UModuleComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-{
-    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-    DOREPLIFETIME(UModuleComponent, R_MissileLocations);
 }
