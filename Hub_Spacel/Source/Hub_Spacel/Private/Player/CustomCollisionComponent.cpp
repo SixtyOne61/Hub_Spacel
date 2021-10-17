@@ -10,6 +10,7 @@
 #include "Gameplay/Bullet/ProjectileBase.h"
 #include "Gameplay/Mission/MissionActor.h"
 #include "Mesh/SpacelInstancedMeshComponent.h"
+#include "Mesh/EmergencyInstancedMeshComponent.h"
 #include "World/MatiereManager.h"
 #include "Kismet/GameplayStatics.h"
 #include "Util/Tag.h"
@@ -197,37 +198,39 @@ void UCustomCollisionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 		{
 			FString tagTeam = "Team:" + pawn->Team.ToString();
 
-			if (UModuleComponent* moduleComponent = pawn->ModuleComponent)
+			FName prot = pawn->ProtectionComponent->GetCollisionProfileName();
+			// for each module, we need to check each instance
+			if (sweepForInstancedStaticMesh(pawn->ProtectionComponent, scale, profileCollision, *tagTeam))
 			{
-				FName prot = moduleComponent->ProtectionComponent->GetCollisionProfileName();
-				// for each module, we need to check each instance
-				if (sweepForInstancedStaticMesh(moduleComponent->ProtectionComponent, scale, profileCollision, *tagTeam))
-				{
-					pawn->RPCClientPlayCameraShake(EImpactType::Obstacle);
-				}
-				if (sweepForInstancedStaticMesh(moduleComponent->SupportComponent, scale, profileCollision, *tagTeam))
-				{
-					pawn->RPCClientPlayCameraShake(EImpactType::Obstacle);
-				}
-				if (sweepForInstancedStaticMesh(moduleComponent->EmergencyComponent, scale, profileCollision, *tagTeam))
+				pawn->RPCClientPlayCameraShake(EImpactType::Obstacle);
+			}
+			if (sweepForInstancedStaticMesh(pawn->SupportComponent, scale, profileCollision, *tagTeam))
+			{
+				pawn->RPCClientPlayCameraShake(EImpactType::Obstacle);
+			}
 
-				// end check red zone
-				FCollisionShape redZoneShape = createCollisionShapeWithLocalBounds<UStaticMeshComponent>(get()->DriverMeshComponent, scale);
-				FVector const& redZoneLocation = pawn->DriverMeshComponent->GetComponentLocation();
-				if (sweepByProfile(hits, redZoneLocation, profileCollision, redZoneShape, { Tags::Matiere, Tags::Fog, *tagTeam, Tags::WorldManager }))
+			USpacelInstancedMeshComponent* tmp = Cast<USpacelInstancedMeshComponent>(pawn->EmergencyComponent);
+			if (sweepForInstancedStaticMesh(tmp, scale, profileCollision, *tagTeam))
+			{
+				pawn->RPCClientPlayCameraShake(EImpactType::Obstacle);
+			}
+
+			// end check red zone
+			FVector const& redZoneLocation = pawn->DriverMeshComponent->GetComponentLocation();
+			FCollisionShape redZoneShape = createCollisionShapeWithLocalBounds<UStaticMeshComponent>(get()->DriverMeshComponent, scale);
+			if (sweepByProfile(hits, redZoneLocation, profileCollision, redZoneShape, { Tags::Matiere, Tags::Fog, *tagTeam, Tags::WorldManager }))
+			{
+				if (!pawn->canTank(hits.Num()))
 				{
-					if (!pawn->canTank(hits.Num()))
-					{
-						killersProcess(hits);
+					killersProcess(hits);
 
-						// spawn matiere
-						spawnMatiere();
-						
-						pawn->kill();
-					}
+					// spawn matiere
+					spawnMatiere();
 
-					dispatch(hits);
+					pawn->kill();
 				}
+
+				dispatch(hits);
 			}
 		}
 	}
@@ -454,10 +457,8 @@ void UCustomCollisionComponent::hit(FString const& _team, int32 _playerId, class
 {
 	AShipPawn* shipPawn = get<AShipPawn>();
 	if(shipPawn == nullptr) return;
-	UModuleComponent* moduleComponent = shipPawn->ModuleComponent;
-	if(moduleComponent == nullptr) return;
-	if(moduleComponent->ProtectionComponent == nullptr) return;
-	if(moduleComponent->SupportComponent == nullptr) return;
+	if(shipPawn->ProtectionComponent == nullptr) return;
+	if(shipPawn->SupportComponent == nullptr) return;
 	if(shipPawn->DriverMeshComponent == nullptr) return;
 
 	uint32 uniqueId { _comp->GetUniqueID() };
@@ -492,17 +493,18 @@ void UCustomCollisionComponent::hit(FString const& _team, int32 _playerId, class
 	};
 
 
-	if (uniqueId == get()->ModuleComponent->ProtectionComponent->GetUniqueID())
+	if (uniqueId == shipPawn->ProtectionComponent->GetUniqueID())
 	{
-		lb_generic(moduleComponent->ProtectionComponent);
+		lb_generic(shipPawn->ProtectionComponent);
 	}
-	else if (uniqueId == get()->ModuleComponent->SupportComponent->GetUniqueID())
+	else if (uniqueId == shipPawn->SupportComponent->GetUniqueID())
 	{
-		lb_generic(moduleComponent->SupportComponent);
+		lb_generic(shipPawn->SupportComponent);
 	}
-	else if (uniqueId == get()->ModuleComponent->EmergencyComponent->GetUniqueID())
+	else if (uniqueId == shipPawn->EmergencyComponent->GetUniqueID())
 	{
-		lb_generic(moduleComponent->EmergencyComponent);
+		USpacelInstancedMeshComponent* tmp = Cast<USpacelInstancedMeshComponent>(shipPawn->EmergencyComponent);
+		lb_generic(tmp);
 	}
 	else if (uniqueId == get()->DriverMeshComponent->GetUniqueID())
 	{

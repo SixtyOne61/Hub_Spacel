@@ -38,5 +38,5 @@ private:
 	void heal(uint8 _value);
 
 	/* generic code for repair */
-	int repair(int _nb, class UModuleComponent*& _moduleComponent) const;
+	int repair(int _nb, class AShipPawn* _pawn) const;
 };

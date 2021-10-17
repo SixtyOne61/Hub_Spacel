@@ -12,6 +12,7 @@
 #include "Components/WidgetInteractionComponent.h"
 #include "Components/PostProcessComponent.h"
 #include "Mesh/XmlInstancedStaticMeshComponent.h"
+#include "Mesh/SpacelInstancedMeshComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "DataAsset/StaticMeshDataAsset.h"
@@ -287,9 +288,7 @@ void AShipPawn::LinkPawn()
 void AShipPawn::launchMissile()
 {
     if (!ensure(this->FireComponent != nullptr)) return;
-    if (!ensure(this->ModuleComponent != nullptr)) return;
-    if (!ensure(this->ModuleComponent->MissileComponent != nullptr)) return;
-    this->FireComponent->launchMissile(FTransform{*this->ModuleComponent->MissileComponent->GetLocations().begin()});
+    this->FireComponent->launchMissile(FTransform{*this->MissileComponent->GetLocations().begin()});
 }
 
 void AShipPawn::spawnKatyusha()
@@ -388,7 +387,7 @@ void AShipPawn::computeSoundData()
     m_lastPercentSpeed = RU_PercentSpeed;
 }
 
-void AShipPawn::emergencyRedCube(FVector const& _location)
+void AShipPawn::emergencyRedCube()
 {
     // enable emergency skill
     if (this->SkillComponent != nullptr)
@@ -632,18 +631,16 @@ void AShipPawn::RPCClientPlayCameraShake_Implementation(EImpactType _type)
 
 float AShipPawn::getPercentProtection() const
 {
-    if(this->ModuleComponent == nullptr) return 0.0f;
-    if (this->ModuleComponent->ProtectionComponent == nullptr) return 0.0f;
+    if (this->ProtectionComponent == nullptr) return 0.0f;
 
-    return this->ModuleComponent->ProtectionComponent->GetNum() / this->ModuleComponent->ProtectionComponent->GetMax();
+    return this->ProtectionComponent->GetNum() / this->ProtectionComponent->GetMax();
 }
 
 float AShipPawn::getPercentSupport() const
 {
-    if (this->ModuleComponent == nullptr) return 0.0f;
-    if (this->ModuleComponent->SupportComponent == nullptr) return 0.0f;
+    if (this->SupportComponent == nullptr) return 0.0f;
 
-    return this->ModuleComponent->SupportComponent->GetNum() / this->ModuleComponent->SupportComponent->GetMax();
+    return this->SupportComponent->GetNum() / this->SupportComponent->GetMax();
 }
 
 void AShipPawn::boostPassive(EMission _type, int32 _rewardValue)
@@ -771,13 +768,10 @@ void AShipPawn::RPCClientAddEffect_Implementation(EEffect _effect)
     }
     else if (_effect == EEffect::MetaFormAttack)
     {
-        if (UModuleComponent* moduleComponent = this->ModuleComponent)
+        if (this->WeaponComponent != nullptr)
         {
-            if (USpacelInstancedMeshComponent* weaponComponent = this->ModuleComponent->WeaponComponent)
-            {
-                weaponComponent->SetScalarParameterValueOnMaterials("Edge sharp max", 0.0f);
-                weaponComponent->SetScalarParameterValueOnMaterials("Glow", 1200.0f);
-            }
+            this->WeaponComponent->SetScalarParameterValueOnMaterials("Edge sharp max", 0.0f);
+            this->WeaponComponent->SetScalarParameterValueOnMaterials("Glow", 1200.0f);
         }
     }
     else if (_effect == EEffect::Emp)
@@ -803,13 +797,10 @@ void AShipPawn::RPCClientRemoveEffect_Implementation(EEffect _effect)
 
     if (_effect == EEffect::MetaFormAttack)
     {
-        if (UModuleComponent* moduleComponent = this->ModuleComponent)
+        if (this->WeaponComponent != nullptr)
         {
-            if (USpacelInstancedMeshComponent* weaponComponent = this->ModuleComponent->WeaponComponent)
-            {
-                weaponComponent->SetScalarParameterValueOnMaterials("Edge sharp max", 550.0f);
-                weaponComponent->SetScalarParameterValueOnMaterials("Glow", 800.0f);
-            }
+            this->WeaponComponent->SetScalarParameterValueOnMaterials("Edge sharp max", 550.0f);
+            this->WeaponComponent->SetScalarParameterValueOnMaterials("Glow", 800.0f);
         }
     }
 }

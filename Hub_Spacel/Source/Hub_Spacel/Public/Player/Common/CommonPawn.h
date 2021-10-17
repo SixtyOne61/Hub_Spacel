@@ -103,6 +103,21 @@ public:
     UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)
     class UModuleComponent* ModuleComponent{ nullptr };
 
+    UPROPERTY(Category = "Component|Mesh", VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+    class UEmergencyInstancedMeshComponent* EmergencyComponent{ nullptr };
+
+    UPROPERTY(Category = "Component|Mesh", VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+    class USpacelInstancedMeshComponent* WeaponComponent{ nullptr };
+
+    UPROPERTY(Category = "Component|Mesh", VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+    class USpacelInstancedMeshComponent* ProtectionComponent{ nullptr };
+
+    UPROPERTY(Category = "Component|Mesh", VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+    class USpacelInstancedMeshComponent* SupportComponent{ nullptr };
+
+    UPROPERTY(Category = "Component|Mesh", VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+    class UXmlInstancedStaticMeshComponent* MissileComponent{ nullptr };
+
     /* only on server side */
     UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)
     class UFireComponent* FireComponent{ nullptr };

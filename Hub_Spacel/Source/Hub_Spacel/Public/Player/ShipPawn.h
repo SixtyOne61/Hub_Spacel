@@ -36,6 +36,7 @@ class HUB_SPACEL_API AShipPawn : public ACommonPawn
     friend class AMissionManager;
     friend class AComet;
     friend class UTargetUserWidget;
+    friend class UEmergencyInstancedMeshComponent;
 
 public:
     // Called when the game starts or when spawned
@@ -111,7 +112,7 @@ protected:
     UFUNCTION()
     void OnEndMission(EMission _type, bool _succeed, FName _succeedForTeam);
 
-    void emergencyRedCube(FVector const& _location);
+    void emergencyRedCube();
 
 private:
     void OnRep_PlayerState() override;

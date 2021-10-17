@@ -28,17 +28,6 @@ public:
     ESkillReturn onSwapEmergency(uint32 _nbMatiereUseForOne);
 
 protected:
-    template<class T>
-    void createComponent(T*& _component, FName&& _name)
-    {
-        _component = CreateDefaultSubobject<T>(_name);
-        if (!ensure(_component != nullptr)) return;
-
-        _component->SetRenderCustomDepth(true);
-        _component->AttachToComponent(this, FAttachmentTransformRules::KeepRelativeTransform);
-    }
-
-protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
@@ -84,21 +73,11 @@ private:
     /* call for when player need to be restarted */
     void restarted();
 
-public:
-    UPROPERTY(Category = "Component|Mesh", VisibleAnywhere, BlueprintReadWrite)
-    class USpacelInstancedMeshComponent* EmergencyComponent{ nullptr };
-
-    UPROPERTY(Category = "Component|Mesh", VisibleAnywhere, BlueprintReadWrite)
-    class USpacelInstancedMeshComponent* WeaponComponent{ nullptr };
-
-    UPROPERTY(Category = "Component|Mesh", VisibleAnywhere, BlueprintReadWrite)
-    class USpacelInstancedMeshComponent* ProtectionComponent{ nullptr };
-
-    UPROPERTY(Category = "Component|Mesh", VisibleAnywhere, BlueprintReadWrite)
-    class USpacelInstancedMeshComponent* SupportComponent{ nullptr };
-
-    UPROPERTY(Category = "Component|Mesh", VisibleAnywhere, BlueprintReadWrite)
-    class UXmlInstancedStaticMeshComponent* MissileComponent{ nullptr };
+    template<class T>
+    T* getPawn()
+    {
+        return Cast<T>(this->GetOwner());
+    }
 
 public:
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")

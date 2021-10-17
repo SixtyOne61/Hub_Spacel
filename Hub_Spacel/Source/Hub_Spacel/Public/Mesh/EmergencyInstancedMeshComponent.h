@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Mesh/SpacelInstancedMeshComponent.h"
+#include "Player/ShipPawn.h"
 #include "EmergencyInstancedMeshComponent.generated.h"
 
 /**
@@ -14,13 +15,14 @@ class HUB_SPACEL_API UEmergencyInstancedMeshComponent : public USpacelInstancedM
 {
 	GENERATED_BODY()
 	
-	// TO DO quand on remove un cube
+	inline int Remove(FVector_NetQuantize const& _location) override
+	{
+		auto ret = Super::Remove(_location);
 
-		/*if (_emergency.Find(location, emergencyIndex))
+		if (AShipPawn* pawn = Cast<AShipPawn>(this->GetOwner()))
 		{
-			if (shipPawn != nullptr)
-			{
-				shipPawn->emergencyRedCube(location);
-			}
-		}*/
+			pawn->emergencyRedCube();
+		}
+		return ret;
+	}
 };

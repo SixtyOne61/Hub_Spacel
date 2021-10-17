@@ -12,6 +12,8 @@
 #include "Components/WidgetInteractionComponent.h"
 #include "Components/PostProcessComponent.h"
 #include "Components/InstancedStaticMeshComponent.h"
+#include "Mesh/SpacelInstancedMeshComponent.h"
+#include "Mesh/EmergencyInstancedMeshComponent.h"
 #include "Player/TargetActor.h"
 #include "Player/FireComponent.h"
 #include "Player/ModuleComponent.h"
@@ -25,7 +27,6 @@
 #include "Gameplay/SkillComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "NiagaraComponent.h"
-#include "Mesh/SpacelInstancedMeshComponent.h"
 
 // Sets default values
 ACommonPawn::ACommonPawn()
@@ -45,6 +46,26 @@ ACommonPawn::ACommonPawn()
     ModuleComponent = CreateDefaultSubobject<UModuleComponent>(TEXT("Module_00"));
     if (!ensure(ModuleComponent != nullptr)) return;
     ModuleComponent->SetupAttachment(BaseShipMeshComponent);
+
+    EmergencyComponent = CreateDefaultSubobject<UEmergencyInstancedMeshComponent>(TEXT("Emergency_00"));
+    if (!ensure(EmergencyComponent != nullptr)) return;
+    EmergencyComponent->SetupAttachment(ModuleComponent);
+
+    WeaponComponent = CreateDefaultSubobject<USpacelInstancedMeshComponent>(TEXT("Weapon_00"));
+    if (!ensure(WeaponComponent != nullptr)) return;
+    WeaponComponent->SetupAttachment(ModuleComponent);
+
+    ProtectionComponent = CreateDefaultSubobject<USpacelInstancedMeshComponent>(TEXT("Protection_00"));
+    if (!ensure(ProtectionComponent != nullptr)) return;
+    ProtectionComponent->SetupAttachment(ModuleComponent);
+
+    SupportComponent = CreateDefaultSubobject<USpacelInstancedMeshComponent>(TEXT("Support_00"));
+    if (!ensure(SupportComponent != nullptr)) return;
+    SupportComponent->SetupAttachment(ModuleComponent);
+
+    MissileComponent = CreateDefaultSubobject<UXmlInstancedStaticMeshComponent>(TEXT("MissileStart_00"));
+    if (!ensure(MissileComponent != nullptr)) return;
+    MissileComponent->SetupAttachment(ModuleComponent);
 
     // Create a spring arm component
     SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm_00"));
@@ -147,14 +168,12 @@ void ACommonPawn::moveShip(float _deltaTime)
 {
     if (!ensure(this->DriverMeshComponent != nullptr)) return;
     if (!ensure(this->PlayerDataAsset != nullptr)) return;
-    if (!ensure(this->ModuleComponent != nullptr)) return;
-    if (!ensure(this->ModuleComponent->SupportComponent != nullptr)) return;
 
     // stun
     if(hasEffect(EEffect::Emp)) return;
 
     // 9, default support size
-    float coefSpeed = FMath::Max((this->ModuleComponent->SupportComponent->GetNum() / 9.0f), this->PlayerDataAsset->MinCoefSpeed);
+    float coefSpeed = FMath::Max((this->SupportComponent->GetNum() / 9.0f), this->PlayerDataAsset->MinCoefSpeed);
     if (hasEffect(EEffect::MetaFormAttack) || hasEffect(EEffect::MetaFormProtection) || hasEffect(EEffect::MetaFormSupport) || hasEffect(EEffect::EscapeMode))
     {
         // override speed max

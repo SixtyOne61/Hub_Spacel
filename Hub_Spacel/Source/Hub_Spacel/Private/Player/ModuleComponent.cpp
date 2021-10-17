@@ -10,6 +10,7 @@
 #include "NiagaraComponent.h"
 #include "Player/ShipPawn.h"
 #include "Mesh/SpacelInstancedMeshComponent.h"
+#include "Mesh/EmergencyInstancedMeshComponent.h"
 
 // Sets default values for this component's properties
 UModuleComponent::UModuleComponent()
@@ -17,23 +18,15 @@ UModuleComponent::UModuleComponent()
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = false;
-
-    createComponent(EmergencyComponent, TEXT("Emergency_00"));
-    createComponent(WeaponComponent, TEXT("Weapon_00"));
-    createComponent(ProtectionComponent, TEXT("Protection_00"));
-    createComponent(SupportComponent, TEXT("Engine_00"));
-
-    MissileComponent = CreateDefaultSubobject<UXmlInstancedStaticMeshComponent>(TEXT("Missile_00"));
-    if (!ensure(MissileComponent != nullptr)) return;
-
-    MissileComponent->SetRenderCustomDepth(true);
-    MissileComponent->AttachToComponent(this, FAttachmentTransformRules::KeepRelativeTransform);
 }
 
 // Called when the game starts
 void UModuleComponent::BeginPlay()
 {
 	Super::BeginPlay();
+
+    ACommonPawn* pawn = getPawn<ACommonPawn>();
+    if (pawn == nullptr) return;
 
     if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
     {
@@ -43,23 +36,23 @@ void UModuleComponent::BeginPlay()
             spacelGameState->OnChangeStateDelegate.AddDynamic(this, &UModuleComponent::OnChangeState);
         }
 
-        this->MissileComponent->Read(false);
+        pawn->MissileComponent->Read(false);
     }
 
     // setup events to update count voxel on component
-    if (this->SupportComponent != nullptr)
+    if (pawn->SupportComponent != nullptr)
     {
-        this->SupportComponent->OnUpdateCountDelegate.AddDynamic(this, &UModuleComponent::OnUpdateCountSupport);
+        pawn->SupportComponent->OnUpdateCountDelegate.AddDynamic(this, &UModuleComponent::OnUpdateCountSupport);
     }
 
-    if (this->ProtectionComponent != nullptr)
+    if (pawn->ProtectionComponent != nullptr)
     {
-        this->ProtectionComponent->OnUpdateCountDelegate.AddDynamic(this, &UModuleComponent::OnUpdateCountProtection);
+        pawn->ProtectionComponent->OnUpdateCountDelegate.AddDynamic(this, &UModuleComponent::OnUpdateCountProtection);
     }
 
-    if (this->EmergencyComponent != nullptr)
+    if (pawn->EmergencyComponent != nullptr)
     {
-        this->EmergencyComponent->OnUpdateCountDelegate.AddDynamic(this, &UModuleComponent::OnUpdateCountEmergency);
+        pawn->EmergencyComponent->OnUpdateCountDelegate.AddDynamic(this, &UModuleComponent::OnUpdateCountEmergency);
     }
 }
 
@@ -73,10 +66,13 @@ void UModuleComponent::UseForm(EFormType _type, bool _refresh)
         }
     };
 
-    lb_call(this->EmergencyComponent);
-    lb_call(this->WeaponComponent);
-    lb_call(this->ProtectionComponent);
-    lb_call(this->SupportComponent);
+    ACommonPawn* pawn = getPawn<ACommonPawn>();
+    if (pawn == nullptr) return;
+
+    lb_call(pawn->EmergencyComponent);
+    lb_call(pawn->WeaponComponent);
+    lb_call(pawn->ProtectionComponent);
+    lb_call(pawn->SupportComponent);
 
     m_activatedForms.AddUnique(_type);
 }
@@ -114,7 +110,7 @@ void UModuleComponent::OnChangeState(EGameState _state)
 
 void UModuleComponent::OnUpdateCountSupport(TArray<FVector_NetQuantize> const& _locations, int32 _max)
 {
-    if (AShipPawn* pawn = Cast<AShipPawn>(this->GetOwner()))
+    if (AShipPawn* pawn = getPawn<AShipPawn>())
     {
         pawn->setLocationExhaustFx(_locations);
     }
@@ -127,10 +123,13 @@ void UModuleComponent::OnUpdateCountProtection(TArray<FVector_NetQuantize> const
     int32 curr = _locations.Num();
     int32 max = _max;
 
-    if (this->EmergencyComponent != nullptr)
+    ACommonPawn* pawn = getPawn<ACommonPawn>();
+    if (pawn == nullptr) return;
+
+    if (pawn->EmergencyComponent != nullptr)
     {
-        curr += this->EmergencyComponent->GetNum();
-        max += this->EmergencyComponent->GetMax();
+        curr += pawn->EmergencyComponent->GetNum();
+        max += pawn->EmergencyComponent->GetMax();
     }
 
     this->OnUpdateCountProtectionDelegate.Broadcast(curr, max);
@@ -141,10 +140,13 @@ void UModuleComponent::OnUpdateCountEmergency(TArray<FVector_NetQuantize> const&
     int32 curr = _locations.Num();
     int32 max = _max;
 
-    if (this->ProtectionComponent != nullptr)
+    ACommonPawn* pawn = getPawn<ACommonPawn>();
+    if (pawn == nullptr) return;
+
+    if (pawn->ProtectionComponent != nullptr)
     {
-        curr += this->ProtectionComponent->GetNum();
-        max += this->ProtectionComponent->GetMax();
+        curr += pawn->ProtectionComponent->GetNum();
+        max += pawn->ProtectionComponent->GetMax();
     }
 
     this->OnUpdateCountProtectionDelegate.Broadcast(curr, max);
@@ -160,9 +162,13 @@ void UModuleComponent::setCollisionProfile(FString _team)
         }
     };
 
-    lb(this->ProtectionComponent);
-    lb(this->EmergencyComponent);
-    lb(this->SupportComponent);
+    ACommonPawn* pawn = getPawn<ACommonPawn>();
+    if (pawn == nullptr) return;
+
+    lb(pawn->ProtectionComponent);
+    auto tmp = Cast<USpacelInstancedMeshComponent>(pawn->EmergencyComponent);
+    lb(tmp);
+    lb(pawn->SupportComponent);
 }
 
 void UModuleComponent::kill()
@@ -176,10 +182,14 @@ void UModuleComponent::kill()
         }
     };
 
-    lb(this->WeaponComponent);
-    lb(this->ProtectionComponent);
-    lb(this->EmergencyComponent);
-    lb(this->SupportComponent);
+    ACommonPawn* pawn = getPawn<ACommonPawn>();
+    if (pawn == nullptr) return;
+
+    lb(pawn->WeaponComponent);
+    lb(pawn->ProtectionComponent);
+    auto tmp = Cast<USpacelInstancedMeshComponent>(pawn->EmergencyComponent);
+    lb(tmp);
+    lb(pawn->SupportComponent);
     m_activatedForms.Empty();
 }
 
@@ -190,25 +200,25 @@ void UModuleComponent::restarted()
 
 ESkillReturn UModuleComponent::onSwapEmergency(uint32 _nbMatiereUseForOne)
 {
-    AShipPawn* pawn = Cast<AShipPawn>(this->GetOwner());
-    if(pawn == nullptr) return ESkillReturn::InternError;
+    AShipPawn* pawn = getPawn<AShipPawn>();
+    if (pawn == nullptr) return ESkillReturn::InternError;
 
     // check component
-    if(this->EmergencyComponent == nullptr) return ESkillReturn::InternError;
-    if(this->ProtectionComponent == nullptr) return ESkillReturn::InternError;
+    if(pawn->EmergencyComponent == nullptr) return ESkillReturn::InternError;
+    if(pawn->ProtectionComponent == nullptr) return ESkillReturn::InternError;
 
-    int32 nbToRepair = this->EmergencyComponent->GetNbRemoved();
+    int32 nbToRepair = pawn->EmergencyComponent->GetNbRemoved();
     int32 nbMatiereNeeded = nbToRepair * _nbMatiereUseForOne;
     int32 nbCanRepair = pawn->RU_Matiere / _nbMatiereUseForOne;
     int32 nbToSwap = nbToRepair - nbCanRepair;
 
     // if we can't repair swapped element
-    if(this->ProtectionComponent->GetNum() < nbToSwap) return ESkillReturn::Unavailable;
+    if(pawn->ProtectionComponent->GetNum() < nbToSwap) return ESkillReturn::Unavailable;
 
-    this->EmergencyComponent->Repair(nbToRepair);
+    pawn->EmergencyComponent->Repair(nbToRepair);
     pawn->addMatiere(-1 * nbCanRepair * _nbMatiereUseForOne, EMatiereOrigin::Lost);
 
-    this->ProtectionComponent->RemoveRandom(nbToSwap);
+    pawn->ProtectionComponent->RemoveRandom(nbToSwap);
 
     return ESkillReturn::Success;
 }
@@ -237,9 +247,12 @@ void UModuleComponent::activateBonus(ESkill _skillId)
         }
     };
 
-    lb(this->WeaponComponent, ESkill::FireRate);
-    lb(this->ProtectionComponent, ESkill::HeavyProtection);
-    lb(this->SupportComponent, ESkill::Speedy);
+    ACommonPawn* pawn = getPawn<ACommonPawn>();
+    if (pawn == nullptr) return;
+
+    lb(pawn->WeaponComponent, ESkill::FireRate);
+    lb(pawn->ProtectionComponent, ESkill::HeavyProtection);
+    lb(pawn->SupportComponent, ESkill::Speedy);
 }
 
 EFormType UModuleComponent::getFormType(ESkill _skillId) const
