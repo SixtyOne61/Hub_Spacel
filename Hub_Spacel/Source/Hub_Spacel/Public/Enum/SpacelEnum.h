@@ -219,4 +219,5 @@ enum class EFormType : uint8
     MetaFormProtection UMETA(DisplayName = "MetaFormProtection"),
     MetaFormSupport UMETA(DisplayName = "MetaFormSupport"),
     EscapeMode UMETA(DisplayName = "EscapeMode"),
+    Max,
 };
