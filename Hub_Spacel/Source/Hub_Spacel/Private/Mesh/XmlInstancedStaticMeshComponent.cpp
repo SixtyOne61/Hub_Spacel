@@ -19,7 +19,7 @@ UXmlInstancedStaticMeshComponent::~UXmlInstancedStaticMeshComponent()
 {
 }
 
-void UXmlInstancedStaticMeshComponent::Read(bool _useBonus)
+void UXmlInstancedStaticMeshComponent::Read()
 {
     SimplyXml::FContainer<FVector_NetQuantize> baseLocationInformation { "Location" };
     SimplyXml::FContainer<FVector_NetQuantize> bonusLocationInformation{ "Bonus" };
@@ -30,14 +30,15 @@ void UXmlInstancedStaticMeshComponent::Read(bool _useBonus)
 
     m_baseLocations = baseLocationInformation.Values;
     m_bonusLocations = bonusLocationInformation.Values;
+}
 
+void UXmlInstancedStaticMeshComponent::InitLocations(bool _useBonus)
+{
     this->Locations = m_baseLocations;
     if (_useBonus)
     {
         this->Locations.Append(m_bonusLocations);
     }
-
-    resetBuild();
 }
 
 void UXmlInstancedStaticMeshComponent::Add(FVector_NetQuantize const& _location)

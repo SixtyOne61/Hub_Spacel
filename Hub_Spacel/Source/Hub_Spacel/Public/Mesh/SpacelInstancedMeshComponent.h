@@ -6,6 +6,7 @@
 #include "Mesh/NetworkInstancedMeshComponent.h"
 #include "Enum/SpacelEnum.h"
 #include <unordered_map>
+#include <tuple>
 #include "SpacelInstancedMeshComponent.generated.h"
 
 /**
@@ -37,10 +38,10 @@ public:
 
 protected:
 	UFUNCTION(Reliable, NetMulticast, Category = "Components|Replication")
-	void RPCNetMulticastUseForm(EFormType _type, uint8 _ignoreLast);
+	void RPCNetMulticastUseForm(EFormType _type, uint8 _ignoreLast, bool _useBonus);
 
 	UFUNCTION(Reliable, NetMulticast, Category = "Components|Replication")
-	void RPCNetMulticastAddForm(EFormType _type, TArray<FVector_NetQuantize> const& _locations, uint8 _ignoreLast);
+	void RPCNetMulticastAddForm(EFormType _type, TArray<FVector_NetQuantize> const& _baseLocations, TArray<FVector_NetQuantize> const& _bonusLocations, uint8 _ignoreLast, bool _useBonus);
 
 protected:
 	inline int Remove(FVector_NetQuantize const& _location) override 
@@ -60,6 +61,12 @@ protected:
 	/* init location and m_removedLocations with _in*/
 	void initArrays(TArray<FVector_NetQuantize> const& _in, uint8 _ignoreLast);
 
+	/* init mesh information */
+	void initMesh(EFormType _type);
+
+	/* compute all needed for build ship */
+	void populate(EFormType _type, uint8 _ignoreLast, bool _useBonus);
+
 protected:
 	UPROPERTY(Category = "Param", EditAnywhere, BlueprintReadWrite)
 	TArray<class UFormDataAsset*> Forms;
@@ -69,7 +76,7 @@ protected:
 
 private:
 	/* form already loaded and send to client */
-	std::unordered_map<EFormType, TArray<FVector_NetQuantize>> m_loaded;
+	std::unordered_map<EFormType, std::tuple<TArray<FVector_NetQuantize>, TArray<FVector_NetQuantize>>> m_loaded;
 
 	/* remove location, only use server side */
 	TArray<FVector_NetQuantize> m_removedLocations;

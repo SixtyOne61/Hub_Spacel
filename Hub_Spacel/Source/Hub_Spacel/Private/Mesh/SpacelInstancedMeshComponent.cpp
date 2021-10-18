@@ -15,19 +15,16 @@ void USpacelInstancedMeshComponent::UseForm(EFormType _type, bool _refresh)
                 m_removedLocations.Empty();
             }
 
-            this->SetStaticMesh(dataAsset->StaticMesh);
-            this->SetEnableGravity(false);
             if(m_loaded.find(_type) != m_loaded.end())
             {
-                RPCNetMulticastUseForm(_type, m_removedLocations.Num());
+                RPCNetMulticastUseForm(_type, m_removedLocations.Num(), this->UseBonus);
             }
             else
             {
                 // read xml
                 this->Path = dataAsset->Path;
-                // TO DO check if we use bonus
-                Read(this->UseBonus);
-                RPCNetMulticastAddForm(_type, this->Locations, m_removedLocations.Num());
+                Read();
+                RPCNetMulticastAddForm(_type, m_baseLocations, m_bonusLocations, m_removedLocations.Num(), this->UseBonus);
             }
             return;
         }
@@ -56,27 +53,30 @@ void USpacelInstancedMeshComponent::RemoveRandom(uint8 _nbToRemove)
     }
 }
 
-void USpacelInstancedMeshComponent::RPCNetMulticastUseForm_Implementation(EFormType _type, uint8 _ignoreLast)
+void USpacelInstancedMeshComponent::RPCNetMulticastUseForm_Implementation(EFormType _type, uint8 _ignoreLast, bool _useBonus)
 {
     if (m_loaded.find(_type) != m_loaded.end())
     {
-        initArrays(m_loaded[_type], _ignoreLast);
-        BroadcastCount();
-        resetBuild();
+        m_baseLocations = std::get<0>(m_loaded[_type]);
+        m_bonusLocations = std::get<1>(m_loaded[_type]);
+
+        populate(_type, _ignoreLast, _useBonus);
     }
     else
     {
         // TO DO : fallback
+        UE_LOG(LogTemp, Warning, TEXT("Ship not loaded"));
     }
 }
 
-void USpacelInstancedMeshComponent::RPCNetMulticastAddForm_Implementation(EFormType _type, TArray<FVector_NetQuantize> const& _locations, uint8 _ignoreLast)
+void USpacelInstancedMeshComponent::RPCNetMulticastAddForm_Implementation(EFormType _type, TArray<FVector_NetQuantize> const& _baseLocations, TArray<FVector_NetQuantize> const& _bonusLocations, uint8 _ignoreLast, bool _useBonus)
 {
-    m_loaded.insert({ _type , _locations });
+    m_baseLocations = _baseLocations;
+    m_bonusLocations = _bonusLocations;
 
-    initArrays(_locations, _ignoreLast);
-    BroadcastCount();
-    resetBuild();
+    m_loaded.insert({ _type , std::make_tuple(m_baseLocations, m_bonusLocations) });
+
+    populate(_type, _ignoreLast, _useBonus);
 }
 
 void USpacelInstancedMeshComponent::clean()
@@ -103,4 +103,25 @@ void USpacelInstancedMeshComponent::initArrays(TArray<FVector_NetQuantize> const
 
     lb_copyArray(_in.Num() - _ignoreLast, this->Locations);
     lb_copyArray(_ignoreLast, m_removedLocations);
+}
+
+void USpacelInstancedMeshComponent::initMesh(EFormType _type)
+{
+    for (auto* dataAsset : this->Forms)
+    {
+        if (dataAsset != nullptr && dataAsset->Type == _type)
+        {
+            this->SetStaticMesh(dataAsset->StaticMesh);
+            this->SetEnableGravity(false);
+        }
+    }
+}
+
+void USpacelInstancedMeshComponent::populate(EFormType _type, uint8 _ignoreLast, bool _useBonus)
+{
+    initMesh(_type);
+    InitLocations(_useBonus);
+    initArrays(this->Locations, _ignoreLast);
+    BroadcastCount();
+    resetBuild();
 }

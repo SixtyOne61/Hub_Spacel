@@ -19,7 +19,10 @@ class HUB_SPACEL_API UXmlInstancedStaticMeshComponent : public UInstancedStaticM
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Components|Xml")
-	void Read(bool _useBonus);
+	void Read();
+
+	UFUNCTION(BlueprintCallable, Category = "Components|Init")
+	virtual void InitLocations(bool _useBonus);
 
 	UFUNCTION(BlueprintCallable, Category = "Components|Action")
 	virtual void Add(FVector_NetQuantize const& _location);
@@ -33,7 +36,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Components|Getteur")
 	inline TArray<FVector_NetQuantize> const& GetLocations() const { return this->Locations; }
 	
-protected:
+public:
 	/* take Locations and add it to instance static mesh */
 	virtual void resetBuild();
 
