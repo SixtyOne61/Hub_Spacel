@@ -91,7 +91,7 @@ void UModuleComponent::buildLobbyShip(ESkill _skillId, ESkillType _type)
 
 void UModuleComponent::OnChangeState(EGameState _state)
 {
-    if(_state != EGameState::InGame) return;
+    if(_state != EGameState::LockPrepare) return;
 
     if (APawn* pawn = Cast<APawn>(this->GetOwner()))
     {
