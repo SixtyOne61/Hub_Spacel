@@ -106,6 +106,7 @@ void USpacelInstancedMeshComponent::initArrays(TArray<FVector_NetQuantize> const
         {
             _out.Add(locations[0]);
             locations.RemoveAt(0);
+            --_nb;
         }
     };
 
