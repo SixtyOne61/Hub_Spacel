@@ -35,10 +35,18 @@ void USpacelInstancedMeshComponent::UseForm(EFormType _type, bool _refresh)
 
 uint8 USpacelInstancedMeshComponent::Repair(uint8 _nbRepair)
 {
-    while (_nbRepair > 0 && m_removedLocations.Num() != 0)
+    TArray<FVector_NetQuantize> locations;
+    int index { m_removedLocations.Num() - 1 };
+    while (_nbRepair > 0 && index >= 0)
     {
-        RPCNetMulticastAdd(m_removedLocations.Pop());
+        locations.Add(m_removedLocations[index]);
         --_nbRepair;
+        -- index;
+    }
+
+    if (locations.Num() != 0)
+    {
+        RPCNetMulticastAddRange(locations);
     }
 
     return _nbRepair;

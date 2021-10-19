@@ -8,6 +8,11 @@ void UNetworkInstancedMeshComponent::RPCNetMulticastAdd_Implementation(FVector_N
     this->Add(_location);
 }
 
+void UNetworkInstancedMeshComponent::RPCNetMulticastAddRange_Implementation(TArray<FVector_NetQuantize> const& _locations)
+{
+    this->AddRange(_locations);
+}
+
 void UNetworkInstancedMeshComponent::RPCNetMulticastRemove_Implementation(FVector_NetQuantize const& _location)
 {
     this->Remove(_location);

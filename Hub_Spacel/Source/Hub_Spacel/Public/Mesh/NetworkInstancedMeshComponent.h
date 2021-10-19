@@ -21,6 +21,9 @@ public:
 	void RPCNetMulticastAdd(FVector_NetQuantize const& _location);
 
 	UFUNCTION(Reliable, NetMulticast, Category = "Components|Replication")
+	void RPCNetMulticastAddRange(TArray<FVector_NetQuantize> const& _locations);
+
+	UFUNCTION(Reliable, NetMulticast, Category = "Components|Replication")
 	void RPCNetMulticastRemove(FVector_NetQuantize const& _location);
 
 	UFUNCTION(Reliable, NetMulticast, Category = "Components|Replication")
@@ -41,6 +44,15 @@ protected:
 	inline void Add(FVector_NetQuantize const& _location) override
 	{
 		Super::Add(_location);
+		BroadcastCount();
+	}
+
+	virtual inline void AddRange(TArray<FVector_NetQuantize> const& _locations)
+	{
+		for (auto loc : _locations)
+		{
+			Super::Add(loc);
+		}
 		BroadcastCount();
 	}
 

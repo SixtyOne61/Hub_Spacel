@@ -44,6 +44,15 @@ protected:
 	void RPCNetMulticastAddForm(EFormType _type, TArray<FVector_NetQuantize> const& _baseLocations, TArray<FVector_NetQuantize> const& _bonusLocations, uint8 _ignoreLast, bool _useBonus);
 
 protected:
+	inline void AddRange(TArray<FVector_NetQuantize> const& _locations) override
+	{
+		for (auto loc : _locations)
+		{
+			m_removedLocations.Remove(loc);
+		}
+		Super::AddRange(_locations);
+	}
+
 	inline int Remove(FVector_NetQuantize const& _location) override 
 	{
 		m_removedLocations.Add(_location);
