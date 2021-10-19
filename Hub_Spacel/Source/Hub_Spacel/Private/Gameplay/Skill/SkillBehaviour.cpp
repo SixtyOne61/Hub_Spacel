@@ -169,7 +169,13 @@ ESkillReturn SkillKatyusha::onStart()
 ESkillReturn SkillEmergency::onStart()
 {
     if (get<AShipPawn>() == nullptr) return ESkillReturn::InternError;
-    return get<AShipPawn>()->onSwapEmergency();
+    auto ret = get<AShipPawn>()->onSwapEmergency();
+
+    if (ret == ESkillReturn::Success)
+    {
+        onEndCountDown();
+    }
+    return ret;
 }
 
 void SkillEmergency::onEndCountDown()

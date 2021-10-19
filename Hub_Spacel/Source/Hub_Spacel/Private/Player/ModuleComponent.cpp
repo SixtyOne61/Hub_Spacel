@@ -212,16 +212,15 @@ ESkillReturn UModuleComponent::onSwapEmergency(uint32 _nbMatiereUseForOne)
     int32 nbToRepair = pawn->EmergencyComponent->GetNbRemoved();
     int32 nbMatiereNeeded = nbToRepair * _nbMatiereUseForOne;
     int32 nbCanRepair = pawn->RU_Matiere / _nbMatiereUseForOne;
-    int32 nbToSwap = nbToRepair - nbCanRepair;
+    int32 nbToSwap = FMath::Max(nbToRepair - nbCanRepair, 0);
 
     // if we can't repair swapped element
     if(pawn->ProtectionComponent->GetNum() < nbToSwap) return ESkillReturn::Unavailable;
 
     pawn->EmergencyComponent->Repair(nbToRepair);
-    pawn->addMatiere(-1 * nbCanRepair * _nbMatiereUseForOne, EMatiereOrigin::Lost);
+    pawn->addMatiere(-1 * (nbToRepair - nbToSwap) * _nbMatiereUseForOne, EMatiereOrigin::Lost);
 
     pawn->ProtectionComponent->RemoveRandom(nbToSwap);
-
     return ESkillReturn::Success;
 }
 
