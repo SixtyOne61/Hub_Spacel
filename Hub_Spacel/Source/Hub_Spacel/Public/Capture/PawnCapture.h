@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Enum/SpacelEnum.h"
 #include "PawnCapture.generated.h"
 
 UCLASS()
@@ -21,28 +22,31 @@ protected:
 
 public:	
 	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+	virtual void Tick(float _deltaTime) override;
 
-	UFUNCTION(BlueprintCallable)
-	void BuildShip();
-
-protected:
-	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
-	class USetupAttributeDataAsset* WeaponDataAsset { nullptr };
-
-	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
-	class USetupAttributeDataAsset* ProtectionDataAsset{ nullptr };
-
-	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
-	class USetupAttributeDataAsset* SupportDataAsset{ nullptr };
+	UFUNCTION(BlueprintCallable, Category = "Build")
+	void BuildShip(EFormType _type);
 
 protected:
-	UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)
-	class UInstancedStaticMeshComponent* WeaponMeshComponent { nullptr };
+	UPROPERTY(Category = "Component|Root", VisibleAnywhere, BlueprintReadOnly)
+	class UStaticMeshComponent* DriverMeshComponent { nullptr };
 
-	UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)
-	class UInstancedStaticMeshComponent* ProtectionMeshComponent { nullptr };
+	UPROPERTY(Category = "Component|Root", VisibleAnywhere, BlueprintReadWrite)
+	class UPoseableMeshComponent* BaseShipMeshComponent{ nullptr };
 
-	UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)
-	class UInstancedStaticMeshComponent* SupportMeshComponent { nullptr };
+	UPROPERTY(Category = "Component|Mesh", VisibleAnywhere, BlueprintReadWrite)
+	class USpacelInstancedMeshComponent* WeaponComponent { nullptr };
+
+	UPROPERTY(Category = "Component|Mesh", VisibleAnywhere, BlueprintReadWrite)
+	class USpacelInstancedMeshComponent* ProtectionComponent { nullptr };
+
+	UPROPERTY(Category = "Component|Mesh", VisibleAnywhere, BlueprintReadWrite)
+	class USpacelInstancedMeshComponent* SupportComponent { nullptr };
+
+	UPROPERTY(Category = "Component|Param", VisibleAnywhere, BlueprintReadWrite)
+	float Time { 7.0f };
+
+protected:
+	float m_currentTime { 0.0f };
+	EFormType m_currentForm { EFormType::Base };
 };

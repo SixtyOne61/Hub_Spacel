@@ -3,6 +3,9 @@
 
 #include "PawnCapture.h"
 #include "Components/InstancedStaticMeshComponent.h"
+#include "Components/PoseableMeshComponent.h"
+#include "Components/StaticMeshComponent.h"
+#include "Mesh/SpacelInstancedMeshComponent.h"
 #include "Util/SimplyXml.h"
 #include "DataAsset/SetupAttributeDataAsset.h"
 
@@ -11,66 +14,66 @@ APawnCapture::APawnCapture()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
+    DriverMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Driver_00"));
+    if (!ensure(DriverMeshComponent != nullptr)) return;
+    RootComponent = DriverMeshComponent;
+
+    BaseShipMeshComponent = CreateDefaultSubobject<UPoseableMeshComponent>(TEXT("ShipBase_00"));
+    if (!ensure(BaseShipMeshComponent != nullptr)) return;
+    BaseShipMeshComponent->SetupAttachment(RootComponent);
+
+    WeaponComponent = CreateDefaultSubobject<USpacelInstancedMeshComponent>(TEXT("Weapon_00"));
+    if (!ensure(WeaponComponent != nullptr)) return;
+    WeaponComponent->SetupAttachment(BaseShipMeshComponent);
+
+    ProtectionComponent = CreateDefaultSubobject<USpacelInstancedMeshComponent>(TEXT("Protection_00"));
+    if (!ensure(ProtectionComponent != nullptr)) return;
+    ProtectionComponent->SetupAttachment(BaseShipMeshComponent);
+
+    SupportComponent = CreateDefaultSubobject<USpacelInstancedMeshComponent>(TEXT("Support_00"));
+    if (!ensure(SupportComponent != nullptr)) return;
+    SupportComponent->SetupAttachment(BaseShipMeshComponent);
 }
 
-void APawnCapture::BuildShip()
+void APawnCapture::BuildShip(EFormType _type)
 {
-    auto lb_readXml = [](USetupAttributeDataAsset* _dataAsset, TArray<FVector_NetQuantize>& _out, FString&& _name)
+    if (this->WeaponComponent != nullptr)
     {
-        if (!ensure(_dataAsset != nullptr)) return;
-        FString const& path { _dataAsset->HeavyPath };
+        this->WeaponComponent->UseForm(_type, true);
+    }
 
-        SimplyXml::FContainer<FVector> locationInformation{ _name };
-        SimplyXml::FReader reader{ FPaths::ProjectDir() + path };
-        reader.read(locationInformation);
-
-        _out.Empty();
-        for (FVector loc : locationInformation.Values)
-        {
-            _out.Add(loc);
-        }
-    };
-
-    auto lb_build = [](UInstancedStaticMeshComponent * &_mesh, UStaticMeshDataAsset * _staticMesh, TArray<FVector_NetQuantize> const& _locations)
+    if (this->ProtectionComponent != nullptr)
     {
-        if (_mesh && _staticMesh)
-        {
-            _mesh->ClearInstances();
-            _mesh->SetStaticMesh(_staticMesh->StaticMesh);
-            _mesh->SetEnableGravity(false);
+        this->ProtectionComponent->UseForm(_type, true);
+    }
 
-            for (auto const& _location : _locations)
-            {
-                FTransform voxelTransform{};
-                voxelTransform.SetLocation(_location);
-                _mesh->AddInstance(voxelTransform);
-            }
-        }
-    };
-
-    TArray<FVector_NetQuantize> locations {};
-
-    lb_readXml(this->WeaponDataAsset, locations, "Location");
-    lb_build(this->WeaponMeshComponent, this->WeaponDataAsset, locations);
-
-    lb_readXml(this->ProtectionDataAsset, locations, "Location");
-    lb_build(this->ProtectionMeshComponent, this->ProtectionDataAsset, locations);
-
-    lb_readXml(this->SupportDataAsset, locations, "Location");
-    lb_build(this->SupportMeshComponent, this->SupportDataAsset, locations);
+    if (this->SupportComponent != nullptr)
+    {
+        this->SupportComponent->UseForm(_type, true);
+    }
 }
 
 // Called when the game starts or when spawned
 void APawnCapture::BeginPlay()
 {
 	Super::BeginPlay();
-	
+    m_currentTime = this->Time;
 }
 
 // Called every frame
-void APawnCapture::Tick(float DeltaTime)
+void APawnCapture::Tick(float _deltaTime)
 {
-	Super::Tick(DeltaTime);
+	Super::Tick(_deltaTime);
 
+    m_currentTime -= _deltaTime;
+    if (m_currentTime <= 0.0f)
+    {
+        m_currentForm = (EFormType)((uint8)m_currentForm + 1);
+        if(m_currentForm == EFormType::Max) m_currentForm = EFormType::Base;
+
+        BuildShip(m_currentForm);
+        m_currentTime = this->Time;
+    }
 }
 

@@ -202,3 +202,22 @@ enum class EMatiereOrigin : uint8
     Kill UMETA(DisplayName = "Kill"),
     Lost UMETA(DisplayName = "Lost"),
 };
+
+UENUM(BlueprintType)
+enum class EBuilderType : uint8
+{
+    Attack UMETA(DisplayName = "Attack"),
+    Protection UMETA(DisplayName = "Protection"),
+    Engine UMETA(DisplayName = "Engine"),
+};
+
+UENUM(BlueprintType)
+enum class EFormType : uint8
+{
+    Base UMETA(DisplayName = "Base"),
+    MetaFormAttack UMETA(DisplayName = "MetaFormAttack"),
+    MetaFormProtection UMETA(DisplayName = "MetaFormProtection"),
+    MetaFormSupport UMETA(DisplayName = "MetaFormSupport"),
+    EscapeMode UMETA(DisplayName = "EscapeMode"),
+    Max,
+};

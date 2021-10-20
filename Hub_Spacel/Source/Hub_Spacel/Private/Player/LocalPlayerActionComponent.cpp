@@ -6,7 +6,7 @@
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Camera/CameraComponent.h"
 #include "Components/PostProcessComponent.h"
-#include "Components/InstancedStaticMeshComponent.h"
+#include "Mesh/SpacelInstancedMeshComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Player/ShipPawn.h"
 #include "Player/ModuleComponent.h"
@@ -52,7 +52,7 @@ void ULocalPlayerActionComponent::TickComponent(float _deltaTime, ELevelTick _ti
     ACommonPawn* pawn = get();
     if (m_speedLineMaterial != nullptr && pawn != nullptr && pawn->CameraComponent != nullptr)
     {
-        float coefSpeed = FMath::Max((pawn->ModuleComponent->SupportMeshComponent->GetInstanceCount() / 9.0f), pawn->PlayerDataAsset->MinCoefSpeed);
+        float coefSpeed = FMath::Max((pawn->SupportComponent->GetNum() / 9.0f), pawn->PlayerDataAsset->MinCoefSpeed);
         if (pawn->hasEffect(EEffect::MetaFormAttack) || pawn->hasEffect(EEffect::MetaFormProtection) || pawn->hasEffect(EEffect::MetaFormSupport) || pawn->hasEffect(EEffect::EscapeMode))
         {
             // override speed max
