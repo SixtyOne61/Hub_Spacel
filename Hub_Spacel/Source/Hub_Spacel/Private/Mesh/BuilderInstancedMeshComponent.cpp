@@ -23,7 +23,7 @@ void UBuilderInstancedMeshComponent::Export() const
 {
     TArray<FVector_NetQuantize> locations;
     locations.Reserve(this->ThresholdBonus);
-    for (int i = 0; i < this->ThresholdBonus; ++i)
+    for (int i = 0; (i < this->ThresholdBonus) && i < this->Locations.Num(); ++i)
     {
         locations.Add(this->Locations[i]);
     }
@@ -31,7 +31,7 @@ void UBuilderInstancedMeshComponent::Export() const
     TArray<FVector_NetQuantize> locationsBonus;
     locationsBonus.Reserve(this->MaxVoxel - this->ThresholdBonus);
 
-    for (int i = 0; i < this->MaxVoxel; ++i)
+    for (int i = this->ThresholdBonus; (i < this->MaxVoxel) && i < this->Locations.Num(); ++i)
     {
         locationsBonus.Add(this->Locations[i]);
     }

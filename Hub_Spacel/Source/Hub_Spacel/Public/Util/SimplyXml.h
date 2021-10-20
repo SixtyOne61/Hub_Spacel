@@ -34,7 +34,12 @@ namespace SimplyXml
 
 			if (m_file != nullptr)
 			{
+				FXmlNode* rootNode{ m_file->GetRootNode() };
+				if (rootNode == nullptr) return;
+
 				write_impl(_containers...);
+
+				rootNode->SetContent(m_content);
 				m_file->Save(m_path);
 			}
 		}
@@ -50,31 +55,27 @@ namespace SimplyXml
 		template<class T>
 		void write_impl(T && _t)
 		{
-			FXmlNode* rootNode { m_file->GetRootNode() };
-			if (rootNode == nullptr) return;
-
-			writeNode(std::forward<T>(_t), rootNode);
+			writeNode(std::forward<T>(_t));
 		}
 
 		template<typename T>
-		void writeNode(FContainer<T> const& _container, FXmlNode * _node)
+		void writeNode(FContainer<T> const& _container)
 		{
 			ensure(true);
 		}
 
 		template<>
-		void writeNode(FContainer<FVector_NetQuantize> const& _container, FXmlNode * _node)
+		void writeNode(FContainer<FVector_NetQuantize> const& _container)
 		{
-			if (_node == nullptr) return;
-
 			for (auto loc : _container.Values)
 			{
-				_node->AppendChildNode(_container.Tag, loc.ToString());
+				m_content.Append("<" + _container.Tag + " val=\"" + loc.ToString() + "\"/>\n");
 			}
 		}
 
 	private:
 		FXmlFile* m_file { nullptr };
+		FString m_content { "\n" };
 	};
 
 	struct FReader
