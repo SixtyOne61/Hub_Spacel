@@ -135,6 +135,7 @@ enum class EEffect : uint8
     PassiveFireRate UMETA(DisplayName = "PassiveFireRate"),
     PassiveCountDown UMETA(DisplayName = "PassiveCountDown"),
     PassiveSpeed UMETA(DisplayName = "PassiveSpeed"),
+    Missile UMETA(DisplayName = "Missile"),
 };
 
 UENUM(BlueprintType)
@@ -219,5 +220,6 @@ enum class EFormType : uint8
     MetaFormProtection UMETA(DisplayName = "MetaFormProtection"),
     MetaFormSupport UMETA(DisplayName = "MetaFormSupport"),
     EscapeMode UMETA(DisplayName = "EscapeMode"),
+    Missile UMETA(DisplayName = "Missile"),
     Max,
 };

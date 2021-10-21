@@ -285,12 +285,6 @@ void AShipPawn::LinkPawn()
     }
 }
 
-void AShipPawn::launchMissile()
-{
-    if (!ensure(this->FireComponent != nullptr)) return;
-    this->FireComponent->launchMissile(FTransform{*this->MissileComponent->GetLocations().begin()});
-}
-
 void AShipPawn::spawnKatyusha()
 {
     if (!ensure(this->FireComponent != nullptr)) return;
@@ -381,6 +375,10 @@ void AShipPawn::computeSoundData()
     {
         // override speed max
         percentSpeed = 101 * FMath::Abs(RU_PercentSpeed);
+    }
+    else if (hasEffect(EEffect::Missile))
+    {
+        percentSpeed = 0.0f;
     }
 
     bool playStart { false };
@@ -879,14 +877,14 @@ void AShipPawn::behaviourAddEffect(EEffect _type)
 
         if (this->ModuleComponent != nullptr)
         {
-            this->ModuleComponent->activeMetaForm(EEffect::MetaFormSupport);
+            this->ModuleComponent->activeMetaForm(_type);
         }
     }
     else if (_type == EEffect::MetaFormProtection)
     {
         if (this->ModuleComponent != nullptr)
         {
-            this->ModuleComponent->activeMetaForm(EEffect::MetaFormProtection);
+            this->ModuleComponent->activeMetaForm(_type);
         }
 
         if (this->MetaFormProtectionComponent != nullptr)
@@ -898,7 +896,7 @@ void AShipPawn::behaviourAddEffect(EEffect _type)
     {
         if (this->ModuleComponent != nullptr)
         {
-            this->ModuleComponent->activeMetaForm(EEffect::MetaFormAttack);
+            this->ModuleComponent->activeMetaForm(_type);
         }
     }
     else if (_type == EEffect::StartGame)
@@ -916,7 +914,18 @@ void AShipPawn::behaviourAddEffect(EEffect _type)
     {
         if (this->ModuleComponent != nullptr)
         {
-            this->ModuleComponent->activeMetaForm(EEffect::EscapeMode);
+            this->ModuleComponent->activeMetaForm(_type);
+        }
+    }
+    else if (_type == EEffect::Missile)
+    {
+        if (this->ModuleComponent != nullptr)
+        {
+            removeEffect(EEffect::EscapeMode);
+            removeEffect(EEffect::MetaFormAttack);
+            removeEffect(EEffect::MetaFormProtection);
+            removeEffect(EEffect::MetaFormSupport);
+            this->ModuleComponent->activeMetaForm(_type);
         }
     }
 }
@@ -1024,6 +1033,13 @@ void AShipPawn::behaviourRemoveEffect(EEffect _type)
     {
         this->OnLostGoldDelegate.broadcast();
         RPCNetMultiCastFxGold(false);
+    }
+    else if (_type == EEffect::Missile)
+    {
+        if (this->ModuleComponent != nullptr)
+        {
+            this->ModuleComponent->removeMetaForm(_type);
+        }
     }
 }
 

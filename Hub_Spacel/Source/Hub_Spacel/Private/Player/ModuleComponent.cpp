@@ -268,6 +268,8 @@ EFormType UModuleComponent::getFormType(ESkill _skillId) const
         return EFormType::MetaFormSupport;
     case ESkill::EscapeMode:
         return EFormType::EscapeMode;
+    case ESkill::Missile:
+        return EFormType::Missile;
     }
 
     return EFormType::Base;
@@ -285,6 +287,8 @@ EFormType UModuleComponent::getFormType(EEffect _type) const
         return EFormType::MetaFormSupport;
     case EEffect::EscapeMode:
         return EFormType::EscapeMode;
+    case EEffect::Missile:
+        return EFormType::Missile;
     }
 
     return EFormType::Base;

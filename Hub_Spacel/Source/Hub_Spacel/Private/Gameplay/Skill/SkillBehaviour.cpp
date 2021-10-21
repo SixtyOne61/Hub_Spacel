@@ -44,12 +44,18 @@ void SkillEscapeMode::onEndCountDown()
 {
 }
 
-ESkillReturn SkillSpecialAttack::onStart()
+ESkillReturn SkillMissile::onStart()
 {
     if (get<AShipPawn>() == nullptr) return ESkillReturn::InternError;
 
-    get<AShipPawn>()->launchMissile();
+    get<AShipPawn>()->addEffect(EEffect::Missile);
     return ESkillReturn::Success;
+}
+
+void SkillMissile::onEnd()
+{
+    if (get() == nullptr) return;
+    get()->removeEffect(EEffect::Missile);
 }
 
 void SkillSpecialProtection::fillPlayer(FName const& _team, TArray<AShipPawn*>& _pawns) const
@@ -189,7 +195,7 @@ TUniquePtr<SkillBehaviour> SkillFactory::create(ESkill _skill, class ACommonPawn
     switch (_skill)
     {
         case ESkill::EscapeMode : return MakeUnique<SkillEscapeMode>(_pawn, _netMode);
-        case ESkill::Missile : return MakeUnique<SkillSpecialAttack>(_pawn, _netMode);
+        case ESkill::Missile : return MakeUnique<SkillMissile>(_pawn, _netMode);
         case ESkill::ShieldTeam: return MakeUnique<SkillSpecialProtection>(_pawn, _netMode);
         case ESkill::Emp: return MakeUnique<SkillSpecialSupport>(_pawn, _netMode);
         case ESkill::MetaFormAttack: return MakeUnique<SkillMetaFormAttack>(_pawn, _netMode);

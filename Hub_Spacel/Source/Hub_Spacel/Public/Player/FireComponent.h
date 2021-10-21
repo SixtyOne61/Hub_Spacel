@@ -25,10 +25,24 @@ public:
 	void TickComponent(float _deltaTime, ELevelTick _tickType, FActorComponentTickFunction* _thisTickFunction) override;
 
 private:
+	/* bullet behaviour */
+	void fireBullet(FTransform _fireTransform);
 	void spawnBullet(FTransform const& _transform) const;
-	void launchMissile(FTransform const _transform) const;
+
+	/* missile behaviour */
+	void fireMissile(FTransform _fireTransform);
+	void spawnMissile(FTransform const _transform) const;
+
+	/* return fire transform */
+	FTransform getFireTransform();
+
+	/* reset fire count down */
+	void resetFireCountDown();
+
+	/* shot gun TO DO */
 	void spawnKatyusha();
 
+	/* change collision profile */
 	void setupProjectile(AActor* _projectile) const;
 
 	UFUNCTION()

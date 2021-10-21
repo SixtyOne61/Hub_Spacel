@@ -42,49 +42,16 @@ void UFireComponent::TickComponent(float _deltaTime, ELevelTick _tickType, FActo
     // check if we have boolean for fire (only set on server)
     if (m_isFire.hasValue() && m_isFire.value() && m_fireCountDown <= 0.0f)
     {
-        FTransform transform{};
-        get()->WeaponComponent->GetInstanceTransform(m_fireIndex, transform, true);
-        // reset scale
-        transform.SetScale3D({ 1.0f, 1.0f, 1.0f });
-
-        ++m_fireIndex;
-        if (m_fireIndex >= get()->WeaponComponent->GetNum())
+        if (ACommonPawn* pawn = get())
         {
-            m_fireIndex = 0;
-        }
-
-        FVector bulletDir = UKismetMathLibrary::FindLookAtRotation(transform.GetLocation(), get()->TargetLocation).Vector();
-        bulletDir.Normalize();
-        transform.SetRotation(bulletDir.ToOrientationQuat());
-        spawnBullet(transform);
-
-        // reset count down
-        if (ASpacelPlayerState* spacelPlayerState = get()->GetPlayerState<ASpacelPlayerState>())
-        {
-            uint8 lowSkillId = spacelPlayerState->getSkillId(ESkillType::Low);
-            float coef = 1.0f;
-            // check if we override this
-            if (this->FireRateDataAsset != nullptr)
+            if (pawn->hasEffect(EEffect::Missile))
             {
-                if (lowSkillId == (uint8)ESkill::FireRate)
-                {
-                    coef = this->FireRateDataAsset->Value / 100.0f;
-                }
+                fireMissile(getFireTransform());
             }
-
-            if (get()->hasEffect(EEffect::MetaFormAttack))
+            else
             {
-                if (this->MetaFormAttackDataAsset != nullptr)
-                {
-                    coef = this->MetaFormAttackDataAsset->Value / 100.0f;
-                }
+                fireBullet(getFireTransform());
             }
-
-            m_fireCountDown = get()->PlayerDataAsset->TimeBetweenFire * coef * ((100.0f - get<AShipPawn>()->m_bonusFireRate) / 100.0f);
-        }
-        else
-        {
-            ensure(true);
         }
     }
     else if (m_fireCountDown != 0.0f)
@@ -94,6 +61,60 @@ void UFireComponent::TickComponent(float _deltaTime, ELevelTick _tickType, FActo
         // and throw many bullet
         m_fireCountDown -= _deltaTime;
     }
+}
+
+FTransform UFireComponent::getFireTransform()
+{
+    FTransform transform{};
+    get()->WeaponComponent->GetInstanceTransform(m_fireIndex, transform, true);
+    // reset scale
+    transform.SetScale3D({ 1.0f, 1.0f, 1.0f });
+
+    ++m_fireIndex;
+    if (m_fireIndex >= get()->WeaponComponent->GetNum())
+    {
+        m_fireIndex = 0;
+    }
+
+    FVector bulletDir = UKismetMathLibrary::FindLookAtRotation(transform.GetLocation(), get()->TargetLocation).Vector();
+    bulletDir.Normalize();
+    transform.SetRotation(bulletDir.ToOrientationQuat());
+
+    return transform;
+}
+
+void UFireComponent::resetFireCountDown()
+{
+    // reset count down
+    if (ASpacelPlayerState* spacelPlayerState = get()->GetPlayerState<ASpacelPlayerState>())
+    {
+        uint8 lowSkillId = spacelPlayerState->getSkillId(ESkillType::Low);
+        float coef = 1.0f;
+        // check if we override this
+        if (this->FireRateDataAsset != nullptr)
+        {
+            if (lowSkillId == (uint8)ESkill::FireRate)
+            {
+                coef = this->FireRateDataAsset->Value / 100.0f;
+            }
+        }
+
+        if (get()->hasEffect(EEffect::MetaFormAttack))
+        {
+            if (this->MetaFormAttackDataAsset != nullptr)
+            {
+                coef = this->MetaFormAttackDataAsset->Value / 100.0f;
+            }
+        }
+
+        m_fireCountDown = get()->PlayerDataAsset->TimeBetweenFire * coef * ((100.0f - get<AShipPawn>()->m_bonusFireRate) / 100.0f);
+    }
+}
+
+void UFireComponent::fireBullet(FTransform _fireTransform)
+{
+    spawnBullet(_fireTransform);
+    resetFireCountDown();
 }
 
 void UFireComponent::spawnBullet(FTransform const& _transform) const
@@ -108,7 +129,13 @@ void UFireComponent::spawnBullet(FTransform const& _transform) const
     }
 }
 
-void UFireComponent::launchMissile(FTransform const _transform) const
+void UFireComponent::fireMissile(FTransform _fireTransform)
+{
+    spawnMissile(_fireTransform);
+    resetFireCountDown();
+}
+
+void UFireComponent::spawnMissile(FTransform const _transform) const
 {
     AActor* actor = Cast<AActor>(UGameplayStatics::BeginDeferredActorSpawnFromClass(this->GetWorld(), get()->PlayerDataAsset->MissileClass, _transform));
     if (AMissile* missile = Cast<AMissile>(actor))

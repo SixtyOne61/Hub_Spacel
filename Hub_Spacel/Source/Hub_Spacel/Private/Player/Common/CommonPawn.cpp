@@ -187,6 +187,14 @@ void ACommonPawn::moveShip(float _deltaTime)
     rotation.Add(0.0f, 0.0f, this->PercentFlightAttitude * FMath::Max(coefSpeed, 1.0f) * this->PlayerDataAsset->MaxFlightAttitudeSpeed);
     setActorRotation(rotation);
 
+    // missile only move rotation
+    if (hasEffect(EEffect::Missile))
+    {
+        this->DriverMeshComponent->SetPhysicsLinearVelocity(FVector::ZeroVector);
+        this->DriverMeshComponent->SetPhysicsAngularVelocityInDegrees(FVector::ZeroVector);
+        return;
+    }
+
     // linear
     FVector const& linearVelocity = this->DriverMeshComponent->GetPhysicsLinearVelocity(NAME_None);
 

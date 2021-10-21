@@ -62,14 +62,14 @@ public:
 	void onEndCountDown() override;
 };
 
-class HUB_SPACEL_API SkillSpecialAttack : public SkillBehaviour
+class HUB_SPACEL_API SkillMissile : public SkillBehaviour
 {
 	using SkillBehaviour::SkillBehaviour;
 public:
-	virtual ~SkillSpecialAttack() {}
+	virtual ~SkillMissile() {}
 
 	ESkillReturn onStart() override;
-	void onEnd() override {};
+	void onEnd() override;
 	void onEndCountDown() override {};
 };
 

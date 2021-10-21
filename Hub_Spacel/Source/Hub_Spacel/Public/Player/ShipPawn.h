@@ -58,7 +58,6 @@ public:
     void behaviourAddEffect(EEffect _type);
     void behaviourRemoveEffect(EEffect _type);
 
-    void launchMissile();
     void spawnKatyusha();
     ESkillReturn spawnEmp();
     void emp(uint32 _duration, FName const& _team, int32 _playerId);
