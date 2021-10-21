@@ -35,10 +35,6 @@ void UModuleComponent::BeginPlay()
         {
             spacelGameState->OnChangeStateDelegate.AddDynamic(this, &UModuleComponent::OnChangeState);
         }
-
-        pawn->MissileComponent->Read();
-        pawn->MissileComponent->InitLocations(false);
-        pawn->MissileComponent->resetBuild();
     }
 
     // setup events to update count voxel on component

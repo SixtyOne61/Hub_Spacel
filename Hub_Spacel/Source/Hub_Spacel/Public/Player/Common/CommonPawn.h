@@ -115,9 +115,6 @@ public:
     UPROPERTY(Category = "Component|Mesh", VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
     class USpacelInstancedMeshComponent* SupportComponent{ nullptr };
 
-    UPROPERTY(Category = "Component|Mesh", VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-    class UXmlInstancedStaticMeshComponent* MissileComponent{ nullptr };
-
     /* only on server side */
     UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)
     class UFireComponent* FireComponent{ nullptr };

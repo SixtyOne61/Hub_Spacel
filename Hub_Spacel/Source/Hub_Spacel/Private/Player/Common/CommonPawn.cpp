@@ -63,10 +63,6 @@ ACommonPawn::ACommonPawn()
     if (!ensure(SupportComponent != nullptr)) return;
     SupportComponent->SetupAttachment(ModuleComponent);
 
-    MissileComponent = CreateDefaultSubobject<UXmlInstancedStaticMeshComponent>(TEXT("MissileStart_00"));
-    if (!ensure(MissileComponent != nullptr)) return;
-    MissileComponent->SetupAttachment(ModuleComponent);
-
     // Create a spring arm component
     SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm_00"));
     if (!ensure(SpringArmComponent != nullptr)) return;
