@@ -761,11 +761,27 @@ void AShipPawn::RPCNetMulticastEnterHidding_Implementation(int32 _playerId, bool
 void AShipPawn::RPCNetMulticastAddEffect_Implementation(EEffect _effect)
 {
     BP_FxGlobalAddEffect(_effect);
+    playFash(_effect);
 }
 
 void AShipPawn::RPCNetMulticastRemoveEffect_Implementation(EEffect _effect)
 {
     BP_FxGlobalRemoveEffect(_effect);
+    playFash(_effect);
+}
+
+void AShipPawn::playFash(EEffect _effect) const
+{
+    switch (_effect)
+    {
+    case EEffect::EscapeMode:
+    case EEffect::MetaFormAttack:
+    case EEffect::MetaFormProtection:
+    case EEffect::MetaFormSupport:
+    case EEffect::Missile:
+        BP_PlayFlash();
+        break;
+    }
 }
 
 void AShipPawn::RPCClientAddEffect_Implementation(EEffect _effect)

@@ -108,6 +108,9 @@ protected:
     UFUNCTION(BlueprintImplementableEvent)
     void BP_SpeedSound(int _percentSpeed, bool _start);
 
+    UFUNCTION(BlueprintImplementableEvent, Category = "Visual Fx")
+    void BP_PlayFlash() const;
+
     UFUNCTION()
     void OnEndMission(EMission _type, bool _succeed, FName _succeedForTeam);
 
@@ -196,6 +199,9 @@ private:
     void BackToGame();
 
     void computeSoundData();
+
+    /* if effect need to play flash, call bp function */
+    void playFash(EEffect _effect) const;
 
 public:
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
