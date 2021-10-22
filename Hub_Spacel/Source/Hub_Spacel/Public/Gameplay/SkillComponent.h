@@ -54,10 +54,15 @@ private:
 	void RPCClientEmergencyRedCube();
 
 	void emergencyRedCubeRemove();
+
 	UFUNCTION(Reliable, Client)
 	void RPCClientEmergencyRedCubeRemove();
 
 	void removeSkill();
+
+	/* callback when we use a skill with success */
+	UFUNCTION()
+	void UseSkill(ESkill _skill, bool _affectedByOtherSkillCountDown);
 
 public:
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)

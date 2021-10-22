@@ -71,8 +71,6 @@ void UModuleComponent::UseForm(EFormType _type, bool _refresh)
     lb_call(pawn->WeaponComponent);
     lb_call(pawn->ProtectionComponent);
     lb_call(pawn->SupportComponent);
-
-    m_activatedForms.AddUnique(_type);
 }
 
 void UModuleComponent::buildLobbyShip(ESkill _skillId, ESkillType _type)
@@ -188,7 +186,6 @@ void UModuleComponent::kill()
     auto tmp = Cast<USpacelInstancedMeshComponent>(pawn->EmergencyComponent);
     lb(tmp);
     lb(pawn->SupportComponent);
-    m_activatedForms.Empty();
 }
 
 void UModuleComponent::restarted()
@@ -227,10 +224,7 @@ void UModuleComponent::activeMetaForm(EEffect _type)
 
 void UModuleComponent::removeMetaForm(EEffect _type)
 {
-    auto form = getFormType(_type);
-    m_activatedForms.Remove(form);
-
-    m_activatedForms.Num() ? UseForm(m_activatedForms.Pop(), false) : UseForm(EFormType::Base, false);
+    UseForm(EFormType::Base, false);
 }
 
 void UModuleComponent::activateBonus(ESkill _skillId)

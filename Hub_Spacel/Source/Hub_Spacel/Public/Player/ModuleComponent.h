@@ -85,8 +85,4 @@ public:
 
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
     FOnUpdateCountSupport OnUpdateCountSupportDelegate {};
-
-private:
-    /* form currently activated */
-    TArray<EFormType> m_activatedForms;
 };

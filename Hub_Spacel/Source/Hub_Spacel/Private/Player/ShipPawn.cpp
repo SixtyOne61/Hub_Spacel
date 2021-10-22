@@ -937,10 +937,6 @@ void AShipPawn::behaviourAddEffect(EEffect _type)
     {
         if (this->ModuleComponent != nullptr)
         {
-            removeEffect(EEffect::EscapeMode);
-            removeEffect(EEffect::MetaFormAttack);
-            removeEffect(EEffect::MetaFormProtection);
-            removeEffect(EEffect::MetaFormSupport);
             this->ModuleComponent->activeMetaForm(_type);
         }
     }
