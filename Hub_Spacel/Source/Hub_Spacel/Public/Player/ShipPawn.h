@@ -81,31 +81,31 @@ protected:
     UFUNCTION(BlueprintImplementableEvent)
     void BP_OnStartGame();
 
-    UFUNCTION(BlueprintImplementableEvent)
+    UFUNCTION(BlueprintImplementableEvent, Category = "SFX & VFX")
     void BP_FxAddMatiere(int32 _val);
 
-    UFUNCTION(BlueprintImplementableEvent)
+    UFUNCTION(BlueprintImplementableEvent, Category = "SFX & VFX")
     void BP_FxAddEffect(EEffect _effect);
 
-    UFUNCTION(BlueprintImplementableEvent)
+    UFUNCTION(BlueprintImplementableEvent, Category = "SFX & VFX")
     void BP_FxGlobalAddEffect(EEffect _effect);
 
-    UFUNCTION(BlueprintImplementableEvent)
+    UFUNCTION(BlueprintImplementableEvent, Category = "SFX & VFX")
     void BP_FxGlobalRemoveEffect(EEffect _effect);
 
-    UFUNCTION(BlueprintImplementableEvent)
+    UFUNCTION(BlueprintImplementableEvent, Category = "SFX & VFX")
     void BP_FxRemoveEffect(EEffect _effect);
 
     UFUNCTION(BlueprintImplementableEvent)
     void BP_InitFireComponent();
 
-    UFUNCTION(BlueprintImplementableEvent)
+    UFUNCTION(BlueprintImplementableEvent, Category = "SFX & VFX")
     void BP_ExploseHealFx();
 
-    UFUNCTION(BlueprintImplementableEvent)
+    UFUNCTION(BlueprintImplementableEvent, Category = "SFX & VFX")
     void BP_GoldFx(bool _activate);
 
-    UFUNCTION(BlueprintImplementableEvent)
+    UFUNCTION(BlueprintImplementableEvent, Category = "SFX & VFX")
     void BP_SpeedSound(int _percentSpeed, bool _start);
 
     UFUNCTION(BlueprintImplementableEvent, Category = "SFX & VFX")
