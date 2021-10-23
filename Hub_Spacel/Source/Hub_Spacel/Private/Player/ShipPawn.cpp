@@ -396,7 +396,7 @@ void AShipPawn::computeSoundData()
         m_lastDirection = -1;
     }
 
-    BP_SpeedSound(percentSpeed, playStart);
+    BP_FxSpeedSound(percentSpeed, playStart);
 }
 
 void AShipPawn::emergencyRedCube()
@@ -779,7 +779,7 @@ void AShipPawn::playFash(EEffect _effect)
     case EEffect::MetaFormProtection:
     case EEffect::MetaFormSupport:
     case EEffect::Missile:
-        BP_ChangeForm();
+        BP_FxChangeForm();
         break;
     }
 }
@@ -944,7 +944,7 @@ void AShipPawn::behaviourAddEffect(EEffect _type)
 
 void AShipPawn::RPCNetMultiCastFxGold_Implementation(bool _activate)
 {
-    BP_GoldFx(_activate);
+    BP_FxGold(_activate);
 }
 
 void AShipPawn::BackToGame()
@@ -1062,7 +1062,7 @@ void AShipPawn::RPCClientFeedbackScore_Implementation(EScoreType _type, int16 _v
 
 void AShipPawn::RPCNetMulticastFxExploseHeal_Implementation()
 {
-    BP_ExploseHealFx();
+    BP_FxExploseHeal();
 }
 
 void AShipPawn::heal(uint8 _value)
@@ -1199,7 +1199,7 @@ void AShipPawn::RPCServerResetTarget_Implementation()
 
 void AShipPawn::RPCClientRepair_Implementation()
 {
-    BP_Repair();
+    BP_FxRepair();
 }
 
 void AShipPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetimeProps) const

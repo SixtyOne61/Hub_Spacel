@@ -100,19 +100,19 @@ protected:
     void BP_InitFireComponent();
 
     UFUNCTION(BlueprintImplementableEvent, Category = "SFX & VFX")
-    void BP_ExploseHealFx();
+    void BP_FxExploseHeal();
 
     UFUNCTION(BlueprintImplementableEvent, Category = "SFX & VFX")
-    void BP_GoldFx(bool _activate);
+    void BP_FxGold(bool _activate);
 
     UFUNCTION(BlueprintImplementableEvent, Category = "SFX & VFX")
-    void BP_SpeedSound(int _percentSpeed, bool _start);
+    void BP_FxSpeedSound(int _percentSpeed, bool _start);
 
     UFUNCTION(BlueprintImplementableEvent, Category = "SFX & VFX")
-    void BP_ChangeForm();
+    void BP_FxChangeForm();
 
     UFUNCTION(BlueprintImplementableEvent, Category = "SFX & VFX")
-    void BP_Repair();
+    void BP_FxRepair();
 
     UFUNCTION()
     void OnEndMission(EMission _type, bool _succeed, FName _succeedForTeam);
