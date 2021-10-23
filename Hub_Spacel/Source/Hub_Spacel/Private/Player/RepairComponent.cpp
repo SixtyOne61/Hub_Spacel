@@ -75,6 +75,9 @@ int URepairComponent::repair(int _nb, class AShipPawn* _pawn) const
     int maxRepairProtection = _nb * (2.0f / 3.0f); // TO DO expose this to player setting ?
     int maxRepairSupport = _nb - maxRepairProtection;
 
+    // call rpc client for sfx & vfx
+    _pawn->RPCClientRepair();
+
     // keep rest of protection repair for increase support rest
     maxRepairSupport += _pawn->ProtectionComponent->Repair(maxRepairProtection);
     // call repair support, and use rest for increase repair protection

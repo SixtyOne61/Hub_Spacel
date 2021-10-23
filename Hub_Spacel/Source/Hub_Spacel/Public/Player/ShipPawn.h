@@ -108,8 +108,11 @@ protected:
     UFUNCTION(BlueprintImplementableEvent)
     void BP_SpeedSound(int _percentSpeed, bool _start);
 
-    UFUNCTION(BlueprintImplementableEvent, Category = "Visual Fx")
-    void BP_PlayFlash() const;
+    UFUNCTION(BlueprintImplementableEvent, Category = "SFX & VFX")
+    void BP_ChangeForm();
+
+    UFUNCTION(BlueprintImplementableEvent, Category = "SFX & VFX")
+    void BP_Repair();
 
     UFUNCTION()
     void OnEndMission(EMission _type, bool _succeed, FName _succeedForTeam);
@@ -187,6 +190,9 @@ private:
     UFUNCTION(Reliable, Server)
     void RPCServerResetTarget();
 
+    UFUNCTION(UnReliable, Client)
+    void RPCClientRepair();
+
     bool canTank(int32 _val);
 
     UFUNCTION()
@@ -201,7 +207,7 @@ private:
     void computeSoundData();
 
     /* if effect need to play flash, call bp function */
-    void playFash(EEffect _effect) const;
+    void playFash(EEffect _effect);
 
 public:
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")

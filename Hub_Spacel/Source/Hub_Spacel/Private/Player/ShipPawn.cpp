@@ -770,7 +770,7 @@ void AShipPawn::RPCNetMulticastRemoveEffect_Implementation(EEffect _effect)
     playFash(_effect);
 }
 
-void AShipPawn::playFash(EEffect _effect) const
+void AShipPawn::playFash(EEffect _effect)
 {
     switch (_effect)
     {
@@ -779,7 +779,7 @@ void AShipPawn::playFash(EEffect _effect) const
     case EEffect::MetaFormProtection:
     case EEffect::MetaFormSupport:
     case EEffect::Missile:
-        BP_PlayFlash();
+        BP_ChangeForm();
         break;
     }
 }
@@ -1195,6 +1195,11 @@ void AShipPawn::RPCServerResetTarget_Implementation()
 {
     if (this->FireComponent == nullptr) return;
     this->FireComponent->m_target = nullptr;
+}
+
+void AShipPawn::RPCClientRepair_Implementation()
+{
+    BP_Repair();
 }
 
 void AShipPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetimeProps) const
