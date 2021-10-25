@@ -720,6 +720,8 @@ void AShipPawn::playFash(EEffect _effect)
     case EEffect::MetaFormProtection:
     case EEffect::MetaFormSupport:
     case EEffect::Missile:
+    case EEffect::BulletStun:
+    case EEffect::Farmer:
         BP_FxChangeForm();
         break;
     }
