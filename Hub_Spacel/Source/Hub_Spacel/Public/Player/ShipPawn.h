@@ -59,7 +59,6 @@ public:
     void behaviourRemoveEffect(EEffect _type);
 
     void spawnKatyusha();
-    ESkillReturn spawnEmp();
     void emp(uint32 _duration, FName const& _team, int32 _playerId);
 
     ESkillReturn onRepair();

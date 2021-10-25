@@ -41,7 +41,6 @@
 #include "Gameplay/SkillComponent.h"
 #include "Gameplay/Skill/PostProcessInvisible.h"
 #include "Gameplay/Skill/HealPackBullet.h"
-#include "Gameplay/Skill/EmpBullet.h"
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
 
@@ -277,47 +276,6 @@ void AShipPawn::spawnKatyusha()
 {
     if (!ensure(this->FireComponent != nullptr)) return;
     this->FireComponent->spawnKatyusha();
-}
-
-ESkillReturn AShipPawn::spawnEmp()
-{
-    if(this->SkillComponent == nullptr) return ESkillReturn::InternError;
-    if (this->SkillComponent->SkillDataAsset == nullptr) return ESkillReturn::InternError;
-
-    if (UUniqueSkillDataAsset const* skillParam = this->SkillComponent->SkillDataAsset->getSKill(ESkill::Emp))
-    {
-        uint32 duration = skillParam->FlatDuration;
-
-        TArray<UActorComponent*> const& actors = this->GetComponentsByTag(USceneComponent::StaticClass(), Tags::HealPack);
-        if (actors.Num() > 0 && actors[0] != nullptr)
-        {
-            if (USceneComponent* comp = Cast<USceneComponent>(actors[0]))
-            {
-                FTransform tr = comp->GetComponentTransform();
-
-                FVector dir = UKismetMathLibrary::FindLookAtRotation(tr.GetLocation(), TargetLocation).Vector();
-                dir.Normalize();
-                tr.SetRotation(dir.ToOrientationQuat());
-
-                if (AEmpBullet* empActor = Cast<AEmpBullet>(UGameplayStatics::BeginDeferredActorSpawnFromClass(GetWorld(), this->PlayerDataAsset->EmpClass, tr)))
-                {
-                    empActor->R_Team = Team;
-                    empActor->EffectDuration = duration;
-                    if (APlayerState* playerState = GetPlayerState())
-                    {
-                        empActor->PlayerIdOwner = playerState->PlayerId;
-                    }
-
-                    empActor->Tags.Add(Tags::EmpBullet);
-                    UGameplayStatics::FinishSpawningActor(empActor, tr);
-                }
-
-                return ESkillReturn::Success;
-            }
-        }
-    }
-
-    return ESkillReturn::Unavailable;
 }
 
 void AShipPawn::emp(uint32 _duration, FName const& _team, int32 _playerId)
@@ -914,6 +872,13 @@ void AShipPawn::behaviourAddEffect(EEffect _type)
             this->ModuleComponent->activeMetaForm(_type);
         }
     }
+    else if (_type == EEffect::BulletStun)
+    {
+        if (this->ModuleComponent != nullptr)
+        {
+            this->ModuleComponent->activeMetaForm(_type);
+        }
+    }
 }
 
 void AShipPawn::RPCNetMultiCastFxGold_Implementation(bool _activate)
@@ -1015,6 +980,13 @@ void AShipPawn::behaviourRemoveEffect(EEffect _type)
         RPCNetMultiCastFxGold(false);
     }
     else if (_type == EEffect::Missile)
+    {
+        if (this->ModuleComponent != nullptr)
+        {
+            this->ModuleComponent->removeMetaForm(_type);
+        }
+    }
+    else if (_type == EEffect::BulletStun)
     {
         if (this->ModuleComponent != nullptr)
         {

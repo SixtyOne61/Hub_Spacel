@@ -262,6 +262,8 @@ EFormType UModuleComponent::getFormType(ESkill _skillId) const
         return EFormType::Missile;
     case ESkill::Farmer:
         return EFormType::Farmer;
+    case ESkill::BulletStun:
+        return EFormType::BulletStun;
     }
 
     return EFormType::Base;
@@ -283,6 +285,8 @@ EFormType UModuleComponent::getFormType(EEffect _type) const
         return EFormType::Missile;
     case EEffect::Farmer:
         return EFormType::Farmer;
+    case EEffect::BulletStun:
+        return EFormType::BulletStun;
     }
 
     return EFormType::Base;

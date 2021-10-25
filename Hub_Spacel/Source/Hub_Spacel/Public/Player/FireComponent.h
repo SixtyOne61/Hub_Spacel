@@ -33,6 +33,10 @@ private:
 	void fireMissile(FTransform _fireTransform);
 	void spawnMissile(FTransform const _transform) const;
 
+	/* stun bullet behaviour */
+	void fireStunBullet(FTransform _fireTransform);
+	void spawnStunBullet(FTransform const _transform) const;
+
 	/* return fire transform */
 	FTransform getFireTransform();
 
@@ -54,6 +58,9 @@ protected:
 	
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
 	class UUniqueSkillDataAsset* MetaFormAttackDataAsset { nullptr };
+
+	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
+	class UUniqueSkillDataAsset * BulletStunDataAsset { nullptr };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Setup")
 	TArray<USceneComponent*> DummyKatyushaLocations {};

@@ -15,6 +15,8 @@
 #include "Mesh/SpacelInstancedMeshComponent.h"
 #include "Gameplay/Bullet/Missile.h"
 #include "Gameplay/Bullet/Katyusha.h"
+#include "Gameplay/Bullet/EmpBullet.h"
+#include "Util/Tag.h"
 
 // Sets default values for this component's properties
 UFireComponent::UFireComponent()
@@ -47,6 +49,10 @@ void UFireComponent::TickComponent(float _deltaTime, ELevelTick _tickType, FActo
             if (pawn->hasEffect(EEffect::Missile))
             {
                 fireMissile(getFireTransform());
+            }
+            else if (pawn->hasEffect(EEffect::BulletStun))
+            {
+                fireStunBullet(getFireTransform());
             }
             else
             {
@@ -150,6 +156,35 @@ void UFireComponent::spawnMissile(FTransform const _transform) const
 
         UGameplayStatics::FinishSpawningActor(missile, _transform);
         setupProjectile(missile);
+    }
+}
+
+void UFireComponent::fireStunBullet(FTransform _fireTransform)
+{
+    spawnStunBullet(_fireTransform);
+    resetFireCountDown();
+}
+
+void UFireComponent::spawnStunBullet(FTransform const _transform) const
+{
+    AActor* actor = Cast<AActor>(UGameplayStatics::BeginDeferredActorSpawnFromClass(this->GetWorld(), get()->PlayerDataAsset->EmpClass, _transform));
+    if (AEmpBullet* empActor = Cast<AEmpBullet>(actor))
+    {
+        empActor->R_Team = get()->Team;
+
+        if (this->BulletStunDataAsset != nullptr)
+        {
+            empActor->EffectDuration = this->BulletStunDataAsset->Value;
+        }
+
+        if (APlayerState* playerState = get()->GetPlayerState())
+        {
+            empActor->PlayerIdOwner = playerState->PlayerId;
+        }
+
+        empActor->Tags.Add(Tags::EmpBullet);
+        UGameplayStatics::FinishSpawningActor(empActor, _transform);
+        setupProjectile(empActor);
     }
 }
 

@@ -17,7 +17,7 @@
 #include "DrawDebugHelpers.h"
 #include "GameState/SpacelGameState.h"
 #include "Gameplay/Skill/HealPackBullet.h"
-#include "Gameplay/Skill/EmpBullet.h"
+#include "Gameplay/Bullet/EmpBullet.h"
 
 // Sets default values for this component's properties
 UCustomCollisionComponent::UCustomCollisionComponent()

@@ -84,14 +84,14 @@ public:
 	void onEndCountDown() override {};
 };
 
-class HUB_SPACEL_API SkillSpecialSupport : public SkillBehaviour
+class HUB_SPACEL_API SkillBulletStun : public SkillBehaviour
 {
 	using SkillBehaviour::SkillBehaviour;
 public:
-	virtual ~SkillSpecialSupport() {}
+	virtual ~SkillBulletStun() {}
 
 	ESkillReturn onStart() override;
-	void onEnd() override {};
+	void onEnd() override;
 	void onEndCountDown() override {};
 };
 

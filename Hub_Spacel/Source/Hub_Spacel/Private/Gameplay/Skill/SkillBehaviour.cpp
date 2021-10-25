@@ -72,10 +72,18 @@ void SkillFarmer::onEnd()
     get()->removeEffect(EEffect::Farmer);
 }
 
-ESkillReturn SkillSpecialSupport::onStart()
+ESkillReturn SkillBulletStun::onStart()
 {
     if (get<AShipPawn>() == nullptr) return ESkillReturn::InternError;
-    return get<AShipPawn>()->spawnEmp();
+
+    get()->addEffect(EEffect::BulletStun);
+    return ESkillReturn::Success;
+}
+
+void SkillBulletStun::onEnd()
+{
+    if (get() == nullptr) return;
+    get()->removeEffect(EEffect::BulletStun);
 }
 
 ESkillReturn SkillMetaFormAttack::onStart()
@@ -159,7 +167,7 @@ TUniquePtr<SkillBehaviour> SkillFactory::create(ESkill _skill, class ACommonPawn
         case ESkill::EscapeMode : return MakeUnique<SkillEscapeMode>(_pawn, _netMode);
         case ESkill::Missile : return MakeUnique<SkillMissile>(_pawn, _netMode);
         case ESkill::Farmer: return MakeUnique<SkillFarmer>(_pawn, _netMode);
-        case ESkill::Emp: return MakeUnique<SkillSpecialSupport>(_pawn, _netMode);
+        case ESkill::BulletStun: return MakeUnique<SkillBulletStun>(_pawn, _netMode);
         case ESkill::MetaFormAttack: return MakeUnique<SkillMetaFormAttack>(_pawn, _netMode);
         case ESkill::MetaFormProtection: return MakeUnique<SkillMetaFormProtection>(_pawn, _netMode);
         case ESkill::MetaFormSupport: return MakeUnique<SkillMetaFormSupport>(_pawn, _netMode);
