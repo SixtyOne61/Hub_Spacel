@@ -59,7 +59,7 @@ UENUM(BlueprintType)
 enum class ESkill : uint8
 {
     Missile UMETA(DisplayName = "Missile"),
-    ShieldTeam UMETA(DisplayName = "ShieldTeam"),
+    Farmer UMETA(DisplayName = "Farmer"),
     Emp UMETA(DisplayName = "Emp"),
     EscapeMode UMETA(DisplayName = "EscapeMode"),
     MetaFormAttack UMETA(DisplayName = "MetaFormAttack"),
@@ -121,7 +121,7 @@ enum class EEffect : uint8
 {
     None UMETA(DisplayName = "None"),
     Fog UMETA(DisplayName = "Fog"),
-    Shield UMETA(DisplayName = "Shield"),
+    Farmer UMETA(DisplayName = "Farmer"),
     Emp UMETA(DisplayName = "Emp"),
     Killed UMETA(DisplayName = "Killed"),
     EscapeMode UMETA(DisplayName = "EscapeMode"),
@@ -221,5 +221,6 @@ enum class EFormType : uint8
     MetaFormSupport UMETA(DisplayName = "MetaFormSupport"),
     EscapeMode UMETA(DisplayName = "EscapeMode"),
     Missile UMETA(DisplayName = "Missile"),
+    Farmer UMETA(DisplayName = "Farmer"),
     Max,
 };

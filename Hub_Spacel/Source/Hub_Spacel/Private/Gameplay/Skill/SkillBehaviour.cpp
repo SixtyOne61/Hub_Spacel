@@ -58,56 +58,18 @@ void SkillMissile::onEnd()
     get()->removeEffect(EEffect::Missile);
 }
 
-void SkillSpecialProtection::fillPlayer(FName const& _team, TArray<AShipPawn*>& _pawns) const
-{
-    if(get() == nullptr) return;
-
-    _pawns.Empty();
-    if (AGameStateBase* gameState = UGameplayStatics::GetGameState(get()->GetWorld()))
-    {
-        for (APlayerState const* playerState : gameState->PlayerArray)
-        {
-            if (playerState)
-            {
-                if (AShipPawn* pawn = Cast<AShipPawn>(playerState->GetPawn()))
-                {
-                    if (pawn->Team == _team)
-                    {
-                        _pawns.Add(pawn);
-                    }
-                }
-            }
-        }
-    }
-}
-
-ESkillReturn SkillSpecialProtection::onStart()
+ESkillReturn SkillFarmer::onStart()
 {
     if (get() == nullptr) return ESkillReturn::InternError;
 
-    FName team = get()->Team;
-    TArray<AShipPawn*> pawns;
-    fillPlayer(team, pawns);
-
-    for (AShipPawn* pawn : pawns)
-    {
-        pawn->addEffect(EEffect::Shield);
-    }
+    get()->addEffect(EEffect::Farmer);
     return ESkillReturn::Success;
 }
 
-void SkillSpecialProtection::onEnd()
+void SkillFarmer::onEnd()
 {
     if (get() == nullptr) return;
-
-    FName team = get()->Team;
-    TArray<AShipPawn*> pawns;
-    fillPlayer(team, pawns);
-
-    for (AShipPawn* pawn : pawns)
-    {
-        pawn->removeEffect(EEffect::Shield);
-    }
+    get()->removeEffect(EEffect::Farmer);
 }
 
 ESkillReturn SkillSpecialSupport::onStart()
@@ -196,7 +158,7 @@ TUniquePtr<SkillBehaviour> SkillFactory::create(ESkill _skill, class ACommonPawn
     {
         case ESkill::EscapeMode : return MakeUnique<SkillEscapeMode>(_pawn, _netMode);
         case ESkill::Missile : return MakeUnique<SkillMissile>(_pawn, _netMode);
-        case ESkill::ShieldTeam: return MakeUnique<SkillSpecialProtection>(_pawn, _netMode);
+        case ESkill::Farmer: return MakeUnique<SkillFarmer>(_pawn, _netMode);
         case ESkill::Emp: return MakeUnique<SkillSpecialSupport>(_pawn, _netMode);
         case ESkill::MetaFormAttack: return MakeUnique<SkillMetaFormAttack>(_pawn, _netMode);
         case ESkill::MetaFormProtection: return MakeUnique<SkillMetaFormProtection>(_pawn, _netMode);

@@ -260,6 +260,8 @@ EFormType UModuleComponent::getFormType(ESkill _skillId) const
         return EFormType::EscapeMode;
     case ESkill::Missile:
         return EFormType::Missile;
+    case ESkill::Farmer:
+        return EFormType::Farmer;
     }
 
     return EFormType::Base;
@@ -279,6 +281,8 @@ EFormType UModuleComponent::getFormType(EEffect _type) const
         return EFormType::EscapeMode;
     case EEffect::Missile:
         return EFormType::Missile;
+    case EEffect::Farmer:
+        return EFormType::Farmer;
     }
 
     return EFormType::Base;

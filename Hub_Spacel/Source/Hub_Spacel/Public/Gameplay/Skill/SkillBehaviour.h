@@ -73,18 +73,15 @@ public:
 	void onEndCountDown() override {};
 };
 
-class HUB_SPACEL_API SkillSpecialProtection : public SkillBehaviour
+class HUB_SPACEL_API SkillFarmer : public SkillBehaviour
 {
 	using SkillBehaviour::SkillBehaviour;
 public:
-	virtual ~SkillSpecialProtection() {}
+	virtual ~SkillFarmer() {}
 
 	ESkillReturn onStart() override;
 	void onEnd() override;
 	void onEndCountDown() override {};
-
-private:
-	void fillPlayer(FName const& _team, TArray<class AShipPawn*>& _pawns) const;
 };
 
 class HUB_SPACEL_API SkillSpecialSupport : public SkillBehaviour

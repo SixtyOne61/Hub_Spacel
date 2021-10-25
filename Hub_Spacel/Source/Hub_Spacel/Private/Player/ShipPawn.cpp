@@ -118,18 +118,6 @@ void AShipPawn::OnChangeState(EGameState _state)
 
 void AShipPawn::RPCNetMulticastStartGame_Implementation(FName const& _team)
 {
-    if (this->ShieldComponent != nullptr)
-    {
-        if (this->TeamColorDataAsset != nullptr)
-        {
-            if (_team != "None")
-            {
-                FColor color = this->TeamColorDataAsset->GetColor<FColor>(_team.ToString());
-                this->ShieldComponent->SetVectorParameterValueOnMaterials("Color", FVector{ color.ReinterpretAsLinear() });
-            }
-        }
-    }
-
     if(this->GetNetMode() == ENetMode::NM_DedicatedServer || this->IsLocallyControlled()) return;
 
     // find local player
@@ -676,7 +664,7 @@ void AShipPawn::boostPassive(EMission _type, int32 _rewardValue)
     }
 }
 
-bool AShipPawn::canTank(int32 _val)
+bool AShipPawn::canTank(TArray<FHitResult> const& _hits)
 {
     auto lb_addScore = [&](int32 _val)
     {
@@ -689,32 +677,40 @@ bool AShipPawn::canTank(int32 _val)
 
     if (hasEffect(EEffect::MetaFormProtection))
     {
-        lb_addScore(_val);
+        lb_addScore(_hits.Num());
         return true;
     }
     else if (hasEffect(EEffect::Respawned) || hasEffect(EEffect::StartGame))
     {
         return true;
     }
-    else
+
+    if (hasEffect(EEffect::Farmer))
     {
-        int32 newValue = this->R_ShieldLife - _val;
-        newValue = FMath::Max(0, newValue);
-
-        lb_addScore(this->R_ShieldLife - newValue);
-
-        if (newValue == 0 && this->R_ShieldLife > 0)
+        bool ret = true;
+        int32 add = 0;
+        for (auto hit : _hits)
         {
-            removeEffect(EEffect::Shield);
-            if (this->ShieldComponent != nullptr)
+            if (hit.Actor.IsValid() && hit.Actor->Tags.Contains(Tags::Asteroide))
             {
-                this->ShieldComponent->SetVisibility(false);
+                ++add;
+            }
+            else
+            {
+                ret = false;
             }
         }
 
-        this->R_ShieldLife = newValue;
-        return this->R_ShieldLife > 0;
+        if (add != 0)
+        {
+            lb_addScore(add);
+            addMatiere(add, EMatiereOrigin::Farm);
+
+        }
+        return ret;
     }
+
+    return false;
 }
 
 void AShipPawn::RPCNetMulticastEnterHidding_Implementation(int32 _playerId, bool _enter)
@@ -732,19 +728,6 @@ void AShipPawn::RPCNetMulticastEnterHidding_Implementation(int32 _playerId, bool
         if (this->BaseShipMeshComponent != nullptr)
         {
             this->BaseShipMeshComponent->SetVisibility(false);
-        }
-
-        if (!hasEffect(EEffect::Shield))
-        {
-            if (this->ShieldComponent != nullptr)
-            {
-                this->ShieldComponent->SetVisibility(false);
-            }
-        }
-
-        if (this->MetaFormProtectionComponent != nullptr)
-        {
-            this->MetaFormProtectionComponent->SetVisibility(false);
         }
 
         TArray<UActorComponent*> components = this->GetComponentsByTag(USceneComponent::StaticClass(), Tags::Arrow);
@@ -835,15 +818,11 @@ void AShipPawn::RPCClientRemoveEffect_Implementation(EEffect _effect)
 
 void AShipPawn::behaviourAddEffect(EEffect _type)
 {
-    if (_type == EEffect::Shield)
+    if (_type == EEffect::Farmer)
     {
-        if (this->PlayerDataAsset != nullptr && !hasEffect(EEffect::Killed))
+        if (this->ModuleComponent != nullptr)
         {
-            this->R_ShieldLife = this->PlayerDataAsset->ShieldLife;
-            if (this->ShieldComponent != nullptr && !hasEffect(EEffect::MetaFormSupport))
-            {
-                this->ShieldComponent->SetVisibility(true);
-            }
+            this->ModuleComponent->activeMetaForm(_type);
         }
     }
     else if (_type == EEffect::Fog || _type == EEffect::Killed)
@@ -901,11 +880,6 @@ void AShipPawn::behaviourAddEffect(EEffect _type)
         if (this->ModuleComponent != nullptr)
         {
             this->ModuleComponent->activeMetaForm(_type);
-        }
-
-        if (this->MetaFormProtectionComponent != nullptr)
-        {
-            this->MetaFormProtectionComponent->SetVisibility(true);
         }
     }
     else if (_type == EEffect::MetaFormAttack)
@@ -968,12 +942,11 @@ void AShipPawn::removeEffectSuccess(EEffect _type)
 
 void AShipPawn::behaviourRemoveEffect(EEffect _type)
 {
-    if (_type == EEffect::Shield)
+    if (_type == EEffect::Farmer)
     {
-        this->R_ShieldLife = 0;
-        if (this->ShieldComponent != nullptr)
+        if (this->ModuleComponent != nullptr)
         {
-            this->ShieldComponent->SetVisibility(false);
+            this->ModuleComponent->removeMetaForm(_type);
         }
     }
     else if (_type == EEffect::Fog || _type == EEffect::Killed)
@@ -1010,11 +983,6 @@ void AShipPawn::behaviourRemoveEffect(EEffect _type)
     }
     else if (_type == EEffect::MetaFormProtection)
     {
-        if (this->MetaFormProtectionComponent != nullptr)
-        {
-            this->MetaFormProtectionComponent->SetVisibility(false);
-        }
-
         if (this->ModuleComponent != nullptr)
         {
             this->ModuleComponent->removeMetaForm(_type);
@@ -1206,7 +1174,6 @@ void AShipPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetim
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
     DOREPLIFETIME(AShipPawn, RU_Matiere);
-    DOREPLIFETIME(AShipPawn, R_ShieldLife);
     DOREPLIFETIME(AShipPawn, R_Effect);
 }
 

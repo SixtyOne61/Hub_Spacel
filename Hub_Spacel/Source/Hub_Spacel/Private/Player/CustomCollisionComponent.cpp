@@ -135,11 +135,9 @@ bool UCustomCollisionComponent::sweepForInstancedStaticMesh(USpacelInstancedMesh
 			&& sweepByProfile(hits, worldTransform.GetLocation(), _profile, shape, {Tags::Matiere, Tags::Fog, _teamTag, Tags::WorldManager }))
 		{
 			AShipPawn * shipPawn = get<AShipPawn>();
-			if (shipPawn != nullptr && shipPawn->canTank(hits.Num()))
+			if (shipPawn != nullptr && shipPawn->canTank(hits))
 			{
 				// clean actor hit
-				dispatch(hits);
-
 				++index;
 			}
 			else
@@ -149,9 +147,10 @@ bool UCustomCollisionComponent::sweepForInstancedStaticMesh(USpacelInstancedMesh
 
 				addScore(hits, EScoreType::Hit);
 
-				// clean actor hit
-				dispatch(hits);
 			}
+
+			// clean actor hit
+			dispatch(hits);
 		}
 		else
 		{
@@ -220,7 +219,7 @@ void UCustomCollisionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 			FCollisionShape redZoneShape = createCollisionShapeWithLocalBounds<UStaticMeshComponent>(get()->DriverMeshComponent, scale);
 			if (sweepByProfile(hits, redZoneLocation, profileCollision, redZoneShape, { Tags::Matiere, Tags::Fog, *tagTeam, Tags::WorldManager }))
 			{
-				if (!pawn->canTank(hits.Num()))
+				if (!pawn->canTank(hits))
 				{
 					killersProcess(hits);
 
@@ -476,7 +475,7 @@ void UCustomCollisionComponent::hit(FString const& _team, int32 _playerId, class
 
 	auto lb_generic = [&](USpacelInstancedMeshComponent*& _component)
 	{
-		if (_component != nullptr && !shipPawn->canTank(1))
+		if (_component != nullptr && !shipPawn->hasEffect(EEffect::MetaFormProtection))
 		{
 			checkGold(_playerId);
 
@@ -508,7 +507,7 @@ void UCustomCollisionComponent::hit(FString const& _team, int32 _playerId, class
 	}
 	else if (uniqueId == get()->DriverMeshComponent->GetUniqueID())
 	{
-		if (!shipPawn->canTank(1) && !shipPawn->hasEffect(EEffect::Killed))
+		if (!shipPawn->hasEffect(EEffect::MetaFormProtection) && !shipPawn->hasEffect(EEffect::Killed))
 		{
 			checkGold(_playerId);
 			if (m_matiereManager.IsValid())

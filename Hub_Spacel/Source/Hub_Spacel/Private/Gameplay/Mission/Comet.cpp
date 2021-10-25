@@ -43,10 +43,7 @@ void AComet::hit(AShipPawn * _pawn, FString const& _team)
 	this->Destroy();
 	if (_pawn != nullptr)
 	{
-		if (!_pawn->canTank(1))
-		{
-			_pawn->kill();
-		}
+		_pawn->kill();
 		OnIntercepDelegate.broadcast(_team);
 	}
 }

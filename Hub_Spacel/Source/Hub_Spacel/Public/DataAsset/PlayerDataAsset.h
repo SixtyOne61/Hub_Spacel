@@ -49,9 +49,6 @@ public:
     UPROPERTY(Category = "Skill", EditAnywhere, BlueprintReadWrite)
     float EscapeModeCoef { 1.5f };
 
-    UPROPERTY(Category = "Skill", EditAnywhere, BlueprintReadWrite)
-    int32 ShieldLife { 50 };
-
     UPROPERTY(Category = "Fire", EditAnywhere, BlueprintReadOnly)
     TSubclassOf<class AActor> BulletClass;
 

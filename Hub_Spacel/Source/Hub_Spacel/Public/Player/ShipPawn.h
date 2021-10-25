@@ -193,7 +193,7 @@ private:
     UFUNCTION(UnReliable, Client)
     void RPCClientRepair();
 
-    bool canTank(int32 _val);
+    bool canTank(TArray<FHitResult> const& _hits);
 
     UFUNCTION()
     void CleanEmp();
@@ -221,9 +221,6 @@ public:
 protected:
     UPROPERTY(ReplicatedUsing = "OnRep_Matiere")
     int16 RU_Matiere { 0 };
-
-    UPROPERTY(Replicated)
-    int8 R_ShieldLife { 0 };
 
     FName m_lastTeamEmp {};
     int32 m_lastPlayerIdEmp {};

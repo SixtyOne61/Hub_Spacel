@@ -96,14 +96,6 @@ ACommonPawn::ACommonPawn()
     SpeedLinesComponent = CreateDefaultSubobject<UPostProcessComponent>(TEXT("SpeedLines_00"));
     if (!ensure(SpeedLinesComponent != nullptr)) return;
 
-    ShieldComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Shield_00"));
-    if (!ensure(ShieldComponent != nullptr)) return;
-    ShieldComponent->SetupAttachment(RootComponent);
-
-    MetaFormProtectionComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MetaFormProtection_00"));
-    if (!ensure(MetaFormProtectionComponent != nullptr)) return;
-    MetaFormProtectionComponent->SetupAttachment(RootComponent);
-
     MetricComponent = CreateDefaultSubobject<UMetricComponent>(TEXT("Metric_00"));
     if(!ensure(MetricComponent != nullptr)) return;
 

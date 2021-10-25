@@ -79,12 +79,6 @@ public:
     class UStaticMeshComponent* DriverMeshComponent{ nullptr };
 
     UPROPERTY(Category = "Ship", VisibleAnywhere, BlueprintReadOnly)
-    class UStaticMeshComponent* ShieldComponent{ nullptr };
-
-    UPROPERTY(Category = "Ship", VisibleAnywhere, BlueprintReadOnly)
-    class UStaticMeshComponent* MetaFormProtectionComponent{ nullptr };
-
-    UPROPERTY(Category = "Ship", VisibleAnywhere, BlueprintReadOnly)
     class UPoseableMeshComponent* BaseShipMeshComponent{ nullptr };
 
     UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadOnly)
