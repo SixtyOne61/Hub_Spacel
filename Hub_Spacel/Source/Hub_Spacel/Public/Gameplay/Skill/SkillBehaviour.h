@@ -128,11 +128,11 @@ public:
 	void onEndCountDown() override {};
 };
 
-class HUB_SPACEL_API SkillKatyusha : public SkillBehaviour
+class HUB_SPACEL_API SkillShotgun : public SkillBehaviour
 {
 	using SkillBehaviour::SkillBehaviour;
 public:
-	virtual ~SkillKatyusha() {}
+	virtual ~SkillShotgun() {}
 
 	ESkillReturn onStart() override;
 	void onEnd() override {};

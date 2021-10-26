@@ -272,10 +272,10 @@ void AShipPawn::LinkPawn()
     }
 }
 
-void AShipPawn::spawnKatyusha()
+void AShipPawn::fireShotgun()
 {
     if (!ensure(this->FireComponent != nullptr)) return;
-    this->FireComponent->spawnKatyusha();
+    this->FireComponent->fireShotgun();
 }
 
 void AShipPawn::emp(uint32 _duration, FName const& _team, int32 _playerId)

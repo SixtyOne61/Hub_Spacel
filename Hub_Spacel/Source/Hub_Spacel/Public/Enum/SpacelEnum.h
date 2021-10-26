@@ -68,7 +68,7 @@ enum class ESkill : uint8
     FireRate UMETA(DisplayName = "FireRate"),
     HeavyProtection UMETA(DisplayName = "HeavyProtection"),
     Speedy UMETA(DisplayName = "Speedy"),
-    Katyusha UMETA(DisplayName = "Katyusha"),
+    Shotgun UMETA(DisplayName = "Shotgun"),
     HealPack UMETA(DisplayName = "HealPack"),
     Emergency UMETA(DisplayName = "Emergency"),
     Repair UMETA(DisplayName = "Repair"),

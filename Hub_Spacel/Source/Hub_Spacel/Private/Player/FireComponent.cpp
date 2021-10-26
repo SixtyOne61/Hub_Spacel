@@ -188,59 +188,81 @@ void UFireComponent::spawnStunBullet(FTransform const _transform) const
     }
 }
 
-void UFireComponent::BeginPlay()
-{
-    Super::BeginPlay();
-    if (this->GetNetMode() != ENetMode::NM_DedicatedServer) return;
-
-    if (AShipPawn* shipPawn = get<AShipPawn>())
-    {
-        shipPawn->BP_InitFireComponent();
-    }
-}
-
-void UFireComponent::spawnKatyusha()
+void UFireComponent::fireShotgun()
 {
     if (this->GetNetMode() != ENetMode::NM_DedicatedServer) return;
 
-    m_nbKatyusha = DummyKatyushaLocations.Num() - 1;
-    if (m_nbKatyusha < DummyKatyushaLocations.Num() && DummyKatyushaLocations[m_nbKatyusha] != nullptr)
+    if (ACommonPawn* pawn = get())
     {
-        m_nextKatyushaTransform = DummyKatyushaLocations[m_nbKatyusha]->GetComponentTransform();
-        SpawnKatyusha();
-    }
-}
-
-void UFireComponent::SpawnKatyusha()
-{
-    if (AShipPawn* shipPawn = get<AShipPawn>())
-    {
-        if (UPlayerDataAsset* dataAsset = shipPawn->PlayerDataAsset)
+        if (this->ShotgunDataAsset != nullptr)
         {
-            if (m_target != nullptr && !m_target->IsPendingKill())
+            int nbShotgunInstance = this->ShotgunDataAsset->Value;
+
+            if (auto component = pawn->WeaponComponent)
             {
-                AActor* actor = Cast<AActor>(UGameplayStatics::BeginDeferredActorSpawnFromClass(this->GetWorld(), dataAsset->KatyushaClass, m_nextKatyushaTransform));
-                if (AKatyusha* katyusha = Cast<AKatyusha>(actor))
+                int nbFireEmplacement = component->GetNum();
+
+                while (nbShotgunInstance != 0)
                 {
-                    katyusha->AttachToActor(this->GetOwner(), FAttachmentTransformRules(EAttachmentRule::KeepWorld, true));
-                    katyusha->R_TargetLocation = m_target->GetActorLocation();
-                    katyusha->R_Team = shipPawn->Team;
+                    --nbFireEmplacement;
 
-                    UGameplayStatics::FinishSpawningActor(katyusha, m_nextKatyushaTransform);
-                    setupProjectile(katyusha);
-
-                    --m_nbKatyusha;
-                    if (m_nbKatyusha >= 0 && m_nbKatyusha < DummyKatyushaLocations.Num() && DummyKatyushaLocations[m_nbKatyusha] != nullptr)
+                    // reset
+                    if (nbFireEmplacement < 0)
                     {
-                        m_nextKatyushaTransform = DummyKatyushaLocations[m_nbKatyusha]->GetComponentTransform();
-
-                        FTimerHandle handle;
-                        this->GetWorld()->GetTimerManager().SetTimer(handle, this, &UFireComponent::SpawnKatyusha, 0.2f, false);
+                        nbFireEmplacement = component->GetNum();
                     }
+
+                    // determine transform
+                    FTransform transform{};
+                    component->GetInstanceTransform(nbFireEmplacement, transform, true);
+                    // reset scale
+                    transform.SetScale3D({ 1.0f, 1.0f, 1.0f });
+
+                    FVector const& beginLocation = transform.GetLocation();
+                    FVector bulletDir = UKismetMathLibrary::FindLookAtRotation(beginLocation, beginLocation + getRandomForwardVector() * 1000.0f).Vector();
+                    bulletDir.Normalize();
+                    transform.SetRotation(bulletDir.ToOrientationQuat());
+
+                    spawnShotgunBullet(transform);
+                    --nbShotgunInstance;
                 }
             }
         }
     }
+}
+
+void UFireComponent::spawnShotgunBullet(FTransform const& _transform) const
+{
+    AActor* actor = Cast<AActor>(UGameplayStatics::BeginDeferredActorSpawnFromClass(this->GetWorld(), get()->PlayerDataAsset->BulletClass, _transform));
+    if (AProjectileBase* laser = Cast<AProjectileBase>(actor))
+    {
+        // init bullet
+        laser->R_Team = get()->Team;
+        laser->SetLifeSpan(FMath::RandRange(0.2f, 0.5f));
+
+        if (auto component = Cast<UProjectileMovementComponent>(laser->GetComponentByClass(UProjectileMovementComponent::StaticClass())))
+        {
+            component->InitialSpeed /= 2.5f;
+        }
+
+        UGameplayStatics::FinishSpawningActor(laser, _transform);
+        setupProjectile(laser);
+    }
+}
+
+FVector UFireComponent::getRandomForwardVector() const
+{
+    FVector ret = get()->GetActorForwardVector();
+    ret += get()->GetActorUpVector() * FMath::RandRange(-0.19f, 0.19f);
+    ret += get()->GetActorRightVector() * FMath::RandRange(-0.19f, 0.19f);
+    
+    ret.Normalize();
+    return ret;
+}
+
+void UFireComponent::BeginPlay()
+{
+    Super::BeginPlay();
 }
 
 void UFireComponent::setupProjectile(AActor* _projectile) const

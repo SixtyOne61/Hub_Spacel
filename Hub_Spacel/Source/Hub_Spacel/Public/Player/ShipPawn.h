@@ -58,7 +58,7 @@ public:
     void behaviourAddEffect(EEffect _type);
     void behaviourRemoveEffect(EEffect _type);
 
-    void spawnKatyusha();
+    void fireShotgun();
     void emp(uint32 _duration, FName const& _team, int32 _playerId);
 
     ESkillReturn onRepair();
@@ -94,9 +94,6 @@ protected:
 
     UFUNCTION(BlueprintImplementableEvent, Category = "SFX & VFX")
     void BP_FxRemoveEffect(EEffect _effect);
-
-    UFUNCTION(BlueprintImplementableEvent)
-    void BP_InitFireComponent();
 
     UFUNCTION(BlueprintImplementableEvent, Category = "SFX & VFX")
     void BP_FxExploseHeal();

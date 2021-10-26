@@ -134,11 +134,11 @@ void SkillMetaFormSupport::onEnd()
     }
 }
 
-ESkillReturn SkillKatyusha::onStart()
+ESkillReturn SkillShotgun::onStart()
 {
     if (get<AShipPawn>() == nullptr) return ESkillReturn::InternError;
 
-    get<AShipPawn>()->spawnKatyusha();
+    get<AShipPawn>()->fireShotgun();
     return ESkillReturn::Success;
 }
 
@@ -171,7 +171,7 @@ TUniquePtr<SkillBehaviour> SkillFactory::create(ESkill _skill, class ACommonPawn
         case ESkill::MetaFormAttack: return MakeUnique<SkillMetaFormAttack>(_pawn, _netMode);
         case ESkill::MetaFormProtection: return MakeUnique<SkillMetaFormProtection>(_pawn, _netMode);
         case ESkill::MetaFormSupport: return MakeUnique<SkillMetaFormSupport>(_pawn, _netMode);
-        case ESkill::Katyusha: return MakeUnique<SkillKatyusha>(_pawn, _netMode);
+        case ESkill::Shotgun: return MakeUnique<SkillShotgun>(_pawn, _netMode);
         case ESkill::HealPack: return MakeUnique<SkillHealPack>(_pawn, _netMode);
         case ESkill::Emergency: return MakeUnique<SkillEmergency>(_pawn, _netMode);
         case ESkill::Repair: return MakeUnique<SkillRepair>(_pawn, _netMode);
