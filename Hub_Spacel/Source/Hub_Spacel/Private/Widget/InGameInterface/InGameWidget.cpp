@@ -494,6 +494,11 @@ void UInGameWidget::OnEndMission(EMission _type, bool _succeed, FName _succeedFo
             BP_OnEndMission(*mission);
         }
     }
+
+    if (_type == EMission::Pirate || _type == EMission::Comet || _type == EMission::TakeGold)
+    {
+        m_arrowTarget = nullptr;
+    }
 }
 
 void UInGameWidget::OnResetTimerMission(EMission _type)
