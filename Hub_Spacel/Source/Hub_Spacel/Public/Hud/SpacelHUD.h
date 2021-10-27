@@ -22,7 +22,7 @@ protected:
 
 private:
 	UFUNCTION()
-	void StartGame(EGameState _state);
+	void OnChangeState(EGameState _state);
 
 protected:
 	UPROPERTY(EditAnywhere)

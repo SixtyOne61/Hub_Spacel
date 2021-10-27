@@ -81,6 +81,9 @@ public:
 	void GoToEndGame() { this->RU_GameState = (uint8)EGameState::EndGame; OnRep_StateGame(); }
 
 	UFUNCTION()
+	void GoToWaitEnd() { this->RU_GameState = (uint8)EGameState::WaitEnd; OnRep_StateGame(); }
+
+	UFUNCTION()
 	FString GetBestTeam() const;
 
 	UFUNCTION()

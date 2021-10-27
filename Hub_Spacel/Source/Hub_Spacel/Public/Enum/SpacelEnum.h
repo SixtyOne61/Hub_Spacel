@@ -16,6 +16,7 @@ enum class EGameState : uint8
     LockPrepare,
     InGame,
     EndGame,
+    WaitEnd,
 };
 
 UENUM(BlueprintType)
