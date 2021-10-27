@@ -17,7 +17,7 @@ void UMetricComponent::BeginPlay()
         if (AShipPawn* shipPawn = get<AShipPawn>())
         {
             // TO DO : doesn't work add effect is client side event
-            shipPawn->OnAddEffectDelegate.AddDynamic(this, &UMetricComponent::AddEffect);
+            shipPawn->OnAddEffectClientDelegate.AddDynamic(this, &UMetricComponent::AddEffect);
         }
 
         if (ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld())))

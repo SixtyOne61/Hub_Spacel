@@ -61,7 +61,7 @@ void UInGameWidget::NativeConstruct()
         shipPawn->OnEndUpdateMatiereDelegate.AddDynamic(this, &UInGameWidget::BP_OnUpdateMatiere);
         shipPawn->OnSendInfoPlayerDelegate.AddDynamic(this, &UInGameWidget::BP_OnSendInfoPlayer);
 
-        shipPawn->OnAddEffectDelegate.AddDynamic(this, &UInGameWidget::BP_OnAddEffect);
+        shipPawn->OnAddEffectClientDelegate.AddDynamic(this, &UInGameWidget::BP_OnAddEffect);
         shipPawn->OnRemoveEffectDelegate.AddDynamic(this, &UInGameWidget::BP_OnRemoveEffect);
 
         if (UModuleComponent* moduleComponent = shipPawn->ModuleComponent)

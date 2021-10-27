@@ -255,7 +255,7 @@ private:
     FOnLocalTeamUpdate OnLocalTeamUpdateDelegate {};
 
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
-    FOnAddEffect OnAddEffectDelegate {};
+    FOnAddEffect OnAddEffectClientDelegate {};
 
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
     FOnRemoveEffect OnRemoveEffectDelegate {};

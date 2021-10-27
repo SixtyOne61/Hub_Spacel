@@ -10,6 +10,7 @@
 #include "Misc/DateTime.h"
 #include "Kismet/GameplayStatics.h"
 #include "DataAsset/HomingMissileDataAsset.h"
+#include "Player/Common/CommonPawn.h"
 
 AMissile::AMissile()
     : AProjectileBase()
@@ -44,6 +45,22 @@ void AMissile::Tick(float _deltaTime)
 {
     Super::Tick(_deltaTime);
 
+    if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
+    {
+        if (R_Target == nullptr || R_Target->IsPendingKill())
+        {
+            this->Destroy();
+        }
+
+        if (ACommonPawn* pawn = Cast<ACommonPawn>(R_Target))
+        {
+            if (pawn->hasEffect(EEffect::Fog) || pawn->hasEffect(EEffect::MetaFormSupport) || pawn->hasEffect(EEffect::Killed))
+            {
+                this->Destroy();
+            }
+        }
+    }
+
     if(this->DataAsset == nullptr) return;
 
     FVector dir = this->GetActorForwardVector();
@@ -59,14 +76,6 @@ void AMissile::Tick(float _deltaTime)
     FVector const& currentLocation = actorLocation;
     FVector nextLocation = currentLocation + dir * speed * _deltaTime;
     this->SetActorLocation(nextLocation);
-}
-
-void AMissile::OnTargetEffect(EEffect _type)
-{
-    if (_type == EEffect::Fog || _type == EEffect::MetaFormSupport || _type == EEffect::Killed)
-    {
-        this->Destroy();
-    }
 }
 
 void AMissile::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

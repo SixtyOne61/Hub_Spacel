@@ -39,7 +39,7 @@ void ULocalPlayerActionComponent::BeginPlay()
         {
             shipPawn->OnLocalTeamUpdateDelegate.AddDynamic(this, &ULocalPlayerActionComponent::OnUpdateTeam);
 
-            shipPawn->OnAddEffectDelegate.AddDynamic(this, &ULocalPlayerActionComponent::AddEffect);
+            shipPawn->OnAddEffectClientDelegate.AddDynamic(this, &ULocalPlayerActionComponent::AddEffect);
             shipPawn->OnRemoveEffectDelegate.AddDynamic(this, &ULocalPlayerActionComponent::RemoveEffect);
         }
     }

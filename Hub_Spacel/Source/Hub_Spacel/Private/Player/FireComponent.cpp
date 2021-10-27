@@ -147,12 +147,7 @@ void UFireComponent::spawnMissile(FTransform const _transform) const
     if (AMissile* missile = Cast<AMissile>(actor))
     {
         missile->R_Target = m_target;
-
         missile->R_Team = get()->Team;
-        if (get<AShipPawn>() != nullptr)
-        {
-            get<AShipPawn>()->OnAddEffectDelegate.AddDynamic(missile, &AMissile::OnTargetEffect);
-        }
 
         UGameplayStatics::FinishSpawningActor(missile, _transform);
         setupProjectile(missile);

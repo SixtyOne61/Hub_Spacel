@@ -729,7 +729,7 @@ void AShipPawn::playFash(EEffect _effect)
 
 void AShipPawn::RPCClientAddEffect_Implementation(EEffect _effect)
 {
-    OnAddEffectDelegate.Broadcast(_effect);
+    OnAddEffectClientDelegate.Broadcast(_effect);
     BP_FxAddEffect(_effect);
 
     if (_effect == EEffect::BackToGame)
