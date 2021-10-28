@@ -192,6 +192,10 @@ void SkillCountDown::use(class UWorld* _context)
     {
         m_callbackFailed(getSkillType(), ESkillReturn::CountDown);
     }
+    else if (m_state == ECountDown::Ing)
+    {
+        cancel();
+    }
 }
 
 void SkillCountDown::cancel()
