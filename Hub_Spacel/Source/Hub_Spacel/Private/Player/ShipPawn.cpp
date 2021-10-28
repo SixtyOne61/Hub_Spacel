@@ -424,22 +424,36 @@ void AShipPawn::kill()
 
         setFire(false);
 
+        // fing all fog actor
+        if (auto* world = this->GetWorld())
+        {
+            TArray<AActor*> fogs;
+            UGameplayStatics::GetAllActorsWithTag(world, Tags::Fog, fogs);
+            int id { FMath::RandRange(0, fogs.Num()) - 1 };
+
+            if (id < fogs.Num())
+            {
+                // move pawn into fog
+                this->SetActorLocationAndRotation(fogs[id]->GetActorLocation(), fogs[id]->GetActorRotation(), false, nullptr, ETeleportType::ResetPhysics);
+                this->DriverMeshComponent->SetWorldLocationAndRotationNoPhysics(fogs[id]->GetActorLocation(), fogs[id]->GetActorRotation());
+            }
+        }
+
         this->GetWorldTimerManager().ClearAllTimersForObject(this);
 
         // temp respawn
         FTimerHandle handle;
         this->GetWorldTimerManager().SetTimer(handle, this, &AShipPawn::Restarted, 1.0f, false, 10.0f);
 
-        this->DriverMeshComponent->SetPhysicsAngularVelocityInDegrees(FVector::ZeroVector);
         // disable collision
-        setCollisionProfile("NoCollision");
+        setCollisionProfile("Killed");
 
         addEffect(EEffect::Killed);
         removeEffect(EEffect::Emp);
         removeEffect(EEffect::BackToGame);
 
-        // replace actor to spawn
-        this->SetActorLocationAndRotation(StartTransform.GetLocation(), StartTransform.GetRotation());
+        // reset physic
+        this->DriverMeshComponent->SetPhysicsAngularVelocityInDegrees(FVector::ZeroVector);
         this->DriverMeshComponent->SetPhysicsLinearVelocity(FVector::ZeroVector);
 
         this->RU_Matiere = 0;
@@ -758,6 +772,12 @@ void AShipPawn::RPCClientAddEffect_Implementation(EEffect _effect)
                 actor->AttachToActor(this, FAttachmentTransformRules(EAttachmentRule::KeepWorld, true));
             }
         }
+    }
+    else if (_effect == EEffect::Killed)
+    {
+        // reset local physic
+        this->DriverMeshComponent->SetPhysicsAngularVelocityInDegrees(FVector::ZeroVector);
+        this->DriverMeshComponent->SetPhysicsLinearVelocity(FVector::ZeroVector);
     }
 }
 
