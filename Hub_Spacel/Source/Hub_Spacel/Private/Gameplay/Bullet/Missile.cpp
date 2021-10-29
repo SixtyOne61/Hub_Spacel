@@ -47,11 +47,6 @@ void AMissile::Tick(float _deltaTime)
 
     if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
     {
-        if (R_Target == nullptr || R_Target->IsPendingKill())
-        {
-            this->Destroy();
-        }
-
         if (ACommonPawn* pawn = Cast<ACommonPawn>(R_Target))
         {
             if (pawn->hasEffect(EEffect::Fog) || pawn->hasEffect(EEffect::MetaFormSupport) || pawn->hasEffect(EEffect::Killed))
