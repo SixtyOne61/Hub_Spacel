@@ -23,6 +23,10 @@ APawnCapture::APawnCapture()
     if (!ensure(BaseShipMeshComponent != nullptr)) return;
     BaseShipMeshComponent->SetupAttachment(RootComponent);
 
+    EmergencyComponent = CreateDefaultSubobject<USpacelInstancedMeshComponent>(TEXT("Emergency_00"));
+    if (!ensure(EmergencyComponent != nullptr)) return;
+    EmergencyComponent->SetupAttachment(BaseShipMeshComponent);
+
     WeaponComponent = CreateDefaultSubobject<USpacelInstancedMeshComponent>(TEXT("Weapon_00"));
     if (!ensure(WeaponComponent != nullptr)) return;
     WeaponComponent->SetupAttachment(BaseShipMeshComponent);
@@ -38,6 +42,11 @@ APawnCapture::APawnCapture()
 
 void APawnCapture::BuildShip(EFormType _type)
 {
+    if (this->EmergencyComponent != nullptr)
+    {
+        this->EmergencyComponent->UseForm(_type, true);
+    }
+
     if (this->WeaponComponent != nullptr)
     {
         this->WeaponComponent->UseForm(_type, true);

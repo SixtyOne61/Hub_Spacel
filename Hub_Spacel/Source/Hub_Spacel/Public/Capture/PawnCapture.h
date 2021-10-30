@@ -35,6 +35,9 @@ protected:
 	class UPoseableMeshComponent* BaseShipMeshComponent{ nullptr };
 
 	UPROPERTY(Category = "Component|Mesh", VisibleAnywhere, BlueprintReadWrite)
+	class USpacelInstancedMeshComponent* EmergencyComponent{ nullptr };
+
+	UPROPERTY(Category = "Component|Mesh", VisibleAnywhere, BlueprintReadWrite)
 	class USpacelInstancedMeshComponent* WeaponComponent { nullptr };
 
 	UPROPERTY(Category = "Component|Mesh", VisibleAnywhere, BlueprintReadWrite)
