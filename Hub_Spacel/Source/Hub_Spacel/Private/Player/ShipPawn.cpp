@@ -432,7 +432,7 @@ void AShipPawn::kill()
 
             if (fogs.Num() > 0)
             {
-                int id{ FMath::RandRange(0, fogs.Num()) - 1 };
+                int id { FMath::RandRange(0, fogs.Num() - 1) };
 
                 if (id < fogs.Num())
                 {
