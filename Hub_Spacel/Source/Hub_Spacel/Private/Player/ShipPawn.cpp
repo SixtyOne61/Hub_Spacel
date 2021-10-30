@@ -429,13 +429,17 @@ void AShipPawn::kill()
         {
             TArray<AActor*> fogs;
             UGameplayStatics::GetAllActorsWithTag(world, Tags::Fog, fogs);
-            int id { FMath::RandRange(0, fogs.Num()) - 1 };
 
-            if (id < fogs.Num())
+            if (fogs.Num() > 0)
             {
-                // move pawn into fog
-                this->SetActorLocationAndRotation(fogs[id]->GetActorLocation(), fogs[id]->GetActorRotation(), false, nullptr, ETeleportType::ResetPhysics);
-                this->DriverMeshComponent->SetWorldLocationAndRotationNoPhysics(fogs[id]->GetActorLocation(), fogs[id]->GetActorRotation());
+                int id{ FMath::RandRange(0, fogs.Num()) - 1 };
+
+                if (id < fogs.Num())
+                {
+                    // move pawn into fog
+                    this->SetActorLocationAndRotation(fogs[id]->GetActorLocation(), fogs[id]->GetActorRotation(), false, nullptr, ETeleportType::ResetPhysics);
+                    this->DriverMeshComponent->SetWorldLocationAndRotationNoPhysics(fogs[id]->GetActorLocation(), fogs[id]->GetActorRotation());
+                }
             }
         }
 
