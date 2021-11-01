@@ -450,7 +450,10 @@ void AShipPawn::kill()
         this->GetWorldTimerManager().SetTimer(handle, this, &AShipPawn::Restarted, 1.0f, false, 10.0f);
 
         // disable collision
-        setCollisionProfile("Killed");
+        if (this->DriverMeshComponent != nullptr)
+        {
+            this->DriverMeshComponent->SetCollisionProfileName("Killed");
+        }
 
         addEffect(EEffect::Killed);
         removeEffect(EEffect::Emp);
@@ -479,7 +482,11 @@ void AShipPawn::Restarted()
     lb(this->ModuleComponent);
 
     // enable collision
-    setCollisionProfile(this->Team.ToString());
+    if (this->DriverMeshComponent != nullptr)
+    {
+        auto const team = this->Team.ToString().Replace(TEXT(" "), TEXT(""));
+        this->DriverMeshComponent->SetCollisionProfileName(*team);
+    }
 
     removeEffect(EEffect::Killed);
     addEffect(EEffect::Respawned);

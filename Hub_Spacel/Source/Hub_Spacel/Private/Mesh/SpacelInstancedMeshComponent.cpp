@@ -18,6 +18,7 @@ void USpacelInstancedMeshComponent::UseForm(EFormType _type, bool _refresh)
             if(m_loaded.find(_type) != m_loaded.end())
             {
                 RPCNetMulticastUseForm(_type, m_removedLocations.Num(), this->UseBonus);
+                resetBuild();
             }
             else
             {
@@ -25,6 +26,7 @@ void USpacelInstancedMeshComponent::UseForm(EFormType _type, bool _refresh)
                 this->Path = dataAsset->Path;
                 Read();
                 RPCNetMulticastAddForm(_type, m_baseLocations, m_bonusLocations, m_removedLocations.Num(), this->UseBonus);
+                resetBuild();
             }
             return;
         }
@@ -132,5 +134,4 @@ void USpacelInstancedMeshComponent::populate(EFormType _type, uint8 _ignoreLast,
     InitLocations(_useBonus);
     initArrays(this->Locations, _ignoreLast);
     BroadcastCount();
-    resetBuild();
 }
