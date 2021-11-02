@@ -319,11 +319,14 @@ void USkillComponent::removeSkill()
 
 void USkillComponent::UseSkill(ESkill _skill, bool _affectedByOtherSkillCountDown)
 {
-    for (auto& skill : m_skills)
+    if (_affectedByOtherSkillCountDown)
     {
-        if (skill.IsValid() && skill->isAffected() && skill->getSkillType() != _skill)
+        for (auto& skill : m_skills)
         {
-            skill->cancel();
+            if (skill.IsValid() && skill->isAffected() && skill->getSkillType() != _skill)
+            {
+                skill->cancel();
+            }
         }
     }
 }
