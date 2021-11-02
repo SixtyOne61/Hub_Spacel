@@ -881,7 +881,7 @@ void AShipPawn::behaviourAddEffect(EEffect _type)
     {
         if (this->PlayerDataAsset != nullptr)
         {
-            this->R_OverDrive = this->PlayerDataAsset->CoefOverDriveValue * 10;
+            this->R_OverDrive = this->PlayerDataAsset->CoefOverDriveValue;
         }
     }
     else if (_type == EEffect::Gold)

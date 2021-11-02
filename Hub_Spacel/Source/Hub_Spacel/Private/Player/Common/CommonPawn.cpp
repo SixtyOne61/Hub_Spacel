@@ -186,7 +186,7 @@ void ACommonPawn::moveShip(float _deltaTime)
     // linear
     FVector const& linearVelocity = this->DriverMeshComponent->GetPhysicsLinearVelocity(NAME_None);
 
-    float percentSpeed = this->R_OverDrive != 0.0f ? (this->R_OverDrive / 10.0f) : this->RU_PercentSpeed;
+    float percentSpeed = this->R_OverDrive != 0.0f ? (this->R_OverDrive) : this->RU_PercentSpeed;
     FVector newVelocity = this->DriverMeshComponent->GetForwardVector() * this->PlayerDataAsset->MaxForwardSpeed * percentSpeed * coefSpeed;
     if (hasEffect(EEffect::EscapeMode))
     {
