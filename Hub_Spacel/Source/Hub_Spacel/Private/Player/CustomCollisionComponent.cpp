@@ -186,8 +186,6 @@ void UCustomCollisionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 	hitMission(ownerLocation, profileCollision);
 	// hit heal
 	hitHeal(ownerLocation, profileCollision);
-	// hit emp
-	hitEmp(ownerLocation, profileCollision);
 
 	TArray<FHitResult> hits;
 	if (sweepByProfile(hits, ownerLocation, profileCollision, { FCollisionShape::MakeBox({400, 350, 200}) }))
@@ -384,42 +382,23 @@ void UCustomCollisionComponent::hitHeal(FVector const& _ownerLocation, FName con
 	}
 }
 
-void UCustomCollisionComponent::hitEmp(FVector const& _ownerLocation, FName const& _profileCollision) const
+void UCustomCollisionComponent::hitEmp(AActor* _otherActor) const
 {
-	TArray<FHitResult> hits;
-	if (sweepByProfile(hits, _ownerLocation, _profileCollision, { FCollisionShape::MakeBox({400, 400, 400}) }))
+	if (AEmpBullet* empBullet = Cast<AEmpBullet>(_otherActor))
 	{
-		hits.RemoveAll([](FHitResult const& _item)
-			{
-				return !(_item.Actor.IsValid() && _item.Actor.Get()->ActorHasTag(Tags::EmpBullet));
-			});
-
-		if(get() == nullptr) return;
-
-		ASpacelPlayerState const* spacelPlayerState = get()->GetPlayerState<ASpacelPlayerState>();
-		if (spacelPlayerState == nullptr) return;
-
-		FString const& team = spacelPlayerState->R_Team;
-
-		for (auto const& hit : hits)
+		if (!empBullet->IsPendingKill())
 		{
-			if (hit.Actor.IsValid())
-			{
-				if (AEmpBullet* empBullet = Cast<AEmpBullet>(hit.Actor))
-				{
-					if (!empBullet->IsPendingKill())
-					{
-						if (empBullet->R_Team != *team)
-						{
-							// emp
-							if (AShipPawn* pawn = get<AShipPawn>())
-							{
-								pawn->emp(empBullet->EffectDuration, empBullet->R_Team, empBullet->PlayerIdOwner);
-							}
-						}
+			ASpacelPlayerState const* spacelPlayerState = get()->GetPlayerState<ASpacelPlayerState>();
+			if (spacelPlayerState == nullptr) return;
 
-						empBullet->Destroy();
-					}
+			FString const& team = spacelPlayerState->R_Team;
+
+			if (empBullet->R_Team != *team)
+			{
+				// emp
+				if (AShipPawn* pawn = get<AShipPawn>())
+				{
+					pawn->emp(empBullet->EffectDuration, empBullet->R_Team, empBullet->PlayerIdOwner);
 				}
 			}
 		}
@@ -452,7 +431,7 @@ void UCustomCollisionComponent::checkGold(int32 _otherPlayerId)
 	}
 }
 
-void UCustomCollisionComponent::hit(FString const& _team, int32 _playerId, class UPrimitiveComponent* _comp, int32 _index, FVector const& _otherLocation)
+void UCustomCollisionComponent::hit(FString const& _team, int32 _playerId, class UPrimitiveComponent* _comp, int32 _index, FVector const& _otherLocation, AActor* _otherActor)
 {
 	AShipPawn* shipPawn = get<AShipPawn>();
 	if(shipPawn == nullptr) return;
@@ -488,6 +467,11 @@ void UCustomCollisionComponent::hit(FString const& _team, int32 _playerId, class
 			// for feedback
 			shipPawn->RPCClientDamageIndicator(_otherLocation);
 			shipPawn->RPCClientPlayCameraShake(EImpactType::Hit);
+
+			if (_otherActor != nullptr && _otherActor->ActorHasTag(Tags::EmpBullet))
+			{
+				hitEmp(_otherActor);
+			}
 		}
 	};
 

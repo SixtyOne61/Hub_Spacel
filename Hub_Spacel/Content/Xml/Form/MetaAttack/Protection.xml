@@ -44,8 +44,6 @@
 <Location val="X=-15.000 Y=0.000 Z=15.000"/>
 <Location val="X=-15.000 Y=-15.000 Z=0.000"/>
 <Location val="X=-15.000 Y=15.000 Z=0.000"/>
-<!-- fin default -->
-
 <Bonus val="X=90.000 Y=15.000 Z=15.000"/>
 <Bonus val="X=90.000 Y=-15.000 Z=15.000"/>
 <Bonus val="X=90.000 Y=15.000 Z=-15.000"/>
@@ -60,5 +58,4 @@
 <Bonus val="X=-30.000 Y=-45.000 Z=60.000"/>
 <Bonus val="X=-30.000 Y=45.000 Z=-60.000"/>
 <Bonus val="X=-30.000 Y=-45.000 Z=-60.000"/>
-<!-- fin heavy -->
 </root>

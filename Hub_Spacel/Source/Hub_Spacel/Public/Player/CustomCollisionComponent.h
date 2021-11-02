@@ -23,7 +23,7 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	//
-	void hit(FString const& _team, int32 _playerId, class UPrimitiveComponent* _comp, int32 _index, FVector const& _otherLocation);
+	void hit(FString const& _team, int32 _playerId, class UPrimitiveComponent* _comp, int32 _index, FVector const& _otherLocation, AActor* _otherActor);
 
 private:
 	/* return true if we find something and fill param */
@@ -40,7 +40,7 @@ private:
 	void hitHeal(FVector const& _ownerLocation, FName const& _profileCollision) const;
 
 	/* manage if we hit emp */
-	void hitEmp(FVector const& _ownerLocation, FName const& _profileCollision) const;
+	void hitEmp(AActor* _otherActor) const;
 
 	/* create collision shape */
 	template<class T>

@@ -546,12 +546,12 @@ void AShipPawn::OnRep_Matiere()
     }
 }
 
-void AShipPawn::hit(FString const& _team, int32 _playerId, class UPrimitiveComponent* _comp, int32 _index, FVector const& _otherLocation)
+void AShipPawn::hit(FString const& _team, int32 _playerId, class UPrimitiveComponent* _comp, int32 _index, FVector const& _otherLocation, AActor* _otherActor)
 {
     UCustomCollisionComponent* customCollisionComponent{ Cast<UCustomCollisionComponent>(this->GetComponentByClass(UCustomCollisionComponent::StaticClass())) };
     if (customCollisionComponent != nullptr)
     {
-        customCollisionComponent->hit(_team, _playerId, _comp, _index, _otherLocation);
+        customCollisionComponent->hit(_team, _playerId, _comp, _index, _otherLocation, _otherActor);
     }
 }
 
@@ -660,7 +660,6 @@ bool AShipPawn::canTank(TArray<FHitResult> const& _hits)
 
     if (hasEffect(EEffect::MetaFormProtection))
     {
-        lb_addScore(_hits.Num());
         return true;
     }
     else if (hasEffect(EEffect::Respawned) || hasEffect(EEffect::StartGame))
@@ -686,9 +685,7 @@ bool AShipPawn::canTank(TArray<FHitResult> const& _hits)
 
         if (add != 0)
         {
-            lb_addScore(add);
             addMatiere(add, EMatiereOrigin::Farm);
-
         }
         return ret;
     }
