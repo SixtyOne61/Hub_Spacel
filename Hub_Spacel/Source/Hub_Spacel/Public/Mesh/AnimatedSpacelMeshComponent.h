@@ -27,6 +27,9 @@ protected:
 	// Called every frame
 	void TickComponent(float _deltaTime, ELevelTick _tickType, FActorComponentTickFunction* _thisTickFunction) override;
 
+	/* local build ship for animation */
+	bool localBuild();
+
 private:
 	/* when != 0.0f, we are animating */
 	float m_timer { 0.0f };

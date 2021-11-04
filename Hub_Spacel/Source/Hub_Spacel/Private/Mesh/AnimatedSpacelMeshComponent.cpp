@@ -41,31 +41,7 @@ void UAnimatedSpacelMeshComponent::TickComponent(float _deltaTime, ELevelTick _t
 
             if (m_timer > 0.0f)
             {
-                int num = this->GetInstanceCount();
-
-                /* check */
-                if (num == m_locationOnStart.Num() && num == this->Locations.Num())
-                {
-                    TArray<FTransform> trs {};
-                    for (int i = 0; i < num; ++i)
-                    {
-                        FTransform out{};
-                        this->GetInstanceTransform(i, out);
-
-                        FVector result = FMath::Lerp(this->Locations[i], m_locationOnStart[i], m_timer / this->AnimationDuration);
-                        out.SetLocation(result);
-
-                        trs.Add(out);
-                    }
-
-                    this->ClearInstances();
-
-                    for (auto tr : trs)
-                    {
-                        this->AddInstance(tr);
-                    }
-                }
-                else
+                if (!localBuild())
                 {
                     // reset timer, animation process failed
                     m_timer = 0.0f;
@@ -80,4 +56,29 @@ void UAnimatedSpacelMeshComponent::TickComponent(float _deltaTime, ELevelTick _t
             }
         }
     }
+}
+
+bool UAnimatedSpacelMeshComponent::localBuild()
+{
+    int num = this->GetInstanceCount();
+
+    /* check */
+    if (num == m_locationOnStart.Num() && num == this->Locations.Num())
+    {
+        TArray<FTransform> trs{};
+        for (int i = 0; i < num; ++i)
+        {
+            FTransform out{};
+            this->GetInstanceTransform(i, out);
+
+            FVector result = FMath::Lerp(this->Locations[i], m_locationOnStart[i], m_timer / this->AnimationDuration);
+            out.SetLocation(result);
+
+            // need to mark as dirty.
+            this->UpdateInstanceTransform(i, out, false, true, false);
+        }
+        return true;
+    }
+
+    return false;
 }
