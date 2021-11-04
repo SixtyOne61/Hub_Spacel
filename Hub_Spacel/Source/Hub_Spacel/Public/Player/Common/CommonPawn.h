@@ -101,13 +101,13 @@ public:
     class UEmergencyInstancedMeshComponent* EmergencyComponent{ nullptr };
 
     UPROPERTY(Category = "Component|Mesh", VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-    class USpacelInstancedMeshComponent* WeaponComponent{ nullptr };
+    class UAnimatedSpacelMeshComponent* WeaponComponent{ nullptr };
 
     UPROPERTY(Category = "Component|Mesh", VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-    class USpacelInstancedMeshComponent* ProtectionComponent{ nullptr };
+    class UAnimatedSpacelMeshComponent* ProtectionComponent{ nullptr };
 
     UPROPERTY(Category = "Component|Mesh", VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-    class USpacelInstancedMeshComponent* SupportComponent{ nullptr };
+    class UAnimatedSpacelMeshComponent* SupportComponent{ nullptr };
 
     /* only on server side */
     UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)

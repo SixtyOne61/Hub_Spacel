@@ -74,7 +74,7 @@ protected:
 	void initMesh(EFormType _type);
 
 	/* compute all needed for build ship */
-	void populate(EFormType _type, uint8 _ignoreLast, bool _useBonus);
+	virtual void populate(EFormType _type, uint8 _ignoreLast, bool _useBonus);
 
 protected:
 	UPROPERTY(Category = "Param", EditAnywhere, BlueprintReadWrite)
@@ -83,7 +83,7 @@ protected:
 	UPROPERTY(Category = "Setup", EditAnywhere, BlueprintReadWrite)
 	bool UseBonus { false };
 
-private:
+protected:
 	/* form already loaded and send to client */
 	std::unordered_map<EFormType, std::tuple<TArray<FVector_NetQuantize>, TArray<FVector_NetQuantize>>> m_loaded;
 

@@ -36,6 +36,11 @@ void UNetworkInstancedMeshComponent::clean()
 
 void UNetworkInstancedMeshComponent::RPCNetMulticastResetBuild_Implementation()
 {
+    build();
+}
+
+void UNetworkInstancedMeshComponent::build()
+{
     this->ClearInstances();
     for (auto loc : this->Locations)
     {

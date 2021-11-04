@@ -9,7 +9,7 @@
 #include "Gameplay/DestroyActor.h"
 #include "Gameplay/Bullet/ProjectileBase.h"
 #include "Gameplay/Mission/MissionActor.h"
-#include "Mesh/SpacelInstancedMeshComponent.h"
+#include "Mesh/AnimatedSpacelMeshComponent.h"
 #include "Mesh/EmergencyInstancedMeshComponent.h"
 #include "World/MatiereManager.h"
 #include "Kismet/GameplayStatics.h"
@@ -116,7 +116,7 @@ void UCustomCollisionComponent::dispatch(TArray<FHitResult> const& _items) const
 	}
 }
 
-bool UCustomCollisionComponent::sweepForInstancedStaticMesh(USpacelInstancedMeshComponent*& _mesh, FVector const& _scale, FName const& _profile, FName const& _teamTag)
+bool UCustomCollisionComponent::sweepForInstancedStaticMesh(UAnimatedSpacelMeshComponent*& _mesh, FVector const& _scale, FName const& _profile, FName const& _teamTag)
 {
 	if (_mesh == nullptr || _mesh->GetInstanceCount() == 0) return false;
 
@@ -206,7 +206,7 @@ void UCustomCollisionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 				pawn->RPCClientPlayCameraShake(EImpactType::Obstacle);
 			}
 
-			USpacelInstancedMeshComponent* tmp = Cast<USpacelInstancedMeshComponent>(pawn->EmergencyComponent);
+			UAnimatedSpacelMeshComponent* tmp = Cast<UAnimatedSpacelMeshComponent>(pawn->EmergencyComponent);
 			if (sweepForInstancedStaticMesh(tmp, scale, profileCollision, *tagTeam))
 			{
 				pawn->RPCClientPlayCameraShake(EImpactType::Obstacle);
@@ -452,7 +452,7 @@ void UCustomCollisionComponent::hit(FString const& _team, int32 _playerId, class
 		}
 	};
 
-	auto lb_generic = [&](USpacelInstancedMeshComponent*& _component)
+	auto lb_generic = [&](UAnimatedSpacelMeshComponent*& _component)
 	{
 		if (_component != nullptr && !shipPawn->hasEffect(EEffect::MetaFormProtection))
 		{
@@ -486,7 +486,7 @@ void UCustomCollisionComponent::hit(FString const& _team, int32 _playerId, class
 	}
 	else if (uniqueId == shipPawn->EmergencyComponent->GetUniqueID())
 	{
-		USpacelInstancedMeshComponent* tmp = Cast<USpacelInstancedMeshComponent>(shipPawn->EmergencyComponent);
+		UAnimatedSpacelMeshComponent* tmp = Cast<UAnimatedSpacelMeshComponent>(shipPawn->EmergencyComponent);
 		lb_generic(tmp);
 	}
 	else if (uniqueId == get()->DriverMeshComponent->GetUniqueID())
