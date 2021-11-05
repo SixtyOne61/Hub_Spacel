@@ -30,6 +30,34 @@ protected:
 	/* local build ship for animation */
 	bool localBuild();
 
+	/* for client, find this position in m_locationOnStart if we are in animation */
+	int Remove(FVector_NetQuantize const& _location) override;
+
+	/* we don't anim locations added 
+	TO DO with can save removed location like m_locationOnStart
+	and find the previous location of removed, and "repair" locationOnStart with it */
+	inline void AddRange(TArray<FVector_NetQuantize> const& _locations) override
+	{
+		if (this->GetNetMode() != ENetMode::NM_DedicatedServer)
+		{
+			for (auto loc : _locations)
+			{
+				m_locationOnStart.Add(loc);
+			}
+		}
+		Super::AddRange(_locations);
+	}
+
+	/* same as AddRange */
+	inline void Add(FVector_NetQuantize const& _location) override
+	{
+		if (this->GetNetMode() != ENetMode::NM_DedicatedServer)
+		{
+			m_locationOnStart.Add(_location);
+		}
+		Super::Add(_location);
+	}
+
 private:
 	/* when != 0.0f, we are animating */
 	float m_timer { 0.0f };

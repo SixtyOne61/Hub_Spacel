@@ -82,3 +82,21 @@ bool UAnimatedSpacelMeshComponent::localBuild()
 
     return false;
 }
+
+int UAnimatedSpacelMeshComponent::Remove(FVector_NetQuantize const& _location)
+{
+    int indexRemoved = Super::Remove(_location);
+    if (this->GetNetMode() != ENetMode::NM_DedicatedServer)
+    {
+        if (m_timer > 0.0f)
+        {
+            // check for secure
+            if (indexRemoved < m_locationOnStart.Num())
+            {
+                m_locationOnStart.RemoveAt(indexRemoved);
+            }
+        }
+    }
+
+    return indexRemoved;
+}
