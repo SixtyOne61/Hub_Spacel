@@ -30,6 +30,18 @@ void UXmlInstancedStaticMeshComponent::Read()
 
     m_baseLocations = baseLocationInformation.Values;
     m_bonusLocations = bonusLocationInformation.Values;
+
+    // sort location by distance with origin
+    using TVec = FVector_NetQuantize const&;
+    auto lbSort = [](TVec _v1, TVec _v2) -> bool
+    {
+        auto d1 = FVector::Distance(_v1, { 0.0f, 0.0f, 0.0f });
+        auto d2 = FVector::Distance(_v2, { 0.0f, 0.0f, 0.0f });
+        return d1 < d2;
+    };
+
+    m_baseLocations.Sort(lbSort);
+    m_bonusLocations.Sort(lbSort);
 }
 
 void UXmlInstancedStaticMeshComponent::InitLocations(bool _useBonus)

@@ -18,6 +18,7 @@ class HUB_SPACEL_API USpacelInstancedMeshComponent : public UNetworkInstancedMes
 	GENERATED_BODY()
 	
 public:
+	/* only call on server side */
 	UFUNCTION(BlueprintCallable, Category = "Components|Form")
 	void UseForm(EFormType _type, bool _refresh);
 
