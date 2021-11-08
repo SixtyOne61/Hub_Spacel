@@ -6,14 +6,17 @@
 #include "Player/SpacelPlayerState.h"
 #include "Player/ModuleComponent.h"
 #include "DataAsset/PlayerDataAsset.h"
+#include "DataAsset/UniqueSkillDataAsset.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Components/SphereComponent.h"
 #include "Components/StaticMeshComponent.h"
-#include "Components/InstancedStaticMeshComponent.h"
+#include "Mesh/SpacelInstancedMeshComponent.h"
 #include "Gameplay/Bullet/Missile.h"
 #include "Gameplay/Bullet/Katyusha.h"
+#include "Gameplay/Bullet/EmpBullet.h"
+#include "Util/Tag.h"
 
 // Sets default values for this component's properties
 UFireComponent::UFireComponent()
@@ -34,8 +37,6 @@ void UFireComponent::TickComponent(float _deltaTime, ELevelTick _tickType, FActo
 
 	if (!ensure(get()->PlayerDataAsset != nullptr)) return;
 	if (!ensure(get()->PlayerDataAsset->BulletClass != nullptr)) return;
-	if (!ensure(get()->ModuleComponent != nullptr)) return;
-    if (!ensure(get()->ModuleComponent->WeaponMeshComponent != nullptr)) return;
 
 	UWorld* world { this->GetWorld() };
 	if (!ensure(world != nullptr)) return;
@@ -43,36 +44,20 @@ void UFireComponent::TickComponent(float _deltaTime, ELevelTick _tickType, FActo
     // check if we have boolean for fire (only set on server)
     if (m_isFire.hasValue() && m_isFire.value() && m_fireCountDown <= 0.0f)
     {
-        FTransform transform{};
-        get()->ModuleComponent->WeaponMeshComponent->GetInstanceTransform(m_fireIndex, transform, true);
-        // reset scale
-        transform.SetScale3D({ 1.0f, 1.0f, 1.0f });
-
-        ++m_fireIndex;
-        if (m_fireIndex >= get()->ModuleComponent->WeaponMeshComponent->GetInstanceCount())
+        if (ACommonPawn* pawn = get())
         {
-            m_fireIndex = 0;
-        }
-
-        FVector bulletDir = UKismetMathLibrary::FindLookAtRotation(transform.GetLocation(), get()->TargetLocation).Vector();
-        bulletDir.Normalize();
-        transform.SetRotation(bulletDir.ToOrientationQuat());
-        spawnBullet(transform);
-
-        // reset count down
-        if (ASpacelPlayerState* spacelPlayerState = get()->GetPlayerState<ASpacelPlayerState>())
-        {
-            uint8 lowSkillId = spacelPlayerState->getSkillId(ESkillType::Low);
-            float coef = lowSkillId == (uint8)ESkill::FireRate ? get()->PlayerDataAsset->ReduceTimeBetweenFireWithLevel : 1.0f;
-            if (get()->hasEffect(EEffect::MetaFormAttack))
+            if (pawn->hasEffect(EEffect::Missile))
             {
-                coef = get()->PlayerDataAsset->ReduceTimeBetweenFireWithMetaForm;
+                fireMissile(getFireTransform());
             }
-            m_fireCountDown = get()->PlayerDataAsset->TimeBetweenFire * coef * ((100.0f - get<AShipPawn>()->m_bonusFireRate) / 100.0f);
-        }
-        else
-        {
-            ensure(true);
+            else if (pawn->hasEffect(EEffect::BulletStun))
+            {
+                fireStunBullet(getFireTransform());
+            }
+            else
+            {
+                fireBullet(getFireTransform());
+            }
         }
     }
     else if (m_fireCountDown != 0.0f)
@@ -82,6 +67,60 @@ void UFireComponent::TickComponent(float _deltaTime, ELevelTick _tickType, FActo
         // and throw many bullet
         m_fireCountDown -= _deltaTime;
     }
+}
+
+FTransform UFireComponent::getFireTransform()
+{
+    FTransform transform{};
+    get()->WeaponComponent->GetInstanceTransform(m_fireIndex, transform, true);
+    // reset scale
+    transform.SetScale3D({ 1.0f, 1.0f, 1.0f });
+
+    ++m_fireIndex;
+    if (m_fireIndex >= get()->WeaponComponent->GetNum())
+    {
+        m_fireIndex = 0;
+    }
+
+    FVector bulletDir = UKismetMathLibrary::FindLookAtRotation(transform.GetLocation(), get()->TargetLocation).Vector();
+    bulletDir.Normalize();
+    transform.SetRotation(bulletDir.ToOrientationQuat());
+
+    return transform;
+}
+
+void UFireComponent::resetFireCountDown()
+{
+    // reset count down
+    if (ASpacelPlayerState* spacelPlayerState = get()->GetPlayerState<ASpacelPlayerState>())
+    {
+        uint8 lowSkillId = spacelPlayerState->getSkillId(ESkillType::Low);
+        float coef = 1.0f;
+        // check if we override this
+        if (this->FireRateDataAsset != nullptr)
+        {
+            if (lowSkillId == (uint8)ESkill::FireRate)
+            {
+                coef = this->FireRateDataAsset->Value / 100.0f;
+            }
+        }
+
+        if (get()->hasEffect(EEffect::MetaFormAttack))
+        {
+            if (this->MetaFormAttackDataAsset != nullptr)
+            {
+                coef = this->MetaFormAttackDataAsset->Value / 100.0f;
+            }
+        }
+
+        m_fireCountDown = get()->PlayerDataAsset->TimeBetweenFire * coef * ((100.0f - get<AShipPawn>()->m_bonusFireRate) / 100.0f);
+    }
+}
+
+void UFireComponent::fireBullet(FTransform _fireTransform)
+{
+    spawnBullet(_fireTransform);
+    resetFireCountDown();
 }
 
 void UFireComponent::spawnBullet(FTransform const& _transform) const
@@ -96,80 +135,129 @@ void UFireComponent::spawnBullet(FTransform const& _transform) const
     }
 }
 
-void UFireComponent::launchMissile(FTransform const _transform) const
+void UFireComponent::fireMissile(FTransform _fireTransform)
 {
-    if (m_target != nullptr && !m_target->IsPendingKill())
+    spawnMissile(_fireTransform);
+    resetFireCountDown();
+}
+
+void UFireComponent::spawnMissile(FTransform const _transform) const
+{
+    AActor* actor = Cast<AActor>(UGameplayStatics::BeginDeferredActorSpawnFromClass(this->GetWorld(), get()->PlayerDataAsset->MissileClass, _transform));
+    if (AMissile* missile = Cast<AMissile>(actor))
     {
-        AActor* actor = Cast<AActor>(UGameplayStatics::BeginDeferredActorSpawnFromClass(this->GetWorld(), get()->PlayerDataAsset->MissileClass, _transform));
-        if (AMissile* missile = Cast<AMissile>(actor))
+        missile->R_Target = m_target;
+        missile->R_Team = get()->Team;
+
+        UGameplayStatics::FinishSpawningActor(missile, _transform);
+        setupProjectile(missile);
+    }
+}
+
+void UFireComponent::fireStunBullet(FTransform _fireTransform)
+{
+    spawnStunBullet(_fireTransform);
+    resetFireCountDown();
+}
+
+void UFireComponent::spawnStunBullet(FTransform const _transform) const
+{
+    AActor* actor = Cast<AActor>(UGameplayStatics::BeginDeferredActorSpawnFromClass(this->GetWorld(), get()->PlayerDataAsset->EmpClass, _transform));
+    if (AEmpBullet* empActor = Cast<AEmpBullet>(actor))
+    {
+        empActor->R_Team = get()->Team;
+
+        if (this->BulletStunDataAsset != nullptr)
         {
-            missile->R_Target = m_target;
+            empActor->EffectDuration = this->BulletStunDataAsset->Value;
+        }
 
-            missile->R_Team = get()->Team;
-            if (get<AShipPawn>() != nullptr)
+        if (APlayerState* playerState = get()->GetPlayerState())
+        {
+            empActor->PlayerIdOwner = playerState->PlayerId;
+        }
+
+        empActor->Tags.Add(Tags::EmpBullet);
+        UGameplayStatics::FinishSpawningActor(empActor, _transform);
+        setupProjectile(empActor);
+    }
+}
+
+void UFireComponent::fireShotgun()
+{
+    if (this->GetNetMode() != ENetMode::NM_DedicatedServer) return;
+
+    if (ACommonPawn* pawn = get())
+    {
+        if (this->ShotgunDataAsset != nullptr)
+        {
+            int nbShotgunInstance = this->ShotgunDataAsset->Value;
+
+            if (auto component = pawn->WeaponComponent)
             {
-                get<AShipPawn>()->OnAddEffectDelegate.AddDynamic(missile, &AMissile::OnTargetEffect);
-            }
+                int nbFireEmplacement = component->GetNum();
 
-            UGameplayStatics::FinishSpawningActor(missile, _transform);
-            setupProjectile(missile);
+                while (nbShotgunInstance != 0)
+                {
+                    --nbFireEmplacement;
+
+                    // reset
+                    if (nbFireEmplacement < 0)
+                    {
+                        nbFireEmplacement = component->GetNum();
+                    }
+
+                    // determine transform
+                    FTransform transform{};
+                    component->GetInstanceTransform(nbFireEmplacement, transform, true);
+                    // reset scale
+                    transform.SetScale3D({ 1.0f, 1.0f, 1.0f });
+
+                    FVector const& beginLocation = transform.GetLocation();
+                    FVector bulletDir = UKismetMathLibrary::FindLookAtRotation(beginLocation, beginLocation + getRandomForwardVector() * 1000.0f).Vector();
+                    bulletDir.Normalize();
+                    transform.SetRotation(bulletDir.ToOrientationQuat());
+
+                    spawnShotgunBullet(transform);
+                    --nbShotgunInstance;
+                }
+            }
         }
     }
+}
+
+void UFireComponent::spawnShotgunBullet(FTransform const& _transform) const
+{
+    AActor* actor = Cast<AActor>(UGameplayStatics::BeginDeferredActorSpawnFromClass(this->GetWorld(), get()->PlayerDataAsset->BulletClass, _transform));
+    if (AProjectileBase* laser = Cast<AProjectileBase>(actor))
+    {
+        // init bullet
+        laser->R_Team = get()->Team;
+        laser->SetLifeSpan(FMath::RandRange(0.2f, 0.5f));
+
+        if (auto component = Cast<UProjectileMovementComponent>(laser->GetComponentByClass(UProjectileMovementComponent::StaticClass())))
+        {
+            component->InitialSpeed /= 2.5f;
+        }
+
+        UGameplayStatics::FinishSpawningActor(laser, _transform);
+        setupProjectile(laser);
+    }
+}
+
+FVector UFireComponent::getRandomForwardVector() const
+{
+    FVector ret = get()->GetActorForwardVector();
+    ret += get()->GetActorUpVector() * FMath::RandRange(-0.19f, 0.19f);
+    ret += get()->GetActorRightVector() * FMath::RandRange(-0.19f, 0.19f);
+    
+    ret.Normalize();
+    return ret;
 }
 
 void UFireComponent::BeginPlay()
 {
     Super::BeginPlay();
-    if (this->GetNetMode() != ENetMode::NM_DedicatedServer) return;
-
-    if (AShipPawn* shipPawn = get<AShipPawn>())
-    {
-        shipPawn->BP_InitFireComponent();
-    }
-}
-
-void UFireComponent::spawnKatyusha()
-{
-    if (this->GetNetMode() != ENetMode::NM_DedicatedServer) return;
-
-    m_nbKatyusha = DummyKatyushaLocations.Num() - 1;
-    if (m_nbKatyusha < DummyKatyushaLocations.Num() && DummyKatyushaLocations[m_nbKatyusha] != nullptr)
-    {
-        m_nextKatyushaTransform = DummyKatyushaLocations[m_nbKatyusha]->GetComponentTransform();
-        SpawnKatyusha();
-    }
-}
-
-void UFireComponent::SpawnKatyusha()
-{
-    if (AShipPawn* shipPawn = get<AShipPawn>())
-    {
-        if (UPlayerDataAsset* dataAsset = shipPawn->PlayerDataAsset)
-        {
-            if (m_target != nullptr && !m_target->IsPendingKill())
-            {
-                AActor* actor = Cast<AActor>(UGameplayStatics::BeginDeferredActorSpawnFromClass(this->GetWorld(), dataAsset->KatyushaClass, m_nextKatyushaTransform));
-                if (AKatyusha* katyusha = Cast<AKatyusha>(actor))
-                {
-                    katyusha->AttachToActor(this->GetOwner(), FAttachmentTransformRules(EAttachmentRule::KeepWorld, true));
-                    katyusha->R_TargetLocation = m_target->GetActorLocation();
-                    katyusha->R_Team = shipPawn->Team;
-
-                    UGameplayStatics::FinishSpawningActor(katyusha, m_nextKatyushaTransform);
-                    setupProjectile(katyusha);
-
-                    --m_nbKatyusha;
-                    if (m_nbKatyusha >= 0 && m_nbKatyusha < DummyKatyushaLocations.Num() && DummyKatyushaLocations[m_nbKatyusha] != nullptr)
-                    {
-                        m_nextKatyushaTransform = DummyKatyushaLocations[m_nbKatyusha]->GetComponentTransform();
-
-                        FTimerHandle handle;
-                        this->GetWorld()->GetTimerManager().SetTimer(handle, this, &UFireComponent::SpawnKatyusha, 0.2f, false);
-                    }
-                }
-            }
-        }
-    }
 }
 
 void UFireComponent::setupProjectile(AActor* _projectile) const

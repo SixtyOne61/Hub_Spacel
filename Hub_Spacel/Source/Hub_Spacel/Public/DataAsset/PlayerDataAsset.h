@@ -49,38 +49,20 @@ public:
     UPROPERTY(Category = "Skill", EditAnywhere, BlueprintReadWrite)
     float EscapeModeCoef { 1.5f };
 
-    UPROPERTY(Category = "Skill", EditAnywhere, BlueprintReadWrite)
-    int32 ShieldLife { 50 };
-
     UPROPERTY(Category = "Fire", EditAnywhere, BlueprintReadOnly)
     TSubclassOf<class AActor> BulletClass;
 
     UPROPERTY(Category = "Fire", EditAnywhere, BlueprintReadOnly)
     TSubclassOf<class AActor> MissileClass;
 
-    UPROPERTY(Category = "Fire", EditAnywhere, BlueprintReadOnly)
-    TSubclassOf<class AActor> KatyushaClass;
-
     UPROPERTY(Category = "Fire", EditAnywhere, BlueprintReadWrite)
     float TimeBetweenFire = 0.3f;
 
     UPROPERTY(Category = "Fire", EditAnywhere, BlueprintReadWrite)
-    float ReduceTimeBetweenFireWithLevel = 0.7f;
-
-    UPROPERTY(Category = "Fire", EditAnywhere, BlueprintReadWrite)
-    float ReduceTimeBetweenFireWithMetaForm = 0.2f;
+    int NbShotgunInstance = 7;
 
     UPROPERTY(Category = "Skill", EditAnywhere, BlueprintReadWrite)
-    int ProtectionRatioMatiere {};
-
-    UPROPERTY(Category = "Skill", EditAnywhere, BlueprintReadWrite)
-    int ProtectionRatioEffect{};
-
-    UPROPERTY(Category = "Skill", EditAnywhere, BlueprintReadWrite)
-    int SupportRatioMatiere{};
-
-    UPROPERTY(Category = "Skill", EditAnywhere, BlueprintReadWrite)
-    int SupportRatioEffect{};
+    float RepairRatio { 0.5f };
 
     UPROPERTY(Category = "Skill", EditAnywhere, BlueprintReadOnly)
     TSubclassOf<class AActor> EmpClass { nullptr };
@@ -93,12 +75,6 @@ public:
 
     UPROPERTY(Category = "Skill", EditAnywhere, BlueprintReadOnly)
     TSubclassOf<class AActor> EmpPostProcessClass;
-
-    UPROPERTY(Category = "Skill", EditAnywhere, BlueprintReadOnly)
-    uint8 TresholdForEmergency { 2 };
-
-    UPROPERTY(Category = "Skill", EditAnywhere, BlueprintReadOnly)
-    uint8 TresholdForSwapEmergencyPercent { 10 };
 
     UPROPERTY(Category = "Farm", EditAnywhere, BlueprintReadWrite)
     int NbAsteroideForMatiere{};

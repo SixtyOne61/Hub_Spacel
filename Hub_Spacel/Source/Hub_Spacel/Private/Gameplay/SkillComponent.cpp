@@ -26,12 +26,12 @@ void USkillComponent::setupSkill()
 
     auto callbackSucced = std::bind(&USkillComponent::RPCClientSucced, this, std::placeholders::_1);
     auto callbackFailed = std::bind(&USkillComponent::RPCClientFailed, this, std::placeholders::_1, std::placeholders::_2);
+    auto callbackUse = std::bind(&USkillComponent::UseSkill, this, std::placeholders::_1, std::placeholders::_2);
 
-    m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::EscapeMode), get(), mode, callbackSucced, callbackFailed, true));
-    m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::RepairProtection), get(), mode, callbackSucced, callbackFailed, true));
-    m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::RepairSupport), get(), mode, callbackSucced, callbackFailed, true));
-    m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::Katyusha), get(), mode, callbackSucced, callbackFailed, true));
-    m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::HealPack), get(), mode, callbackSucced, callbackFailed, true));
+    m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::EscapeMode), get(), mode, callbackSucced, callbackFailed, callbackUse, true, true));
+    m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::Repair), get(), mode, callbackSucced, callbackFailed, callbackUse, true, false));
+    m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::Shotgun), get(), mode, callbackSucced, callbackFailed, callbackUse, true, false));
+    m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::HealPack), get(), mode, callbackSucced, callbackFailed, callbackUse, true, false));
 
     SetDelegateForPlayerState();
 
@@ -54,17 +54,20 @@ void USkillComponent::SetupSpecialSkill()
 
         auto callbackSucced = std::bind(&USkillComponent::RPCClientSucced, this, std::placeholders::_1);
         auto callbackFailed = std::bind(&USkillComponent::RPCClientFailed, this, std::placeholders::_1, std::placeholders::_2);
+        auto callbackUse = std::bind(&USkillComponent::UseSkill, this, std::placeholders::_1, std::placeholders::_2);
 
         auto lb = [&](ESkillType _skilltype)
         {
             ESkill skill = (ESkill)spacelPlayerState->getSkillId(_skilltype);
             UUniqueSkillDataAsset* skillParam = this->SkillDataAsset->getSKill(skill);
-            m_skills.Add(MakeUnique<SkillCountDown>(skillParam, get(), mode, callbackSucced, callbackFailed, false));
+            m_skills.Add(MakeUnique<SkillCountDown>(skillParam, get(), mode, callbackSucced, callbackFailed, callbackUse, false, true));
 
             if (spacelPlayerState->OnAddSkillUniqueDelegate != nullptr)
             {
                 spacelPlayerState->OnAddSkillUniqueDelegate(m_skills.Last().Get());
             }
+
+            m_skills.Last()->setActive(false);
         };
 
         lb(ESkillType::Medium);
@@ -96,7 +99,7 @@ void USkillComponent::SetDelegateForPlayerState()
     }
 }
 
-void USkillComponent::OnMissionEnd(EMission _type)
+void USkillComponent::OnMissionEnd(EMission _type, bool _succeed, FName _succeedForTeam)
 {
     if (_type != EMission::FirstBlood && _type != EMission::ScoreRace) return;
 
@@ -263,8 +266,10 @@ void USkillComponent::emergencyRedCube()
 
     auto callbackSucced = std::bind(&USkillComponent::RPCClientSucced, this, std::placeholders::_1);
     auto callbackFailed = std::bind(&USkillComponent::RPCClientFailed, this, std::placeholders::_1, std::placeholders::_2);
+    auto callbackUse = std::bind(&USkillComponent::UseSkill, this, std::placeholders::_1, std::placeholders::_2);
+
     ENetMode mode = this->GetNetMode();
-    m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::Emergency), get(), mode, callbackSucced, callbackFailed, true));
+    m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::Emergency), get(), mode, callbackSucced, callbackFailed, callbackUse, true, false));
 
     if (ASpacelPlayerState* spacelPlayerState = Cast<ASpacelPlayerState>(get()->GetPlayerState()))
     {
@@ -310,4 +315,18 @@ void USkillComponent::removeSkill()
     }
 
     m_skillToRemove.Empty();
+}
+
+void USkillComponent::UseSkill(ESkill _skill, bool _affectedByOtherSkillCountDown)
+{
+    if (_affectedByOtherSkillCountDown)
+    {
+        for (auto& skill : m_skills)
+        {
+            if (skill.IsValid() && skill->isAffected() && skill->getSkillType() != _skill)
+            {
+                skill->cancel();
+            }
+        }
+    }
 }

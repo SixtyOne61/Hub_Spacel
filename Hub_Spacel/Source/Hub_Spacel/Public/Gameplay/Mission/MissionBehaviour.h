@@ -31,12 +31,12 @@ public:
 				m_timer += _deltaTime;
 				if (m_timer >= m_mission.DurationValue)
 				{
-					end(_world);
+					end(_world, false);
 				}
 			}
 		}
 	}
-	virtual void end(UWorld* _world) { m_isEnd = true; OnResetTimerUniqueDelegate.clean(); };
+	virtual void end(UWorld* _world, bool _succeed) { m_isEnd = true; OnResetTimerUniqueDelegate.clean(); m_isSucceed = _succeed; };
 
 	void resetTimer()
 	{
@@ -51,9 +51,13 @@ protected:
 	Util::Event<EMission> OnResetTimerUniqueDelegate;
 
 private:
-	bool m_isStart{ false };
+	bool m_isStart { false };
 	bool m_isEnd { false };
 	float m_timer { 0.0f };
+	bool m_isSucceed { false };
+
+protected:
+	FName m_succeedForTeam { };
 };
 
 class HUB_SPACEL_API MissionFirstBlood : public MissionBehaviour
@@ -61,7 +65,15 @@ class HUB_SPACEL_API MissionFirstBlood : public MissionBehaviour
 	using MissionBehaviour::MissionBehaviour;
 
 public:
+	void start(class UWorld* _world) override;
 	void tick(float _deltaTime, UWorld* _world) override;
+	void end(class UWorld* _world, bool _succeed) override;
+
+private:
+	void onKill(FString const& _victim, FString const& _killer);
+
+private:
+	bool m_killDone { false };
 };
 
 class HUB_SPACEL_API MissionRaceScore : public MissionBehaviour
@@ -85,7 +97,7 @@ class HUB_SPACEL_API MissionEcartType : public MissionSilence
 public:
 	void start(UWorld* _world) override;
 	void tick(float _deltaTime, UWorld* _world) override;
-	void end(UWorld* _world) override;
+	void end(UWorld* _world, bool _succeed) override;
 
 private:
 	void onKill(FString const& _victim, FString const& _killer);
@@ -109,6 +121,7 @@ public:
 private:
 	int m_nbComet { 0 };
 	TSet<FString> m_teams {};
+	TArray<class AActor*> m_comets {};
 };
 
 class HUB_SPACEL_API MissionPirate : public MissionBehaviour
@@ -147,7 +160,7 @@ public:
 	void start(class UWorld* _world) override;
 	void tick(float _deltaTime, UWorld* _world) override;
 	void findGold(class UWorld* _world);
-	void end(class UWorld* _world) override;
+	void end(class UWorld* _world, bool _succeed) override;
 
 private:
 	void onTokenChange();

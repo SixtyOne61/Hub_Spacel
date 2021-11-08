@@ -19,4 +19,5 @@ namespace Tags
     static const FName HealPack { "HealPack" };
     static const FName Arrow { "Arrow" };
     static const FName EmpBullet { "EmpBullet" };
+    static const FName Builder { "Builder" };
 }

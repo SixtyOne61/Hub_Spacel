@@ -9,13 +9,17 @@ void ACommonPlayerController::SetupInputComponent()
     Super::SetupInputComponent();
 
     this->InputComponent->BindAxis("Forward", this, &ACommonPlayerController::forward);
-    this->InputComponent->BindAxis("HorizontalStraf", this, &ACommonPlayerController::horizontalStraf);
-    this->InputComponent->BindAxis("FlightAttitude", this, &ACommonPlayerController::flightAttitude);
+    this->InputComponent->BindAxis("Backward", this, &ACommonPlayerController::backward);
+    this->InputComponent->BindAxis("HorizontalStrafRight", this, &ACommonPlayerController::horizontalStrafRight);
+    this->InputComponent->BindAxis("HorizontalStrafLeft", this, &ACommonPlayerController::horizontalStrafLeft);
+    this->InputComponent->BindAxis("FlightAttitudeRight", this, &ACommonPlayerController::flightAttitudeRight);
+    this->InputComponent->BindAxis("FlightAttitudeLeft", this, &ACommonPlayerController::flightAttitudeLeft);
 
     this->InputComponent->BindAction("Fire", IE_Pressed, this, &ACommonPlayerController::fireOn);
     this->InputComponent->BindAction("Fire", IE_Released, this, &ACommonPlayerController::fireOff);
     this->InputComponent->BindAction("ReturnToMainMenu", IE_Pressed, this, &ACommonPlayerController::returnToMainMenu);
-    this->InputComponent->BindAction("Lock", IE_Pressed, this, &ACommonPlayerController::lock);
+
+    this->InputComponent->BindAction("HalfTurn", IE_Pressed, this, &ACommonPlayerController::halfTurn);
 }
 
 void ACommonPlayerController::Tick(float _deltaTime)

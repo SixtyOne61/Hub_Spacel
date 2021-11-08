@@ -24,6 +24,8 @@ public:
 	// Sets default values for this pawn's properties
 	ACommonPawn();
 
+    void setActorRotation(FRotator const& _rotator);
+
 	void lookAt(FVector const& _loc, FVector const& _dir, FVector const& _hitLoc);
 
     // effect part
@@ -36,10 +38,6 @@ public:
     /* set collision profile name */
     void setCollisionProfile(FString _team);
 
-    void addPlayerFocusOnMe(int32 _playerId);
-    void removePlayerFocusOnMe(int32 _playerId);
-    void removeAllPlayerFocusOnMe();
-
     UFUNCTION(UnReliable, Client)
     void RPCClientDamageIndicator(FVector_NetQuantize const& _location);
 
@@ -48,6 +46,8 @@ public:
 
     UFUNCTION(BlueprintImplementableEvent)
     void BP_HitIndicator();
+
+    void halfTurn();
 
 protected:
 	// Called when the game starts or when spawned
@@ -79,12 +79,6 @@ public:
     class UStaticMeshComponent* DriverMeshComponent{ nullptr };
 
     UPROPERTY(Category = "Ship", VisibleAnywhere, BlueprintReadOnly)
-    class UStaticMeshComponent* ShieldComponent{ nullptr };
-
-    UPROPERTY(Category = "Ship", VisibleAnywhere, BlueprintReadOnly)
-    class UStaticMeshComponent* MetaFormProtectionComponent{ nullptr };
-
-    UPROPERTY(Category = "Ship", VisibleAnywhere, BlueprintReadOnly)
     class UPoseableMeshComponent* BaseShipMeshComponent{ nullptr };
 
     UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadOnly)
@@ -102,6 +96,18 @@ public:
     /* module setup by server replicated to client, static mesh instance don't support replication */
     UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)
     class UModuleComponent* ModuleComponent{ nullptr };
+
+    UPROPERTY(Category = "Component|Mesh", VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+    class UEmergencyInstancedMeshComponent* EmergencyComponent{ nullptr };
+
+    UPROPERTY(Category = "Component|Mesh", VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+    class USpacelInstancedMeshComponent* WeaponComponent{ nullptr };
+
+    UPROPERTY(Category = "Component|Mesh", VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+    class USpacelInstancedMeshComponent* ProtectionComponent{ nullptr };
+
+    UPROPERTY(Category = "Component|Mesh", VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+    class USpacelInstancedMeshComponent* SupportComponent{ nullptr };
 
     /* only on server side */
     UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadWrite)
@@ -153,6 +159,9 @@ public:
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
     FOnSendInfoPlayer OnSendInfoPlayerDelegate {};
 
+    UFUNCTION()
+    void UnFreezeRotation();
+
 protected:
     UPROPERTY()
     TArray<class UNiagaraComponent*> ExhaustFxComponents { };
@@ -190,4 +199,6 @@ protected:
 private:
     UPROPERTY()
     TArray<int32> PlayerFocusOnYou{};
+
+    bool m_freezeRotation{ false };
 };

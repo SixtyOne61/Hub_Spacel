@@ -15,37 +15,16 @@ SkillBehaviour::SkillBehaviour(ACommonPawn* _pawn, ENetMode _netMode)
 {
 }
 
-ESkillReturn SkillNinePack::onStart()
-{
-    return ESkillReturn::InternError;
-}
-
 ESkillReturn SkillHealPack::onStart()
 {
     if (get<AShipPawn>() == nullptr) return ESkillReturn::InternError;
     return get<AShipPawn>()->spawnHealPack();
 }
 
-ESkillReturn SkillRepairProtection::onStart()
-{
-    if(get<AShipPawn>() == nullptr) return ESkillReturn::InternError;
-    return get<AShipPawn>()->onRepairProtection();
-}
-
-ESkillReturn SkillRepairSupport::onStart()
+ESkillReturn SkillRepair::onStart()
 {
     if (get<AShipPawn>() == nullptr) return ESkillReturn::InternError;
-    return get<AShipPawn>()->onRepairSupport();
-}
-
-ESkillReturn SkillGiveAlly1::onStart()
-{
-    return ESkillReturn::InternError;
-}
-
-ESkillReturn SkillGiveAlly2::onStart()
-{
-    return ESkillReturn::InternError;
+    return get<AShipPawn>()->onRepair();
 }
 
 ESkillReturn SkillEscapeMode::onStart()
@@ -65,71 +44,46 @@ void SkillEscapeMode::onEndCountDown()
 {
 }
 
-ESkillReturn SkillSpecialAttack::onStart()
+ESkillReturn SkillMissile::onStart()
 {
     if (get<AShipPawn>() == nullptr) return ESkillReturn::InternError;
-    if (!get<AShipPawn>()->hasEffect(EEffect::TargetLock)) return ESkillReturn::Unavailable;
 
-    get<AShipPawn>()->launchMissile();
+    get<AShipPawn>()->addEffect(EEffect::Missile);
     return ESkillReturn::Success;
 }
 
-void SkillSpecialProtection::fillPlayer(FName const& _team, TArray<AShipPawn*>& _pawns) const
+void SkillMissile::onEnd()
 {
-    if(get() == nullptr) return;
-
-    _pawns.Empty();
-    if (AGameStateBase* gameState = UGameplayStatics::GetGameState(get()->GetWorld()))
-    {
-        for (APlayerState const* playerState : gameState->PlayerArray)
-        {
-            if (playerState)
-            {
-                if (AShipPawn* pawn = Cast<AShipPawn>(playerState->GetPawn()))
-                {
-                    if (pawn->Team == _team)
-                    {
-                        _pawns.Add(pawn);
-                    }
-                }
-            }
-        }
-    }
+    if (get() == nullptr) return;
+    get()->removeEffect(EEffect::Missile);
 }
 
-ESkillReturn SkillSpecialProtection::onStart()
+ESkillReturn SkillFarmer::onStart()
 {
     if (get() == nullptr) return ESkillReturn::InternError;
 
-    FName team = get()->Team;
-    TArray<AShipPawn*> pawns;
-    fillPlayer(team, pawns);
-
-    for (AShipPawn* pawn : pawns)
-    {
-        pawn->addEffect(EEffect::Shield);
-    }
+    get()->addEffect(EEffect::Farmer);
     return ESkillReturn::Success;
 }
 
-void SkillSpecialProtection::onEnd()
+void SkillFarmer::onEnd()
 {
     if (get() == nullptr) return;
-
-    FName team = get()->Team;
-    TArray<AShipPawn*> pawns;
-    fillPlayer(team, pawns);
-
-    for (AShipPawn* pawn : pawns)
-    {
-        pawn->removeEffect(EEffect::Shield);
-    }
+    get()->removeEffect(EEffect::Farmer);
 }
 
-ESkillReturn SkillSpecialSupport::onStart()
+ESkillReturn SkillBulletStun::onStart()
 {
     if (get<AShipPawn>() == nullptr) return ESkillReturn::InternError;
-    return get<AShipPawn>()->spawnEmp();
+
+    get()->addEffect(EEffect::BulletStun);
+    return ESkillReturn::Success;
+}
+
+void SkillBulletStun::onEnd()
+{
+    if (get() == nullptr) return;
+    get()->removeEffect(EEffect::BulletStun);
 }
 
 ESkillReturn SkillMetaFormAttack::onStart()
@@ -180,19 +134,24 @@ void SkillMetaFormSupport::onEnd()
     }
 }
 
-ESkillReturn SkillKatyusha::onStart()
+ESkillReturn SkillShotgun::onStart()
 {
     if (get<AShipPawn>() == nullptr) return ESkillReturn::InternError;
-    if (!get<AShipPawn>()->hasEffect(EEffect::TargetLock)) return ESkillReturn::Unavailable;
 
-    get<AShipPawn>()->spawnKatyusha();
+    get<AShipPawn>()->fireShotgun();
     return ESkillReturn::Success;
 }
 
 ESkillReturn SkillEmergency::onStart()
 {
     if (get<AShipPawn>() == nullptr) return ESkillReturn::InternError;
-    return get<AShipPawn>()->onSwapEmergency();
+    auto ret = get<AShipPawn>()->onSwapEmergency();
+
+    if (ret == ESkillReturn::Success)
+    {
+        onEndCountDown();
+    }
+    return ret;
 }
 
 void SkillEmergency::onEndCountDown()
@@ -205,21 +164,17 @@ TUniquePtr<SkillBehaviour> SkillFactory::create(ESkill _skill, class ACommonPawn
 {
     switch (_skill)
     {
-        case ESkill::RepairProtection : return MakeUnique<SkillRepairProtection>(_pawn, _netMode);
-        case ESkill::RepairSupport : return MakeUnique<SkillRepairSupport>(_pawn, _netMode);
-        case ESkill::GiveAlly1 : return MakeUnique<SkillGiveAlly1>(_pawn, _netMode);
-        case ESkill::GiveAlly2 : return MakeUnique<SkillGiveAlly2>(_pawn, _netMode);
         case ESkill::EscapeMode : return MakeUnique<SkillEscapeMode>(_pawn, _netMode);
-        case ESkill::Missile : return MakeUnique<SkillSpecialAttack>(_pawn, _netMode);
-        case ESkill::ShieldTeam: return MakeUnique<SkillSpecialProtection>(_pawn, _netMode);
-        case ESkill::Emp: return MakeUnique<SkillSpecialSupport>(_pawn, _netMode);
+        case ESkill::Missile : return MakeUnique<SkillMissile>(_pawn, _netMode);
+        case ESkill::Farmer: return MakeUnique<SkillFarmer>(_pawn, _netMode);
+        case ESkill::BulletStun: return MakeUnique<SkillBulletStun>(_pawn, _netMode);
         case ESkill::MetaFormAttack: return MakeUnique<SkillMetaFormAttack>(_pawn, _netMode);
         case ESkill::MetaFormProtection: return MakeUnique<SkillMetaFormProtection>(_pawn, _netMode);
         case ESkill::MetaFormSupport: return MakeUnique<SkillMetaFormSupport>(_pawn, _netMode);
-        case ESkill::NinePack: return MakeUnique<SkillNinePack>(_pawn, _netMode);
-        case ESkill::Katyusha: return MakeUnique<SkillKatyusha>(_pawn, _netMode);
+        case ESkill::Shotgun: return MakeUnique<SkillShotgun>(_pawn, _netMode);
         case ESkill::HealPack: return MakeUnique<SkillHealPack>(_pawn, _netMode);
         case ESkill::Emergency: return MakeUnique<SkillEmergency>(_pawn, _netMode);
+        case ESkill::Repair: return MakeUnique<SkillRepair>(_pawn, _netMode);
         default: ensure(false); break;
     }
 

@@ -11,7 +11,8 @@
 #include "Components/StaticMeshComponent.h"
 #include "Components/WidgetInteractionComponent.h"
 #include "Components/PostProcessComponent.h"
-#include "Components/InstancedStaticMeshComponent.h"
+#include "Mesh/XmlInstancedStaticMeshComponent.h"
+#include "Mesh/SpacelInstancedMeshComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "DataAsset/StaticMeshDataAsset.h"
@@ -40,7 +41,6 @@
 #include "Gameplay/SkillComponent.h"
 #include "Gameplay/Skill/PostProcessInvisible.h"
 #include "Gameplay/Skill/HealPackBullet.h"
-#include "Gameplay/Skill/EmpBullet.h"
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
 
@@ -117,18 +117,6 @@ void AShipPawn::OnChangeState(EGameState _state)
 
 void AShipPawn::RPCNetMulticastStartGame_Implementation(FName const& _team)
 {
-    if (this->ShieldComponent != nullptr)
-    {
-        if (this->TeamColorDataAsset != nullptr)
-        {
-            if (_team != "None")
-            {
-                FColor color = this->TeamColorDataAsset->GetColor<FColor>(_team.ToString());
-                this->ShieldComponent->SetVectorParameterValueOnMaterials("Color", FVector{ color.ReinterpretAsLinear() });
-            }
-        }
-    }
-
     if(this->GetNetMode() == ENetMode::NM_DedicatedServer || this->IsLocallyControlled()) return;
 
     // find local player
@@ -247,7 +235,7 @@ void AShipPawn::BeginPlay()
     }
 }
 
-void AShipPawn::OnEndMission(EMission _type)
+void AShipPawn::OnEndMission(EMission _type, bool _succeed, FName _succeedForTeam)
 {
     if (_type == EMission::HoldGold)
     {
@@ -284,105 +272,10 @@ void AShipPawn::LinkPawn()
     }
 }
 
-void AShipPawn::lockTarget(int32 _playerId, bool _lock)
-{
-    // call event on client for UI
-    UHub_SpacelGameInstance* spacelGameInstance{ Cast<UHub_SpacelGameInstance>(this->GetGameInstance()) };
-    spacelGameInstance->OnTargetPlayerDelegate.Broadcast(_playerId, _lock);
-
-    RPCServerTargetPlayer(_playerId, _lock);
-}
-
-void AShipPawn::RPCServerTargetPlayer_Implementation(int32 _playerId, bool _lock)
+void AShipPawn::fireShotgun()
 {
     if (!ensure(this->FireComponent != nullptr)) return;
-
-    if (_lock)
-    {
-        if (AGameStateBase* gameState = UGameplayStatics::GetGameState(this->GetWorld()))
-        {
-            for (APlayerState const* playerState : gameState->PlayerArray)
-            {
-                if (playerState)
-                {
-                    if (playerState->PlayerId == _playerId)
-                    {
-                        AActor* act = playerState->GetPawn();
-                        if (ACommonPawn* commonPawn = Cast<ACommonPawn>(act))
-                        {
-                            if (APlayerState const* ourPlayerState = this->GetPlayerState<APlayerState>())
-                            {
-                                commonPawn->addPlayerFocusOnMe(ourPlayerState->PlayerId);
-                            }
-                        }
-
-                        this->FireComponent->m_target = act;
-                        addEffect(EEffect::TargetLock);
-                        break;
-                    }
-                }
-            }
-        }
-    }
-    else
-    {
-        removeEffect(EEffect::TargetLock);
-    }
-}
-
-void AShipPawn::launchMissile()
-{
-    if (!ensure(this->FireComponent != nullptr)) return;
-    if (!ensure(this->ModuleComponent != nullptr)) return;
-    if (!ensure(this->ModuleComponent->MissileMeshComponent != nullptr)) return;
-    this->FireComponent->launchMissile(this->ModuleComponent->MissileMeshComponent->GetComponentTransform());
-}
-
-void AShipPawn::spawnKatyusha()
-{
-    if (!ensure(this->FireComponent != nullptr)) return;
-    this->FireComponent->spawnKatyusha();
-}
-
-ESkillReturn AShipPawn::spawnEmp()
-{
-    if(this->SkillComponent == nullptr) return ESkillReturn::InternError;
-    if (this->SkillComponent->SkillDataAsset == nullptr) return ESkillReturn::InternError;
-
-    if (UUniqueSkillDataAsset const* skillParam = this->SkillComponent->SkillDataAsset->getSKill(ESkill::Emp))
-    {
-        uint32 duration = skillParam->FlatDuration;
-
-        TArray<UActorComponent*> const& actors = this->GetComponentsByTag(USceneComponent::StaticClass(), Tags::HealPack);
-        if (actors.Num() > 0 && actors[0] != nullptr)
-        {
-            if (USceneComponent* comp = Cast<USceneComponent>(actors[0]))
-            {
-                FTransform tr = comp->GetComponentTransform();
-
-                FVector dir = UKismetMathLibrary::FindLookAtRotation(tr.GetLocation(), TargetLocation).Vector();
-                dir.Normalize();
-                tr.SetRotation(dir.ToOrientationQuat());
-
-                if (AEmpBullet* empActor = Cast<AEmpBullet>(UGameplayStatics::BeginDeferredActorSpawnFromClass(GetWorld(), this->PlayerDataAsset->EmpClass, tr)))
-                {
-                    empActor->R_Team = Team;
-                    empActor->EffectDuration = duration;
-                    if (APlayerState* playerState = GetPlayerState())
-                    {
-                        empActor->PlayerIdOwner = playerState->PlayerId;
-                    }
-
-                    empActor->Tags.Add(Tags::EmpBullet);
-                    UGameplayStatics::FinishSpawningActor(empActor, tr);
-                }
-
-                return ESkillReturn::Success;
-            }
-        }
-    }
-
-    return ESkillReturn::Unavailable;
+    this->FireComponent->fireShotgun();
 }
 
 void AShipPawn::emp(uint32 _duration, FName const& _team, int32 _playerId)
@@ -415,39 +308,60 @@ void AShipPawn::Tick(float _deltaTime)
             moveShip(_deltaTime);
         }
     }
+    else
+    {
+        computeSoundData();
+    }
 }
 
-void AShipPawn::emergencyRedCube(FVector const& _location)
+void AShipPawn::computeSoundData()
 {
-    if (this->PlayerDataAsset == nullptr) return;
-    if (this->ModuleComponent != nullptr)
+    int percentSpeed = (int)FMath::Clamp((FMath::Abs(RU_PercentSpeed) + R_OverDrive) * 100, 0.0f, 100.0f);
+    if (hasEffect(EEffect::MetaFormAttack) || hasEffect(EEffect::MetaFormProtection) || hasEffect(EEffect::MetaFormSupport) || hasEffect(EEffect::EscapeMode))
     {
-        this->ModuleComponent->EmergencyLocationsRemove.Add(_location);
-        if (this->ModuleComponent->EmergencyLocationsRemove.Num() >= this->PlayerDataAsset->TresholdForEmergency)
-        {
-            if (this->SkillComponent != nullptr)
-            {
-                this->SkillComponent->emergencyRedCube();
-                this->SkillComponent->RPCClientEmergencyRedCube();
-            }
-        }
+        // override speed max
+        percentSpeed = 101 * FMath::Abs(RU_PercentSpeed);
+    }
+    else if (hasEffect(EEffect::Missile))
+    {
+        percentSpeed = 0.0f;
+    }
+
+    bool playStart { false };
+    if (FMath::IsNearlyEqual(RU_PercentSpeed, 0.0f) && m_lastDirection != 0)
+    {
+        m_lastDirection = 0;
+    }
+    else if (RU_PercentSpeed > 0 && m_lastDirection != 1)
+    {
+        m_lastDirection = 1;
+        playStart = true;
+    }
+    else if (RU_PercentSpeed < 0 && m_lastDirection != -1)
+    {
+        m_lastDirection = -1;
+    }
+
+    BP_FxSpeedSound(percentSpeed, playStart);
+}
+
+void AShipPawn::emergencyRedCube()
+{
+    // enable emergency skill
+    if (this->SkillComponent != nullptr)
+    {
+        this->SkillComponent->emergencyRedCube();
+        this->SkillComponent->RPCClientEmergencyRedCube();
     }
 }
 
 void AShipPawn::onEmergencyCountDownEnd()
 {
-    if(this->PlayerDataAsset == nullptr) return;
-    if (this->ModuleComponent != nullptr)
+    // remove skill
+    if (this->SkillComponent != nullptr)
     {
-        if (this->ModuleComponent->EmergencyLocationsRemove.Num() < this->PlayerDataAsset->TresholdForEmergency)
-        {
-            // remove skill
-            if (this->SkillComponent != nullptr)
-            {
-                this->SkillComponent->emergencyRedCubeRemove();
-                this->SkillComponent->RPCClientEmergencyRedCubeRemove();
-            }
-        }
+        this->SkillComponent->emergencyRedCubeRemove();
+        this->SkillComponent->RPCClientEmergencyRedCubeRemove();
     }
 }
 
@@ -465,24 +379,19 @@ void AShipPawn::OnRep_PlayerState()
         }
 
         setCollisionProfile(teamName);
-
-        if (this->IsLocallyControlled())
-        {
-            spacelPlayerState->OnSkillLobbyChangeDelegate.AddDynamic(this, &AShipPawn::BuildShip);
-        }
     }
 }
 
 void AShipPawn::BuildDefaultShip()
 {
 #if WITH_EDITOR
-    this->ModuleComponent->OnStartGame(EGameState::InGame);
+    this->ModuleComponent->OnChangeState(EGameState::InGame);
 #endif
 }
 
-void AShipPawn::BuildShip()
+void AShipPawn::buildLobbyShip(ESkill _skillId, ESkillType _type)
 {
-    this->ModuleComponent->BuildShipLobby();
+    this->ModuleComponent->buildLobbyShip(_skillId, _type);
 }
 
 void AShipPawn::setFire(bool _on)
@@ -515,35 +424,47 @@ void AShipPawn::kill()
 
         setFire(false);
 
+        // fing all fog actor
+        if (auto* world = this->GetWorld())
+        {
+            TArray<AActor*> fogs;
+            UGameplayStatics::GetAllActorsWithTag(world, Tags::Fog, fogs);
+
+            if (fogs.Num() > 0)
+            {
+                int id { FMath::RandRange(0, fogs.Num() - 1) };
+
+                if (id < fogs.Num())
+                {
+                    // move pawn into fog
+                    this->SetActorLocationAndRotation(fogs[id]->GetActorLocation(), fogs[id]->GetActorRotation(), false, nullptr, ETeleportType::ResetPhysics);
+                    this->DriverMeshComponent->SetWorldLocationAndRotationNoPhysics(fogs[id]->GetActorLocation(), fogs[id]->GetActorRotation());
+                }
+            }
+        }
+
         this->GetWorldTimerManager().ClearAllTimersForObject(this);
 
         // temp respawn
         FTimerHandle handle;
         this->GetWorldTimerManager().SetTimer(handle, this, &AShipPawn::Restarted, 1.0f, false, 10.0f);
 
-        this->DriverMeshComponent->SetPhysicsAngularVelocityInDegrees(FVector::ZeroVector);
         // disable collision
-        setCollisionProfile("NoCollision");
+        if (this->DriverMeshComponent != nullptr)
+        {
+            this->DriverMeshComponent->SetCollisionProfileName("Killed");
+        }
 
         addEffect(EEffect::Killed);
         removeEffect(EEffect::Emp);
         removeEffect(EEffect::BackToGame);
-        removeAllPlayerFocusOnMe();
 
-        // replace actor to spawn
-        this->SetActorLocationAndRotation(StartTransform.GetLocation(), StartTransform.GetRotation());
+        // reset physic
+        this->DriverMeshComponent->SetPhysicsAngularVelocityInDegrees(FVector::ZeroVector);
         this->DriverMeshComponent->SetPhysicsLinearVelocity(FVector::ZeroVector);
 
         this->RU_Matiere = 0;
         OnRep_Matiere();
-
-        if (ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld())))
-        {
-            if (spacelGameState->RU_GameState == (uint8)EGameState::InGame)
-            {
-                spacelGameState->GoToUnlockMedium();
-            }
-        }
     }
 }
 
@@ -561,7 +482,11 @@ void AShipPawn::Restarted()
     lb(this->ModuleComponent);
 
     // enable collision
-    setCollisionProfile(this->Team.ToString());
+    if (this->DriverMeshComponent != nullptr)
+    {
+        auto const team = this->Team.ToString().Replace(TEXT(" "), TEXT(""));
+        this->DriverMeshComponent->SetCollisionProfileName(*team);
+    }
 
     removeEffect(EEffect::Killed);
     addEffect(EEffect::Respawned);
@@ -575,22 +500,6 @@ void AShipPawn::Restarted()
 
 void AShipPawn::OnPlayerEnterFog(int32 _playerId, bool _enter)
 {
-    // server side, check if it's my target
-    if (_enter && this->FireComponent != nullptr && this->FireComponent->m_target != nullptr)
-    {
-        if (AShipPawn* pawn = Cast<AShipPawn>(this->FireComponent->m_target))
-        {
-            if (APlayerState* playerState = pawn->GetPlayerState())
-            {
-                if (playerState->PlayerId == _playerId)
-                {
-                    // remove target
-                    removeEffect(EEffect::TargetLock);
-                }
-            }
-        }
-    }
-
     if (APlayerState* playerState = this->GetPlayerState())
     {
         if (playerState->PlayerId == _playerId)
@@ -637,12 +546,12 @@ void AShipPawn::OnRep_Matiere()
     }
 }
 
-void AShipPawn::hit(FString const& _team, int32 _playerId, class UPrimitiveComponent* _comp, int32 _index, FVector const& _otherLocation)
+void AShipPawn::hit(FString const& _team, int32 _playerId, class UPrimitiveComponent* _comp, int32 _index, FVector const& _otherLocation, AActor* _otherActor)
 {
     UCustomCollisionComponent* customCollisionComponent{ Cast<UCustomCollisionComponent>(this->GetComponentByClass(UCustomCollisionComponent::StaticClass())) };
     if (customCollisionComponent != nullptr)
     {
-        customCollisionComponent->hit(_team, _playerId, _comp, _index, _otherLocation);
+        customCollisionComponent->hit(_team, _playerId, _comp, _index, _otherLocation, _otherActor);
     }
 }
 
@@ -705,16 +614,16 @@ void AShipPawn::RPCClientPlayCameraShake_Implementation(EImpactType _type)
 
 float AShipPawn::getPercentProtection() const
 {
-    if(this->ModuleComponent == nullptr) return 0.0f;
+    if (this->ProtectionComponent == nullptr) return 0.0f;
 
-    return this->ModuleComponent->getPercentProtection();
+    return this->ProtectionComponent->GetNum() / this->ProtectionComponent->GetMax();
 }
 
 float AShipPawn::getPercentSupport() const
 {
-    if (this->ModuleComponent == nullptr) return 0.0f;
+    if (this->SupportComponent == nullptr) return 0.0f;
 
-    return this->ModuleComponent->getPercentSupport();
+    return this->SupportComponent->GetNum() / this->SupportComponent->GetMax();
 }
 
 void AShipPawn::boostPassive(EMission _type, int32 _rewardValue)
@@ -738,7 +647,7 @@ void AShipPawn::boostPassive(EMission _type, int32 _rewardValue)
     }
 }
 
-bool AShipPawn::canTank(int32 _val)
+bool AShipPawn::canTank(TArray<FHitResult> const& _hits)
 {
     auto lb_addScore = [&](int32 _val)
     {
@@ -751,32 +660,37 @@ bool AShipPawn::canTank(int32 _val)
 
     if (hasEffect(EEffect::MetaFormProtection))
     {
-        lb_addScore(_val);
         return true;
     }
     else if (hasEffect(EEffect::Respawned) || hasEffect(EEffect::StartGame))
     {
         return true;
     }
-    else
+
+    if (hasEffect(EEffect::Farmer))
     {
-        int32 newValue = this->R_ShieldLife - _val;
-        newValue = FMath::Max(0, newValue);
-
-        lb_addScore(this->R_ShieldLife - newValue);
-
-        if (newValue == 0 && this->R_ShieldLife > 0)
+        bool ret = true;
+        int32 add = 0;
+        for (auto hit : _hits)
         {
-            removeEffect(EEffect::Shield);
-            if (this->ShieldComponent != nullptr)
+            if (hit.Actor.IsValid() && hit.Actor->Tags.Contains(Tags::Asteroide))
             {
-                this->ShieldComponent->SetVisibility(false);
+                ++add;
+            }
+            else
+            {
+                ret = false;
             }
         }
 
-        this->R_ShieldLife = newValue;
-        return this->R_ShieldLife > 0;
+        if (add != 0)
+        {
+            addMatiere(add, EMatiereOrigin::Farm);
+        }
+        return ret;
     }
+
+    return false;
 }
 
 void AShipPawn::RPCNetMulticastEnterHidding_Implementation(int32 _playerId, bool _enter)
@@ -796,19 +710,6 @@ void AShipPawn::RPCNetMulticastEnterHidding_Implementation(int32 _playerId, bool
             this->BaseShipMeshComponent->SetVisibility(false);
         }
 
-        if (!hasEffect(EEffect::Shield))
-        {
-            if (this->ShieldComponent != nullptr)
-            {
-                this->ShieldComponent->SetVisibility(false);
-            }
-        }
-
-        if (this->MetaFormProtectionComponent != nullptr)
-        {
-            this->MetaFormProtectionComponent->SetVisibility(false);
-        }
-
         TArray<UActorComponent*> components = this->GetComponentsByTag(USceneComponent::StaticClass(), Tags::Arrow);
         for (auto component : components)
         {
@@ -823,16 +724,34 @@ void AShipPawn::RPCNetMulticastEnterHidding_Implementation(int32 _playerId, bool
 void AShipPawn::RPCNetMulticastAddEffect_Implementation(EEffect _effect)
 {
     BP_FxGlobalAddEffect(_effect);
+    playFash(_effect);
 }
 
 void AShipPawn::RPCNetMulticastRemoveEffect_Implementation(EEffect _effect)
 {
     BP_FxGlobalRemoveEffect(_effect);
+    playFash(_effect);
+}
+
+void AShipPawn::playFash(EEffect _effect)
+{
+    switch (_effect)
+    {
+    case EEffect::EscapeMode:
+    case EEffect::MetaFormAttack:
+    case EEffect::MetaFormProtection:
+    case EEffect::MetaFormSupport:
+    case EEffect::Missile:
+    case EEffect::BulletStun:
+    case EEffect::Farmer:
+        BP_FxChangeForm();
+        break;
+    }
 }
 
 void AShipPawn::RPCClientAddEffect_Implementation(EEffect _effect)
 {
-    OnAddEffectDelegate.Broadcast(_effect);
+    OnAddEffectClientDelegate.Broadcast(_effect);
     BP_FxAddEffect(_effect);
 
     if (_effect == EEffect::BackToGame)
@@ -842,13 +761,10 @@ void AShipPawn::RPCClientAddEffect_Implementation(EEffect _effect)
     }
     else if (_effect == EEffect::MetaFormAttack)
     {
-        if (UModuleComponent* moduleComponent = this->ModuleComponent)
+        if (this->WeaponComponent != nullptr)
         {
-            if (UInstancedStaticMeshComponent* weaponMeshComponent = this->ModuleComponent->WeaponMeshComponent)
-            {
-                weaponMeshComponent->SetScalarParameterValueOnMaterials("Edge sharp max", 0.0f);
-                weaponMeshComponent->SetScalarParameterValueOnMaterials("Glow", 1200.0f);
-            }
+            this->WeaponComponent->SetScalarParameterValueOnMaterials("Edge sharp max", 0.0f);
+            this->WeaponComponent->SetScalarParameterValueOnMaterials("Glow", 1200.0f);
         }
     }
     else if (_effect == EEffect::Emp)
@@ -865,6 +781,12 @@ void AShipPawn::RPCClientAddEffect_Implementation(EEffect _effect)
             }
         }
     }
+    else if (_effect == EEffect::Killed)
+    {
+        // reset local physic
+        this->DriverMeshComponent->SetPhysicsAngularVelocityInDegrees(FVector::ZeroVector);
+        this->DriverMeshComponent->SetPhysicsLinearVelocity(FVector::ZeroVector);
+    }
 }
 
 void AShipPawn::RPCClientRemoveEffect_Implementation(EEffect _effect)
@@ -874,28 +796,21 @@ void AShipPawn::RPCClientRemoveEffect_Implementation(EEffect _effect)
 
     if (_effect == EEffect::MetaFormAttack)
     {
-        if (UModuleComponent* moduleComponent = this->ModuleComponent)
+        if (this->WeaponComponent != nullptr)
         {
-            if (UInstancedStaticMeshComponent* weaponMeshComponent = this->ModuleComponent->WeaponMeshComponent)
-            {
-                weaponMeshComponent->SetScalarParameterValueOnMaterials("Edge sharp max", 550.0f);
-                weaponMeshComponent->SetScalarParameterValueOnMaterials("Glow", 800.0f);
-            }
+            this->WeaponComponent->SetScalarParameterValueOnMaterials("Edge sharp max", 550.0f);
+            this->WeaponComponent->SetScalarParameterValueOnMaterials("Glow", 800.0f);
         }
     }
 }
 
 void AShipPawn::behaviourAddEffect(EEffect _type)
 {
-    if (_type == EEffect::Shield)
+    if (_type == EEffect::Farmer)
     {
-        if (this->PlayerDataAsset != nullptr && !hasEffect(EEffect::Killed))
+        if (this->ModuleComponent != nullptr)
         {
-            this->R_ShieldLife = this->PlayerDataAsset->ShieldLife;
-            if (this->ShieldComponent != nullptr && !hasEffect(EEffect::MetaFormSupport))
-            {
-                this->ShieldComponent->SetVisibility(true);
-            }
+            this->ModuleComponent->activeMetaForm(_type);
         }
     }
     else if (_type == EEffect::Fog || _type == EEffect::Killed)
@@ -910,7 +825,6 @@ void AShipPawn::behaviourAddEffect(EEffect _type)
 
         if (_type == EEffect::Killed)
         {
-            RPCNetMulticastFxKilled();
             this->RU_LeftTrail = false;
             this->RU_RightTrail = false;
         }
@@ -946,49 +860,60 @@ void AShipPawn::behaviourAddEffect(EEffect _type)
 
         if (this->ModuleComponent != nullptr)
         {
-            this->ModuleComponent->activeMetaForm(EEffect::MetaFormSupport);
+            this->ModuleComponent->activeMetaForm(_type);
         }
     }
     else if (_type == EEffect::MetaFormProtection)
     {
         if (this->ModuleComponent != nullptr)
         {
-            this->ModuleComponent->activeMetaForm(EEffect::MetaFormProtection);
-        }
-
-        if (this->MetaFormProtectionComponent != nullptr)
-        {
-            this->MetaFormProtectionComponent->SetVisibility(true);
+            this->ModuleComponent->activeMetaForm(_type);
         }
     }
     else if (_type == EEffect::MetaFormAttack)
     {
         if (this->ModuleComponent != nullptr)
         {
-            this->ModuleComponent->activeMetaForm(EEffect::MetaFormAttack);
+            this->ModuleComponent->activeMetaForm(_type);
         }
     }
     else if (_type == EEffect::StartGame)
     {
         if (this->PlayerDataAsset != nullptr)
         {
-            this->R_OverDrive = this->PlayerDataAsset->CoefOverDriveValue * 10;
+            this->R_OverDrive = this->PlayerDataAsset->CoefOverDriveValue;
         }
     }
     else if (_type == EEffect::Gold)
     {
         RPCNetMultiCastFxGold(true);
     }
+    else if (_type == EEffect::EscapeMode)
+    {
+        if (this->ModuleComponent != nullptr)
+        {
+            this->ModuleComponent->activeMetaForm(_type);
+        }
+    }
+    else if (_type == EEffect::Missile)
+    {
+        if (this->ModuleComponent != nullptr)
+        {
+            this->ModuleComponent->activeMetaForm(_type);
+        }
+    }
+    else if (_type == EEffect::BulletStun)
+    {
+        if (this->ModuleComponent != nullptr)
+        {
+            this->ModuleComponent->activeMetaForm(_type);
+        }
+    }
 }
 
 void AShipPawn::RPCNetMultiCastFxGold_Implementation(bool _activate)
 {
-    BP_GoldFx(_activate);
-}
-
-void AShipPawn::RPCNetMulticastFxKilled_Implementation()
-{
-    BP_FxKilled();
+    BP_FxGold(_activate);
 }
 
 void AShipPawn::BackToGame()
@@ -1012,12 +937,11 @@ void AShipPawn::removeEffectSuccess(EEffect _type)
 
 void AShipPawn::behaviourRemoveEffect(EEffect _type)
 {
-    if (_type == EEffect::Shield)
+    if (_type == EEffect::Farmer)
     {
-        this->R_ShieldLife = 0;
-        if (this->ShieldComponent != nullptr)
+        if (this->ModuleComponent != nullptr)
         {
-            this->ShieldComponent->SetVisibility(false);
+            this->ModuleComponent->removeMetaForm(_type);
         }
     }
     else if (_type == EEffect::Fog || _type == EEffect::Killed)
@@ -1049,38 +973,29 @@ void AShipPawn::behaviourRemoveEffect(EEffect _type)
 
         if (this->ModuleComponent != nullptr)
         {
-            this->ModuleComponent->removeMetaForm();
+            this->ModuleComponent->removeMetaForm(_type);
         }
     }
     else if (_type == EEffect::MetaFormProtection)
     {
-        if (this->MetaFormProtectionComponent != nullptr)
-        {
-            this->MetaFormProtectionComponent->SetVisibility(false);
-        }
-
         if (this->ModuleComponent != nullptr)
         {
-            this->ModuleComponent->removeMetaForm();
+            this->ModuleComponent->removeMetaForm(_type);
         }
     }
     else if (_type == EEffect::MetaFormAttack)
     {
         if (this->ModuleComponent != nullptr)
         {
-            this->ModuleComponent->removeMetaForm();
+            this->ModuleComponent->removeMetaForm(_type);
         }
     }
-    else if (_type == EEffect::TargetLock)
+    else if (_type == EEffect::EscapeMode)
     {
-        if (ACommonPawn* commonPawn = Cast<ACommonPawn>(this->FireComponent->m_target))
+        if (this->ModuleComponent != nullptr)
         {
-            if (APlayerState* playerState = this->GetPlayerState<APlayerState>())
-            {
-                commonPawn->removePlayerFocusOnMe(playerState->PlayerId);
-            }
+            this->ModuleComponent->removeMetaForm(_type);
         }
-        this->FireComponent->m_target = nullptr;
     }
     else if (_type == EEffect::StartGame)
     {
@@ -1094,6 +1009,20 @@ void AShipPawn::behaviourRemoveEffect(EEffect _type)
         this->OnLostGoldDelegate.broadcast();
         RPCNetMultiCastFxGold(false);
     }
+    else if (_type == EEffect::Missile)
+    {
+        if (this->ModuleComponent != nullptr)
+        {
+            this->ModuleComponent->removeMetaForm(_type);
+        }
+    }
+    else if (_type == EEffect::BulletStun)
+    {
+        if (this->ModuleComponent != nullptr)
+        {
+            this->ModuleComponent->removeMetaForm(_type);
+        }
+    }
 }
 
 void AShipPawn::RPCClientFeedbackScore_Implementation(EScoreType _type, int16 _value)
@@ -1103,7 +1032,7 @@ void AShipPawn::RPCClientFeedbackScore_Implementation(EScoreType _type, int16 _v
 
 void AShipPawn::RPCNetMulticastFxExploseHeal_Implementation()
 {
-    BP_ExploseHealFx();
+    BP_FxExploseHeal();
 }
 
 void AShipPawn::heal(uint8 _value)
@@ -1112,20 +1041,11 @@ void AShipPawn::heal(uint8 _value)
     RPCNetMulticastFxExploseHeal();
 }
 
-ESkillReturn AShipPawn::onRepairProtection()
+ESkillReturn AShipPawn::onRepair()
 {
     if (this->RepairComponent != nullptr)
     {
-        return this->RepairComponent->onRepairProtection();
-    }
-    return ESkillReturn::InternError;
-}
-
-ESkillReturn AShipPawn::onRepairSupport()
-{
-    if (this->RepairComponent != nullptr)
-    {
-        return this->RepairComponent->onRepairSupport();
+        return this->RepairComponent->onRepair();
     }
     return ESkillReturn::InternError;
 }
@@ -1138,10 +1058,7 @@ ESkillReturn AShipPawn::onSwapEmergency()
         {
             if (UUniqueSkillDataAsset const* skillParam = this->SkillComponent->SkillDataAsset->getSKill(ESkill::Emergency))
             {
-                if (this->PlayerDataAsset != nullptr)
-                {
-                    return this->ModuleComponent->onSwapEmergency(skillParam->Value, this->PlayerDataAsset->TresholdForSwapEmergencyPercent);
-                }
+                return this->ModuleComponent->onSwapEmergency(skillParam->Value);
             }
         }
     }
@@ -1150,7 +1067,8 @@ ESkillReturn AShipPawn::onSwapEmergency()
 
 void AShipPawn::addMatiere(int32 _val, EMatiereOrigin _type)
 {
-    this->RU_Matiere += _val;
+    // don't keep a negative matiere value
+    this->RU_Matiere = FMath::Max(this->RU_Matiere + _val, 0);
 
     // in fact, _val > 0 is an useless test, because we have a type for lost matiere
     // therefor, we convert _val into uint so it's better to check if is not an negative number
@@ -1159,7 +1077,7 @@ void AShipPawn::addMatiere(int32 _val, EMatiereOrigin _type)
     {
         if (UMetricComponent* component = Cast<UMetricComponent>(this->GetComponentByClass(UMetricComponent::StaticClass())))
         {
-            component->createMatiereWinData((uint16)_val);
+            component->updateMetric<SMetricAdd, uint16>(EMetric::MatiereWin, { (uint16)_val });
         }
     }
 
@@ -1185,7 +1103,7 @@ ESkillReturn AShipPawn::spawnHealPack()
     {
         if (UUniqueSkillDataAsset const* uniqueSkillDataAsset = this->SkillComponent->getSkill(ESkill::HealPack))
         {
-            int healPackMatiere = uniqueSkillDataAsset->Value;
+            int healPackMatiere = uniqueSkillDataAsset->MatiereNeeded;
             if (this->RU_Matiere >= healPackMatiere)
             {
                 addMatiere(healPackMatiere * -1, EMatiereOrigin::Lost);
@@ -1226,11 +1144,38 @@ ESkillReturn AShipPawn::spawnHealPack()
     return ESkillReturn::InternError;
 }
 
+void AShipPawn::RPCServerSendTarget_Implementation(int32 _playerId)
+{
+    if(this->FireComponent == nullptr) return;
+
+    if (AGameStateBase* gameState = UGameplayStatics::GetGameState(this->GetWorld()))
+    {
+        for (APlayerState const* playerState : gameState->PlayerArray)
+        {
+            if (playerState != nullptr && playerState->PlayerId == _playerId)
+            {
+                this->FireComponent->m_target = playerState->GetPawn();
+                break;
+            }
+        }
+    }
+}
+
+void AShipPawn::RPCServerResetTarget_Implementation()
+{
+    if (this->FireComponent == nullptr) return;
+    this->FireComponent->m_target = nullptr;
+}
+
+void AShipPawn::RPCClientRepair_Implementation()
+{
+    BP_FxRepair();
+}
+
 void AShipPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetimeProps) const
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
     DOREPLIFETIME(AShipPawn, RU_Matiere);
-    DOREPLIFETIME(AShipPawn, R_ShieldLife);
     DOREPLIFETIME(AShipPawn, R_Effect);
 }
 

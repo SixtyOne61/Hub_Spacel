@@ -8,6 +8,7 @@
 #include "DataAsset/UniqueSkillDataAsset.h"
 #include "Components/ProgressBar.h"
 #include "Player/Common/CommonPawn.h"
+#include "Widget/SkillWidget.h"
 
 SkillCountDown::SkillCountDown(SkillCountDown const& _cpy)
     : m_netMode(_cpy.m_netMode)
@@ -25,14 +26,17 @@ SkillCountDown::SkillCountDown(SkillCountDown const& _cpy)
 
     m_callbackSucced = _cpy.m_callbackSucced;
     m_callbackFailed = _cpy.m_callbackFailed;
+    m_callbackUse = _cpy.m_callbackUse;
 }
 
-SkillCountDown::SkillCountDown(UUniqueSkillDataAsset const* _skill, class ACommonPawn* _pawn, ENetMode _netMode, std::function<void(ESkill)> _callbackSucced, std::function<void(ESkill, ESkillReturn)> _callbackFailed, bool _isActive)
+SkillCountDown::SkillCountDown(class UUniqueSkillDataAsset const* _skill, class ACommonPawn* _pawn, ENetMode _netMode, std::function<void(ESkill)> _callbackSucced, std::function<void(ESkill, ESkillReturn)> _callbackFailed, std::function<void(ESkill, bool)> _callbackUse, bool _isActive, bool _affectedByOtherSkillCountDown)
     : m_netMode(_netMode)
     , m_pawn(_pawn)
     , m_isActive(_isActive)
+    , m_affectedByOtherSkillCountDown(_affectedByOtherSkillCountDown)
     , m_callbackSucced(_callbackSucced)
     , m_callbackFailed(_callbackFailed)
+    , m_callbackUse(_callbackUse)
 {
     m_param = _skill;
 
@@ -125,6 +129,11 @@ void SkillCountDown::setActive(bool _val)
     {
         m_progressBar->SetPercent(m_isActive ? 0.0f : 1.0f);
     }
+
+    if (m_widget != nullptr)
+    {
+        m_widget->BP_Lock(_val);
+    }
 }
 
 void SkillCountDown::onAvailable()
@@ -173,10 +182,26 @@ void SkillCountDown::use(class UWorld* _context)
 
     if (m_state == ECountDown::Available)
     {
+        m_callbackUse(getSkillType(), m_affectedByOtherSkillCountDown);
         m_state = ECountDown::Ing;
+        // TO DO here, add event for cancel other skill count down
+        // may be throw event to skillComponent
+        // and skillComponent cancel other skill affected
     }
     else if(m_state == ECountDown::CountDown)
     {
         m_callbackFailed(getSkillType(), ESkillReturn::CountDown);
+    }
+    else if (m_state == ECountDown::Ing)
+    {
+        cancel();
+    }
+}
+
+void SkillCountDown::cancel()
+{
+    if (m_state == ECountDown::Ing)
+    {
+        m_state = ECountDown::CountDown;
     }
 }

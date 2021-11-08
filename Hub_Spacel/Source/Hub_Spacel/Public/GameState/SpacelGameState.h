@@ -12,7 +12,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FScoreUpdate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FPlayerEnterFog, int32, _playerId, bool, _enter);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStartMission, EMission, _type);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnStartMissionTwoParam, EMission, _type, FName const&, _team, FName const&, _teamTarget);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEndMission, EMission, _type);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnEndMission, EMission, _type, bool, _succeed, FName, _succeedForTeam);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAskMission, EMission, _type);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnResetTimerMission, EMission, _type);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnWhoKillWho, int32, _killer, int32, _killed);
@@ -58,6 +58,7 @@ class HUB_SPACEL_API ASpacelGameState : public AGameStateBase
 	GENERATED_BODY()
 
 	friend class USpacelWidget;
+	friend class UInGameWidget;
 	friend class AShipPawn;
 
 public:
@@ -77,13 +78,10 @@ public:
 	void GoToInGame() { this->RU_GameState = (uint8)EGameState::InGame; OnRep_StateGame(); registerMission(); }
 
 	UFUNCTION()
-	void GoToUnlockMedium() { this->RU_GameState = (uint8)EGameState::UnlockMedium; OnRep_StateGame(); }
-
-	UFUNCTION()
-	void GoToUnlockUltimate() { this->RU_GameState = (uint8)EGameState::UnlockUltimate; OnRep_StateGame(); }
-
-	UFUNCTION()
 	void GoToEndGame() { this->RU_GameState = (uint8)EGameState::EndGame; OnRep_StateGame(); }
+
+	UFUNCTION()
+	void GoToWaitEnd() { this->RU_GameState = (uint8)EGameState::WaitEnd; OnRep_StateGame(); }
 
 	UFUNCTION()
 	FString GetBestTeam() const;
@@ -111,7 +109,7 @@ public:
 	void RPCNetMulticastStartMissionTwoParam(EMission _type, FName _team, FName _teamTarget);
 
 	UFUNCTION(Reliable, NetMulticast)
-	void RPCNetMulticastEndMission(EMission _type);
+	void RPCNetMulticastEndMission(EMission _type, bool _succeed, FName _succeedForTeam);
 
 	UFUNCTION(Reliable, NetMulticast)
 	void RPCNetMulticastResetTimerMission(EMission _type);

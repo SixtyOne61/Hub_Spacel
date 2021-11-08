@@ -4,107 +4,62 @@
 
 #include "CoreMinimal.h"
 #include "Enum/SpacelEnum.h"
+#include "Util/Any.h"
 #include <memory>
 #include <map>
 #include <algorithm>
+#include <tuple>
 
-namespace Metric
+struct HUB_SPACEL_API SMetricIncrease
 {
-	struct Data
-	{
-	};
-
-	struct DataPrecision : Data
-	{
-		bool success { false };
-	};
-
-	struct DataScore : Data
-	{
-		uint16 value { };
-	};
-
-	struct DataMatiere : Data
-	{
-		uint16 value { };
-	};
-}
-
-class HUB_SPACEL_API MetricInterface
-{
-public:
-	MetricInterface() {};
-	virtual ~MetricInterface() {};
-	MetricInterface(MetricInterface const&) = delete;
-
-	virtual void operator()(Metric::Data && _data) = 0;
-};
-
-template<class T>
-class HUB_SPACEL_API MetricFog : public MetricInterface
-{
-	void operator()(Metric::Data && _data) override
+	inline constexpr void operator()()
 	{
 		m_nb++;
 	}
 
-public:
-	int m_nb {};
+	inline constexpr std::tuple<int> get() const
+	{
+		return { m_nb };
+	}
+
+private:
+	int m_nb { 0 };
 };
 
-template<class T>
-class HUB_SPACEL_API MetricPrecision : public MetricInterface
+struct HUB_SPACEL_API SMetricRatio
 {
-	void operator()(Metric::Data&& _data) override
+	inline constexpr void operator()(std::tuple<bool>&& _vals)
 	{
-		T const& data = static_cast<T const&>(_data);
 		++m_nb;
-		if (data.success)
+		if (std::get<0>(_vals))
 		{
 			++m_nbSuccess;
 		}
 	}
 
-public:
+	inline constexpr std::tuple<int, float> get() const
+	{
+		return { m_nb, ((float)m_nbSuccess / (float)m_nb) * 100 };
+	}
+
+private:
 	int m_nb { 0 };
 	int m_nbSuccess { 0 };
 };
 
-template<class T>
-class HUB_SPACEL_API MetricKill : public MetricInterface
+struct HUB_SPACEL_API SMetricAdd
 {
-	void operator()(Metric::Data&& _data) override
+	inline constexpr void operator()(std::tuple<int> && _vals)
 	{
-		++m_nb;
+		m_nb += std::get<0>(_vals);
 	}
 
-public:
-	int m_nb{ 0 };
-};
-
-template<class T>
-class HUB_SPACEL_API MetricScore : public MetricInterface
-{
-	void operator()(Metric::Data&& _data) override
+	inline constexpr std::tuple<int> get() const
 	{
-		T const& data = static_cast<T const&>(_data);
-		m_nb += data.value;
+		return { m_nb };
 	}
 
-public:
-	int m_nb { 0 };
-};
-
-template<class T>
-class HUB_SPACEL_API MetricMatiere : public MetricInterface
-{
-	void operator()(Metric::Data&& _data) override
-	{
-		T const& data = static_cast<T const&>(_data);
-		m_nb += data.value;
-	}
-
-public:
+private:
 	int m_nb { 0 };
 };
 
@@ -116,45 +71,31 @@ class HUB_SPACEL_API LocalMetric
 public:
 	LocalMetric()
 	{
-		m_metric.insert({ EMetric::Fog, std::make_shared<MetricFog<Metric::Data>>() });
-		m_metric.insert({ EMetric::Precision, std::make_shared<MetricPrecision<Metric::DataPrecision>>() });
-		m_metric.insert({ EMetric::Kill, std::make_shared<MetricKill<Metric::Data>>() });
-		m_metric.insert({ EMetric::EmpPoint, std::make_shared<MetricScore<Metric::DataScore>>() });
-		m_metric.insert({ EMetric::TankPoint, std::make_shared<MetricScore<Metric::DataScore>>() });
-		m_metric.insert({ EMetric::MatiereWin, std::make_shared<MetricMatiere<Metric::DataMatiere>>() });
-		m_metric.insert({ EMetric::MatiereUseForRepair, std::make_shared<MetricMatiere<Metric::DataMatiere>>() });
-		m_metric.insert({ EMetric::TotalScore, std::make_shared<MetricScore<Metric::DataScore>>() });
+		m_metric.insert({ EMetric::Fog, SMetricIncrease {} });
+		m_metric.insert({ EMetric::Precision, SMetricRatio {} });
+		m_metric.insert({ EMetric::Kill, SMetricIncrease {} });
+		m_metric.insert({ EMetric::EmpPoint, SMetricAdd {} });
+		m_metric.insert({ EMetric::TankPoint, SMetricAdd {} });
+		m_metric.insert({ EMetric::MatiereWin, SMetricAdd {} });
+		m_metric.insert({ EMetric::MatiereUseForRepair, SMetricAdd {} });
+		m_metric.insert({ EMetric::TotalScore, SMetricAdd {} });
 	}
 
-	~LocalMetric()
-	{
+	~LocalMetric() = default;
 
-	}
-
-	void operator()(EMetric _type, Metric::Data && _data)
-	{
-		std::for_each(m_metric.begin(), m_metric.end(), [&_type, &_data](auto _obj)
-		{
-			if(_obj.first == _type)
-			{
-				_obj.second->operator()(std::forward<Metric::Data>(_data));
-			}
-		});
-	}
-
-	MetricInterface* getData(EMetric _type)
+	template<class T>
+	inline T* getData(EMetric _type)
 	{
 		for (auto& metric : m_metric)
 		{
 			if (metric.first == _type)
 			{
-				return metric.second.get();
+				return &metric.second.unsafe_downcast<T>();
 			}
 		}
-
 		return nullptr;
 	}
 
 protected:
-	std::map<EMetric, std::shared_ptr<MetricInterface>> m_metric;
+	std::map<EMetric, Any> m_metric;
 };

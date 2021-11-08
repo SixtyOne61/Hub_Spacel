@@ -1,31 +1,52 @@
 Variable global : int gMyGlobalVar = 0;
-Membre public : int MyPublicMember = 0;
-Membre privée/protected : int m_myPrivateMember = 0;
+
+UPORPERTY()
+int MyMember { 0 };
+
+sinon :
+int m_myMember = 0;
+
+On accepte généralement les UPORPERTY comme public ou protected tandis que le reste en
+protected ou private. 
+
 Delegate : FDelegate OnEventDelegate; toujours en public et en UProperty
+
 Component : public, XXXComponent;
 SubClass : public, XXXClass;
+
 Variable replicated : R_MyVar
 Variable replicated using : RU_MyVar;
 
-Methode event : public OnXXXEvent()
-Methode public : void MyPublicFunc();
-Methode privée/protected : void myPrivateFunc();
+UFUNCTION()
+void MyFunction();
+
+sinon
+void myFunction();
+
+Methode event : void OnXXXEvent()
+
 Paramètre de méthode : void myFunc(int _param);
+
 Methode server side : RPCServerMyFunc();
 Methode client side : RPCClientMyFunc();
+Methode netmulticast : RPCNetmulticastMyFunc();
+
 OnRep Methode : public OnRep_MyFunc();
 
-server method : void serverRPCFunc();
-client method : void clientRPCFunc();
+BP_ devant les méthodes blueprintImplementable
 
 this devant les membres public
 this devant les methodes public
+
+On revient à l'indentation à chaque accolade. 
+
+Asset dans l'editor :
 
 BP_ devant les blueprints
 M_ devant les material et M_MatInst pour les instances
 NS_ devant les niagara system
 NE_ devant les niagara emitter
-DTA_ devant les data asset
+DT_ devant les data asset
 WBP_ devant les widget blueprints
 SKEL_ devant les skeletal mesh
 P_ devant les particles system

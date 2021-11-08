@@ -3,16 +3,16 @@
 
 #include "EffectDataAsset.h"
 
-FEffect UEffectDataAsset::getEffect(EEffect _type) const
+FEffect const* UEffectDataAsset::getEffect(EEffect _type) const
 {
     for (FEffect const& effect : this->Effects)
     {
-        if (TOFLAG(effect.Effect) & TOFLAG(_type))
+        if (_type == effect.Type)
         {
-            return effect;
+            return &effect;
         }
     }
 
     ensure(false);
-    return FEffect();
+    return nullptr;
 }

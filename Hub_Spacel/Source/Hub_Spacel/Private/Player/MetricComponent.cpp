@@ -16,7 +16,8 @@ void UMetricComponent::BeginPlay()
 
         if (AShipPawn* shipPawn = get<AShipPawn>())
         {
-            shipPawn->OnAddEffectDelegate.AddDynamic(this, &UMetricComponent::AddEffect);
+            // TO DO : doesn't work add effect is client side event
+            shipPawn->OnAddEffectClientDelegate.AddDynamic(this, &UMetricComponent::AddEffect);
         }
 
         if (ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld())))
@@ -30,21 +31,26 @@ void UMetricComponent::OnChangeState(EGameState _state)
 {
     if (_state == EGameState::EndGame)
     {
+        // TO DO : refacto this all big bad part
         uint8 precision {}, nbKill {};
         uint16 totalScore {};
-        if (auto precMetric = static_cast<MetricPrecision<Metric::DataPrecision>*>(m_metric->getData(EMetric::Precision)))
-        {
-             precision = (uint8)(((float)precMetric->m_nbSuccess / (float)precMetric->m_nb) * 100);
-        }
 
-        if (auto killMetric = static_cast<MetricKill<Metric::Data>*>(m_metric->getData(EMetric::Kill)))
+        if (auto* data = m_metric->getData<SMetricRatio>(EMetric::Precision))
         {
-            nbKill = killMetric->m_nb;
+            auto const& result = data->get();
+            precision = (uint8)(std::get<1>(result));
         }
-
-        if (auto totalScoreMetric = static_cast<MetricScore<Metric::DataScore>*>(m_metric->getData(EMetric::TotalScore)))
+        
+        if (auto* data = m_metric->getData<SMetricIncrease>(EMetric::Kill))
         {
-            totalScore = totalScoreMetric->m_nb;
+            auto const& result = data->get();
+            nbKill = (uint8)(std::get<0>(result));
+        }
+        
+        if (auto* data = m_metric->getData<SMetricAdd>(EMetric::TotalScore))
+        {
+            auto const& result = data->get();
+            totalScore = (uint8)(std::get<0>(result));
         }
 
         // send data to all client
@@ -52,29 +58,34 @@ void UMetricComponent::OnChangeState(EGameState _state)
 
         uint8 nbFog {};
         uint16 empPoint {}, tankPoint {}, matiereWin {}, matiereUseForRepair {};
-        if (auto fogMetric = static_cast<MetricFog<Metric::Data>*>(m_metric->getData(EMetric::Fog)))
+        if (auto* data = m_metric->getData<SMetricIncrease>(EMetric::Fog))
         {
-            nbFog = fogMetric->m_nb;
+            auto const& result = data->get();
+            nbFog = std::get<0>(result);
         }
-
-        if (auto empMetric = static_cast<MetricScore<Metric::DataScore>*>(m_metric->getData(EMetric::EmpPoint)))
+        
+        if (auto* data = m_metric->getData<SMetricAdd>(EMetric::EmpPoint))
         {
-            empPoint = empMetric->m_nb;
+            auto const& result = data->get();
+            empPoint = std::get<0>(result);
         }
-
-        if (auto tankPointMetric = static_cast<MetricScore<Metric::DataScore>*>(m_metric->getData(EMetric::TankPoint)))
+        
+        if (auto* data = m_metric->getData<SMetricAdd>(EMetric::TankPoint))
         {
-            tankPoint = tankPointMetric->m_nb;
+            auto const& result = data->get();
+            tankPoint = std::get<0>(result);
         }
-
-        if (auto matiereWinMetric = static_cast<MetricMatiere<Metric::DataMatiere>*>(m_metric->getData(EMetric::MatiereWin)))
+        
+        if (auto* data = m_metric->getData<SMetricAdd>(EMetric::MatiereWin))
         {
-            matiereWin = matiereWinMetric->m_nb;
+            auto const& result = data->get();
+            matiereWin = std::get<0>(result);
         }
-
-        if (auto matiereUseForRepairMetric = static_cast<MetricMatiere<Metric::DataMatiere>*>(m_metric->getData(EMetric::MatiereUseForRepair)))
+        
+        if (auto* data = m_metric->getData<SMetricAdd>(EMetric::MatiereUseForRepair))
         {
-            matiereUseForRepair = matiereUseForRepairMetric->m_nb;
+            auto const& result = data->get();
+            matiereUseForRepair = std::get<0>(result);
         }
 
         RPCClientSendData(nbFog, empPoint, tankPoint, matiereWin, matiereUseForRepair);
@@ -104,84 +115,31 @@ void UMetricComponent::OnScored(EScoreType _type, int32 _value)
     {
         case EScoreType::Kill:
         {
-            createKillData();
+            updateMetric<SMetricIncrease>(EMetric::Kill);
             break;
         }
 
         case EScoreType::Emp:
         {
-            createEmpPointData((uint16)_value);
+            updateMetric<SMetricAdd, uint16>(EMetric::EmpPoint, { (uint16)_value });
             break;
         }
 
         case EScoreType::Tank:
         {
-            createTankPointData((uint16)_value);
+            updateMetric<SMetricAdd, uint16>(EMetric::TankPoint, { (uint16)_value });
             break;
         }
     }
 
-    createTotalPointData((uint16)_value);
+    updateMetric<SMetricAdd, uint16>(EMetric::TotalScore, { (uint16)_value });
 }
 
 void UMetricComponent::AddEffect(EEffect _effect)
 {
     if (_effect == EEffect::Fog)
     {
-        createFogData();
+        updateMetric<SMetricIncrease>(EMetric::Fog);
     }
 }
 
-void UMetricComponent::createPrecisionData(bool _success)
-{
-    Metric::DataPrecision data;
-    data.success = _success;
-    m_metric->operator()(EMetric::Precision, std::move(data));
-}
-
-void UMetricComponent::createFogData()
-{
-    Metric::Data data{};
-    m_metric->operator()(EMetric::Fog, std::move(data));
-}
-
-void UMetricComponent::createKillData()
-{
-    Metric::Data data{};
-    m_metric->operator()(EMetric::Kill, std::move(data));
-}
-
-void UMetricComponent::createEmpPointData(uint16 _value)
-{
-    Metric::DataScore data;
-    data.value = _value;
-    m_metric->operator()(EMetric::EmpPoint, std::move(data));
-}
-
-void UMetricComponent::createTankPointData(uint16 _value)
-{
-    Metric::DataScore data;
-    data.value = _value;
-    m_metric->operator()(EMetric::TankPoint, std::move(data));
-}
-
-void UMetricComponent::createMatiereWinData(uint16 _value)
-{
-    Metric::DataMatiere data;
-    data.value = _value;
-    m_metric->operator()(EMetric::MatiereWin, std::move(data));
-}
-
-void UMetricComponent::createMatiereRepair(uint16 _value)
-{
-    Metric::DataMatiere data;
-    data.value = _value;
-    m_metric->operator()(EMetric::MatiereUseForRepair, std::move(data));
-}
-
-void UMetricComponent::createTotalPointData(uint16 _value)
-{
-    Metric::DataScore data;
-    data.value = _value;
-    m_metric->operator()(EMetric::TotalScore, std::move(data));
-}

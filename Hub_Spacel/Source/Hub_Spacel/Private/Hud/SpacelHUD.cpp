@@ -24,17 +24,16 @@ void ASpacelHUD::BeginPlay()
     playerController->bShowMouseCursor = true;
 
     // add user widget to viewport
-    SpacelFactory::createWidget<UUserWidget>(world, this->LobbyWidgetClass, false);
-    SpacelFactory::createWidget<UUserWidget>(world, this->GameWidgetClass, false);
+    SpacelFactory::createWidget<UUserWidget>(world, this->InGameWidgetClass, false);
 
     ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld()));
     if (spacelGameState != nullptr)
     {
-        spacelGameState->OnChangeStateDelegate.AddDynamic(this, &ASpacelHUD::StartGame);
+        spacelGameState->OnChangeStateDelegate.AddDynamic(this, &ASpacelHUD::OnChangeState);
     }
 }
 
-void ASpacelHUD::StartGame(EGameState _state)
+void ASpacelHUD::OnChangeState(EGameState _state)
 {
     UWorld* world = this->GetWorld();
     if (!ensure(world != nullptr)) return;

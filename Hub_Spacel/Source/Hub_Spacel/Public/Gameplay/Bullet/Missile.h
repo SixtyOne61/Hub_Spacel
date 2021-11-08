@@ -21,9 +21,6 @@ public:
 	AMissile();
 	virtual ~AMissile();
 
-	UFUNCTION()
-	void OnTargetEffect(EEffect _type);
-
 protected:
 	void BeginPlay() override;
 	void Tick(float _deltaTime) override;

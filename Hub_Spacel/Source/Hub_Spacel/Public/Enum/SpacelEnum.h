@@ -15,9 +15,8 @@ enum class EGameState : uint8
     LockMediumModule,
     LockPrepare,
     InGame,
-    UnlockMedium,
-    UnlockUltimate,
     EndGame,
+    WaitEnd,
 };
 
 UENUM(BlueprintType)
@@ -53,30 +52,32 @@ enum class ESkillType : uint8
     None UMETA(DisplayName = "None"),
     Low UMETA(DisplayName = "Low"),
     Medium UMETA(DisplayName = "Medium"),
-    Hight UMETA(DisplayName = "Hight")
+    Hight UMETA(DisplayName = "Hight"),
+    Max
 };
 
 UENUM(BlueprintType)
 enum class ESkill : uint8
 {
-    RepairProtection UMETA(DisplayName = "RepairProtection"),
-    RepairSupport UMETA(DisplayName = "RepairSupport"),
-    GiveAlly1 UMETA(DisplayName = "GiveAlly1"),
-    GiveAlly2 UMETA(DisplayName = "GiveAlly2"),
     Missile UMETA(DisplayName = "Missile"),
-    ShieldTeam UMETA(DisplayName = "ShieldTeam"),
-    Emp UMETA(DisplayName = "Emp"),
+    Farmer UMETA(DisplayName = "Farmer"),
+    BulletStun UMETA(DisplayName = "BulletStun"),
     EscapeMode UMETA(DisplayName = "EscapeMode"),
     MetaFormAttack UMETA(DisplayName = "MetaFormAttack"),
     MetaFormProtection UMETA(DisplayName = "MetaFormProtection"),
     MetaFormSupport UMETA(DisplayName = "MetaFormSupport"),
-    NinePack UMETA(DisplayName = "NinePack"),
     FireRate UMETA(DisplayName = "FireRate"),
     HeavyProtection UMETA(DisplayName = "HeavyProtection"),
     Speedy UMETA(DisplayName = "Speedy"),
-    Katyusha UMETA(DisplayName = "Katyusha"),
+    Shotgun UMETA(DisplayName = "Shotgun"),
     HealPack UMETA(DisplayName = "HealPack"),
     Emergency UMETA(DisplayName = "Emergency"),
+    Repair UMETA(DisplayName = "Repair"),
+    Max,
+
+    DefaultLow = FireRate,
+    DefaultMedium = Missile,
+    DefaultHight = MetaFormAttack,
 };
 
 UENUM(BlueprintType)
@@ -98,7 +99,9 @@ enum class EInput : uint8
     HealSkill UMETA(DisplayName = "HealSkill"),
     RepairProtection UMETA(DisplayName = "RepairProtection"),
     RepairEngine UMETA(DisplayName = "RepairEngine"),
-    Emergency UMETA(DisplayName = "Emergency")
+    Emergency UMETA(DisplayName = "Emergency"),
+    Repair UMETA(DisplayName = "Repair"),
+    Unset UMETA(DisplayName = "Unset"),
 };
 
 UENUM(BlueprintType, meta = (Bitflags, UseEnumValuesAsMaskValuesInEditor = "true"))
@@ -118,9 +121,8 @@ UENUM(BlueprintType, meta = (Bitflags, UseEnumValuesAsMaskValuesInEditor = "true
 enum class EEffect : uint8
 {
     None UMETA(DisplayName = "None"),
-    TargetLock UMETA(DisplayName = "TargetLock"),
     Fog UMETA(DisplayName = "Fog"),
-    Shield UMETA(DisplayName = "Shield"),
+    Farmer UMETA(DisplayName = "Farmer"),
     Emp UMETA(DisplayName = "Emp"),
     Killed UMETA(DisplayName = "Killed"),
     EscapeMode UMETA(DisplayName = "EscapeMode"),
@@ -129,15 +131,21 @@ enum class EEffect : uint8
     MetaFormProtection UMETA(DisplayName = "MetaFormProtection"),
     MetaFormSupport UMETA(DisplayName = "MetaFormSupport"),
     Respawned UMETA(DisplayName = "Respawned"),
-    Targeted UMETA(DisplayName = "Targeted"),
     StartGame UMETA(DisplayName = "StartGame"),
     Gold UMETA(DisplayName = "Gold"),
     PassiveFireRate UMETA(DisplayName = "PassiveFireRate"),
     PassiveCountDown UMETA(DisplayName = "PassiveCountDown"),
     PassiveSpeed UMETA(DisplayName = "PassiveSpeed"),
-    SkillPassiveFireRate UMETA(DisplayName = "PassiveFireRate"),
-    SkillPassiveProtection UMETA(DisplayName = "PassiveCountDown"),
-    SkillPassiveSpeed UMETA(DisplayName = "PassiveSpeed"),
+    Missile UMETA(DisplayName = "Missile"),
+    BulletStun UMETA(DisplayName = "BulletStun"),
+};
+
+UENUM(BlueprintType)
+enum class EEffectLocation : uint8
+{
+    Skill UMETA(DisplayName = "Skill"),
+    Right UMETA(DisplayName = "Right"),
+    Left UMETA(DisplayName = "Left")
 };
 
 UENUM(BlueprintType)
@@ -196,4 +204,26 @@ enum class EMatiereOrigin : uint8
     Farm UMETA(DisplayName = "Farm"),
     Kill UMETA(DisplayName = "Kill"),
     Lost UMETA(DisplayName = "Lost"),
+};
+
+UENUM(BlueprintType)
+enum class EBuilderType : uint8
+{
+    Attack UMETA(DisplayName = "Attack"),
+    Protection UMETA(DisplayName = "Protection"),
+    Engine UMETA(DisplayName = "Engine"),
+};
+
+UENUM(BlueprintType)
+enum class EFormType : uint8
+{
+    Base UMETA(DisplayName = "Base"),
+    MetaFormAttack UMETA(DisplayName = "MetaFormAttack"),
+    MetaFormProtection UMETA(DisplayName = "MetaFormProtection"),
+    MetaFormSupport UMETA(DisplayName = "MetaFormSupport"),
+    EscapeMode UMETA(DisplayName = "EscapeMode"),
+    Missile UMETA(DisplayName = "Missile"),
+    Farmer UMETA(DisplayName = "Farmer"),
+    BulletStun UMETA(DisplayName = "BulletStun"),
+    Max,
 };

@@ -25,6 +25,7 @@ class HUB_SPACEL_API AShipPawn : public ACommonPawn
 
     friend class AGamePlayerController;
     friend class USpacelWidget;
+    friend class UInGameWidget;
     friend class UFireComponent;
     friend class UCustomCollisionComponent;
     friend class URepairComponent;
@@ -34,6 +35,8 @@ class HUB_SPACEL_API AShipPawn : public ACommonPawn
     friend class UModuleComponent;
     friend class AMissionManager;
     friend class AComet;
+    friend class UTargetUserWidget;
+    friend class UEmergencyInstancedMeshComponent;
 
 public:
     // Called when the game starts or when spawned
@@ -42,15 +45,12 @@ public:
 	// Called every frame
 	void Tick(float _deltaTime) override;
 
-    void hit(FString const& _team, int32 _playerId, class UPrimitiveComponent* _comp, int32 _index, FVector const& _otherLocation);
+    void hit(FString const& _team, int32 _playerId, class UPrimitiveComponent* _comp, int32 _index, FVector const& _otherLocation, AActor* _otherActor);
 
     void setLocationExhaustFx(TArray<FVector_NetQuantize> const& _loc);
 
     float getPercentProtection() const;
     float getPercentSupport() const;
-
-    /* client side */
-    void lockTarget(int32 _playerId, bool _lock);
 
     /* server side */
     void addEffectSuccess(EEffect _type) override;
@@ -58,13 +58,10 @@ public:
     void behaviourAddEffect(EEffect _type);
     void behaviourRemoveEffect(EEffect _type);
 
-    void launchMissile();
-    void spawnKatyusha();
-    ESkillReturn spawnEmp();
+    void fireShotgun();
     void emp(uint32 _duration, FName const& _team, int32 _playerId);
 
-    ESkillReturn onRepairProtection();
-    ESkillReturn onRepairSupport();
+    ESkillReturn onRepair();
     ESkillReturn onSwapEmergency();
     void onEmergencyCountDownEnd();
 
@@ -77,41 +74,46 @@ public:
 
     void boostPassive(EMission _type, int32 _rewardValue);
 
+    void buildLobbyShip(ESkill _skillId, ESkillType _type);
+
 protected:
     UFUNCTION(BlueprintImplementableEvent)
     void BP_OnStartGame();
 
-    UFUNCTION(BlueprintImplementableEvent)
+    UFUNCTION(BlueprintImplementableEvent, Category = "SFX & VFX")
     void BP_FxAddMatiere(int32 _val);
 
-    UFUNCTION(BlueprintImplementableEvent)
-    void BP_FxKilled();
-
-    UFUNCTION(BlueprintImplementableEvent)
+    UFUNCTION(BlueprintImplementableEvent, Category = "SFX & VFX")
     void BP_FxAddEffect(EEffect _effect);
 
-    UFUNCTION(BlueprintImplementableEvent)
+    UFUNCTION(BlueprintImplementableEvent, Category = "SFX & VFX")
     void BP_FxGlobalAddEffect(EEffect _effect);
 
-    UFUNCTION(BlueprintImplementableEvent)
+    UFUNCTION(BlueprintImplementableEvent, Category = "SFX & VFX")
     void BP_FxGlobalRemoveEffect(EEffect _effect);
 
-    UFUNCTION(BlueprintImplementableEvent)
+    UFUNCTION(BlueprintImplementableEvent, Category = "SFX & VFX")
     void BP_FxRemoveEffect(EEffect _effect);
 
-    UFUNCTION(BlueprintImplementableEvent)
-    void BP_InitFireComponent();
+    UFUNCTION(BlueprintImplementableEvent, Category = "SFX & VFX")
+    void BP_FxExploseHeal();
 
-    UFUNCTION(BlueprintImplementableEvent)
-    void BP_ExploseHealFx();
+    UFUNCTION(BlueprintImplementableEvent, Category = "SFX & VFX")
+    void BP_FxGold(bool _activate);
 
-    UFUNCTION(BlueprintImplementableEvent)
-    void BP_GoldFx(bool _activate);
+    UFUNCTION(BlueprintImplementableEvent, Category = "SFX & VFX")
+    void BP_FxSpeedSound(int _percentSpeed, bool _start);
+
+    UFUNCTION(BlueprintImplementableEvent, Category = "SFX & VFX")
+    void BP_FxChangeForm();
+
+    UFUNCTION(BlueprintImplementableEvent, Category = "SFX & VFX")
+    void BP_FxRepair();
 
     UFUNCTION()
-    void OnEndMission(EMission _type);
+    void OnEndMission(EMission _type, bool _succeed, FName _succeedForTeam);
 
-    void emergencyRedCube(FVector const& _location);
+    void emergencyRedCube();
 
 private:
     void OnRep_PlayerState() override;
@@ -119,13 +121,6 @@ private:
     /* only use for debug in editor */
     UFUNCTION(BlueprintCallable)
     void BuildDefaultShip();
-
-    UFUNCTION()
-    void BuildShip();
-
-    /* target system */
-    UFUNCTION(Reliable, Server)
-    void RPCServerTargetPlayer(int32 _playerId, bool _lock);
 
     /* set fire boolean on component fire */
     void setFire(bool _on);
@@ -180,15 +175,21 @@ private:
     void RPCClientRemoveEffect(EEffect _effect);
 
     UFUNCTION(UnReliable, NetMulticast)
-    void RPCNetMulticastFxKilled();
-
-    UFUNCTION(UnReliable, NetMulticast)
     void RPCNetMulticastFxExploseHeal();
 
     UFUNCTION(UnReliable, NetMulticast)
     void RPCNetMultiCastFxGold(bool _activate);
 
-    bool canTank(int32 _val);
+    UFUNCTION(Reliable, Server)
+    void RPCServerSendTarget(int32 _playerId);
+
+    UFUNCTION(Reliable, Server)
+    void RPCServerResetTarget();
+
+    UFUNCTION(UnReliable, Client)
+    void RPCClientRepair();
+
+    bool canTank(TArray<FHitResult> const& _hits);
 
     UFUNCTION()
     void CleanEmp();
@@ -198,6 +199,11 @@ private:
 
     UFUNCTION()
     void BackToGame();
+
+    void computeSoundData();
+
+    /* if effect need to play flash, call bp function */
+    void playFash(EEffect _effect);
 
 public:
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
@@ -212,11 +218,10 @@ protected:
     UPROPERTY(ReplicatedUsing = "OnRep_Matiere")
     int16 RU_Matiere { 0 };
 
-    UPROPERTY(Replicated)
-    int8 R_ShieldLife { 0 };
-
     FName m_lastTeamEmp {};
     int32 m_lastPlayerIdEmp {};
+
+    short m_lastDirection { 0 };
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FTransform StartTransform {};
@@ -244,13 +249,13 @@ private:
     FOnEndUpdateMatiere OnEndUpdateMatiereDelegate {};
 
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
-    FOnShowMission OnShowMissionDelegate {};
+    FOnShowMission OnShowMissionDelegate {}; // deprecated to do remove
 
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
     FOnLocalTeamUpdate OnLocalTeamUpdateDelegate {};
 
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
-    FOnAddEffect OnAddEffectDelegate {};
+    FOnAddEffect OnAddEffectClientDelegate {};
 
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
     FOnRemoveEffect OnRemoveEffectDelegate {};

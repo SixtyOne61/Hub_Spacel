@@ -10,6 +10,7 @@
 #include "Misc/DateTime.h"
 #include "Kismet/GameplayStatics.h"
 #include "DataAsset/HomingMissileDataAsset.h"
+#include "Player/Common/CommonPawn.h"
 
 AMissile::AMissile()
     : AProjectileBase()
@@ -44,43 +45,32 @@ void AMissile::Tick(float _deltaTime)
 {
     Super::Tick(_deltaTime);
 
-    if(this->DataAsset == nullptr) return;
-
     if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
     {
-        if (this->R_IsSeekPlayer)
+        if (ACommonPawn* pawn = Cast<ACommonPawn>(R_Target))
         {
-            if (this->R_Target == nullptr)
+            if (pawn->hasEffect(EEffect::Fog) || pawn->hasEffect(EEffect::MetaFormSupport) || pawn->hasEffect(EEffect::Killed))
             {
                 this->Destroy();
             }
         }
     }
 
-    if (this->R_Target != nullptr)
-    {
-        FVector dir = this->GetActorForwardVector();
-        FVector const& actorLocation = this->GetActorLocation();
-        float speed = this->DataAsset->SpeedPreLock;
-        if (this->R_IsSeekPlayer)
-        {
-            FVector const& targetLocation = this->R_Target->GetActorLocation();
-            dir = (targetLocation - actorLocation).GetSafeNormal();
-            speed = this->DataAsset->SpeedAfterLock;
-        }
+    if(this->DataAsset == nullptr) return;
 
-        FVector const& currentLocation = actorLocation;
-        FVector nextLocation = currentLocation + dir * speed * _deltaTime;
-        this->SetActorLocation(nextLocation);
-    }
-}
-
-void AMissile::OnTargetEffect(EEffect _type)
-{
-    if (_type == EEffect::Fog || _type == EEffect::MetaFormSupport || _type == EEffect::Killed)
+    FVector dir = this->GetActorForwardVector();
+    FVector const& actorLocation = this->GetActorLocation();
+    float speed = this->DataAsset->SpeedPreLock;
+    if (this->R_IsSeekPlayer && this->R_Target != nullptr)
     {
-        this->Destroy();
+        FVector const& targetLocation = this->R_Target->GetActorLocation();
+        dir = (targetLocation - actorLocation).GetSafeNormal();
+        speed = this->DataAsset->SpeedAfterLock;
     }
+
+    FVector const& currentLocation = actorLocation;
+    FVector nextLocation = currentLocation + dir * speed * _deltaTime;
+    this->SetActorLocation(nextLocation);
 }
 
 void AMissile::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

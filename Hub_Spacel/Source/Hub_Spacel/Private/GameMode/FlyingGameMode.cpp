@@ -309,8 +309,6 @@ void AFlyingGameMode::Tick(float _deltaSeconde)
                 }
 
                 case EGameState::InGame:
-                case EGameState::UnlockMedium:
-                case EGameState::UnlockUltimate:
                 {
                     this->PickAWinningTeam();
                     break;
@@ -319,6 +317,7 @@ void AFlyingGameMode::Tick(float _deltaSeconde)
                 case EGameState::EndGame:
                 {
                     this->LeaveLevel();
+                    spacelGameState->GoToWaitEnd();
                     break;
                 }
 
@@ -505,6 +504,9 @@ void AFlyingGameMode::EndGame()
     Aws::GameLift::Server::ProcessEnding();
     FGenericPlatformMisc::RequestExit(false);
 #endif
+
+    FString levelName{ "MainMenu" };
+    UGameplayStatics::OpenLevel(this->GetWorld(), FName(*levelName), false, "");
 }
 
 void AFlyingGameMode::LeaveLevel()
@@ -541,6 +543,8 @@ void AFlyingGameMode::LeaveLevel()
     }
     // something wrong
     GetWorldTimerManager().SetTimer(this->EndGameHandle, this, &AFlyingGameMode::EndGame, 1.0f, false, 5.0f);
+#else
+    GetWorldTimerManager().SetTimer(this->EndGameHandle, this, &AFlyingGameMode::EndGame, 1.0f, false, 5.0f);
 #endif
 }
 
@@ -551,9 +555,8 @@ void AFlyingGameMode::PickAWinningTeam()
     {
         spacelGameState->GoToEndGame();
         spacelGameState->RPCNetMulticastStartGlobalCountDown(FDateTime::UtcNow().ToUnixTimestamp(), this->RemainingLeaveTime);
-
-        m_timerSeconde = this->RemainingLeaveTime;
     }
+    m_timerSeconde = this->RemainingLeaveTime;
 }
 
 void AFlyingGameMode::HandleProcessTermination()

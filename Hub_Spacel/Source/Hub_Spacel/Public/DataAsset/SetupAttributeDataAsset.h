@@ -7,7 +7,7 @@
 #include "SetupAttributeDataAsset.generated.h"
 
 /**
- *
+ * TO DO deprecated remove
  */
 UCLASS()
 class HUB_SPACEL_API USetupAttributeDataAsset : public UStaticMeshDataAsset

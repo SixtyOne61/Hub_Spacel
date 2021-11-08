@@ -29,17 +29,6 @@ protected:
 	ENetMode m_netMode {};
 };
 
-class HUB_SPACEL_API SkillNinePack : public SkillBehaviour
-{
-	using SkillBehaviour::SkillBehaviour;
-public:
-	virtual ~SkillNinePack() {}
-
-	ESkillReturn onStart() override;
-	void onEnd() override {};
-	void onEndCountDown() override {};
-};
-
 class HUB_SPACEL_API SkillHealPack : public SkillBehaviour
 {
 	using SkillBehaviour::SkillBehaviour;
@@ -51,44 +40,11 @@ public:
 	void onEndCountDown() override {};
 };
 
-class HUB_SPACEL_API SkillRepairProtection : public SkillBehaviour
+class HUB_SPACEL_API SkillRepair : public SkillBehaviour
 {
 	using SkillBehaviour::SkillBehaviour;
 public:
-	virtual ~SkillRepairProtection() {}
-
-	ESkillReturn onStart() override;
-	void onEnd() override {};
-	void onEndCountDown() override {};
-};
-
-class HUB_SPACEL_API SkillRepairSupport : public SkillBehaviour
-{
-	using SkillBehaviour::SkillBehaviour;
-public:
-	virtual ~SkillRepairSupport() {}
-
-	ESkillReturn onStart() override;
-	void onEnd() override {};
-	void onEndCountDown() override {};
-};
-
-class HUB_SPACEL_API SkillGiveAlly1 : public SkillBehaviour
-{
-	using SkillBehaviour::SkillBehaviour;
-public:
-	virtual ~SkillGiveAlly1() {}
-
-	ESkillReturn onStart() override;
-	void onEnd() override {};
-	void onEndCountDown() override {};
-};
-
-class HUB_SPACEL_API SkillGiveAlly2 : public SkillBehaviour
-{
-	using SkillBehaviour::SkillBehaviour;
-public:
-	virtual ~SkillGiveAlly2() {}
+	virtual ~SkillRepair() {}
 
 	ESkillReturn onStart() override;
 	void onEnd() override {};
@@ -106,39 +62,36 @@ public:
 	void onEndCountDown() override;
 };
 
-class HUB_SPACEL_API SkillSpecialAttack : public SkillBehaviour
+class HUB_SPACEL_API SkillMissile : public SkillBehaviour
 {
 	using SkillBehaviour::SkillBehaviour;
 public:
-	virtual ~SkillSpecialAttack() {}
-
-	ESkillReturn onStart() override;
-	void onEnd() override {};
-	void onEndCountDown() override {};
-};
-
-class HUB_SPACEL_API SkillSpecialProtection : public SkillBehaviour
-{
-	using SkillBehaviour::SkillBehaviour;
-public:
-	virtual ~SkillSpecialProtection() {}
+	virtual ~SkillMissile() {}
 
 	ESkillReturn onStart() override;
 	void onEnd() override;
 	void onEndCountDown() override {};
-
-private:
-	void fillPlayer(FName const& _team, TArray<class AShipPawn*>& _pawns) const;
 };
 
-class HUB_SPACEL_API SkillSpecialSupport : public SkillBehaviour
+class HUB_SPACEL_API SkillFarmer : public SkillBehaviour
 {
 	using SkillBehaviour::SkillBehaviour;
 public:
-	virtual ~SkillSpecialSupport() {}
+	virtual ~SkillFarmer() {}
 
 	ESkillReturn onStart() override;
-	void onEnd() override {};
+	void onEnd() override;
+	void onEndCountDown() override {};
+};
+
+class HUB_SPACEL_API SkillBulletStun : public SkillBehaviour
+{
+	using SkillBehaviour::SkillBehaviour;
+public:
+	virtual ~SkillBulletStun() {}
+
+	ESkillReturn onStart() override;
+	void onEnd() override;
 	void onEndCountDown() override {};
 };
 
@@ -175,11 +128,11 @@ public:
 	void onEndCountDown() override {};
 };
 
-class HUB_SPACEL_API SkillKatyusha : public SkillBehaviour
+class HUB_SPACEL_API SkillShotgun : public SkillBehaviour
 {
 	using SkillBehaviour::SkillBehaviour;
 public:
-	virtual ~SkillKatyusha() {}
+	virtual ~SkillShotgun() {}
 
 	ESkillReturn onStart() override;
 	void onEnd() override {};

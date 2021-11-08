@@ -73,7 +73,7 @@ void ALaserBullet::Destroyed()
                 {
                     if (UMetricComponent* metricComponent = Cast<UMetricComponent>(pawn->GetComponentByClass(UMetricComponent::StaticClass())))
                     {
-                        metricComponent->createPrecisionData(!m_hasExpired);
+                        metricComponent->updateMetric<SMetricRatio, bool>(EMetric::Precision, { !m_hasExpired });
                     }
                     break;
                 }

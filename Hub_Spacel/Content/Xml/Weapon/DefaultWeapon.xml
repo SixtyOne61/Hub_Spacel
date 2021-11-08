@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<root>
-<Location val="X=45.000 Y=60.000 Z=0.000"/>
-<Location val="X=45.000 Y=-60.000 Z=0.000"/>
-<Fire val="X=60.000 Y=-60.000 Z=0.000"/>
-<Fire val="X=60.000 Y=60.000 Z=0.000"/>
-<Missile val="X=0.000 Y=0.000 Z=-30.000"/>
-</root>

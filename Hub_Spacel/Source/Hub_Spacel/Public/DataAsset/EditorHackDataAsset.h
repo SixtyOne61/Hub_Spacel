@@ -26,7 +26,7 @@ public:
 	ESkill LowSkillId { ESkill::FireRate };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	ESkill MediumSkillId { ESkill::Emp };
+	ESkill MediumSkillId { ESkill::BulletStun };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	ESkill HightSkillId { ESkill::MetaFormSupport };

@@ -6,7 +6,7 @@
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Camera/CameraComponent.h"
 #include "Components/PostProcessComponent.h"
-#include "Components/InstancedStaticMeshComponent.h"
+#include "Mesh/SpacelInstancedMeshComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Player/ShipPawn.h"
 #include "Player/ModuleComponent.h"
@@ -39,7 +39,7 @@ void ULocalPlayerActionComponent::BeginPlay()
         {
             shipPawn->OnLocalTeamUpdateDelegate.AddDynamic(this, &ULocalPlayerActionComponent::OnUpdateTeam);
 
-            shipPawn->OnAddEffectDelegate.AddDynamic(this, &ULocalPlayerActionComponent::AddEffect);
+            shipPawn->OnAddEffectClientDelegate.AddDynamic(this, &ULocalPlayerActionComponent::AddEffect);
             shipPawn->OnRemoveEffectDelegate.AddDynamic(this, &ULocalPlayerActionComponent::RemoveEffect);
         }
     }
@@ -52,21 +52,29 @@ void ULocalPlayerActionComponent::TickComponent(float _deltaTime, ELevelTick _ti
     ACommonPawn* pawn = get();
     if (m_speedLineMaterial != nullptr && pawn != nullptr && pawn->CameraComponent != nullptr)
     {
-        float coefSpeed = FMath::Max((pawn->ModuleComponent->SupportMeshComponent->GetInstanceCount() / 9.0f), pawn->PlayerDataAsset->MinCoefSpeed);
-        if (pawn->hasEffect(EEffect::MetaFormAttack) || pawn->hasEffect(EEffect::MetaFormProtection) || pawn->hasEffect(EEffect::MetaFormSupport) || pawn->hasEffect(EEffect::EscapeMode))
+        bool hasBoost = pawn->hasEffect(EEffect::EscapeMode) || pawn->hasEffect(EEffect::MetaFormAttack) || pawn->hasEffect(EEffect::MetaFormProtection) || pawn->hasEffect(EEffect::MetaFormSupport);
+        float coefSpeed = FMath::Max((pawn->SupportComponent->GetNum() / 9.0f), pawn->PlayerDataAsset->MinCoefSpeed);
+        if (hasBoost)
         {
             // override speed max
             coefSpeed = pawn->PlayerDataAsset->EscapeModeCoef;
         }
+
         // set material parameter
-        float speedRef = FMath::Max(pawn->RU_PercentSpeed, (pawn->R_OverDrive / 10.0f));
+        float speedRef = FMath::Max(pawn->RU_PercentSpeed, (float)pawn->R_OverDrive);
         float percent = FMath::Clamp(speedRef * coefSpeed, 0.0f, 2.6f);
-        float multiplicator = pawn->hasEffect(EEffect::StartGame) ? 4.0f : 2.0f;
+        float multiplicator = hasBoost ? 3.0f : 2.0f;
+
+        // on missile effect we are stop but RU_PercentSpeed stay depend of Z
+        if (pawn->hasEffect(EEffect::Missile))
+        {
+            percent = 0.0f;
+        }
+
         m_speedLineMaterial->SetScalarParameterValue("Weight", percent * multiplicator);
-        m_speedLineMaterial->SetVectorParameterValue("SpeedLinesColor", FMath::Lerp(FLinearColor(1.0f, 1.0f, 1.0f, 1.0f), FLinearColor(0.0f, 0.943892f, 1.0f, 1.0f), percent));
+        m_speedLineMaterial->SetVectorParameterValue("SpeedLinesColor", FMath::Lerp(FLinearColor(1.0f, 1.0f, 1.0f, 0.5f), FLinearColor(0.0f, 0.943892f, 1.0f, 0.8f), percent));
 
         // set fov
-        percent = FMath::Clamp(pawn->RU_PercentSpeed * coefSpeed, 0.0f, 2.6f);
         float noSmoothFov { FMath::Lerp(90.0f, 130.0f, percent) };
         float currentFov { get()->CameraComponent->FieldOfView };
         float smoothFov { FMath::Lerp(currentFov, noSmoothFov, _deltaTime) };

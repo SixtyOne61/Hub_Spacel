@@ -20,19 +20,31 @@ protected:
 	{
 		DelayValue m_forward{};
 		float m_lastForwardInput{};
-		DelayValue m_horizontalStraf{};
-		float m_lastHorizontalStrafInput{};
+		DelayValue m_backward{};
+		float m_lastBackwardInput{};
+
+		DelayValue m_horizontalStrafRight{};
+		float m_lastHorizontalStrafRightInput{};
+		DelayValue m_horizontalStrafLeft{};
+		float m_lastHorizontalStrafLeftInput{};
+
 		DelayValue m_verticalStraf{};
 		float m_lastVerticalStrafInput{};
-		DelayValue m_flightAttitude{};
-		float m_lastFlightAttitudeInput{};
+
+		DelayValue m_flightAttitudeRight{};
+		float m_lastFlightAttitudeRightInput{};
+		DelayValue m_flightAttitudeLeft{};
+		float m_lastFlightAttitudeLeftInput{};
 
 		inline void reset()
 		{
 			m_forward.reset();
-			m_horizontalStraf.reset();
+			m_backward.reset();
+			m_horizontalStrafRight.reset();
+			m_horizontalStrafLeft.reset();
 			m_verticalStraf.reset();
-			m_flightAttitude.reset();
+			m_flightAttitudeRight.reset();
+			m_flightAttitudeLeft.reset();
 		}
 	} m_data;
 	
@@ -54,13 +66,17 @@ protected:
 protected:
 	/* input callback */
 	virtual void forward(float _value) {};
-	virtual void horizontalStraf(float _value) {};
+	virtual void backward(float _value) {};
+	virtual void horizontalStrafRight(float _value) {};
+	virtual void horizontalStrafLeft(float _value) {};
 	virtual void verticalStraf(float _value) {};
-	virtual void flightAttitude(float _value) {};
+	virtual void flightAttitudeRight(float _value) {};
+	virtual void flightAttitudeLeft(float _value) {};
+
 	virtual void fireOn() {};
 	virtual void fireOff() {};
 	virtual void returnToMainMenu();
-	virtual void lock() {};
+	virtual void halfTurn() {};
 };
 
 template<class T>
@@ -77,9 +93,9 @@ void ACommonPlayerController::updatePawnData(float _deltaTime)
 {
 	if (T* shipPawn = Cast<T>(this->GetPawn()))
 	{
-		shipPawn->RU_PercentSpeed = m_data.m_forward.addValue(m_data.m_lastForwardInput, _deltaTime);
-		shipPawn->PercentHorizontalStraf = m_data.m_horizontalStraf.addValue(m_data.m_lastHorizontalStrafInput, _deltaTime);
+		shipPawn->RU_PercentSpeed = m_data.m_forward.addValue(m_data.m_lastForwardInput, _deltaTime) - m_data.m_backward.addValue(m_data.m_lastBackwardInput, _deltaTime);
+		shipPawn->PercentHorizontalStraf = m_data.m_horizontalStrafRight.addValue(m_data.m_lastHorizontalStrafRightInput, _deltaTime) - m_data.m_horizontalStrafLeft.addValue(m_data.m_lastHorizontalStrafLeftInput, _deltaTime);
 		shipPawn->PercentVerticalStraf = m_data.m_verticalStraf.addValue(m_data.m_lastVerticalStrafInput, _deltaTime);
-		shipPawn->PercentFlightAttitude = m_data.m_flightAttitude.addValue(m_data.m_lastFlightAttitudeInput, _deltaTime);
+		shipPawn->PercentFlightAttitude = m_data.m_flightAttitudeRight.addValue(m_data.m_lastFlightAttitudeRightInput, _deltaTime) - m_data.m_flightAttitudeLeft.addValue(m_data.m_lastFlightAttitudeLeftInput, _deltaTime);
 	}
 }

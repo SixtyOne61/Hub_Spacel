@@ -22,6 +22,9 @@ public:
 	UPROPERTY(EditAnywhere)
 	FString ShortName {};
 
+	UPROPERTY(EditAnywhere)
+	class UTexture2D* Logo {};
+
 	template<typename T>
 	T get() const;
 };
@@ -49,7 +52,7 @@ public:
 
 	FColorsType GetColorType(FString const& _team) const
 	{
-		TArray<FString> names = { "Team 1", "Team 2", "Team 3", "Team 4", "Team 5", "Team 6" };
+		static const TArray<FString> names = { "Team 1", "Team 2", "Team 3", "Team 4", "Team 5", "Team 6" };
 		for (int32 i = 0; i < names.Num(); ++i)
 		{
 			if (_team == names[i])

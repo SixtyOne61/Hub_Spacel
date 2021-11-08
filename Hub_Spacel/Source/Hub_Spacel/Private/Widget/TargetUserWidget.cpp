@@ -23,19 +23,11 @@ void UTargetUserWidget::NativeConstruct()
 
     setTargetImage(BaseColor);
 
-    if (UHub_SpacelGameInstance* spacelGameInstance = Cast<UHub_SpacelGameInstance>(GetGameInstance()))
-    {
-        spacelGameInstance->OnTargetPlayerDelegate.AddDynamic(this, &UTargetUserWidget::OnTargetPlayer);
-        spacelGameInstance->OnTryLockDelegate.AddDynamic(this, &UTargetUserWidget::OnTryLock);
-    }
-
     m_state = EState::StateNormal;
     m_state.init({ std::bind(&UTargetUserWidget::onChangeStateNormal, this),
-                    std::bind(&UTargetUserWidget::onChangeStateHover, this),
-                    std::bind(&UTargetUserWidget::onChangeStateLock, this) });
+                    std::bind(&UTargetUserWidget::onChangeStateHover, this) });
 
     // bind event from button
-    TargetButton->OnPressed.AddDynamic(this, &UTargetUserWidget::OnPressed);
     TargetButton->OnHovered.AddDynamic(this, &UTargetUserWidget::OnHovered);
 }
 
@@ -125,33 +117,6 @@ void UTargetUserWidget::NativeDestruct()
     Super::NativeDestruct();
 }
 
-void UTargetUserWidget::OnTargetPlayer(int32 _playerId, bool _lock)
-{
-    if (_lock && m_state == EState::StateLock)
-    {
-        if (this->Owner == nullptr) return;
-        if (AShipPawn* ownerPawn = Cast<AShipPawn>(this->Owner->GetParentActor()))
-        {
-            if (ASpacelPlayerState* playerState = ownerPawn->GetPlayerState<ASpacelPlayerState>())
-            {
-                if (playerState->PlayerId != _playerId)
-                {
-                    m_state = EState::StateNormal;
-                }
-            }
-        }
-    }
-}
-
-void UTargetUserWidget::OnTryLock()
-{
-    if (m_state == EState::StateHover
-        || m_state == EState::StateLock)
-    {
-        OnPressed();
-    }
-}
-
 void UTargetUserWidget::setTargetImage(FLinearColor const& _color)
 {
     if (this->TargetImage != nullptr)
@@ -163,21 +128,23 @@ void UTargetUserWidget::setTargetImage(FLinearColor const& _color)
 void UTargetUserWidget::onChangeStateNormal()
 {
     setTargetImage(this->BaseColor);
+    resetTarget();
 }
 
 void UTargetUserWidget::onChangeStateHover()
 {
-    setTargetImage(this->HoverColor);
-}
-
-void UTargetUserWidget::onChangeStateLock()
-{
     setTargetImage(this->LockColor);
+    sendTarget();
 }
 
-void UTargetUserWidget::OnPressed()
+void UTargetUserWidget::OnHovered()
 {
-    if(m_isSameTeam) return;
+    m_isHovered = true;
+}
+
+void UTargetUserWidget::sendTarget()
+{
+    if (m_isSameTeam) return;
     if (this->Owner == nullptr) return;
 
     if (AShipPawn* localPawn = Cast<AShipPawn>(UGameplayStatics::GetPlayerPawn(this->GetWorld(), 0)))
@@ -188,25 +155,19 @@ void UTargetUserWidget::OnPressed()
             {
                 if (ASpacelPlayerState* playerState = ownerPawn->GetPlayerState<ASpacelPlayerState>())
                 {
-                    if (m_state == EState::StateLock)
-                    {
-                        m_state = EState::StateNormal;
-                        localPawn->lockTarget(playerState->PlayerId, false);
-                    }
-                    else
-                    {
-                        m_state = EState::StateLock;
-                        localPawn->lockTarget(playerState->PlayerId, true);
-                    }
+                    localPawn->RPCServerSendTarget(playerState->PlayerId);
                 }
             }
         }
     }
 }
 
-void UTargetUserWidget::OnHovered()
+void UTargetUserWidget::resetTarget()
 {
-    m_isHovered = true;
+    if (AShipPawn* localPawn = Cast<AShipPawn>(UGameplayStatics::GetPlayerPawn(this->GetWorld(), 0)))
+    {
+        localPawn->RPCServerResetTarget();
+    }
 }
 
 void UTargetUserWidget::showTarget(bool _show)

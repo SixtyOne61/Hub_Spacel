@@ -22,19 +22,21 @@ public:
 	URepairComponent();
 
 	void BeginPlay() override;
+
+public:
+	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
+	class UUniqueSkillDataAsset* RepairSkillDataAsset { nullptr };
 	
 private:
 	UFUNCTION()
 	void OnUpdateMatiere(int _value, EMatiereOrigin _type);
 
-	/* repair protection */
-	ESkillReturn onRepairProtection();
-
-	/* repair support */
-	ESkillReturn onRepairSupport();
+	/* repair generic */
+	ESkillReturn onRepair();
 
 	/* force repair */
 	void heal(uint8 _value);
 
-	ESkillReturn repair(TArray<FVector_NetQuantize> & _removedLocations, TArray<FVector_NetQuantize> & _locations, std::function<void(void)> _onRep, int _minMatiere, int _effect);
+	/* generic code for repair */
+	int repair(int _nb, class AShipPawn* _pawn) const;
 };

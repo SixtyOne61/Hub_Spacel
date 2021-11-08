@@ -16,7 +16,8 @@ class HUB_SPACEL_API UAllyWidget : public UUserWidget
 	GENERATED_BODY()
 
 public:
-	void setWatcher(class ASpacelPlayerState* _state);
+	UFUNCTION(BlueprintCallable)
+	void SetWatcher(class ASpacelPlayerState* _state);
 
 protected:
 	void NativeConstruct() override;
@@ -27,15 +28,16 @@ protected:
 	UFUNCTION()
 	void UpdateWatcher();
 
+protected:
+	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
+	class UTeamColorDataAsset* TeamColorDataAsset{ nullptr };
+
 private:
 	UPROPERTY()
 	class UTextBlock* NameTextBlock { nullptr };
 
 	UPROPERTY()
 	class UProgressBar* ProtectionProgressBar { nullptr };
-
-	UPROPERTY()
-	class UProgressBar* SupportProgressBar { nullptr };
 
 	UPROPERTY()
 	class UImage* DisconnectImage { nullptr };

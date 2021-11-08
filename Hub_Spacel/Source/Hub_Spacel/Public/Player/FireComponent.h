@@ -25,18 +25,46 @@ public:
 	void TickComponent(float _deltaTime, ELevelTick _tickType, FActorComponentTickFunction* _thisTickFunction) override;
 
 private:
+	/* bullet behaviour */
+	void fireBullet(FTransform _fireTransform);
 	void spawnBullet(FTransform const& _transform) const;
-	void launchMissile(FTransform const _transform) const;
-	void spawnKatyusha();
 
+	/* missile behaviour */
+	void fireMissile(FTransform _fireTransform);
+	void spawnMissile(FTransform const _transform) const;
+
+	/* stun bullet behaviour */
+	void fireStunBullet(FTransform _fireTransform);
+	void spawnStunBullet(FTransform const _transform) const;
+
+	/* return fire transform */
+	FTransform getFireTransform();
+
+	/* reset fire count down */
+	void resetFireCountDown();
+
+	/* shot gun */
+	void fireShotgun();
+	void spawnShotgunBullet(FTransform const& _transform) const;
+
+	/* change collision profile */
 	void setupProjectile(AActor* _projectile) const;
 
-	UFUNCTION()
-	void SpawnKatyusha();
+	/* get a random vector normalize forward */
+	FVector getRandomForwardVector() const;
 
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Setup")
-	TArray<USceneComponent*> DummyKatyushaLocations {};
+	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
+	class UUniqueSkillDataAsset* FireRateDataAsset { nullptr };
+	
+	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
+	class UUniqueSkillDataAsset* MetaFormAttackDataAsset { nullptr };
+
+	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
+	class UUniqueSkillDataAsset * BulletStunDataAsset { nullptr };
+
+	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
+	class UUniqueSkillDataAsset* ShotgunDataAsset { nullptr };
 
 	/* use only on server, say if we are in fire */
 	Util::Optional<bool> m_isFire{ };
@@ -46,12 +74,6 @@ protected:
 
 	/* fire point location */
 	int32 m_fireIndex{ };
-
-	/* nb katyusha to spawn */
-	int8 m_nbKatyusha { 0 };
-
-	/* next transform */
-	FTransform m_nextKatyushaTransform {};
 
 	/* current targeted actor */
 	class AActor* m_target{ nullptr };

@@ -45,7 +45,7 @@ private:
 	void RPCClientFailed(ESkill _skill, ESkillReturn _returnValue);
 
 	UFUNCTION()
-	void OnMissionEnd(EMission _type);
+	void OnMissionEnd(EMission _type, bool _succeed, FName _succeedForTeam);
 
 	class UUniqueSkillDataAsset const* getSkill(ESkill _skill) const;
 
@@ -54,10 +54,15 @@ private:
 	void RPCClientEmergencyRedCube();
 
 	void emergencyRedCubeRemove();
+
 	UFUNCTION(Reliable, Client)
 	void RPCClientEmergencyRedCubeRemove();
 
 	void removeSkill();
+
+	/* callback when we use a skill with success */
+	UFUNCTION()
+	void UseSkill(ESkill _skill, bool _affectedByOtherSkillCountDown);
 
 public:
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)

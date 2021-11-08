@@ -22,15 +22,12 @@ protected:
 
 private:
 	UFUNCTION()
-	void StartGame(EGameState _state);
+	void OnChangeState(EGameState _state);
 
 protected:
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<class UUserWidget> GameWidgetClass { nullptr };
+	TSubclassOf<class UUserWidget> InGameWidgetClass { nullptr };
 
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<class UUserWidget> LobbyWidgetClass { nullptr };
-
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<class UUserWidget> EndMenuWidgetClass{ nullptr };
+	TSubclassOf<class UUserWidget> EndMenuWidgetClass { nullptr };
 };
