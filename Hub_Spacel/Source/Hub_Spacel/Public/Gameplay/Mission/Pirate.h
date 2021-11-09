@@ -14,13 +14,7 @@ class HUB_SPACEL_API APirate : public AMissionActor
 	
 	friend class MissionPirate;
 
-	enum class EComponentType : uint8
-	{
-		Base,
-		Addon,
-	};
-
-public:	
+public:
 	// Sets default values for this actor's properties
 	APirate();
 
@@ -35,13 +29,7 @@ protected:
 	void BuildShip();
 
 	UFUNCTION()
-	void OnVoxelsHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit);
-
-	UFUNCTION()
-	void OnRedCubeHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit);
-
-	UFUNCTION(Reliable, NetMulticast)
-	void RPCNetMulticastHit(int32 _index, uint8 _type);
+	void OnComponentsHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit);
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void BP_OnDestroy();
@@ -50,20 +38,14 @@ protected:
 	UPROPERTY(EditAnywhere)
 	class UPirateDataAsset* DataAsset { nullptr };
 
-	UPROPERTY(VisibleAnywhere, Category = "Component")
-	class USpacelInstancedMeshComponent* Part1 { nullptr };
+	UPROPERTY(Category = "Component|Mesh", VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	class USpacelInstancedMeshComponent* WeaponComponent { nullptr };
 
-	UPROPERTY(VisibleAnywhere, Category = "Component")
-	class USpacelInstancedMeshComponent* Part2 { nullptr };
+	UPROPERTY(Category = "Component|Mesh", VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	class USpacelInstancedMeshComponent* ProtectionComponent { nullptr };
 
-	UPROPERTY(VisibleAnywhere, Category = "Component")
-	class USpacelInstancedMeshComponent* Part3 { nullptr };
-
-	UPROPERTY(VisibleAnywhere, Category = "Component")
-	class UInstancedStaticMeshComponent* Base { nullptr };
-
-	UPROPERTY(VisibleAnywhere, Category = "Component")
-	class UInstancedStaticMeshComponent* Addon { nullptr };
+	UPROPERTY(Category = "Component|Mesh", VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	class USpacelInstancedMeshComponent* SupportComponent { nullptr };
 
 	UPROPERTY(VisibleAnywhere, Category = "Component")
 	class UStaticMeshComponent* RedCube { nullptr };

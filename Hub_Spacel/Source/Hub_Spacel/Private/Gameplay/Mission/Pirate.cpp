@@ -9,6 +9,7 @@
 #include "Util/Tag.h"
 #include "Util/DebugScreenMessage.h"
 #include "Gameplay/Bullet/ProjectileBase.h"
+#include "Mesh/SpacelInstancedMeshComponent.h"
 
 // Sets default values
 APirate::APirate()
@@ -19,11 +20,14 @@ APirate::APirate()
 	RedCube = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("RedCube"));
 	RootComponent = RedCube;
 
-    Base = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Base"));
-    Base->SetupAttachment(RedCube);
+    WeaponComponent = CreateDefaultSubobject<USpacelInstancedMeshComponent>(TEXT("Weapon"));
+    WeaponComponent->SetupAttachment(RootComponent);
 
-    Addon = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Addon"));
-    Addon->SetupAttachment(RedCube);
+    ProtectionComponent = CreateDefaultSubobject<USpacelInstancedMeshComponent>(TEXT("Protection"));
+    ProtectionComponent->SetupAttachment(RootComponent);
+
+    SupportComponent = CreateDefaultSubobject<USpacelInstancedMeshComponent>(TEXT("Support"));
+    SupportComponent->SetupAttachment(RootComponent);
 }
 
 // Called when the game starts or when spawned
@@ -36,17 +40,22 @@ void APirate::BeginPlay()
 
 	if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
 	{
-        if (this->Base != nullptr)
+        // init hit callback
+        auto lb_init = [&](USpacelInstancedMeshComponent* _component)
         {
-            this->Base->OnComponentHit.AddDynamic(this, &APirate::OnVoxelsHit);
-        }
-        if (this->Addon != nullptr)
-        {
-            this->Addon->OnComponentHit.AddDynamic(this, &APirate::OnVoxelsHit);
-        }
+            if (_component != nullptr)
+            {
+                _component->OnComponentHit.AddDynamic(this, &APirate::OnComponentsHit);
+            }
+        };
+
+        lb_init(this->WeaponComponent);
+        lb_init(this->ProtectionComponent);
+        lb_init(this->SupportComponent);
+        
         if (this->RedCube != nullptr)
         {
-            this->RedCube->OnComponentHit.AddDynamic(this, &APirate::OnRedCubeHit);
+            this->RedCube->OnComponentHit.AddDynamic(this, &APirate::OnComponentsHit);
         }
 	}
 }
@@ -57,71 +66,52 @@ void APirate::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-void APirate::OnVoxelsHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit)
+void APirate::OnComponentsHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit)
 {
-    if (this->Base != nullptr && this->Base->GetUniqueID() == _hitComp->GetUniqueID())
+    auto lb = [&_hitComp, &_hit](USpacelInstancedMeshComponent* _component) -> bool
     {
-        RPCNetMulticastHit(_hit.Item, (uint8)EComponentType::Base);
-    }
-    else if (this->Addon != nullptr && this->Addon->GetUniqueID() == _hitComp->GetUniqueID())
-    {
-        RPCNetMulticastHit(_hit.Item, (uint8)EComponentType::Addon);
-    }
-}
-
-void APirate::OnRedCubeHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit)
-{
-    if (_otherActor != nullptr)
-    {
-        if (AProjectileBase* projectile = Cast<AProjectileBase>(_otherActor))
+        if (_component != nullptr && _component->GetUniqueID() == _hitComp->GetUniqueID())
         {
-            OnKilledDelegate.broadcast(projectile->R_Team);
+            FTransform out;
+            _component->GetInstanceTransform(_hit.Item, out);
+            return _component->Remove(out.GetLocation()) != -1;
         }
-    }
-    this->Destroy();
-}
+        return false;
+    };
 
-void APirate::RPCNetMulticastHit_Implementation(int32 _index, uint8 _type)
-{
-    if (this->Base != nullptr && _type == (uint8)EComponentType::Base)
+    bool ret { false };
+    ret |= lb(this->WeaponComponent);
+    ret |= lb(this->ProtectionComponent);
+    ret |= lb(this->SupportComponent);
+
+    if (!ret)
     {
-        this->Base->RemoveInstance(_index);
-    }
-    else if (this->Addon != nullptr && _type == (uint8)EComponentType::Addon)
-    {
-        this->Addon->RemoveInstance(_index);
+        if (this->RedCube != nullptr && this->RedCube->GetUniqueID() == _hitComp->GetUniqueID())
+        {
+            if (ATeamActor* teamActor = Cast<ATeamActor>(_otherActor))
+            {
+                OnKilledDelegate.broadcast(teamActor->R_Team);
+                this->Destroy();
+            }
+        }
     }
 }
 
 void APirate::BuildShip()
 {
-    if(this->DataAsset == nullptr) return;
-
-    auto lb = [&](FString&& _name, UInstancedStaticMeshComponent* _comp)
+    auto lb_call = [](USpacelInstancedMeshComponent* _component)
     {
-        if(_comp == nullptr) return;
-        SimplyXml::FContainer<FVector> locationInformation{ _name };
-        SimplyXml::FReader reader{ FPaths::ProjectDir() + this->DataAsset->XmlPath };
-        reader.read(locationInformation);
-
-        _comp->ClearInstances();
-        TArray<FVector> locations;
-        for (FVector loc : locationInformation.Values)
+        if (_component != nullptr)
         {
-            locations.Add(loc);
-        }
-
-        _comp->SetEnableGravity(false);
-        for (auto const& loc : locations)
-        {
-            FTransform voxelTransform{};
-            voxelTransform.SetLocation(loc);
-            _comp->AddInstance(voxelTransform);
+            _component->Read();
+            _component->InitLocations(true);
+            _component->resetBuild();
         }
     };
 
-    lb("Base", this->Base);
-    lb("Addon", this->Addon);
+    lb_call(this->WeaponComponent);
+    lb_call(this->ProtectionComponent);
+    lb_call(this->SupportComponent);
 }
 
 void APirate::Destroyed()

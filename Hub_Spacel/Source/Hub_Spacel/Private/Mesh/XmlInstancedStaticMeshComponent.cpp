@@ -61,19 +61,28 @@ void UXmlInstancedStaticMeshComponent::Add(FVector_NetQuantize const& _location)
 
 int UXmlInstancedStaticMeshComponent::Remove(FVector_NetQuantize const& _location)
 {
+    bool isRemoved { false };
     int i {0};
     for (auto loc : this->Locations)
     {
         if (loc == _location)
         {
             this->Locations.RemoveAt(i);
+            isRemoved = true;
             break;
         }
         ++i;
     }
 
-    this->RemoveInstance(i);
-    return i;
+    if (isRemoved)
+    {
+        this->RemoveInstance(i);
+        return i;
+    }
+    else
+    {
+        return -1;
+    }
 }
 
 void UXmlInstancedStaticMeshComponent::resetBuild()
