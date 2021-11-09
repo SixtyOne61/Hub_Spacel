@@ -51,6 +51,15 @@ protected:
 	class UPirateDataAsset* DataAsset { nullptr };
 
 	UPROPERTY(VisibleAnywhere, Category = "Component")
+	class USpacelInstancedMeshComponent* Part1 { nullptr };
+
+	UPROPERTY(VisibleAnywhere, Category = "Component")
+	class USpacelInstancedMeshComponent* Part2 { nullptr };
+
+	UPROPERTY(VisibleAnywhere, Category = "Component")
+	class USpacelInstancedMeshComponent* Part3 { nullptr };
+
+	UPROPERTY(VisibleAnywhere, Category = "Component")
 	class UInstancedStaticMeshComponent* Base { nullptr };
 
 	UPROPERTY(VisibleAnywhere, Category = "Component")
