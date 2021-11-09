@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <root>
-<Location val="X=105.000 Y=-15.000 Z=0.000"/>
-<Location val="X=105.000 Y=15.000 Z=0.000"/>
-<Bonus val="X=105.000 Y=0.000 Z=15.000"/>
-<Bonus val="X=105.000 Y=0.000 Z=-15.000"/>
+<Location val="X=0.000 Y=0.000 Z=105.000"/>
+<Location val="X=0.000 Y=0.000 Z=-105.000"/>
 </root>
