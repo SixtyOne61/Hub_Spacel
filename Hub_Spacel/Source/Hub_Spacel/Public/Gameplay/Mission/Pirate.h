@@ -35,20 +35,23 @@ protected:
 	void BP_OnDestroy();
 
 protected:
-	UPROPERTY(EditAnywhere)
-	class UPirateDataAsset* DataAsset { nullptr };
-
 	UPROPERTY(Category = "Component|Mesh", VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	class USpacelInstancedMeshComponent* WeaponComponent { nullptr };
 
 	UPROPERTY(Category = "Component|Mesh", VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	class USpacelInstancedMeshComponent* ProtectionComponent { nullptr };
+	class USpacelInstancedMeshComponent* TowerComponent { nullptr };
+
+	UPROPERTY(Category = "Component|Mesh", VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	class USpacelInstancedMeshComponent* BaseComponent{ nullptr };
+
+	UPROPERTY(Category = "Component|Mesh", VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	class USpacelInstancedMeshComponent* CircleComponent{ nullptr };
 
 	UPROPERTY(Category = "Component|Mesh", VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	class USpacelInstancedMeshComponent* SupportComponent { nullptr };
 
-	UPROPERTY(VisibleAnywhere, Category = "Component")
-	class UStaticMeshComponent* RedCube { nullptr };
+	UPROPERTY(Category = "Component|Mesh", VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	class USpacelInstancedMeshComponent* RedCube { nullptr };
 
 	Util::Event<FName const&> OnKilledDelegate { };
 };

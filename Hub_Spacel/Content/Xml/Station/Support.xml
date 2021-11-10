@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<Location val="X=120.000 Y=0.000 Z=30.000"/>
+<Location val="X=-120.000 Y=0.000 Z=30.000"/>
+<Location val="X=0.000 Y=-120.000 Z=30.000"/>
+<Location val="X=120.000 Y=0.000 Z=-30.000"/>
+<Location val="X=0.000 Y=120.000 Z=-30.000"/>
+<Location val="X=-120.000 Y=0.000 Z=-30.000"/>
+<Location val="X=0.000 Y=-120.000 Z=-30.000"/>
+<Location val="X=0.000 Y=120.000 Z=30.000"/>
+<Location val="X=105.000 Y=0.000 Z=-15.000"/>
+<Location val="X=105.000 Y=0.000 Z=15.000"/>
+<Location val="X=0.000 Y=105.000 Z=15.000"/>
+<Location val="X=0.000 Y=105.000 Z=-15.000"/>
+<Location val="X=0.000 Y=-105.000 Z=-15.000"/>
+<Location val="X=0.000 Y=-105.000 Z=15.000"/>
+<Location val="X=-105.000 Y=0.000 Z=15.000"/>
+<Location val="X=-105.000 Y=0.000 Z=-15.000"/>
+<Location val="X=30.000 Y=0.000 Z=-15.000"/>
+<Location val="X=-30.000 Y=0.000 Z=-15.000"/>
+<Location val="X=0.000 Y=-30.000 Z=-15.000"/>
+<Location val="X=0.000 Y=30.000 Z=-15.000"/>
+<Location val="X=0.000 Y=30.000 Z=15.000"/>
+<Location val="X=0.000 Y=-30.000 Z=15.000"/>
+<Location val="X=30.000 Y=0.000 Z=15.000"/>
+<Location val="X=-30.000 Y=0.000 Z=15.000"/>
+</root>

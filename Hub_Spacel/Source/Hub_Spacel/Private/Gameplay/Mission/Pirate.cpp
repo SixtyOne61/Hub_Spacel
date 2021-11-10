@@ -4,12 +4,12 @@
 #include "Pirate.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
-#include "DataAsset/PirateDataAsset.h"
+#include "Mesh/SpacelInstancedMeshComponent.h"
 #include "Util/SimplyXml.h"
 #include "Util/Tag.h"
 #include "Util/DebugScreenMessage.h"
 #include "Gameplay/Bullet/ProjectileBase.h"
-#include "Mesh/SpacelInstancedMeshComponent.h"
+#include "Player/Common/CommonPawn.h"
 
 // Sets default values
 APirate::APirate()
@@ -17,14 +17,20 @@ APirate::APirate()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	RedCube = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("RedCube"));
+	RedCube = CreateDefaultSubobject<USpacelInstancedMeshComponent>(TEXT("RedCube"));
 	RootComponent = RedCube;
 
     WeaponComponent = CreateDefaultSubobject<USpacelInstancedMeshComponent>(TEXT("Weapon"));
     WeaponComponent->SetupAttachment(RootComponent);
 
-    ProtectionComponent = CreateDefaultSubobject<USpacelInstancedMeshComponent>(TEXT("Protection"));
-    ProtectionComponent->SetupAttachment(RootComponent);
+    TowerComponent = CreateDefaultSubobject<USpacelInstancedMeshComponent>(TEXT("Tower"));
+    TowerComponent->SetupAttachment(RootComponent);
+
+    BaseComponent = CreateDefaultSubobject<USpacelInstancedMeshComponent>(TEXT("Base"));
+    BaseComponent->SetupAttachment(RootComponent);
+
+    CircleComponent = CreateDefaultSubobject<USpacelInstancedMeshComponent>(TEXT("Circle"));
+    CircleComponent->SetupAttachment(RootComponent);
 
     SupportComponent = CreateDefaultSubobject<USpacelInstancedMeshComponent>(TEXT("Support"));
     SupportComponent->SetupAttachment(RootComponent);
@@ -35,11 +41,11 @@ void APirate::BeginPlay()
 {
 	Super::BeginPlay();
     Tags.Add(Tags::Pirate);
-	
-	BuildShip();
 
 	if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
 	{
+        BuildShip();
+
         // init hit callback
         auto lb_init = [&](USpacelInstancedMeshComponent* _component)
         {
@@ -49,14 +55,11 @@ void APirate::BeginPlay()
             }
         };
 
-        lb_init(this->WeaponComponent);
-        lb_init(this->ProtectionComponent);
+        lb_init(this->TowerComponent);
+        lb_init(this->BaseComponent);
+        lb_init(this->CircleComponent);
         lb_init(this->SupportComponent);
-        
-        if (this->RedCube != nullptr)
-        {
-            this->RedCube->OnComponentHit.AddDynamic(this, &APirate::OnComponentsHit);
-        }
+        lb_init(this->RedCube);
 	}
 }
 
@@ -74,25 +77,23 @@ void APirate::OnComponentsHit(UPrimitiveComponent* _hitComp, AActor* _otherActor
         {
             FTransform out;
             _component->GetInstanceTransform(_hit.Item, out);
-            return _component->Remove(out.GetLocation()) != -1;
+            _component->RPCNetMulticastRemove(out.GetLocation());
+            return true;
         }
         return false;
     };
 
-    bool ret { false };
-    ret |= lb(this->WeaponComponent);
-    ret |= lb(this->ProtectionComponent);
-    ret |= lb(this->SupportComponent);
-
-    if (!ret)
+    lb(this->TowerComponent);
+    lb(this->BaseComponent);
+    lb(this->CircleComponent);
+    lb(this->SupportComponent);
+    if (lb(this->RedCube))
     {
-        if (this->RedCube != nullptr && this->RedCube->GetUniqueID() == _hitComp->GetUniqueID())
+        // only bullet can kill station
+        if (AProjectileBase* projectileBase = Cast<AProjectileBase>(_otherActor))
         {
-            if (ATeamActor* teamActor = Cast<ATeamActor>(_otherActor))
-            {
-                OnKilledDelegate.broadcast(teamActor->R_Team);
-                this->Destroy();
-            }
+            OnKilledDelegate.broadcast(projectileBase->R_Team);
+            this->Destroy();
         }
     }
 }
@@ -103,15 +104,16 @@ void APirate::BuildShip()
     {
         if (_component != nullptr)
         {
-            _component->Read();
-            _component->InitLocations(true);
-            _component->resetBuild();
+            _component->UseForm(EFormType::Base, true);
         }
     };
 
     lb_call(this->WeaponComponent);
-    lb_call(this->ProtectionComponent);
+    lb_call(this->TowerComponent);
+    lb_call(this->BaseComponent);
+    lb_call(this->CircleComponent);
     lb_call(this->SupportComponent);
+    lb_call(this->RedCube);
 }
 
 void APirate::Destroyed()
