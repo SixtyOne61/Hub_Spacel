@@ -66,6 +66,9 @@ protected:
 	/* call rpc to rebuild on all clients and server */
 	void resetBuild() override;
 
+	/* call on server & client */
+	virtual void build();
+
 	/* clean instance can be override in children */
 	virtual void clean();
 

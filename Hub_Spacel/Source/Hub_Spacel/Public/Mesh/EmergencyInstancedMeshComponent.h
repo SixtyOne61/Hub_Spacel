@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Mesh/SpacelInstancedMeshComponent.h"
+#include "Mesh/AnimatedSpacelMeshComponent.h"
 #include "Player/ShipPawn.h"
 #include "EmergencyInstancedMeshComponent.generated.h"
 
@@ -11,7 +11,7 @@
  * 
  */
 UCLASS()
-class HUB_SPACEL_API UEmergencyInstancedMeshComponent : public USpacelInstancedMeshComponent
+class HUB_SPACEL_API UEmergencyInstancedMeshComponent : public UAnimatedSpacelMeshComponent
 {
 	GENERATED_BODY()
 	

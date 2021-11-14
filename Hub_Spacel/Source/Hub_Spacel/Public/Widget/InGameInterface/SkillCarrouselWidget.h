@@ -30,6 +30,9 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "UI|Carrousel")
 	void BP_CreateSkillItemCarrousel(class USkillItemWidget*& _widget);
 
+	UFUNCTION(BlueprintImplementableEvent, Category = "UI|Carrousel")
+	void BP_UpdateState(FString const& _txt);
+
 public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, BlueprintAssignable)
 	FOnChangeCarrousel OnChangeCarrouselDelegate {};

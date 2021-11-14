@@ -4,11 +4,15 @@
 #include "Pirate.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
-#include "DataAsset/PirateDataAsset.h"
+#include "Mesh/SpacelInstancedMeshComponent.h"
 #include "Util/SimplyXml.h"
 #include "Util/Tag.h"
 #include "Util/DebugScreenMessage.h"
+#include "Player/Common/CommonPawn.h"
 #include "Gameplay/Bullet/ProjectileBase.h"
+#include "GameState/SpacelGameState.h"
+#include "GameFramework/PlayerState.h"
+#include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
 APirate::APirate()
@@ -16,14 +20,23 @@ APirate::APirate()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	RedCube = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("RedCube"));
+	RedCube = CreateDefaultSubobject<USpacelInstancedMeshComponent>(TEXT("RedCube"));
 	RootComponent = RedCube;
 
-    Base = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Base"));
-    Base->SetupAttachment(RedCube);
+    WeaponComponent = CreateDefaultSubobject<USpacelInstancedMeshComponent>(TEXT("Weapon"));
+    WeaponComponent->SetupAttachment(RootComponent);
 
-    Addon = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Addon"));
-    Addon->SetupAttachment(RedCube);
+    TowerComponent = CreateDefaultSubobject<USpacelInstancedMeshComponent>(TEXT("Tower"));
+    TowerComponent->SetupAttachment(RootComponent);
+
+    BaseComponent = CreateDefaultSubobject<USpacelInstancedMeshComponent>(TEXT("Base"));
+    BaseComponent->SetupAttachment(RootComponent);
+
+    CircleComponent = CreateDefaultSubobject<USpacelInstancedMeshComponent>(TEXT("Circle"));
+    CircleComponent->SetupAttachment(RootComponent);
+
+    SupportComponent = CreateDefaultSubobject<USpacelInstancedMeshComponent>(TEXT("Support"));
+    SupportComponent->SetupAttachment(RootComponent);
 }
 
 // Called when the game starts or when spawned
@@ -31,101 +44,204 @@ void APirate::BeginPlay()
 {
 	Super::BeginPlay();
     Tags.Add(Tags::Pirate);
-	
-	BuildShip();
 
 	if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
 	{
-        if (this->Base != nullptr)
+        BuildShip();
+
+        // init hit callback
+        auto lb_init = [&](USpacelInstancedMeshComponent* _component)
         {
-            this->Base->OnComponentHit.AddDynamic(this, &APirate::OnVoxelsHit);
-        }
-        if (this->Addon != nullptr)
-        {
-            this->Addon->OnComponentHit.AddDynamic(this, &APirate::OnVoxelsHit);
-        }
-        if (this->RedCube != nullptr)
-        {
-            this->RedCube->OnComponentHit.AddDynamic(this, &APirate::OnRedCubeHit);
-        }
+            if (_component != nullptr)
+            {
+                _component->OnComponentHit.AddDynamic(this, &APirate::OnComponentsHit);
+            }
+        };
+
+        lb_init(this->TowerComponent);
+        lb_init(this->BaseComponent);
+        lb_init(this->CircleComponent);
+        lb_init(this->SupportComponent);
+        lb_init(this->RedCube);
+
+        registerPlayers();
+
+        // init timer to first delay
+        m_timer = this->FirstDelay;
 	}
 }
 
 // Called every frame
-void APirate::Tick(float DeltaTime)
+void APirate::Tick(float _deltaTime)
 {
-	Super::Tick(DeltaTime);
-}
+	Super::Tick(_deltaTime);
 
-void APirate::OnVoxelsHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit)
-{
-    if (this->Base != nullptr && this->Base->GetUniqueID() == _hitComp->GetUniqueID())
+    if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
     {
-        RPCNetMulticastHit(_hit.Item, (uint8)EComponentType::Base);
-    }
-    else if (this->Addon != nullptr && this->Addon->GetUniqueID() == _hitComp->GetUniqueID())
-    {
-        RPCNetMulticastHit(_hit.Item, (uint8)EComponentType::Addon);
-    }
-}
-
-void APirate::OnRedCubeHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit)
-{
-    if (_otherActor != nullptr)
-    {
-        if (AProjectileBase* projectile = Cast<AProjectileBase>(_otherActor))
+        m_timer -= _deltaTime;
+        if (m_timer <= 0.0f)
         {
-            OnKilledDelegate.broadcast(projectile->R_Team);
+            fire();
+            m_timer = this->FireRate;
         }
     }
-    this->Destroy();
 }
 
-void APirate::RPCNetMulticastHit_Implementation(int32 _index, uint8 _type)
+void APirate::OnComponentsHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit)
 {
-    if (this->Base != nullptr && _type == (uint8)EComponentType::Base)
+    auto lb = [&_hitComp, &_hit](USpacelInstancedMeshComponent* _component) -> bool
     {
-        this->Base->RemoveInstance(_index);
-    }
-    else if (this->Addon != nullptr && _type == (uint8)EComponentType::Addon)
+        if (_component != nullptr && _component->GetUniqueID() == _hitComp->GetUniqueID())
+        {
+            FTransform out;
+            _component->GetInstanceTransform(_hit.Item, out);
+            _component->RPCNetMulticastRemove(out.GetLocation());
+            return true;
+        }
+        return false;
+    };
+
+    lb(this->TowerComponent);
+    lb(this->BaseComponent);
+    lb(this->CircleComponent);
+    lb(this->SupportComponent);
+    if (lb(this->RedCube))
     {
-        this->Addon->RemoveInstance(_index);
+        // only bullet can kill station
+        if (AProjectileBase* projectileBase = Cast<AProjectileBase>(_otherActor))
+        {
+            OnKilledDelegate.broadcast(projectileBase->R_Team);
+            this->Destroy();
+        }
     }
 }
 
 void APirate::BuildShip()
 {
-    if(this->DataAsset == nullptr) return;
-
-    auto lb = [&](FString&& _name, UInstancedStaticMeshComponent* _comp)
+    auto lb_call = [](USpacelInstancedMeshComponent* _component)
     {
-        if(_comp == nullptr) return;
-        SimplyXml::FContainer<FVector> locationInformation{ _name };
-        SimplyXml::FReader reader{ FPaths::ProjectDir() + this->DataAsset->XmlPath };
-        reader.read(locationInformation);
-
-        _comp->ClearInstances();
-        TArray<FVector> locations;
-        for (FVector loc : locationInformation.Values)
+        if (_component != nullptr)
         {
-            locations.Add(loc);
-        }
-
-        _comp->SetEnableGravity(false);
-        for (auto const& loc : locations)
-        {
-            FTransform voxelTransform{};
-            voxelTransform.SetLocation(loc);
-            _comp->AddInstance(voxelTransform);
+            _component->UseForm(EFormType::Base, true);
         }
     };
 
-    lb("Base", this->Base);
-    lb("Addon", this->Addon);
+    lb_call(this->WeaponComponent);
+    lb_call(this->TowerComponent);
+    lb_call(this->BaseComponent);
+    lb_call(this->CircleComponent);
+    lb_call(this->SupportComponent);
+    lb_call(this->RedCube);
 }
 
 void APirate::Destroyed()
 {
     BP_OnDestroy();
     Super::Destroyed();
+}
+
+void APirate::registerPlayers()
+{
+    m_players.Empty();
+    if (auto* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld())))
+    {
+        auto const& players = spacelGameState->PlayerArray;
+        for (auto player : players)
+        {
+            if (player != nullptr)
+            {
+                m_players.Add(player->GetPawn());
+            }
+        }
+    }
+}
+
+void APirate::fire()
+{
+    auto* world = this->GetWorld();
+
+    // all check
+    if(world == nullptr) return;
+    if (this->WeaponComponent == nullptr) return;
+    if(m_fireIndex >= this->WeaponComponent->GetInstanceCount()) return;
+
+    FTransform out;
+    this->WeaponComponent->GetInstanceTransform(m_fireIndex, out, true);
+    FVector const& startLocation = out.GetLocation();
+
+    UE_LOG(LogTemp, Warning, TEXT("start location: %s"), *startLocation.ToString());
+
+    TArray<FVector> targets {};
+    for (auto* act : m_players)
+    {
+        if (act != nullptr && !act->IsPendingKill())
+        {
+            FVector const& targetLocation { act->GetActorLocation() };
+            // check distance with player
+            if (FVector::Distance(startLocation, targetLocation) <= this->MaxDistance)
+            {
+                FHitResult hits;
+                world->LineTraceSingleByChannel(hits, startLocation, targetLocation, ECollisionChannel::ECC_Pawn);
+                if (hits.Actor.IsValid() && hits.Actor.Get()->ActorHasTag(Tags::Player))
+                {
+                    targets.Add(hits.Actor.Get()->GetActorLocation());
+                }
+            }
+        }
+    }
+
+    // take a random target
+    if (targets.Num() != 0)
+    {
+        int rand = FMath::RandRange(0, targets.Num() - 1);
+        spawnBullet(startLocation, targets[rand]);
+    }
+
+    // next fire index
+    if (this->WeaponComponent != nullptr)
+    {
+        ++m_fireIndex;
+        if (m_fireIndex >= this->WeaponComponent->GetInstanceCount())
+        {
+            m_fireIndex = 0;
+        }
+    }
+}
+
+void APirate::spawnBullet(FVector const& _startLocation, FVector const& _targetLocation) const
+{
+    FTransform tr {};
+    tr.SetLocation(_startLocation);
+
+    FVector bulletDir = UKismetMathLibrary::FindLookAtRotation(_startLocation, _targetLocation).Vector();
+    bulletDir.Normalize();
+    tr.SetRotation(bulletDir.ToOrientationQuat());
+
+    AActor* actor = Cast<AActor>(UGameplayStatics::BeginDeferredActorSpawnFromClass(this->GetWorld(), this->BulletClass, tr));
+    if (AProjectileBase* laser = Cast<AProjectileBase>(actor))
+    {
+        // init bullet
+        laser->R_Team = "Team 4";
+        UGameplayStatics::FinishSpawningActor(laser, tr);
+        
+        if (UProjectileMovementComponent* comp = Cast<UProjectileMovementComponent>(laser->GetComponentByClass(UProjectileMovementComponent::StaticClass())))
+        {
+            FVector dir{ FVector{ 1.0f, 0.0f, .0f } };
+            comp->SetVelocityInLocalSpace(dir * comp->InitialSpeed);
+        }
+
+        FString profile = "PTeam4";
+        if (USphereComponent* comp = Cast<USphereComponent>(laser->GetComponentByClass(USphereComponent::StaticClass())))
+        {
+            comp->SetCollisionProfileName(*profile);
+        }
+
+        if (UInstancedStaticMeshComponent* comp = Cast<UInstancedStaticMeshComponent>(laser->GetComponentByClass(UInstancedStaticMeshComponent::StaticClass())))
+        {
+            comp->SetCollisionProfileName(*profile);
+        }
+
+        FString tag = "Team:Team 4";
+        laser->Tags.Add(*tag);
+    }
 }

@@ -150,7 +150,7 @@ void UModuleComponent::OnUpdateCountEmergency(TArray<FVector_NetQuantize> const&
 
 void UModuleComponent::setCollisionProfile(FString _team)
 {
-    auto lb = [&_team](USpacelInstancedMeshComponent *& _component)
+    auto lb = [&_team](auto *& _component)
     {
         if (_component != nullptr)
         {
@@ -170,7 +170,7 @@ void UModuleComponent::setCollisionProfile(FString _team)
 void UModuleComponent::kill()
 {
     // call clean on all component
-    auto lb = [](USpacelInstancedMeshComponent*& _component)
+    auto lb = [](auto*& _component)
     {
         if (_component != nullptr)
         {
@@ -230,7 +230,7 @@ void UModuleComponent::removeMetaForm(EEffect _type)
 void UModuleComponent::activateBonus(ESkill _skillId)
 {
     // we can have bonus only on one component
-    auto lb = [&_skillId](USpacelInstancedMeshComponent*& _component, ESkill _compare)
+    auto lb = [&_skillId](auto*& _component, ESkill _compare)
     {
         if (_component != nullptr)
         {

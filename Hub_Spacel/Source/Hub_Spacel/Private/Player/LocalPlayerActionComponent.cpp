@@ -6,7 +6,7 @@
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Camera/CameraComponent.h"
 #include "Components/PostProcessComponent.h"
-#include "Mesh/SpacelInstancedMeshComponent.h"
+#include "Mesh/AnimatedSpacelMeshComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Player/ShipPawn.h"
 #include "Player/ModuleComponent.h"
@@ -63,7 +63,7 @@ void ULocalPlayerActionComponent::TickComponent(float _deltaTime, ELevelTick _ti
         // set material parameter
         float speedRef = FMath::Max(pawn->RU_PercentSpeed, (float)pawn->R_OverDrive);
         float percent = FMath::Clamp(speedRef * coefSpeed, 0.0f, 2.6f);
-        float multiplicator = hasBoost ? 3.0f : 2.0f;
+        float multiplicator = hasBoost ? 1.3f : 0.65f;
 
         // on missile effect we are stop but RU_PercentSpeed stay depend of Z
         if (pawn->hasEffect(EEffect::Missile))

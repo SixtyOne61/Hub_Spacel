@@ -28,6 +28,11 @@ void USkillCarrouselWidget::SetupCarrousel(ESkillType _type)
             }
         }
     }
+
+    int idx = (int)_type;
+    int maxIdx = (int)ESkillType::Max - 1;
+    FString txt{ idx <= maxIdx ? FString::FromInt(idx) + "/" + FString::FromInt(maxIdx) : "" };
+    BP_UpdateState(txt);
 }
 
 void USkillCarrouselWidget::OnChooseSkill(ESkill _skillId, ESkillType _type)

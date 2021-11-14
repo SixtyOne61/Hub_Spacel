@@ -12,7 +12,7 @@
 #include "Components/WidgetInteractionComponent.h"
 #include "Components/PostProcessComponent.h"
 #include "Components/InstancedStaticMeshComponent.h"
-#include "Mesh/SpacelInstancedMeshComponent.h"
+#include "Mesh/AnimatedSpacelMeshComponent.h"
 #include "Mesh/EmergencyInstancedMeshComponent.h"
 #include "Player/TargetActor.h"
 #include "Player/FireComponent.h"
@@ -51,15 +51,15 @@ ACommonPawn::ACommonPawn()
     if (!ensure(EmergencyComponent != nullptr)) return;
     EmergencyComponent->SetupAttachment(ModuleComponent);
 
-    WeaponComponent = CreateDefaultSubobject<USpacelInstancedMeshComponent>(TEXT("Weapon_00"));
+    WeaponComponent = CreateDefaultSubobject<UAnimatedSpacelMeshComponent>(TEXT("Weapon_00"));
     if (!ensure(WeaponComponent != nullptr)) return;
     WeaponComponent->SetupAttachment(ModuleComponent);
 
-    ProtectionComponent = CreateDefaultSubobject<USpacelInstancedMeshComponent>(TEXT("Protection_00"));
+    ProtectionComponent = CreateDefaultSubobject<UAnimatedSpacelMeshComponent>(TEXT("Protection_00"));
     if (!ensure(ProtectionComponent != nullptr)) return;
     ProtectionComponent->SetupAttachment(ModuleComponent);
 
-    SupportComponent = CreateDefaultSubobject<USpacelInstancedMeshComponent>(TEXT("Support_00"));
+    SupportComponent = CreateDefaultSubobject<UAnimatedSpacelMeshComponent>(TEXT("Support_00"));
     if (!ensure(SupportComponent != nullptr)) return;
     SupportComponent->SetupAttachment(ModuleComponent);
 
