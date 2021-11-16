@@ -79,6 +79,9 @@ public:
     /* call for force heal on ally */
     void heal(uint8 _value);
 
+    /* get matiere */
+    inline int16 getMatiere() const { return RU_Matiere; }
+
 protected:
     UFUNCTION(BlueprintImplementableEvent)
     void BP_OnStartGame();

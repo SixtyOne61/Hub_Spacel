@@ -8,9 +8,11 @@
 #include "GameFramework/PlayerState.h"
 #include "Kismet/GameplayStatics.h"
 #include "Player/SpacelPlayerState.h"
+#include "DataAsset/UniqueSkillDataAsset.h"
 
-SkillBehaviour::SkillBehaviour(ACommonPawn* _pawn, ENetMode _netMode)
+SkillBehaviour::SkillBehaviour(ACommonPawn* _pawn, ENetMode _netMode, class UUniqueSkillDataAsset const* _data)
     : m_pawn(_pawn)
+    , m_data(_data)
     , m_netMode(_netMode)
 {
 }
@@ -18,9 +20,27 @@ SkillBehaviour::SkillBehaviour(ACommonPawn* _pawn, ENetMode _netMode)
 ESkillReturn SkillHealPack::onStart()
 {
     if (get() == nullptr) return ESkillReturn::InternError;
-    get()->addEffect(EEffect::HealZone);
-    m_timer = 0.0f;
-    return ESkillReturn::Success;
+    if (m_data == nullptr) return ESkillReturn::InternError;
+
+    if (AShipPawn* pawn = Cast<AShipPawn>(get()))
+    {
+        int healPackMatiere = m_data->MatiereNeeded;
+        if (pawn->getMatiere() >= healPackMatiere)
+        {
+            pawn->addMatiere(healPackMatiere * -1, EMatiereOrigin::Lost);
+            get()->addEffect(EEffect::HealZone);
+            m_timer = 0.0f;
+            return ESkillReturn::Success;
+        }
+        else
+        {
+            return ESkillReturn::NoMater;
+        }
+    }
+    else
+    {
+        return ESkillReturn::InternError;
+    }
 }
 
 void SkillHealPack::onEnd()
@@ -47,6 +67,8 @@ void SkillHealPack::useTick(float _deltaSeconde)
 void SkillHealPack::searchPlayerAround() const
 {
     if (get() == nullptr) return;
+    if (m_data == nullptr) return;
+
     FName const& team = get()->Team;
     FVector const& location = get()->GetActorLocation();
 
@@ -61,10 +83,14 @@ void SkillHealPack::searchPlayerAround() const
                 {
                     if (auto pawn = Cast<AShipPawn>(spacelPlayerState->GetPawn()))
                     {
-                        FVector const& allyLocation = pawn->GetActorLocation();
-                        if (FVector::Distance(location, allyLocation) <= 1000.0f)
+                        // not use
+                        if (get()->GetUniqueID() != pawn->GetUniqueID())
                         {
-                            pawn->heal(10);
+                            FVector const& allyLocation = pawn->GetActorLocation();
+                            if (FVector::Distance(location, allyLocation) <= 2000.0f)
+                            {
+                                pawn->heal(m_data->Value);
+                            }
                         }
                     }
                 }
@@ -212,21 +238,21 @@ void SkillEmergency::onEndCountDown()
     get<AShipPawn>()->onEmergencyCountDownEnd();
 }
 
-TUniquePtr<SkillBehaviour> SkillFactory::create(ESkill _skill, class ACommonPawn* _pawn, ENetMode _netMode)
+TUniquePtr<SkillBehaviour> SkillFactory::create(ESkill _skill, class ACommonPawn* _pawn, class UUniqueSkillDataAsset const* _data, ENetMode _netMode)
 {
     switch (_skill)
     {
-        case ESkill::EscapeMode : return MakeUnique<SkillEscapeMode>(_pawn, _netMode);
-        case ESkill::Missile : return MakeUnique<SkillMissile>(_pawn, _netMode);
-        case ESkill::Farmer: return MakeUnique<SkillFarmer>(_pawn, _netMode);
-        case ESkill::BulletStun: return MakeUnique<SkillBulletStun>(_pawn, _netMode);
-        case ESkill::MetaFormAttack: return MakeUnique<SkillMetaFormAttack>(_pawn, _netMode);
-        case ESkill::MetaFormProtection: return MakeUnique<SkillMetaFormProtection>(_pawn, _netMode);
-        case ESkill::MetaFormSupport: return MakeUnique<SkillMetaFormSupport>(_pawn, _netMode);
-        case ESkill::Shotgun: return MakeUnique<SkillShotgun>(_pawn, _netMode);
-        case ESkill::HealPack: return MakeUnique<SkillHealPack>(_pawn, _netMode);
-        case ESkill::Emergency: return MakeUnique<SkillEmergency>(_pawn, _netMode);
-        case ESkill::Repair: return MakeUnique<SkillRepair>(_pawn, _netMode);
+        case ESkill::EscapeMode : return MakeUnique<SkillEscapeMode>(_pawn, _netMode, _data);
+        case ESkill::Missile : return MakeUnique<SkillMissile>(_pawn, _netMode, _data);
+        case ESkill::Farmer: return MakeUnique<SkillFarmer>(_pawn, _netMode, _data);
+        case ESkill::BulletStun: return MakeUnique<SkillBulletStun>(_pawn, _netMode, _data);
+        case ESkill::MetaFormAttack: return MakeUnique<SkillMetaFormAttack>(_pawn, _netMode, _data);
+        case ESkill::MetaFormProtection: return MakeUnique<SkillMetaFormProtection>(_pawn, _netMode, _data);
+        case ESkill::MetaFormSupport: return MakeUnique<SkillMetaFormSupport>(_pawn, _netMode, _data);
+        case ESkill::Shotgun: return MakeUnique<SkillShotgun>(_pawn, _netMode, _data);
+        case ESkill::HealPack: return MakeUnique<SkillHealPack>(_pawn, _netMode, _data);
+        case ESkill::Emergency: return MakeUnique<SkillEmergency>(_pawn, _netMode, _data);
+        case ESkill::Repair: return MakeUnique<SkillRepair>(_pawn, _netMode, _data);
         default: ensure(false); break;
     }
 

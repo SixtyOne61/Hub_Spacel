@@ -12,7 +12,7 @@
 class HUB_SPACEL_API SkillBehaviour
 {
 public:
-	SkillBehaviour(class ACommonPawn* _pawn, ENetMode _netMode);
+	SkillBehaviour(class ACommonPawn* _pawn, ENetMode _netMode, class UUniqueSkillDataAsset const* _data);
 	virtual ~SkillBehaviour() {}
 
 	virtual ESkillReturn onStart() { return ESkillReturn::Unavailable; }
@@ -27,6 +27,7 @@ public:
 
 protected:
 	class ACommonPawn* m_pawn { nullptr };
+	class UUniqueSkillDataAsset const* m_data { nullptr };
 	ENetMode m_netMode {};
 };
 
@@ -161,5 +162,5 @@ public:
 class HUB_SPACEL_API SkillFactory
 {
 public:
-	static TUniquePtr<SkillBehaviour> create(ESkill _skill, class ACommonPawn* _pawn, ENetMode _netMode);
+	static TUniquePtr<SkillBehaviour> create(ESkill _skill, class ACommonPawn* _pawn, class UUniqueSkillDataAsset const* _data, ENetMode _netMode);
 };

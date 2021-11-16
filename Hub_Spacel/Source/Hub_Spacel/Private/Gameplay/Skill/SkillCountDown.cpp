@@ -17,7 +17,7 @@ SkillCountDown::SkillCountDown(SkillCountDown const& _cpy)
 {
     if (m_netMode == ENetMode::NM_DedicatedServer)
     {
-        m_behaviour = SkillFactory::create(getSkillType(), m_pawn, m_netMode);
+        m_behaviour = SkillFactory::create(getSkillType(), m_pawn, m_param, m_netMode);
     }
     m_state = ECountDown::Available;
     m_state.init({ std::bind(&SkillCountDown::onAvailable, this),
@@ -42,7 +42,7 @@ SkillCountDown::SkillCountDown(class UUniqueSkillDataAsset const* _skill, class 
 
     if (m_netMode == ENetMode::NM_DedicatedServer)
     {
-        m_behaviour = SkillFactory::create(getSkillType(), m_pawn, m_netMode);
+        m_behaviour = SkillFactory::create(getSkillType(), m_pawn, m_param, m_netMode);
     }
     m_state = ECountDown::Available;
     m_state.init({ std::bind(&SkillCountDown::onAvailable, this),
