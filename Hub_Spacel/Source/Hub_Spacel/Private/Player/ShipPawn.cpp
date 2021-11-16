@@ -13,6 +13,7 @@
 #include "Components/PostProcessComponent.h"
 #include "Mesh/XmlInstancedStaticMeshComponent.h"
 #include "Mesh/SpacelInstancedMeshComponent.h"
+#include "Mesh/AnimatedSpacelMeshComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "DataAsset/StaticMeshDataAsset.h"
@@ -744,6 +745,7 @@ void AShipPawn::playFash(EEffect _effect)
     case EEffect::Missile:
     case EEffect::BulletStun:
     case EEffect::Farmer:
+    case EEffect::HealZone:
         BP_FxChangeForm();
         break;
     }
@@ -895,6 +897,13 @@ void AShipPawn::behaviourAddEffect(EEffect _type)
             this->ModuleComponent->activeMetaForm(_type);
         }
     }
+    else if (_type == EEffect::HealZone)
+    {
+        if (this->ModuleComponent != nullptr)
+        {
+            this->ModuleComponent->activeMetaForm(_type);
+        }
+    }
     else if (_type == EEffect::Missile)
     {
         if (this->ModuleComponent != nullptr)
@@ -991,6 +1000,13 @@ void AShipPawn::behaviourRemoveEffect(EEffect _type)
         }
     }
     else if (_type == EEffect::EscapeMode)
+    {
+        if (this->ModuleComponent != nullptr)
+        {
+            this->ModuleComponent->removeMetaForm(_type);
+        }
+    }
+    else if (_type == EEffect::HealZone)
     {
         if (this->ModuleComponent != nullptr)
         {

@@ -264,6 +264,8 @@ EFormType UModuleComponent::getFormType(ESkill _skillId) const
         return EFormType::Farmer;
     case ESkill::BulletStun:
         return EFormType::BulletStun;
+    case ESkill::HealPack:
+        return EFormType::HealZone;
     }
 
     return EFormType::Base;
@@ -287,6 +289,8 @@ EFormType UModuleComponent::getFormType(EEffect _type) const
         return EFormType::Farmer;
     case EEffect::BulletStun:
         return EFormType::BulletStun;
+    case EEffect::HealZone:
+        return EFormType::HealZone;
     }
 
     return EFormType::Base;

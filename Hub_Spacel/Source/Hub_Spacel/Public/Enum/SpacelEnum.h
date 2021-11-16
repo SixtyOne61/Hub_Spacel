@@ -138,6 +138,7 @@ enum class EEffect : uint8
     PassiveSpeed UMETA(DisplayName = "PassiveSpeed"),
     Missile UMETA(DisplayName = "Missile"),
     BulletStun UMETA(DisplayName = "BulletStun"),
+    HealZone UMETA(DisplayName = "HealZone"),
 };
 
 UENUM(BlueprintType)
@@ -225,5 +226,6 @@ enum class EFormType : uint8
     Missile UMETA(DisplayName = "Missile"),
     Farmer UMETA(DisplayName = "Farmer"),
     BulletStun UMETA(DisplayName = "BulletStun"),
+    HealZone UMETA(DisplayName = "HealZone"),
     Max,
 };

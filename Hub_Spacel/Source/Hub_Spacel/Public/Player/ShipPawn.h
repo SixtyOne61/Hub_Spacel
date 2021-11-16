@@ -70,11 +70,14 @@ public:
 
     void addMatiere(int32 _val, EMatiereOrigin _type);
     void farmAsteroide();
-    ESkillReturn spawnHealPack();
+    ESkillReturn spawnHealPack(); // to do deprecated
 
     void boostPassive(EMission _type, int32 _rewardValue);
 
     void buildLobbyShip(ESkill _skillId, ESkillType _type);
+
+    /* call for force heal on ally */
+    void heal(uint8 _value);
 
 protected:
     UFUNCTION(BlueprintImplementableEvent)
@@ -127,9 +130,6 @@ private:
 
     /* call for kill a player when red zone is hit */
     void kill();
-
-    /* call for force heal */
-    void heal(uint8 _value);
 
     /* call on server */
     UFUNCTION()

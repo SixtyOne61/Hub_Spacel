@@ -5,8 +5,8 @@
 #include "Player/Common/CommonPawn.h"
 #include "Player/ShipPawn.h"
 #include "GameState/SpacelGameState.h"
-#include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerState.h"
+#include "Kismet/GameplayStatics.h"
 #include "Player/SpacelPlayerState.h"
 
 SkillBehaviour::SkillBehaviour(ACommonPawn* _pawn, ENetMode _netMode)
@@ -17,8 +17,60 @@ SkillBehaviour::SkillBehaviour(ACommonPawn* _pawn, ENetMode _netMode)
 
 ESkillReturn SkillHealPack::onStart()
 {
-    if (get<AShipPawn>() == nullptr) return ESkillReturn::InternError;
-    return get<AShipPawn>()->spawnHealPack();
+    if (get() == nullptr) return ESkillReturn::InternError;
+    get()->addEffect(EEffect::HealZone);
+    m_timer = 0.0f;
+    return ESkillReturn::Success;
+}
+
+void SkillHealPack::onEnd()
+{
+    if (get() == nullptr) return;
+    get()->removeEffect(EEffect::HealZone);
+}
+
+void SkillHealPack::onEndCountDown()
+{
+
+}
+
+void SkillHealPack::useTick(float _deltaSeconde)
+{
+    m_timer += _deltaSeconde;
+    if (m_timer >= 0.8f)
+    {
+        searchPlayerAround();
+        m_timer = 0.0f;
+    }
+}
+
+void SkillHealPack::searchPlayerAround() const
+{
+    if (get() == nullptr) return;
+    FName const& team = get()->Team;
+    FVector const& location = get()->GetActorLocation();
+
+    if (auto gameState = UGameplayStatics::GetGameState(get()->GetWorld()))
+    {
+        auto playerStates = gameState->PlayerArray;
+        for (auto playerState : playerStates)
+        {
+            if (auto spacelPlayerState = Cast<ASpacelPlayerState>(playerState))
+            {
+                if (*spacelPlayerState->R_Team == team)
+                {
+                    if (auto pawn = Cast<AShipPawn>(spacelPlayerState->GetPawn()))
+                    {
+                        FVector const& allyLocation = pawn->GetActorLocation();
+                        if (FVector::Distance(location, allyLocation) <= 1000.0f)
+                        {
+                            pawn->heal(10);
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 ESkillReturn SkillRepair::onStart()

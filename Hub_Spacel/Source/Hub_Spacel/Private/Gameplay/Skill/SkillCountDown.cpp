@@ -77,6 +77,11 @@ void SkillCountDown::tick(float _delta)
 
     if (m_state == ECountDown::Ing)
     {
+        if (m_behaviour.IsValid())
+        {
+            m_behaviour.Get()->useTick(_delta);
+        }
+
         if (m_currentTime >= m_param->FlatDuration)
         {
             m_state = ECountDown::CountDown;

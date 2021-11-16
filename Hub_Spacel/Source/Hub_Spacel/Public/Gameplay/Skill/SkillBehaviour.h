@@ -18,6 +18,7 @@ public:
 	virtual ESkillReturn onStart() { return ESkillReturn::Unavailable; }
 	virtual void onEnd() = 0;
 	virtual void onEndCountDown() = 0;
+	virtual void useTick(float _deltaSeconde) {};
 
 	template<class T>
 	inline T* get() { return Cast<T>(m_pawn); }
@@ -36,8 +37,15 @@ public:
 	virtual ~SkillHealPack() {}
 
 	ESkillReturn onStart() override;
-	void onEnd() override {};
-	void onEndCountDown() override {};
+	void onEnd() override;
+	void onEndCountDown() override;
+	void useTick(float _deltaSeconde) override;
+
+private:
+	void searchPlayerAround() const;
+
+private:
+	float m_timer { 0.0f };
 };
 
 class HUB_SPACEL_API SkillRepair : public SkillBehaviour
