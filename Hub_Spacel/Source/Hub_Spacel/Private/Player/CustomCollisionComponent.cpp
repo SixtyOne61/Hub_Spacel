@@ -89,7 +89,9 @@ void UCustomCollisionComponent::dispatch(TArray<FHitResult> const& _items) const
 	struct SInfo
 	{
 		TWeakObjectPtr<AActor> m_actor { };
-		TArray<int32> m_instance { };
+		TWeakObjectPtr<UPrimitiveComponent> m_component { };
+		int32 m_instance;
+		FVector m_location;
 	};
 
 	TMap<uint32, SInfo> uniqueActors {};
@@ -102,16 +104,33 @@ void UCustomCollisionComponent::dispatch(TArray<FHitResult> const& _items) const
 		{
 			uniqueActors.Add(uniqueId);
 			uniqueActors[uniqueId].m_actor = item.Actor;
+			uniqueActors[uniqueId].m_component = item.Component;
+			uniqueActors[uniqueId].m_location = item.Location;
 		}
 
-		uniqueActors[uniqueId].m_instance.Add(item.Item);
+		uniqueActors[uniqueId].m_instance = item.Item;
 	}
 
 	for (TTuple<uint32, SInfo>& uniqueActor : uniqueActors)
 	{
 		if (ADestroyActor* destroyActor = Cast<ADestroyActor>(uniqueActor.Value.m_actor.Get()))
 		{
-			destroyActor->applyHit(uniqueActor.Value.m_instance);
+			TArray<int32> locs;
+			locs.Add(uniqueActor.Value.m_instance);
+			destroyActor->applyHit(locs);
+		}
+		else if (AShipPawn* otherPawn = Cast<AShipPawn>(uniqueActor.Value.m_actor.Get()))
+		{
+			if (ACommonPawn* pawn = get())
+			{
+				if (APlayerState* playerState = pawn->GetPlayerState())
+				{
+					otherPawn->hit(get()->Team.ToString(), playerState->PlayerId,
+								uniqueActor.Value.m_component.Get(),
+								uniqueActor.Value.m_instance,
+								uniqueActor.Value.m_location, pawn);
+				}
+			}
 		}
 	}
 }
