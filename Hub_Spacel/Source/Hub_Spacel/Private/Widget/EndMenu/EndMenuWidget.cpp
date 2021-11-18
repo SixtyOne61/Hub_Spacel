@@ -15,13 +15,13 @@ void UEndMenuWidget::NativeConstruct()
 {
     Super::NativeConstruct();
 
-    TArray<FName> winnerWidget { TEXT("WBP_PlayerWinner1"), TEXT("WBP_PlayerWinner2"), TEXT("WBP_PlayerWinner3") };
-    SimplyUI::initArray(this, PlayerWinnerWidgets, winnerWidget);
-
-    FillStat();
+    //TArray<FName> winnerWidget { TEXT("WBP_PlayerWinner1"), TEXT("WBP_PlayerWinner2"), TEXT("WBP_PlayerWinner3") };
+    //SimplyUI::initArray(this, PlayerWinnerWidgets, winnerWidget);
+    //
+    //FillStat();
 }
 
-void UEndMenuWidget::FillStat()
+/*void UEndMenuWidget::FillStat()
 {
     UWorld* world{ this->GetWorld() };
     if (!ensure(world != nullptr)) return;
@@ -87,4 +87,4 @@ void UEndMenuWidget::FillStat()
 
     FTimerHandle handle;
     world->GetTimerManager().SetTimer(handle, this, &UEndMenuWidget::FillStat, 1.0f, false, 0.0f);
-}
+}*/
