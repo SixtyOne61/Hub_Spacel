@@ -144,7 +144,7 @@ public:
 	int RemainingChooseModuleTime { }; // 20
 
 	UPROPERTY()
-	int RemainingLeaveTime { };
+	int VictoryScreenTime { };
 
 	UPROPERTY()
 	int SuspendBackfillTime { 45 };

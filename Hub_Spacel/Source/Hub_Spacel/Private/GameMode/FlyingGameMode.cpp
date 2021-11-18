@@ -40,7 +40,7 @@ void AFlyingGameMode::BeginPlay()
         }
 #endif
 
-        this->RemainingLeaveTime = this->GameModeDataAsset->RemainingLeaveTime;
+        this->VictoryScreenTime = this->GameModeDataAsset->VictoryScreenTime;
     }
 
 #if WITH_GAMELIFT
@@ -554,9 +554,9 @@ void AFlyingGameMode::PickAWinningTeam()
     if(ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(this->GameState))
     {
         spacelGameState->GoToEndGame();
-        spacelGameState->RPCNetMulticastStartGlobalCountDown(FDateTime::UtcNow().ToUnixTimestamp(), this->RemainingLeaveTime);
+        spacelGameState->RPCNetMulticastStartGlobalCountDown(FDateTime::UtcNow().ToUnixTimestamp(), this->VictoryScreenTime);
     }
-    m_timerSeconde = this->RemainingLeaveTime;
+    m_timerSeconde = this->VictoryScreenTime;
 }
 
 void AFlyingGameMode::HandleProcessTermination()

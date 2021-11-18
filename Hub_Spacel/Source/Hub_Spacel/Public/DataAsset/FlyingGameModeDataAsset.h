@@ -25,5 +25,5 @@ public:
 	int EndModuleTime { 5 };
 
 	UPROPERTY(EditAnywhere)
-	int RemainingLeaveTime { 20 };
+	int VictoryScreenTime { 7 };
 };
