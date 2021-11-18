@@ -505,7 +505,7 @@ void AFlyingGameMode::EndGame()
     FGenericPlatformMisc::RequestExit(false);
 #endif
 
-    FString levelName{ "MainMenu" };
+    FString levelName{ "EndMenu" };
     UGameplayStatics::OpenLevel(this->GetWorld(), FName(*levelName), false, "");
 }
 
