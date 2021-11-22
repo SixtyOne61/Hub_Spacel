@@ -13,6 +13,16 @@
 void ASpacelGameState::OnRep_StateGame()
 {
     OnChangeStateDelegate.Broadcast((EGameState)this->RU_GameState);
+
+    if ((EGameState)this->RU_GameState == EGameState::WaitEnd &&
+        this->GetNetMode() != ENetMode::NM_DedicatedServer)
+    {
+        if (APlayerController* playerController = UGameplayStatics::GetPlayerController(this->GetWorld(), 0))
+        {
+            FString levelName{ "EndMenu" };
+            playerController->ClientTravel(levelName, ETravelType::TRAVEL_Absolute);
+        }
+    }
 }
 
 FString ASpacelGameState::GetBestTeam() const

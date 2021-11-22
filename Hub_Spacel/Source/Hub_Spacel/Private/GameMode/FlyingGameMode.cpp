@@ -504,9 +504,6 @@ void AFlyingGameMode::EndGame()
     Aws::GameLift::Server::ProcessEnding();
     FGenericPlatformMisc::RequestExit(false);
 #endif
-
-    FString levelName{ "EndMenu" };
-    UGameplayStatics::OpenLevel(this->GetWorld(), FName(*levelName), false, "");
 }
 
 void AFlyingGameMode::LeaveLevel()
