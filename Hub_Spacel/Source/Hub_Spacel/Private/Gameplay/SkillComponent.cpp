@@ -31,7 +31,7 @@ void USkillComponent::setupSkill()
     m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::EscapeMode), get(), mode, callbackSucced, callbackFailed, callbackUse, true, true));
     m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::Repair), get(), mode, callbackSucced, callbackFailed, callbackUse, true, false));
     m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::Shotgun), get(), mode, callbackSucced, callbackFailed, callbackUse, true, false));
-    m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::HealPack), get(), mode, callbackSucced, callbackFailed, callbackUse, true, false));
+    m_skills.Add(MakeUnique<SkillCountDown>(this->SkillDataAsset->getSKill(ESkill::HealPack), get(), mode, callbackSucced, callbackFailed, callbackUse, true, true));
 
     SetDelegateForPlayerState();
 
