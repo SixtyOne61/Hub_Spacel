@@ -17,6 +17,16 @@ class HUB_SPACEL_API UEndMenuWidget : public UUserWidget
 
 protected:
 	void NativeConstruct() override;
+
+	/* call on native construct to create child widget */
+	void populate();
+
+protected:
+	UFUNCTION(BlueprintImplementableEvent)
+	void BP_AddTeam(FString const& _team, int32 _score);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void BP_AddPlayer(FString const& _team, FString const& _name, ESkill _lowSkill, ESkill _mediumSkill, ESkill _hightSkill);
 	
 public:
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)

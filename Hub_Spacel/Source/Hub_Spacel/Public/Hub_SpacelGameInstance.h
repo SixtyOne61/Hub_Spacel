@@ -5,10 +5,11 @@
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
 #include "Runtime/Online/HTTP/Public/Http.h"
+#include "GameState/SpacelGameState.h"
 #include "Hub_SpacelGameInstance.generated.h"
 
 /**
- * 
+ * Each client or server has their own game instance
  */
 UCLASS(BlueprintType, Blueprintable)
 class HUB_SPACEL_API UHub_SpacelGameInstance : public UGameInstance
@@ -57,6 +58,12 @@ public:
 
     UPROPERTY(BlueprintReadWrite)
     FString CustomPlayerName { "BoB" };
+
+    UPROPERTY()
+    TArray<FPlayerData> PlayersData {};
+
+    UPROPERTY()
+    TArray<FScore> ScoresData {};
 
 private:
     class FHttpModule* HttpModule { nullptr };

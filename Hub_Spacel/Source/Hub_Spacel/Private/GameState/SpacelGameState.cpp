@@ -9,6 +9,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerStart.h"
 #include "DataAsset/GameStateDataAsset.h"
+#include "Hub_SpacelGameInstance.h"
 
 void ASpacelGameState::OnRep_StateGame()
 {
@@ -21,6 +22,30 @@ void ASpacelGameState::OnRep_StateGame()
         {
             FString levelName{ "EndMenu" };
             playerController->ClientTravel(levelName, ETravelType::TRAVEL_Absolute);
+        }
+    }
+    else if ((EGameState)this->RU_GameState == EGameState::InGame &&
+        this->GetNetMode() == ENetMode::NM_DedicatedServer)
+    {
+        for (auto playerState : this->PlayerArray)
+        {
+            if (ASpacelPlayerState const* spacelPlayerState = Cast<ASpacelPlayerState>(playerState))
+            {
+                this->R_PlayersData.Add({*spacelPlayerState->R_Team,
+                    *spacelPlayerState->GetPlayerName(),
+                    (ESkill)spacelPlayerState->R_LowSkill,
+                    (ESkill)spacelPlayerState->R_MediumSkill,
+                    (ESkill)spacelPlayerState->R_HightSkill});
+            }
+        }
+    }
+    else if ((EGameState)this->RU_GameState == EGameState::EndGame &&
+        this->GetNetMode() == ENetMode::NM_Client)
+    {
+        if (auto spacelGameInstance = this->GetGameInstance<UHub_SpacelGameInstance>())
+        {
+            spacelGameInstance->PlayersData = R_PlayersData;
+            spacelGameInstance->ScoresData = R_Scores;
         }
     }
 }
@@ -224,4 +249,5 @@ void ASpacelGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
     DOREPLIFETIME(ASpacelGameState, R_WinningTeam);
     DOREPLIFETIME(ASpacelGameState, RU_GameState);
     DOREPLIFETIME(ASpacelGameState, R_Scores);
+    DOREPLIFETIME(ASpacelGameState, R_PlayersData);
 }

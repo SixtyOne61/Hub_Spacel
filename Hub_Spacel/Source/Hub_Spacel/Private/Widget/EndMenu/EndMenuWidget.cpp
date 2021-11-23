@@ -10,15 +10,29 @@
 #include "DataAsset/TeamColorDataAsset.h"
 #include "Util/SimplyUI.h"
 #include "Widget/EndMenu/PlayerWinnerWidget.h"
+#include "Hub_SpacelGameInstance.h"
 
 void UEndMenuWidget::NativeConstruct()
 {
     Super::NativeConstruct();
 
-    //TArray<FName> winnerWidget { TEXT("WBP_PlayerWinner1"), TEXT("WBP_PlayerWinner2"), TEXT("WBP_PlayerWinner3") };
-    //SimplyUI::initArray(this, PlayerWinnerWidgets, winnerWidget);
-    //
-    //FillStat();
+    populate();
+}
+
+void UEndMenuWidget::populate()
+{
+    if (auto spacelGameInstance = this->GetGameInstance<UHub_SpacelGameInstance>())
+    {
+        for (auto score : spacelGameInstance->ScoresData)
+        {
+            BP_AddTeam(score.Team, score.Score);
+        }
+
+        for (auto player : spacelGameInstance->PlayersData)
+        {
+            BP_AddPlayer(player.Team.ToString(), player.PlayerName.ToString(), player.LowSkill, player.MediumSkill, player.HightSkill);
+        }
+    }
 }
 
 /*void UEndMenuWidget::FillStat()

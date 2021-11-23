@@ -71,8 +71,9 @@ struct FHealthCheckState
 	UPROPERTY()
 	bool Status { false };
 };
+
 /**
- * 
+ * Game mode only run on server
  */
 UCLASS()
 class HUB_SPACEL_API AFlyingGameMode : public AGameModeBase

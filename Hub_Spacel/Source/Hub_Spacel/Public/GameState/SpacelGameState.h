@@ -49,6 +49,37 @@ struct HUB_SPACEL_API FScore
 	int32 Score { 0 };
 };
 
+USTRUCT()
+struct HUB_SPACEL_API FPlayerData
+{
+	GENERATED_BODY()
+
+	FPlayerData() = default;
+
+	FPlayerData(FName const& _team, FName const& _playerName, ESkill _lowSkill, ESkill _mediumSkill, ESkill _hightSkill)
+		: Team(_team)
+		, PlayerName(_playerName)
+		, LowSkill(_lowSkill)
+		, MediumSkill(_mediumSkill)
+		, HightSkill(_hightSkill)
+	{};
+
+	UPROPERTY()
+	FName Team { "" };
+
+	UPROPERTY()
+	FName PlayerName { "" };
+
+	UPROPERTY()
+	ESkill LowSkill { ESkill::DefaultLow };
+
+	UPROPERTY()
+	ESkill MediumSkill { ESkill::DefaultMedium };
+
+	UPROPERTY()
+	ESkill HightSkill { ESkill::DefaultHight };
+};
+
 /**
  * 
  */
@@ -171,6 +202,9 @@ public:
 
 	UPROPERTY()
 	int GlobalSecondLocalCountDown { 0 };
+
+	UPROPERTY(Replicated)
+	TArray<FPlayerData> R_PlayersData {};
 
 protected:
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
