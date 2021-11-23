@@ -35,6 +35,11 @@ void UEndMenuWidget::populate()
     }
 }
 
+void UEndMenuWidget::BackToMainMenu() const
+{
+    UGameplayStatics::OpenLevel(this->GetWorld(), "MainMenu");
+}
+
 /*void UEndMenuWidget::FillStat()
 {
     UWorld* world{ this->GetWorld() };

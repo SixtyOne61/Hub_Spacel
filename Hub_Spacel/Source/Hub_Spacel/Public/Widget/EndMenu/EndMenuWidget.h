@@ -28,6 +28,9 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void BP_AddPlayer(FString const& _team, FString const& _name, ESkill _lowSkill, ESkill _mediumSkill, ESkill _hightSkill);
 	
+	UFUNCTION(BlueprintCallable)
+	void BackToMainMenu() const;
+
 public:
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
 	class UTeamColorDataAsset* TeamColorDataAsset { nullptr };
