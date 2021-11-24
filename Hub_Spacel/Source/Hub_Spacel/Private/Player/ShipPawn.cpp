@@ -307,6 +307,7 @@ void AShipPawn::Tick(float _deltaTime)
         {
             // move ship
             moveShip(_deltaTime);
+            updateAssist(_deltaTime);
         }
     }
     else
@@ -497,6 +498,9 @@ void AShipPawn::Restarted()
 
     FTimerHandle handle;
     this->GetWorldTimerManager().SetTimer(handle, timerCallback, 1.0f, false);
+
+    // clean assist
+    m_assistPlayer.Empty();
 }
 
 void AShipPawn::OnPlayerEnterFog(int32 _playerId, bool _enter)
@@ -554,6 +558,8 @@ void AShipPawn::hit(FString const& _team, int32 _playerId, class UPrimitiveCompo
     {
         customCollisionComponent->hit(_team, _playerId, _comp, _index, _otherLocation, _otherActor);
     }
+
+    m_assistPlayer.Add({_playerId});
 }
 
 void AShipPawn::setLocationExhaustFx(TArray<FVector_NetQuantize> const& _loc)
@@ -1187,6 +1193,15 @@ void AShipPawn::RPCServerResetTarget_Implementation()
 void AShipPawn::RPCClientRepair_Implementation()
 {
     BP_FxRepair();
+}
+
+void AShipPawn::updateAssist(float _deltaSeconde)
+{
+    m_assistPlayer.RemoveAll([&_deltaSeconde](SAssist& _obj)
+        {
+            _obj.timer -= _deltaSeconde;
+            return _obj.timer <= 0.0f;
+        });
 }
 
 void AShipPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetimeProps) const

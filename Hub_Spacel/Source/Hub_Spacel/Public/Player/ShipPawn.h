@@ -208,6 +208,9 @@ private:
     /* if effect need to play flash, call bp function */
     void playFash(EEffect _effect);
 
+    /* call on server for check assist timer */
+    void updateAssist(float _deltaSeconde);
+
 public:
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
     FOnFeedbackScore OnFeedbackScoreDelegate {};
@@ -271,4 +274,13 @@ private:
 
     // false when endgame appear
     bool m_endGame { false };
+
+    struct SAssist
+    {
+        int32 playerId {};
+        float timer { 30.0f };
+    };
+
+    // player who make dmg since 30 last seconde
+    TArray<SAssist> m_assistPlayer {};
 };
