@@ -188,7 +188,6 @@ enum class EMission : uint8
 UENUM(BlueprintType)
 enum class EMetric : uint8
 {
-    Fog,
     Precision,
     Kill,
     EmpPoint,
@@ -196,6 +195,8 @@ enum class EMetric : uint8
     MatiereWin,
     MatiereUseForRepair,
     TotalScore,
+    Death,
+    Assist,
 };
 
 UENUM(BlueprintType)

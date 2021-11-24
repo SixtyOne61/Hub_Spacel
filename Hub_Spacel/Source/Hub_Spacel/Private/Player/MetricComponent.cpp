@@ -10,103 +10,40 @@ void UMetricComponent::BeginPlay()
 {
     Super::BeginPlay();
 
+    ENetMode mode = this->GetNetMode();
+    m_metric = std::make_unique<LocalMetric>(mode,
+        std::bind(&UMetricComponent::RPCNetMulticastSendVoidData, this, std::placeholders::_1),
+        std::bind(&UMetricComponent::RPCNetMulticastSendBoolData, this, std::placeholders::_1, std::placeholders::_2),
+        std::bind(&UMetricComponent::RPCNetMulticastSendIntData, this, std::placeholders::_1, std::placeholders::_2));
+
     if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
     {
-        m_metric = std::make_unique<LocalMetric>();
-
         if (AShipPawn* shipPawn = get<AShipPawn>())
         {
-            // TO DO : doesn't work add effect is client side event
-            shipPawn->OnAddEffectClientDelegate.AddDynamic(this, &UMetricComponent::AddEffect);
-        }
-
-        if (ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld())))
-        {
-            spacelGameState->OnChangeStateDelegate.AddDynamic(this, &UMetricComponent::OnChangeState);
+            shipPawn->OnAddEffectServerDelegate.AddDynamic(this, &UMetricComponent::AddEffect);
         }
     }
 }
 
-void UMetricComponent::OnChangeState(EGameState _state)
+void UMetricComponent::RPCNetMulticastSendVoidData_Implementation(EMetric _type)
 {
-    if (_state == EGameState::EndGame)
-    {
-        // TO DO : refacto this all big bad part
-        uint8 precision {}, nbKill {};
-        uint16 totalScore {};
+    if(this->GetNetMode() == ENetMode::NM_DedicatedServer) return;
 
-        if (auto* data = m_metric->getData<SMetricRatio>(EMetric::Precision))
-        {
-            auto const& result = data->get();
-            precision = (uint8)(std::get<1>(result));
-        }
-        
-        if (auto* data = m_metric->getData<SMetricIncrease>(EMetric::Kill))
-        {
-            auto const& result = data->get();
-            nbKill = (uint8)(std::get<0>(result));
-        }
-        
-        if (auto* data = m_metric->getData<SMetricAdd>(EMetric::TotalScore))
-        {
-            auto const& result = data->get();
-            totalScore = (uint8)(std::get<0>(result));
-        }
-
-        // send data to all client
-        RPCNetMulticastSendData(precision, nbKill, totalScore);
-
-        uint8 nbFog {};
-        uint16 empPoint {}, tankPoint {}, matiereWin {}, matiereUseForRepair {};
-        if (auto* data = m_metric->getData<SMetricIncrease>(EMetric::Fog))
-        {
-            auto const& result = data->get();
-            nbFog = std::get<0>(result);
-        }
-        
-        if (auto* data = m_metric->getData<SMetricAdd>(EMetric::EmpPoint))
-        {
-            auto const& result = data->get();
-            empPoint = std::get<0>(result);
-        }
-        
-        if (auto* data = m_metric->getData<SMetricAdd>(EMetric::TankPoint))
-        {
-            auto const& result = data->get();
-            tankPoint = std::get<0>(result);
-        }
-        
-        if (auto* data = m_metric->getData<SMetricAdd>(EMetric::MatiereWin))
-        {
-            auto const& result = data->get();
-            matiereWin = std::get<0>(result);
-        }
-        
-        if (auto* data = m_metric->getData<SMetricAdd>(EMetric::MatiereUseForRepair))
-        {
-            auto const& result = data->get();
-            matiereUseForRepair = std::get<0>(result);
-        }
-
-        RPCClientSendData(nbFog, empPoint, tankPoint, matiereWin, matiereUseForRepair);
-    }
+    updateMetric<SMetricIncrease>(_type);
 }
 
-void UMetricComponent::RPCNetMulticastSendData_Implementation(uint8 _precision, uint8 _nbKill, uint16 _totalScore)
+void UMetricComponent::RPCNetMulticastSendBoolData_Implementation(EMetric _type, bool _data)
 {
-    this->Precision = _precision;
-    this->NbKill = _nbKill;
-    this->TotalScore = _totalScore;
-    this->HasInit = true;
+    if (this->GetNetMode() == ENetMode::NM_DedicatedServer) return;
+
+    updateMetric<SMetricRatio, bool>(_type, {_data});
 }
 
-void UMetricComponent::RPCClientSendData_Implementation(uint8 _nbFog, uint16 _empPoint, uint16 _tankPoint, uint16 _matiereWin, uint16 _matiereUseForRepair)
+void UMetricComponent::RPCNetMulticastSendIntData_Implementation(EMetric _type, int _data)
 {
-    this->NbFog = _nbFog;
-    this->EmpPoint = _empPoint;
-    this->TankPoint = _tankPoint;
-    this->MatiereWin = _matiereWin;
-    this->MatiereUseForRepair = _matiereUseForRepair;
+    if (this->GetNetMode() == ENetMode::NM_DedicatedServer) return;
+
+    updateMetric<SMetricAdd, uint16>(_type, {(uint16)_data});
 }
 
 void UMetricComponent::OnScored(EScoreType _type, int32 _value)
@@ -137,9 +74,9 @@ void UMetricComponent::OnScored(EScoreType _type, int32 _value)
 
 void UMetricComponent::AddEffect(EEffect _effect)
 {
-    if (_effect == EEffect::Fog)
+    if (_effect == EEffect::Killed)
     {
-        updateMetric<SMetricIncrease>(EMetric::Fog);
+        updateMetric<SMetricIncrease>(EMetric::Death);
     }
 }
 

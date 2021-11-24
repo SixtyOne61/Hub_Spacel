@@ -56,13 +56,17 @@ struct HUB_SPACEL_API FPlayerData
 
 	FPlayerData() = default;
 
-	FPlayerData(FName const& _team, FName const& _playerName, ESkill _lowSkill, ESkill _mediumSkill, ESkill _hightSkill)
-		: Team(_team)
+	FPlayerData(int32 _playerId, FName const& _team, FName const& _playerName, ESkill _lowSkill, ESkill _mediumSkill, ESkill _hightSkill)
+		: PlayerId(_playerId)
+		, Team(_team)
 		, PlayerName(_playerName)
 		, LowSkill(_lowSkill)
 		, MediumSkill(_mediumSkill)
 		, HightSkill(_hightSkill)
 	{};
+
+	UPROPERTY()
+	int32 PlayerId {};
 
 	UPROPERTY()
 	FName Team { "" };
@@ -162,6 +166,15 @@ protected:
 private:
 	UFUNCTION()
 	void OnRep_StateGame();
+
+	/* call on client, leave to end menu */
+	void travelToEndMenu();
+
+	/* call on server, to register player */
+	void registerPlayerData();
+
+	/* call on client, to save metric to game instance */
+	void sendMetric();
 
 public:
 	UPROPERTY(Replicated)

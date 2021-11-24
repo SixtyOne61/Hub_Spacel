@@ -261,6 +261,9 @@ private:
     FOnAddEffect OnAddEffectClientDelegate {};
 
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
+    FOnAddEffect OnAddEffectServerDelegate {};
+
+    UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
     FOnRemoveEffect OnRemoveEffectDelegate {};
 
     // only for local player

@@ -28,9 +28,14 @@ void UEndMenuWidget::populate()
             BP_AddTeam(score.Team, score.Score);
         }
 
-        for (auto player : spacelGameInstance->PlayersData)
+        for (auto player : spacelGameInstance->MetricPlayersData)
         {
-            BP_AddPlayer(player.Team.ToString(), player.PlayerName.ToString(), player.LowSkill, player.MediumSkill, player.HightSkill);
+            BP_AddPlayer(player.PlayerInfo.Team.ToString(),
+                player.PlayerInfo.PlayerName.ToString(),
+                player.PlayerInfo.LowSkill,
+                player.PlayerInfo.MediumSkill,
+                player.PlayerInfo.HightSkill,
+                player.Kill, player.Death, player.Assist);
         }
     }
 }

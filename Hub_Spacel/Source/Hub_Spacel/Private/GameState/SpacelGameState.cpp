@@ -11,6 +11,66 @@
 #include "DataAsset/GameStateDataAsset.h"
 #include "Hub_SpacelGameInstance.h"
 
+void ASpacelGameState::travelToEndMenu()
+{
+    if (APlayerController* playerController = UGameplayStatics::GetPlayerController(this->GetWorld(), 0))
+    {
+        FString levelName{ "EndMenu" };
+        playerController->ClientTravel(levelName, ETravelType::TRAVEL_Absolute);
+    }
+}
+
+void ASpacelGameState::registerPlayerData()
+{
+    for (auto playerState : this->PlayerArray)
+    {
+        if (ASpacelPlayerState const* spacelPlayerState = Cast<ASpacelPlayerState>(playerState))
+        {
+            this->R_PlayersData.Add({ spacelPlayerState->PlayerId,
+                *spacelPlayerState->R_Team,
+                *spacelPlayerState->GetPlayerName(),
+                (ESkill)spacelPlayerState->R_LowSkill,
+                (ESkill)spacelPlayerState->R_MediumSkill,
+                (ESkill)spacelPlayerState->R_HightSkill });
+        }
+    }
+}
+
+void ASpacelGameState::sendMetric()
+{
+    if (auto spacelGameInstance = this->GetGameInstance<UHub_SpacelGameInstance>())
+    {
+        for (auto data : R_PlayersData)
+        {
+            for (auto player : this->PlayerArray)
+            {
+                if (player != nullptr)
+                {
+                    if (player->PlayerId == data.PlayerId)
+                    {
+                        if (AShipPawn* pawn = player->GetPawn<AShipPawn>())
+                        {
+                            if (UMetricComponent* component = Cast<UMetricComponent>(pawn->GetComponentByClass(UMetricComponent::StaticClass())))
+                            {
+                                auto killMetric = component->getMetric<SMetricIncrease>(EMetric::Kill);
+                                auto deathMetric = component->getMetric<SMetricIncrease>(EMetric::Death);
+                                auto assistMetric = component->getMetric<SMetricIncrease>(EMetric::Assist);
+
+                                spacelGameInstance->MetricPlayersData.Add({ data, 
+                                    killMetric != nullptr ? std::get<0>(killMetric->get()) : 0,
+                                    deathMetric != nullptr ? std::get<0>(deathMetric->get()) : 0,
+                                    assistMetric != nullptr ? std::get<0>(assistMetric->get()) : 0});
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        spacelGameInstance->ScoresData = R_Scores;
+    }
+}
+
 void ASpacelGameState::OnRep_StateGame()
 {
     OnChangeStateDelegate.Broadcast((EGameState)this->RU_GameState);
@@ -18,35 +78,17 @@ void ASpacelGameState::OnRep_StateGame()
     if ((EGameState)this->RU_GameState == EGameState::WaitEnd &&
         this->GetNetMode() != ENetMode::NM_DedicatedServer)
     {
-        if (APlayerController* playerController = UGameplayStatics::GetPlayerController(this->GetWorld(), 0))
-        {
-            FString levelName{ "EndMenu" };
-            playerController->ClientTravel(levelName, ETravelType::TRAVEL_Absolute);
-        }
+        travelToEndMenu();
     }
     else if ((EGameState)this->RU_GameState == EGameState::InGame &&
         this->GetNetMode() == ENetMode::NM_DedicatedServer)
     {
-        for (auto playerState : this->PlayerArray)
-        {
-            if (ASpacelPlayerState const* spacelPlayerState = Cast<ASpacelPlayerState>(playerState))
-            {
-                this->R_PlayersData.Add({*spacelPlayerState->R_Team,
-                    *spacelPlayerState->GetPlayerName(),
-                    (ESkill)spacelPlayerState->R_LowSkill,
-                    (ESkill)spacelPlayerState->R_MediumSkill,
-                    (ESkill)spacelPlayerState->R_HightSkill});
-            }
-        }
+        registerPlayerData();
     }
     else if ((EGameState)this->RU_GameState == EGameState::EndGame &&
         this->GetNetMode() == ENetMode::NM_Client)
     {
-        if (auto spacelGameInstance = this->GetGameInstance<UHub_SpacelGameInstance>())
-        {
-            spacelGameInstance->PlayersData = R_PlayersData;
-            spacelGameInstance->ScoresData = R_Scores;
-        }
+        sendMetric();
     }
 }
 

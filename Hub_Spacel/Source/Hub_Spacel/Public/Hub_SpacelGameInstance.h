@@ -8,6 +8,33 @@
 #include "GameState/SpacelGameState.h"
 #include "Hub_SpacelGameInstance.generated.h"
 
+USTRUCT()
+struct HUB_SPACEL_API FMetricData
+{
+	GENERATED_BODY()
+
+    FMetricData() = default;
+
+    FMetricData(FPlayerData const& _data, int _kill, int _death, int _assist)
+        : PlayerInfo(_data)
+        , Kill(_kill)
+        , Death(_death)
+        , Assist(_assist)
+    {}
+
+	UPROPERTY()
+    FPlayerData PlayerInfo { };
+
+    UPROPERTY()
+    int Kill { 0 };
+
+    UPROPERTY()
+    int Death { 0 };
+
+    UPROPERTY()
+    int Assist { 0 };
+};
+
 /**
  * Each client or server has their own game instance
  */
@@ -60,7 +87,7 @@ public:
     FString CustomPlayerName { "BoB" };
 
     UPROPERTY()
-    TArray<FPlayerData> PlayersData {};
+    TArray<FMetricData> MetricPlayersData {};
 
     UPROPERTY()
     TArray<FScore> ScoresData {};

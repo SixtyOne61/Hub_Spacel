@@ -26,7 +26,7 @@ protected:
 	void BP_AddTeam(FString const& _team, int32 _score);
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void BP_AddPlayer(FString const& _team, FString const& _name, ESkill _lowSkill, ESkill _mediumSkill, ESkill _hightSkill);
+	void BP_AddPlayer(FString const& _team, FString const& _name, ESkill _lowSkill, ESkill _mediumSkill, ESkill _hightSkill, int _kill, int _death, int _assist);
 	
 	UFUNCTION(BlueprintCallable)
 	void BackToMainMenu() const;

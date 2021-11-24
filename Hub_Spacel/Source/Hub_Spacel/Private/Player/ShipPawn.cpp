@@ -932,6 +932,7 @@ void AShipPawn::BackToGame()
 
 void AShipPawn::addEffectSuccess(EEffect _type)
 {
+    OnAddEffectServerDelegate.Broadcast(_type);
     behaviourAddEffect(_type);
     RPCClientAddEffect(_type);
     RPCNetMulticastAddEffect(_type);
