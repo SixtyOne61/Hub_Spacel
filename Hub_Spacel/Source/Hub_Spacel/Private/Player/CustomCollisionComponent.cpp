@@ -243,7 +243,20 @@ void UCustomCollisionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 					// spawn matiere
 					spawnMatiere();
 
-					pawn->kill();
+					// check if we collide a player
+					int32 idCollider { -1 };
+					for (auto hit : hits)
+					{
+						if (ACommonPawn* otherPawn = Cast<ACommonPawn>(hit.Actor))
+						{
+							if (auto otherPlayerState = otherPawn->GetPlayerState())
+							{
+								idCollider = otherPlayerState->PlayerId;
+								break;
+							}
+						}
+					}
+					pawn->kill(idCollider);
 				}
 
 				dispatch(hits);
@@ -524,7 +537,7 @@ void UCustomCollisionComponent::hit(FString const& _team, int32 _playerId, class
 			lb_addScore(EScoreType::Kill);
 			shipPawn->OnKill.broadcast(shipPawn->Team.ToString(), _team);
 
-			shipPawn->kill();
+			shipPawn->kill(_playerId);
 
 			if (ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld())))
 			{

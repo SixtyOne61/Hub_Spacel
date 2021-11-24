@@ -402,10 +402,13 @@ void AShipPawn::setFire(bool _on)
     this->FireComponent->m_isFire = _on;
 }
 
-void AShipPawn::kill()
+void AShipPawn::kill(int32 _playerId)
 {
     if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
     {
+        // dispatch assist
+        riseAssist(_playerId);
+
         auto lb = [](auto* _obj)
         {
             if (_obj != nullptr)
@@ -1202,6 +1205,52 @@ void AShipPawn::updateAssist(float _deltaSeconde)
             _obj.timer -= _deltaSeconde;
             return _obj.timer <= 0.0f;
         });
+}
+
+void AShipPawn::riseAssist(int32 _playerId)
+{
+    if(_playerId == -1) return;
+
+    // find team of player
+    if (AGameStateBase* gameState = UGameplayStatics::GetGameState(this->GetWorld()))
+    {
+        FString refTeam {};
+
+        for (APlayerState const* playerState : gameState->PlayerArray)
+        {
+            if (ASpacelPlayerState const* spacelPlayerState = Cast<ASpacelPlayerState>(playerState))
+            {
+                if (spacelPlayerState->PlayerId == _playerId)
+                {
+                    refTeam = spacelPlayerState->R_Team;
+                    break;
+                }
+            }
+        }
+
+        if (!refTeam.IsEmpty())
+        {
+            for (auto data : m_assistPlayer)
+            {
+                for (APlayerState const* playerState : gameState->PlayerArray)
+                {
+                    if (ASpacelPlayerState const* spacelPlayerState = Cast<ASpacelPlayerState>(playerState))
+                    {
+                        if (spacelPlayerState->R_Team == refTeam)
+                        {
+                            if (AShipPawn* otherPawn = spacelPlayerState->GetPawn<AShipPawn>())
+                            {
+                                if (auto metricComponent = Cast<UMetricComponent>(otherPawn->GetComponentByClass(UMetricComponent::StaticClass())))
+                                {
+                                    metricComponent->updateMetric(EMetric::Assist);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 void AShipPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetimeProps) const

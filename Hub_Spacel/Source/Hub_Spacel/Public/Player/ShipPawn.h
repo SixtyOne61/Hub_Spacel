@@ -132,7 +132,10 @@ private:
     void setFire(bool _on);
 
     /* call for kill a player when red zone is hit */
-    void kill();
+    void kill(int32 _playerId);
+
+    /* call from kill to rise assit on player affected */
+    void riseAssist(int32 _playerId);
 
     /* call on server */
     UFUNCTION()
