@@ -302,6 +302,7 @@ void UGlobalMainMenu::onStopMatchmakingResponseReceived(FHttpRequestPtr _request
 
     BP_MatchmakingState("Join Game");
     BP_Timer(false);
+    this->SearchingForGame = false;
 }
 
 void UGlobalMainMenu::onPollMatchmakingReceived(FHttpRequestPtr _request, FHttpResponsePtr _response, bool _bWasSuccessful)
