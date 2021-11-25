@@ -281,7 +281,7 @@ private:
     // only for local player
     FRotator m_defaultSprintArmRotator {};
 
-    // false when endgame appear
+    // true when endgame appear
     bool m_endGame { false };
 
     // player who make dmg since 30 last seconde
