@@ -49,7 +49,7 @@ struct HUB_SPACEL_API FScore
 	int32 Score { 0 };
 };
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct HUB_SPACEL_API FPlayerData
 {
 	GENERATED_BODY()
@@ -68,19 +68,19 @@ struct HUB_SPACEL_API FPlayerData
 	UPROPERTY()
 	int32 PlayerId {};
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly)
 	FName Team { "" };
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly)
 	FName PlayerName { "" };
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly)
 	ESkill LowSkill { ESkill::DefaultLow };
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly)
 	ESkill MediumSkill { ESkill::DefaultMedium };
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly)
 	ESkill HightSkill { ESkill::DefaultHight };
 };
 

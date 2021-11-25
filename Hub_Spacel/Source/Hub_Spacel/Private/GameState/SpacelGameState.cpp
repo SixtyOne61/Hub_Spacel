@@ -55,11 +55,13 @@ void ASpacelGameState::sendMetric()
                                 auto killMetric = component->getMetric<SMetricIncrease>(EMetric::Kill);
                                 auto deathMetric = component->getMetric<SMetricIncrease>(EMetric::Death);
                                 auto assistMetric = component->getMetric<SMetricIncrease>(EMetric::Assist);
+                                auto scoreMetric = component->getMetric<SMetricAdd>(EMetric::TotalScore);
 
                                 spacelGameInstance->MetricPlayersData.Add({ data, 
                                     killMetric != nullptr ? std::get<0>(killMetric->get()) : 0,
                                     deathMetric != nullptr ? std::get<0>(deathMetric->get()) : 0,
-                                    assistMetric != nullptr ? std::get<0>(assistMetric->get()) : 0});
+                                    assistMetric != nullptr ? std::get<0>(assistMetric->get()) : 0,
+                                    scoreMetric != nullptr ? std::get<0>(scoreMetric->get()) : 0});
                             }
                         }
                     }

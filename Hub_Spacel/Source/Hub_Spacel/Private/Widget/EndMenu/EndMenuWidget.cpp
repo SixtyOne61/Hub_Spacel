@@ -30,12 +30,7 @@ void UEndMenuWidget::populate()
 
         for (auto player : spacelGameInstance->MetricPlayersData)
         {
-            BP_AddPlayer(player.PlayerInfo.Team.ToString(),
-                player.PlayerInfo.PlayerName.ToString(),
-                player.PlayerInfo.LowSkill,
-                player.PlayerInfo.MediumSkill,
-                player.PlayerInfo.HightSkill,
-                player.Kill, player.Death, player.Assist);
+            BP_AddPlayer(player);
         }
     }
 }

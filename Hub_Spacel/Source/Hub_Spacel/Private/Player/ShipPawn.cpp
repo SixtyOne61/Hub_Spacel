@@ -562,7 +562,20 @@ void AShipPawn::hit(FString const& _team, int32 _playerId, class UPrimitiveCompo
         customCollisionComponent->hit(_team, _playerId, _comp, _index, _otherLocation, _otherActor);
     }
 
-    m_assistPlayer.Add({_playerId});
+    bool bfind { false };
+    for (auto assist : m_assistPlayer)
+    {
+        if (assist.m_playerId == _playerId)
+        {
+            assist.m_timer = 30.0f;
+            bfind = true;
+        }
+    }
+
+    if (!bfind)
+    {
+        m_assistPlayer.Add({ _playerId });
+    }
 }
 
 void AShipPawn::setLocationExhaustFx(TArray<FVector_NetQuantize> const& _loc)
@@ -1200,10 +1213,10 @@ void AShipPawn::RPCClientRepair_Implementation()
 
 void AShipPawn::updateAssist(float _deltaSeconde)
 {
-    m_assistPlayer.RemoveAll([&_deltaSeconde](SAssist& _obj)
+    m_assistPlayer.RemoveAll([&_deltaSeconde](FAssist& _obj)
         {
-            _obj.timer -= _deltaSeconde;
-            return _obj.timer <= 0.0f;
+            _obj.m_timer -= _deltaSeconde;
+            return _obj.m_timer <= 0.0f;
         });
 }
 
@@ -1234,15 +1247,18 @@ void AShipPawn::riseAssist(int32 _playerId)
             {
                 for (APlayerState const* playerState : gameState->PlayerArray)
                 {
-                    if (ASpacelPlayerState const* spacelPlayerState = Cast<ASpacelPlayerState>(playerState))
+                    if (data.m_playerId != _playerId)
                     {
-                        if (spacelPlayerState->R_Team == refTeam)
+                        if (ASpacelPlayerState const* spacelPlayerState = Cast<ASpacelPlayerState>(playerState))
                         {
-                            if (AShipPawn* otherPawn = spacelPlayerState->GetPawn<AShipPawn>())
+                            if (spacelPlayerState->R_Team == refTeam)
                             {
-                                if (auto metricComponent = Cast<UMetricComponent>(otherPawn->GetComponentByClass(UMetricComponent::StaticClass())))
+                                if (AShipPawn* otherPawn = spacelPlayerState->GetPawn<AShipPawn>())
                                 {
-                                    metricComponent->updateMetric(EMetric::Assist);
+                                    if (auto metricComponent = Cast<UMetricComponent>(otherPawn->GetComponentByClass(UMetricComponent::StaticClass())))
+                                    {
+                                        metricComponent->updateMetric(EMetric::Assist);
+                                    }
                                 }
                             }
                         }

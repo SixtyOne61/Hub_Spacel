@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "Enum/SpacelEnum.h"
+#include "Hub_SpacelGameInstance.h"
 #include "EndMenuWidget.generated.h"
 
 /**
@@ -26,7 +27,7 @@ protected:
 	void BP_AddTeam(FString const& _team, int32 _score);
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void BP_AddPlayer(FString const& _team, FString const& _name, ESkill _lowSkill, ESkill _mediumSkill, ESkill _hightSkill, int _kill, int _death, int _assist);
+	void BP_AddPlayer(FMetricData const& _metric);
 	
 	UFUNCTION(BlueprintCallable)
 	void BackToMainMenu() const;

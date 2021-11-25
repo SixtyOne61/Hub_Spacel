@@ -18,6 +18,12 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAddEffect, EEffect, _type);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRemoveEffect, EEffect, _type);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnFeedbackScore, EScoreType, _type, int32, _value);
 
+struct FAssist
+{
+    int32 m_playerId{};
+    float m_timer{ 30.0f };
+};
+
 UCLASS()
 class HUB_SPACEL_API AShipPawn : public ACommonPawn
 {
@@ -278,12 +284,6 @@ private:
     // false when endgame appear
     bool m_endGame { false };
 
-    struct SAssist
-    {
-        int32 playerId {};
-        float timer { 30.0f };
-    };
-
     // player who make dmg since 30 last seconde
-    TArray<SAssist> m_assistPlayer {};
+    TArray<FAssist> m_assistPlayer {};
 };

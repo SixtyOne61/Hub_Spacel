@@ -8,31 +8,35 @@
 #include "GameState/SpacelGameState.h"
 #include "Hub_SpacelGameInstance.generated.h"
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct HUB_SPACEL_API FMetricData
 {
 	GENERATED_BODY()
 
     FMetricData() = default;
 
-    FMetricData(FPlayerData const& _data, int _kill, int _death, int _assist)
+    FMetricData(FPlayerData const& _data, int _kill, int _death, int _assist, int _score)
         : PlayerInfo(_data)
         , Kill(_kill)
         , Death(_death)
         , Assist(_assist)
+        , Score(_score)
     {}
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly)
     FPlayerData PlayerInfo { };
 
-    UPROPERTY()
+    UPROPERTY(BlueprintReadOnly)
     int Kill { 0 };
 
-    UPROPERTY()
+    UPROPERTY(BlueprintReadOnly)
     int Death { 0 };
 
-    UPROPERTY()
+    UPROPERTY(BlueprintReadOnly)
     int Assist { 0 };
+
+    UPROPERTY(BlueprintReadOnly)
+    int Score { 0 };
 };
 
 /**
