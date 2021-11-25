@@ -32,6 +32,9 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void BackToMainMenu() const;
 
+	UFUNCTION(BlueprintCallable)
+	void Requeue() const;
+
 public:
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
 	class UTeamColorDataAsset* TeamColorDataAsset { nullptr };

@@ -6,6 +6,11 @@
 
 #define TOFLAG(Enum) (1 << static_cast<uint8>(Enum))
 
+namespace Option
+{
+    static const FString Requeue { "Requeue" };
+}
+
 UENUM(BlueprintType)
 enum class EGameState : uint8
 {

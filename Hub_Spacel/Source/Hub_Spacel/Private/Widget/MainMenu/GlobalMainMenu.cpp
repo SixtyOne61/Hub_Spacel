@@ -79,6 +79,14 @@ void UGlobalMainMenu::NativeConstruct()
         loginDelegate.BindUFunction(this, "HandleLoginUrlChange");
         WebBrowser->OnUrlChanged.Add(loginDelegate);
     }
+
+    if (auto gameMode = UGameplayStatics::GetGameMode(this->GetWorld()))
+    {
+        if (gameMode->OptionsString.Contains(Option::Requeue))
+        {
+            OnPlay();
+        }
+    }
 }
 
 void UGlobalMainMenu::NativeDestruct()
