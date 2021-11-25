@@ -111,8 +111,8 @@ void AShipPawn::OnChangeState(EGameState _state)
             this->GetWorldTimerManager().ClearAllTimersForObject(this);
             this->DriverMeshComponent->SetPhysicsLinearVelocity(FVector::ZeroVector);
             this->DriverMeshComponent->SetPhysicsAngularVelocityInDegrees(FVector::ZeroVector);
-            m_endGame = true;
         }
+        m_endGame = true;
     }
 }
 
@@ -310,7 +310,7 @@ void AShipPawn::Tick(float _deltaTime)
             updateAssist(_deltaTime);
         }
     }
-    else
+    else if(!m_endGame)
     {
         computeSoundData();
     }

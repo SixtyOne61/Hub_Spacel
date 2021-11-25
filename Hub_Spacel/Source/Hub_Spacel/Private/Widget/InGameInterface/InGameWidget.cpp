@@ -123,6 +123,10 @@ void UInGameWidget::OnChangeState(EGameState _state)
         setupEnnemyTeam();
         setupInGame();
     }
+    else if (_state == EGameState::EndGame)
+    {
+        BP_EndGame();
+    }
 }
 
 void UInGameWidget::WaitPlayerState()

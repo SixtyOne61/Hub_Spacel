@@ -97,6 +97,9 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void BP_CreateAllyWidget(ASpacelPlayerState* _playerState);
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void BP_EndGame();
+
 private:
 	UFUNCTION()
 	void OnChangeState(EGameState _state);
