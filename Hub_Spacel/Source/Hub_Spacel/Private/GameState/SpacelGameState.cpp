@@ -57,11 +57,20 @@ void ASpacelGameState::sendMetric()
                                 auto assistMetric = component->getMetric<SMetricIncrease>(EMetric::Assist);
                                 auto scoreMetric = component->getMetric<SMetricAdd>(EMetric::TotalScore);
 
+                                auto precisionMetric = component->getMetric<SMetricRatio>(EMetric::Precision);
+                                auto repairMetric = component->getMetric<SMetricAdd>(EMetric::MatiereUseForRepair);
+                                auto healMetric = component->getMetric<SMetricAdd>(EMetric::Heal);
+                                auto destructionMetric = component->getMetric<SMetricIncrease>(EMetric::Destruction);
+
                                 spacelGameInstance->MetricPlayersData.Add({ data, 
                                     killMetric != nullptr ? std::get<0>(killMetric->get()) : 0,
                                     deathMetric != nullptr ? std::get<0>(deathMetric->get()) : 0,
                                     assistMetric != nullptr ? std::get<0>(assistMetric->get()) : 0,
-                                    scoreMetric != nullptr ? std::get<0>(scoreMetric->get()) : 0});
+                                    scoreMetric != nullptr ? std::get<0>(scoreMetric->get()) : 0,
+                                    precisionMetric != nullptr ? std::get<0>(precisionMetric->get()) : 0,
+                                    repairMetric != nullptr ? std::get<0>(repairMetric->get()) : 0,
+                                    healMetric != nullptr ? std::get<0>(healMetric->get()) : 0,
+                                    destructionMetric != nullptr ? std::get<0>(destructionMetric->get()) : 0});
                             }
                         }
                     }

@@ -13,16 +13,6 @@ struct HUB_SPACEL_API FMetricData
 {
 	GENERATED_BODY()
 
-    FMetricData() = default;
-
-    FMetricData(FPlayerData const& _data, int _kill, int _death, int _assist, int _score)
-        : PlayerInfo(_data)
-        , Kill(_kill)
-        , Death(_death)
-        , Assist(_assist)
-        , Score(_score)
-    {}
-
 	UPROPERTY(BlueprintReadOnly)
     FPlayerData PlayerInfo { };
 
@@ -37,6 +27,18 @@ struct HUB_SPACEL_API FMetricData
 
     UPROPERTY(BlueprintReadOnly)
     int Score { 0 };
+
+    UPROPERTY(BlueprintReadOnly)
+    int Precision { 0 };
+
+    UPROPERTY(BlueprintReadOnly)
+    int Repair { 0 };
+
+    UPROPERTY(BlueprintReadOnly)
+    int Heal { 0 };
+
+    UPROPERTY(BlueprintReadOnly)
+    int Destruction { 0 };
 };
 
 /**
