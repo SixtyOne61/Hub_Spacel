@@ -5,6 +5,7 @@
 #include "Player/ShipPawn.h"
 #include "Player/ModuleComponent.h"
 #include "Player/SpacelPlayerState.h"
+#include "Player/MetricComponent.h"
 #include "CollisionQueryParams.h"
 #include "Gameplay/DestroyActor.h"
 #include "Gameplay/Bullet/ProjectileBase.h"
@@ -252,6 +253,12 @@ void UCustomCollisionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 							if (auto otherPlayerState = otherPawn->GetPlayerState())
 							{
 								idCollider = otherPlayerState->PlayerId;
+
+								// update metric
+								if (UMetricComponent* metricComponent = Cast<UMetricComponent>(otherPawn->GetComponentByClass(UMetricComponent::StaticClass())))
+								{
+									metricComponent->updateMetric<SMetricIncrease>(EMetric::Destruction);
+								}
 								break;
 							}
 						}

@@ -4,10 +4,11 @@
 #include "Gameplay/Skill/SkillBehaviour.h"
 #include "Player/Common/CommonPawn.h"
 #include "Player/ShipPawn.h"
+#include "Player/SpacelPlayerState.h"
+#include "Player/MetricComponent.h"
 #include "GameState/SpacelGameState.h"
 #include "GameFramework/PlayerState.h"
 #include "Kismet/GameplayStatics.h"
-#include "Player/SpacelPlayerState.h"
 #include "DataAsset/UniqueSkillDataAsset.h"
 
 SkillBehaviour::SkillBehaviour(ACommonPawn* _pawn, ENetMode _netMode, class UUniqueSkillDataAsset const* _data)
@@ -74,6 +75,7 @@ void SkillHealPack::searchPlayerAround() const
 
     if (auto gameState = UGameplayStatics::GetGameState(get()->GetWorld()))
     {
+        int totalHeal { 0 };
         auto playerStates = gameState->PlayerArray;
         for (auto playerState : playerStates)
         {
@@ -83,17 +85,27 @@ void SkillHealPack::searchPlayerAround() const
                 {
                     if (auto pawn = Cast<AShipPawn>(spacelPlayerState->GetPawn()))
                     {
-                        // not use
+                        // not us
                         if (get()->GetUniqueID() != pawn->GetUniqueID())
                         {
                             FVector const& allyLocation = pawn->GetActorLocation();
                             if (FVector::Distance(location, allyLocation) <= 2000.0f)
                             {
                                 pawn->heal(m_data->Value);
+                                totalHeal += m_data->Value;
                             }
                         }
                     }
                 }
+            }
+        }
+
+        if (totalHeal != 0)
+        {
+            // update metric on our player
+            if (UMetricComponent* metricComponent = Cast<UMetricComponent>(get()->GetComponentByClass(UMetricComponent::StaticClass())))
+            {
+                metricComponent->updateMetric<SMetricAdd, int>(EMetric::Heal, { m_data->Value });
             }
         }
     }

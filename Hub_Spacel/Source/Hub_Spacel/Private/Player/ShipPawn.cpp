@@ -1136,53 +1136,6 @@ void AShipPawn::farmAsteroide()
     }
 }
 
-ESkillReturn AShipPawn::spawnHealPack()
-{
-    if (this->SkillComponent != nullptr)
-    {
-        if (UUniqueSkillDataAsset const* uniqueSkillDataAsset = this->SkillComponent->getSkill(ESkill::HealPack))
-        {
-            int healPackMatiere = uniqueSkillDataAsset->MatiereNeeded;
-            if (this->RU_Matiere >= healPackMatiere)
-            {
-                addMatiere(healPackMatiere * -1, EMatiereOrigin::Lost);
-                // spawn heal pack
-                TArray<UActorComponent*> const& actors = this->GetComponentsByTag(USceneComponent::StaticClass(), Tags::HealPack);
-                if (actors.Num() > 0 && actors[0] != nullptr)
-                {
-                    if (USceneComponent* comp = Cast<USceneComponent>(actors[0]))
-                    {
-                        FTransform tr = comp->GetComponentTransform();
-
-                        FVector dir = UKismetMathLibrary::FindLookAtRotation(tr.GetLocation(), TargetLocation).Vector();
-                        dir.Normalize();
-                        tr.SetRotation(dir.ToOrientationQuat());
-
-                        if (AHealPackBullet* healPackActor = Cast<AHealPackBullet>(UGameplayStatics::BeginDeferredActorSpawnFromClass(GetWorld(), this->PlayerDataAsset->HealPackClass, tr)))
-                        {
-                            healPackActor->R_Team = Team;
-                            if (APlayerState* playerState = GetPlayerState())
-                            {
-                                healPackActor->PlayerIdOwner = playerState->PlayerId;
-                            }
-                            healPackActor->Value = healPackMatiere;
-                            healPackActor->Tags.Add(Tags::HealPack);
-                            UGameplayStatics::FinishSpawningActor(healPackActor, tr);
-                        }
-
-                        return ESkillReturn::Success;
-                    }
-                }
-            }
-            else
-            {
-                return ESkillReturn::NoMater;
-            }
-        }
-    }
-    return ESkillReturn::InternError;
-}
-
 void AShipPawn::RPCServerSendTarget_Implementation(int32 _playerId)
 {
     if(this->FireComponent == nullptr) return;

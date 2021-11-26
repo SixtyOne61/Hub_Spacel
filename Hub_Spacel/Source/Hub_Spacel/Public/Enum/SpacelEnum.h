@@ -202,6 +202,8 @@ enum class EMetric : uint8
     TotalScore,
     Death,
     Assist,
+    Heal,
+    Destruction,
 };
 
 UENUM(BlueprintType)

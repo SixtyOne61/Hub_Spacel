@@ -137,6 +137,8 @@ public:
 		m_metric.insert({ EMetric::TotalScore, SMetricAdd { EMetric::TotalScore, _mode == ENetMode::NM_DedicatedServer ? _rpcInt : nullptr } });
 		m_metric.insert({ EMetric::Death, SMetricIncrease { EMetric::Death, _mode == ENetMode::NM_DedicatedServer ? _rpcVoid : nullptr } });
 		m_metric.insert({ EMetric::Assist, SMetricIncrease { EMetric::Assist, _mode == ENetMode::NM_DedicatedServer ? _rpcVoid : nullptr } });
+		m_metric.insert({ EMetric::Heal, SMetricAdd { EMetric::Heal, _mode == ENetMode::NM_DedicatedServer ? _rpcInt : nullptr } });
+		m_metric.insert({ EMetric::Destruction, SMetricIncrease { EMetric::Destruction, _mode == ENetMode::NM_DedicatedServer ? _rpcVoid : nullptr } });
 	}
 
 	~LocalMetric() = default;

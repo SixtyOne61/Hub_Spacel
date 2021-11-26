@@ -76,7 +76,6 @@ public:
 
     void addMatiere(int32 _val, EMatiereOrigin _type);
     void farmAsteroide();
-    ESkillReturn spawnHealPack(); // to do deprecated
 
     void boostPassive(EMission _type, int32 _rewardValue);
 
