@@ -67,7 +67,7 @@ void ASpacelGameState::sendMetric()
                                     deathMetric != nullptr ? std::get<0>(deathMetric->get()) : 0,
                                     assistMetric != nullptr ? std::get<0>(assistMetric->get()) : 0,
                                     scoreMetric != nullptr ? std::get<0>(scoreMetric->get()) : 0,
-                                    precisionMetric != nullptr ? std::get<0>(precisionMetric->get()) : 0,
+                                    precisionMetric != nullptr ? (int)std::get<1>(precisionMetric->get()) : 0,
                                     repairMetric != nullptr ? std::get<0>(repairMetric->get()) : 0,
                                     healMetric != nullptr ? std::get<0>(healMetric->get()) : 0,
                                     destructionMetric != nullptr ? std::get<0>(destructionMetric->get()) : 0});

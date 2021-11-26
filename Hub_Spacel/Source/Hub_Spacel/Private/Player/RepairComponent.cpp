@@ -9,6 +9,7 @@
 #include "DataAsset/UniqueSkillDataAsset.h"
 #include "Net/UnrealNetwork.h"
 #include "Mesh/SpacelInstancedMeshComponent.h"
+#include "Mesh/AnimatedSpacelMeshComponent.h"
 
 URepairComponent::URepairComponent()
 {
@@ -55,15 +56,15 @@ ESkillReturn URepairComponent::onRepair()
         }
 
         this->OnUpdateMatiere(-1 * this->RepairSkillDataAsset->MatiereNeeded, EMatiereOrigin::Lost);
-        if (UMetricComponent* component = Cast<UMetricComponent>(pawn->GetComponentByClass(UMetricComponent::StaticClass())))
-        {
-            component->updateMetric<SMetricAdd, uint8>(EMetric::MatiereUseForRepair, { this->RepairSkillDataAsset->MatiereNeeded });
-        }
-
         float ratio = pawn->PlayerDataAsset->RepairRatio;
         int maxRepair = this->RepairSkillDataAsset->Value * ratio;
 
-        repair(maxRepair, pawn);
+        int rest = repair(maxRepair, pawn);
+
+        if (UMetricComponent* component = Cast<UMetricComponent>(pawn->GetComponentByClass(UMetricComponent::StaticClass())))
+        {
+            component->updateMetric<SMetricAdd, uint8>(EMetric::MatiereUseForRepair, { maxRepair - rest });
+        }
         return ESkillReturn::Success;
     }
 
