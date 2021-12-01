@@ -277,21 +277,14 @@ void AFlyingGameMode::Tick(float _deltaSeconde)
             {
                 case EGameState::Prepare:
                 {
-                    spacelGameState->GoToLockLowModule();
+                    spacelGameState->GoToChooseSKill();
                     // register all team for scoring
                     spacelGameState->RegisterTeam();
                     m_timerSeconde = this->RemainingChooseModuleTime;
                     break;
                 }
 
-                case EGameState::LockLowModule:
-                {
-                    spacelGameState->GoToLockMediumModule();
-                    m_timerSeconde = this->RemainingChooseModuleTime;
-                    break;
-                }
-
-                case EGameState::LockMediumModule:
+                case EGameState::ChooseSkill:
                 {
                     spacelGameState->GoToLockPrepare();
                     if (this->GameModeDataAsset != nullptr)
