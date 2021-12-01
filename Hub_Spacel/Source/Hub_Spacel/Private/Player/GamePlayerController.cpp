@@ -9,6 +9,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameState/SpacelGameState.h"
 #include "GameMode/FlyingGameMode.h"
+#include "GameFramework/SpringArmComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "Hub_SpacelGameInstance.h"
 
@@ -72,6 +73,9 @@ void AGamePlayerController::Tick(float _deltaTime)
                     }
                 }
             }
+
+            // disable feature
+            //updateLocalRolling(_deltaTime);
         }
         else if (this->GetNetMode() == ENetMode::NM_DedicatedServer && shipPawn != nullptr)
         {
@@ -241,6 +245,11 @@ void AGamePlayerController::flightAttitudeRight(float _value)
     {
         this->RPCServerFlightAttitudeRight(_value);
     }
+
+    if (_value != 0.0f)
+    {
+        m_rollingState.m_lastTimer = FDateTime::UtcNow().ToUnixTimestamp();
+    }
 }
 
 void AGamePlayerController::flightAttitudeLeft(float _value)
@@ -248,6 +257,11 @@ void AGamePlayerController::flightAttitudeLeft(float _value)
     if (isAvailable())
     {
         this->RPCServerFlightAttitudeLeft(_value);
+    }
+
+    if (_value != 0.0f)
+    {
+        m_rollingState.m_lastTimer = FDateTime::UtcNow().ToUnixTimestamp();
     }
 }
 
@@ -362,6 +376,39 @@ bool AGamePlayerController::isAvailable() const
     }
 
     return this->R_EnableInput;
+}
+
+void AGamePlayerController::updateLocalRolling(float _deltaSeconde)
+{
+    auto lb = [&](bool _inherit)
+    {
+        if (auto pawn = this->GetPawn())
+        {
+            if (auto springArm = Cast<USpringArmComponent>(pawn->GetComponentByClass(USpringArmComponent::StaticClass())))
+            {
+                springArm->bInheritRoll = _inherit;
+                //springArm->bInheritPitch = _inherit;
+            }
+        }
+    };
+
+    int64 timeStamp = FDateTime::UtcNow().ToUnixTimestamp();
+
+    if (m_rollingState.m_lastTimer - timeStamp == 0)
+    {
+        m_rollingState.m_rollingDuration += _deltaSeconde;
+
+        if (!m_rollingState.m_isRolling && m_rollingState.m_rollingDuration > 0.75f)
+        {
+            m_rollingState.m_isRolling = true;
+            lb(false);
+        }
+    }
+    else if (m_rollingState.m_isRolling)
+    {
+        m_rollingState.m_isRolling = false;
+        //lb(true);
+    }
 }
 
 void AGamePlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

@@ -61,9 +61,6 @@ public:
     UPROPERTY(Category = "Fire", EditAnywhere, BlueprintReadWrite)
     int NbShotgunInstance = 7;
 
-    UPROPERTY(Category = "Skill", EditAnywhere, BlueprintReadWrite)
-    float RepairRatio { 0.5f };
-
     UPROPERTY(Category = "Skill", EditAnywhere, BlueprintReadOnly)
     TSubclassOf<class AActor> EmpClass { nullptr };
 

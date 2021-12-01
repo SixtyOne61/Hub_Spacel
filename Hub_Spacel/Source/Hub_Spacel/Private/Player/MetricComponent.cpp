@@ -61,12 +61,6 @@ void UMetricComponent::OnScored(EScoreType _type, int32 _value)
             updateMetric<SMetricAdd, uint16>(EMetric::EmpPoint, { (uint16)_value });
             break;
         }
-
-        case EScoreType::Tank:
-        {
-            updateMetric<SMetricAdd, uint16>(EMetric::TankPoint, { (uint16)_value });
-            break;
-        }
     }
 
     updateMetric<SMetricAdd, uint16>(EMetric::TotalScore, { (uint16)_value });

@@ -49,6 +49,7 @@ ESkillReturn URepairComponent::onRepair()
 
         if (pawn->ProtectionComponent == nullptr) return ESkillReturn::InternError;
         if (pawn->SupportComponent == nullptr) return ESkillReturn::InternError;
+        if (this->RepairSkillDataAsset->MatiereNeeded == 0) return ESkillReturn::InternError;
 
         if (pawn->ProtectionComponent->GetNbRemoved() == 0 && pawn->SupportComponent->GetNbRemoved() == 0)
         {
@@ -56,8 +57,8 @@ ESkillReturn URepairComponent::onRepair()
         }
 
         this->OnUpdateMatiere(-1 * this->RepairSkillDataAsset->MatiereNeeded, EMatiereOrigin::Lost);
-        float ratio = pawn->PlayerDataAsset->RepairRatio;
-        int maxRepair = this->RepairSkillDataAsset->Value * ratio;
+        float ratio = this->RepairSkillDataAsset->Value / this->RepairSkillDataAsset->MatiereNeeded;
+        int maxRepair = this->RepairSkillDataAsset->MatiereNeeded * ratio;
 
         int rest = repair(maxRepair, pawn);
 

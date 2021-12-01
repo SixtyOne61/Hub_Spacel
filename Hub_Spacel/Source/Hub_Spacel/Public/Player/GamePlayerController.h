@@ -87,6 +87,8 @@ private:
 
 	bool isAvailable() const;
 
+	void updateLocalRolling(float _deltaSeconde);
+
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	APawn* LinkPawn { nullptr };
@@ -94,4 +96,12 @@ protected:
 private:
 	UPROPERTY(Replicated)
 	bool R_EnableInput { false };
+
+	/* local client to manage camera rolling */
+	struct FRoleState
+	{
+		int64 m_lastTimer { 0 };
+		float m_rollingDuration { 0.0f };
+		bool m_isRolling { false };
+	} m_rollingState;
 };

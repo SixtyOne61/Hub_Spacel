@@ -672,15 +672,6 @@ void AShipPawn::boostPassive(EMission _type, int32 _rewardValue)
 
 bool AShipPawn::canTank(TArray<FHitResult> const& _hits)
 {
-    auto lb_addScore = [&](int32 _val)
-    {
-        if (ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld())))
-        {
-            if(ASpacelPlayerState const* playerState = this->GetPlayerState<ASpacelPlayerState>())
-            spacelGameState->AddScore(this->Team.ToString(), playerState->PlayerId, EScoreType::Tank, _val);
-        }
-    };
-
     if (hasEffect(EEffect::MetaFormProtection))
     {
         return true;
