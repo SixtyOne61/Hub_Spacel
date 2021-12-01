@@ -13,6 +13,7 @@
 #include "Components/SphereComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Mesh/SpacelInstancedMeshComponent.h"
+#include "Mesh/AnimatedSpacelMeshComponent.h"
 #include "Gameplay/Bullet/Missile.h"
 #include "Gameplay/Bullet/Katyusha.h"
 #include "Gameplay/Bullet/EmpBullet.h"
@@ -193,7 +194,7 @@ void UFireComponent::fireShotgun()
         {
             int nbShotgunInstance = this->ShotgunDataAsset->Value;
 
-            if (auto component = pawn->WeaponComponent)
+            if (auto* component = pawn->WeaponComponent)
             {
                 int nbFireEmplacement = component->GetNum();
 
@@ -235,7 +236,7 @@ void UFireComponent::spawnShotgunBullet(FTransform const& _transform) const
         laser->R_Team = get()->Team;
         laser->SetLifeSpan(FMath::RandRange(0.2f, 0.5f));
 
-        if (auto component = Cast<UProjectileMovementComponent>(laser->GetComponentByClass(UProjectileMovementComponent::StaticClass())))
+        if (auto* component = Cast<UProjectileMovementComponent>(laser->GetComponentByClass(UProjectileMovementComponent::StaticClass())))
         {
             component->InitialSpeed /= 2.5f;
         }

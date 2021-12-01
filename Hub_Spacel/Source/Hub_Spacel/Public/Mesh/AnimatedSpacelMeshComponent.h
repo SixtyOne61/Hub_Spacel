@@ -40,7 +40,7 @@ protected:
 	{
 		if (this->GetNetMode() != ENetMode::NM_DedicatedServer)
 		{
-			for (auto loc : _locations)
+			for (auto const& loc : _locations)
 			{
 				m_locationOnStart.Add(loc);
 			}

@@ -121,7 +121,7 @@ void ACommonPawn::BeginPlay()
     {
         TArray<UActorComponent*> out;
         out = this->GetComponentsByTag(UNiagaraComponent::StaticClass(), "RightTrail");
-        for (auto comp : out)
+        for (auto* comp : out)
         {
             if (comp != nullptr)
             {
@@ -233,7 +233,7 @@ void ACommonPawn::OnRep_PercentSpeed()
     {
         TArray<UActorComponent*> out;
         this->GetComponents(UNiagaraComponent::StaticClass(), out);
-        for (auto com : out)
+        for (auto* com : out)
         {
             if (com != nullptr && com->GetFName().ToString().Contains("Exhaust"))
             {
@@ -242,7 +242,7 @@ void ACommonPawn::OnRep_PercentSpeed()
         }
     }
 
-    for (auto exhaust : this->ExhaustFxComponents)
+    for (auto* exhaust : this->ExhaustFxComponents)
     {
         if (exhaust != nullptr && exhaust->IsActive())
         {

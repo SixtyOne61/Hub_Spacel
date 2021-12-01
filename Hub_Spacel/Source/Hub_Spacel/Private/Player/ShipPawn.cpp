@@ -563,7 +563,7 @@ void AShipPawn::hit(FString const& _team, int32 _playerId, class UPrimitiveCompo
     }
 
     bool bfind { false };
-    for (auto assist : m_assistPlayer)
+    for (auto& assist : m_assistPlayer)
     {
         if (assist.m_playerId == _playerId)
         {
@@ -586,7 +586,7 @@ void AShipPawn::setLocationExhaustFx(TArray<FVector_NetQuantize> const& _loc)
     {
         TArray<UActorComponent*> out;
         this->GetComponents(UNiagaraComponent::StaticClass(), out);
-        for (auto com : out)
+        for (auto* com : out)
         {
             if (com != nullptr && com->GetFName().ToString().Contains("Exhaust"))
             {
@@ -595,7 +595,7 @@ void AShipPawn::setLocationExhaustFx(TArray<FVector_NetQuantize> const& _loc)
         }
     }
 
-    for (auto exhaust : this->ExhaustFxComponents)
+    for (auto* exhaust : this->ExhaustFxComponents)
     {
         if (exhaust != nullptr)
         {
@@ -685,7 +685,7 @@ bool AShipPawn::canTank(TArray<FHitResult> const& _hits)
     {
         bool ret = true;
         int32 add = 0;
-        for (auto hit : _hits)
+        for (auto const& hit : _hits)
         {
             if (hit.Actor.IsValid() && hit.Actor->Tags.Contains(Tags::Asteroide))
             {
@@ -725,7 +725,7 @@ void AShipPawn::RPCNetMulticastEnterHidding_Implementation(int32 _playerId, bool
         }
 
         TArray<UActorComponent*> components = this->GetComponentsByTag(USceneComponent::StaticClass(), Tags::Arrow);
-        for (auto component : components)
+        for (auto* component : components)
         {
             if (USceneComponent* sceneComponent = Cast<USceneComponent>(component))
             {
@@ -1187,7 +1187,7 @@ void AShipPawn::riseAssist(int32 _playerId)
 
         if (!refTeam.IsEmpty())
         {
-            for (auto data : m_assistPlayer)
+            for (auto const& data : m_assistPlayer)
             {
                 for (APlayerState const* playerState : gameState->PlayerArray)
                 {
@@ -1199,7 +1199,7 @@ void AShipPawn::riseAssist(int32 _playerId)
                             {
                                 if (AShipPawn* otherPawn = spacelPlayerState->GetPawn<AShipPawn>())
                                 {
-                                    if (auto metricComponent = Cast<UMetricComponent>(otherPawn->GetComponentByClass(UMetricComponent::StaticClass())))
+                                    if (auto* metricComponent = Cast<UMetricComponent>(otherPawn->GetComponentByClass(UMetricComponent::StaticClass())))
                                     {
                                         metricComponent->updateMetric(EMetric::Assist);
                                     }

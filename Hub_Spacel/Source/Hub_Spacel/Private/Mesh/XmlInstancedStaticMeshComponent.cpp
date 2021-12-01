@@ -63,7 +63,7 @@ int UXmlInstancedStaticMeshComponent::Remove(FVector_NetQuantize const& _locatio
 {
     bool isRemoved { false };
     int i {0};
-    for (auto loc : this->Locations)
+    for (auto const& loc : this->Locations)
     {
         if (loc == _location)
         {
@@ -88,7 +88,7 @@ int UXmlInstancedStaticMeshComponent::Remove(FVector_NetQuantize const& _locatio
 void UXmlInstancedStaticMeshComponent::resetBuild()
 {
     this->ClearInstances();
-    for (auto loc : this->Locations)
+    for (auto const& loc : this->Locations)
     {
         this->AddInstance(FTransform { loc });
     }

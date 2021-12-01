@@ -49,7 +49,7 @@ protected:
 
 	virtual inline void AddRange(TArray<FVector_NetQuantize> const& _locations)
 	{
-		for (auto loc : _locations)
+		for (auto const& loc : _locations)
 		{
 			Super::Add(loc);
 		}

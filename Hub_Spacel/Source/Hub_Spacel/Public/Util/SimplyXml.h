@@ -67,7 +67,7 @@ namespace SimplyXml
 		template<>
 		void writeNode(FContainer<FVector_NetQuantize> const& _container)
 		{
-			for (auto loc : _container.Values)
+			for (auto const& loc : _container.Values)
 			{
 				m_content.Append("<" + _container.Tag + " val=\"" + loc.ToString() + "\"/>\n");
 			}

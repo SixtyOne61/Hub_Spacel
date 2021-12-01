@@ -246,11 +246,11 @@ void UCustomCollisionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 
 					// check if we collide a player
 					int32 idCollider { -1 };
-					for (auto hit : hits)
+					for (auto const& hit : hits)
 					{
 						if (ACommonPawn* otherPawn = Cast<ACommonPawn>(hit.Actor))
 						{
-							if (auto otherPlayerState = otherPawn->GetPlayerState())
+							if (auto* otherPlayerState = otherPawn->GetPlayerState())
 							{
 								idCollider = otherPlayerState->PlayerId;
 

@@ -238,7 +238,7 @@ void UInGameWidget::setupDefaultSkill()
 
     if (skill != ESkill::Max)
     {
-        if (auto uniqueSkillDataAsset = this->SkillDataAsset->getSKill(skill))
+        if (auto* uniqueSkillDataAsset = this->SkillDataAsset->getSKill(skill))
         {
             BP_SetupSkill(m_currentSkillType, uniqueSkillDataAsset->IconeBtn, uniqueSkillDataAsset->BackgroundColorBtn, uniqueSkillDataAsset->VerboseEffect);
         }
@@ -283,7 +283,7 @@ void UInGameWidget::OnHoverCarrousel(ESkill _skillId, ESkillType _type)
 {
     if (this->SkillDataAsset == nullptr) return;
 
-    if (auto uniqueSkillDataAsset = this->SkillDataAsset->getSKill(_skillId))
+    if (auto* uniqueSkillDataAsset = this->SkillDataAsset->getSKill(_skillId))
     {
         BP_SetupSkill(_type, uniqueSkillDataAsset->IconeBtn, uniqueSkillDataAsset->BackgroundColorBtn, uniqueSkillDataAsset->VerboseEffect);
     }
@@ -344,7 +344,7 @@ void UInGameWidget::setupEnnemyTeam()
         TSet<FString> uniqueTeams { };
 
         TArray<APlayerState*> const& playerStates { world->GetGameState()->PlayerArray };
-        for (auto playerState : playerStates)
+        for (auto* playerState : playerStates)
         {
             if (ASpacelPlayerState* spacelPlayerState = Cast<ASpacelPlayerState>(playerState))
             {
@@ -354,7 +354,7 @@ void UInGameWidget::setupEnnemyTeam()
 
         uniqueTeams.Remove(localTeam);
 
-        for (auto team : uniqueTeams)
+        for (auto const& team : uniqueTeams)
         {
             FColorsType const& teamInfo = this->TeamColorDataAsset->GetColorType(team);
             BP_SetupTeam(teamInfo.Logo, teamInfo.SlateColor, team);
@@ -368,7 +368,7 @@ void UInGameWidget::tickScore()
     {
         FString const& bestTeam = spacelGameState->GetBestTeam();
         TArray<FScore> scores = spacelGameState->R_Scores;
-        for (auto score : scores)
+        for (auto const& score : scores)
         {
             BP_UpdateScore(score.Team, score.Score, bestTeam == score.Team);
         }
@@ -515,7 +515,7 @@ void UInGameWidget::InitMissionArrow(FName const& _tag)
     TArray<AActor*> out;
     UGameplayStatics::GetAllActorsWithTag(this->GetWorld(), _tag, out);
 
-    for (auto act : out)
+    for (auto* act : out)
     {
         if (act != nullptr && !act->IsPendingKill())
         {
@@ -539,7 +539,7 @@ void UInGameWidget::updateMissionArrowOrientation()
     if (AShipPawn* shipPawn = this->GetOwningPlayerPawn<AShipPawn>())
     {
         TArray<UActorComponent*> components = shipPawn->GetComponentsByTag(USceneComponent::StaticClass(), Tags::Arrow);
-        for (auto component : components)
+        for (auto* component : components)
         {
             if (USceneComponent* sceneComponent = Cast<USceneComponent>(component))
             {
@@ -580,7 +580,7 @@ void UInGameWidget::OnKill(int32 _killer, int32 _killed)
     FString killerName, killedName{};
     FSlateColor killerColor, killedColor{};
 
-    for (auto playerState : playerStates)
+    for (auto* playerState : playerStates)
     {
         if (ASpacelPlayerState* spacelPlayerState = Cast<ASpacelPlayerState>(playerState))
         {

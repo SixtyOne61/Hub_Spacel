@@ -73,17 +73,17 @@ void SkillHealPack::searchPlayerAround() const
     FName const& team = get()->Team;
     FVector const& location = get()->GetActorLocation();
 
-    if (auto gameState = UGameplayStatics::GetGameState(get()->GetWorld()))
+    if (auto* gameState = UGameplayStatics::GetGameState(get()->GetWorld()))
     {
         int totalHeal { 0 };
         auto playerStates = gameState->PlayerArray;
-        for (auto playerState : playerStates)
+        for (auto* playerState : playerStates)
         {
-            if (auto spacelPlayerState = Cast<ASpacelPlayerState>(playerState))
+            if (auto* spacelPlayerState = Cast<ASpacelPlayerState>(playerState))
             {
                 if (*spacelPlayerState->R_Team == team)
                 {
-                    if (auto pawn = Cast<AShipPawn>(spacelPlayerState->GetPawn()))
+                    if (auto* pawn = Cast<AShipPawn>(spacelPlayerState->GetPawn()))
                     {
                         // not us
                         if (get()->GetUniqueID() != pawn->GetUniqueID())

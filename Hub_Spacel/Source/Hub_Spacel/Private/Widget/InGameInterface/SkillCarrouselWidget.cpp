@@ -14,7 +14,7 @@ void USkillCarrouselWidget::SetupCarrousel(ESkillType _type)
     BP_CleanCarrousel();
 
     auto skills = this->SkillDataAsset->getSkillByType(_type);
-    for (auto skill : skills)
+    for (auto* skill : skills)
     {
         if (skill != nullptr)
         {

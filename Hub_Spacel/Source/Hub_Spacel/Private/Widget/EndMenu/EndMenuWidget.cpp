@@ -22,14 +22,14 @@ void UEndMenuWidget::NativeConstruct()
 
 void UEndMenuWidget::populate()
 {
-    if (auto spacelGameInstance = this->GetGameInstance<UHub_SpacelGameInstance>())
+    if (auto* spacelGameInstance = this->GetGameInstance<UHub_SpacelGameInstance>())
     {
-        for (auto score : spacelGameInstance->ScoresData)
+        for (auto const& score : spacelGameInstance->ScoresData)
         {
             BP_AddTeam(score.Team, score.Score);
         }
 
-        for (auto player : spacelGameInstance->MetricPlayersData)
+        for (auto const& player : spacelGameInstance->MetricPlayersData)
         {
             BP_AddPlayer(player);
         }

@@ -9,7 +9,7 @@ UTexture2D* UPlayerStatWidget::GetLogo(ESkill _skill) const
 {
     if (this->SkillDataAsset != nullptr)
     {
-        if (auto uniqueSkill = this->SkillDataAsset->getSKill(_skill))
+        if (auto* uniqueSkill = this->SkillDataAsset->getSKill(_skill))
         {
             return uniqueSkill->IconeBtn;
         }

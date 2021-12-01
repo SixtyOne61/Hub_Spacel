@@ -42,7 +42,7 @@ void UNetworkInstancedMeshComponent::RPCNetMulticastResetBuild_Implementation()
 void UNetworkInstancedMeshComponent::build()
 {
     this->ClearInstances();
-    for (auto loc : this->Locations)
+    for (auto const& loc : this->Locations)
     {
         this->AddInstance(FTransform{ loc });
     }

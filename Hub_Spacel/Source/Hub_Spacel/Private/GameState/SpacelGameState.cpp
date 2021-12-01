@@ -22,7 +22,7 @@ void ASpacelGameState::travelToEndMenu()
 
 void ASpacelGameState::registerPlayerData()
 {
-    for (auto playerState : this->PlayerArray)
+    for (auto* playerState : this->PlayerArray)
     {
         if (ASpacelPlayerState const* spacelPlayerState = Cast<ASpacelPlayerState>(playerState))
         {
@@ -38,11 +38,11 @@ void ASpacelGameState::registerPlayerData()
 
 void ASpacelGameState::sendMetric()
 {
-    if (auto spacelGameInstance = this->GetGameInstance<UHub_SpacelGameInstance>())
+    if (auto* spacelGameInstance = this->GetGameInstance<UHub_SpacelGameInstance>())
     {
-        for (auto data : R_PlayersData)
+        for (auto const& data : R_PlayersData)
         {
-            for (auto player : this->PlayerArray)
+            for (auto* player : this->PlayerArray)
             {
                 if (player != nullptr)
                 {

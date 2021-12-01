@@ -146,7 +146,7 @@ void APirate::registerPlayers()
     if (auto* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld())))
     {
         auto const& players = spacelGameState->PlayerArray;
-        for (auto player : players)
+        for (auto* player : players)
         {
             if (player != nullptr)
             {

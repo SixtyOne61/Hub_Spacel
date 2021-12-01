@@ -47,7 +47,7 @@ protected:
 protected:
 	inline void AddRange(TArray<FVector_NetQuantize> const& _locations) override
 	{
-		for (auto loc : _locations)
+		for (auto const& loc : _locations)
 		{
 			m_removedLocations.Remove(loc);
 		}

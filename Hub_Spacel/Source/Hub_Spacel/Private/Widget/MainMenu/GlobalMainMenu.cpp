@@ -80,7 +80,7 @@ void UGlobalMainMenu::NativeConstruct()
         WebBrowser->OnUrlChanged.Add(loginDelegate);
     }
 
-    if (auto gameMode = UGameplayStatics::GetGameMode(this->GetWorld()))
+    if (auto* gameMode = UGameplayStatics::GetGameMode(this->GetWorld()))
     {
         if (gameMode->OptionsString.Contains(Option::Requeue))
         {
@@ -398,12 +398,12 @@ void UGlobalMainMenu::OnRefreshInput(class UInputSettings* _inputSettings)
         {
             TArray<FInputActionKeyMapping> _outMappings;
             _inputSettings->GetActionMappingByName(_actionName, _outMappings);
-            for (auto mapping : _outMappings)
+            for (auto const& mapping : _outMappings)
             {
                 hideSkill->Key = mapping.Key;
 
                 auto const& skills = skillDataAsset->getSkillByInput(_type);
-                for (auto skill : skills)
+                for (auto* skill : skills)
                 {
                     if (skill != nullptr)
                     {
@@ -422,7 +422,7 @@ void UGlobalMainMenu::OnRefreshInput(class UInputSettings* _inputSettings)
         {
             TArray<FInputAxisKeyMapping> _outMappings;
             _inputSettings->GetAxisMappingByName(_axisName, _outMappings);
-            for (auto mapping : _outMappings)
+            for (auto const& mapping : _outMappings)
             {
                 hideSkill->Key = mapping.Key;
             }
@@ -449,12 +449,12 @@ void UGlobalMainMenu::OnRefreshInput(class UInputSettings* _inputSettings)
     TArray<FInputAxisKeyMapping> outMappingsBackward;
     _inputSettings->GetAxisMappingByName("Backward", outMappingsBackward);
 
-    for (auto mapping : outMappingsBackward)
+    for (auto const& mapping : outMappingsBackward)
     {
         TArray<FInputActionKeyMapping> outMappingsHalfTurn;
         _inputSettings->GetActionMappingByName("HalfTurn", outMappingsHalfTurn);
 
-        for (auto halfTurnMapping : outMappingsHalfTurn)
+        for (auto const& halfTurnMapping : outMappingsHalfTurn)
         {
             _inputSettings->RemoveActionMapping(halfTurnMapping, false);
         }

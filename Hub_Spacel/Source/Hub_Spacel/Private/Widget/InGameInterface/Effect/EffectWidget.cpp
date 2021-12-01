@@ -8,7 +8,7 @@ void UEffectWidget::SetEffect(EEffect _effect)
 {
     if(this->EffectDataAsset == nullptr) return;
 
-    if (auto effectParam = this->EffectDataAsset->getEffect(_effect))
+    if (auto const& effectParam = this->EffectDataAsset->getEffect(_effect))
     {
         this->Effect = effectParam->Type;
         this->Location = effectParam->TypeLocation;
