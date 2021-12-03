@@ -22,6 +22,9 @@ public:
 	int RemainingChooseModuleTime { 20 };
 
 	UPROPERTY(EditAnywhere)
+	int RemainingPrepareTime { 2 };
+
+	UPROPERTY(EditAnywhere)
 	int EndModuleTime { 5 };
 
 	UPROPERTY(EditAnywhere)

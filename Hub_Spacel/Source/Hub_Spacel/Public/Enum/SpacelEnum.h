@@ -16,8 +16,7 @@ enum class EGameState : uint8
 {
     Undefined = 0,
     Prepare,
-    LockLowModule,
-    LockMediumModule,
+    ChooseSkill,
     LockPrepare,
     InGame,
     EndGame,

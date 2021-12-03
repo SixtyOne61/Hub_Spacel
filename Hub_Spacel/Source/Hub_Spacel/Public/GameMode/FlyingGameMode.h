@@ -139,10 +139,13 @@ public:
 	FTimerHandle UnlockInputHandle {};
 
 	UPROPERTY()
-	int RemainingGameTime { }; // 10'00
+	int RemainingPrepareTime { }; // 2
 
 	UPROPERTY()
 	int RemainingChooseModuleTime { }; // 20
+
+	UPROPERTY()
+	int RemainingGameTime { }; // 10'00
 
 	UPROPERTY()
 	int VictoryScreenTime { };

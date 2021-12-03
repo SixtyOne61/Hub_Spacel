@@ -11,7 +11,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnChangeCarrousel, ESkill, _skillI
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnHoverCarrousel, ESkill, _skillId, ESkillType, _type);
 
 /**
- * 
+ *  DEPRECATED
  */
 UCLASS()
 class HUB_SPACEL_API USkillCarrouselWidget : public UUserWidget

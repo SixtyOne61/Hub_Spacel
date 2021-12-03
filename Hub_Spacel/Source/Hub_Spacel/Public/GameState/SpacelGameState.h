@@ -101,10 +101,7 @@ public:
 	void GoToPrepare() { this->RU_GameState = (uint8)EGameState::Prepare; OnRep_StateGame(); }
 
 	UFUNCTION()
-	void GoToLockLowModule() { this->RU_GameState = (uint8)EGameState::LockLowModule; OnRep_StateGame(); }
-
-	UFUNCTION()
-	void GoToLockMediumModule() { this->RU_GameState = (uint8)EGameState::LockMediumModule; OnRep_StateGame(); }
+	void GoToChooseSkill() { this->RU_GameState = (uint8)EGameState::ChooseSkill; OnRep_StateGame(); }
 
 	UFUNCTION()
 	void GoToLockPrepare() { this->RU_GameState = (uint8)EGameState::LockPrepare; OnRep_StateGame(); }

@@ -1,34 +1,58 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "SkillItemWidget.h"
+#include "GameState/SpacelGameState.h"
 #include "Player/SpacelPlayerState.h"
 #include "Player/ShipPawn.h"
+#include "Kismet/GameplayStatics.h"
 
-void USkillItemWidget::setupItems(FData && _data)
+void USkillItemWidget::NativeConstruct()
 {
-    m_data = std::forward<FData>(_data);
-    BP_Setup(m_data.m_backgroundColor, m_data.m_title, m_data.m_desc, m_data.m_icon);
+    Super::NativeConstruct();
+    ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld()));
+    if (spacelGameState != nullptr)
+    {
+        spacelGameState->OnChangeStateDelegate.AddDynamic(this, &USkillItemWidget::OnChangeState);
+    }
+}
+
+void USkillItemWidget::OnChangeState(EGameState _state)
+{
+    if (_state == EGameState::LockPrepare)
+    {
+        this->OnChooseSkillDelegate.Clear();
+        this->OnHoverSkillDelegate.Clear();
+        m_isDisable = true;
+    }
+    else if (_state == EGameState::InGame)
+    {
+        this->RemoveFromParent();
+    }
 }
 
 void USkillItemWidget::OnChooseSkill()
 {
+    if(m_isDisable) return;
+
     if (ASpacelPlayerState* owningPlayerState = Cast<ASpacelPlayerState>(this->GetOwningPlayerState()))
     {
-        owningPlayerState->RPCServerAddSkill(m_data.m_id, m_data.m_type);
+        owningPlayerState->RPCServerAddSkill(Data.Id, Data.Type);
 
-        this->OnChooseSkillDelegate.Broadcast(m_data.m_id, m_data.m_type);
+        this->OnChooseSkillDelegate.Broadcast(Data.VerboseEffect, Data.Type, Data.Icon, Data.BackgroundColor);
     }
 }
 
 void USkillItemWidget::OnHover()
 {
+    if (m_isDisable) return;
+
     if (ASpacelPlayerState* owningPlayerState = Cast<ASpacelPlayerState>(this->GetOwningPlayerState()))
     {
         if (AShipPawn* shipPawn = Cast<AShipPawn>(owningPlayerState->GetPawn()))
         {
-            shipPawn->buildLobbyShip(m_data.m_id, m_data.m_type);
+            shipPawn->buildLobbyShip(Data.Id, Data.Type);
         }
     }
 
-    this->OnHoverSkillDelegate.Broadcast(m_data.m_id, m_data.m_type);
+    this->OnHoverSkillDelegate.Broadcast(Data.Title, Data.Desc, Data.BackgroundColor);
 }

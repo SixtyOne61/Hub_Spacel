@@ -47,7 +47,14 @@
 
 void AShipPawn::OnChangeState(EGameState _state)
 {
-    if (_state == EGameState::LockPrepare)
+    if (_state == EGameState::ChooseSkill)
+    {
+        if (this->SkillComponent != nullptr)
+        {
+            this->SkillComponent->setupSkill();
+        }
+    }
+    else if (_state == EGameState::LockPrepare)
     {
         if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
         {
@@ -62,11 +69,6 @@ void AShipPawn::OnChangeState(EGameState _state)
             // TO DO : we can remove client start game rpc, and add it in netmulticaststartgame
             RPCClientStartGame(this->Team);
             RPCNetMulticastStartGame(this->Team);
-        }
-
-        if (this->SkillComponent != nullptr)
-        {
-            this->SkillComponent->setupSkill();
         }
 
         if (this->IsLocallyControlled())

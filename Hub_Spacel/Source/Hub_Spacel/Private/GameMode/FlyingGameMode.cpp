@@ -32,6 +32,8 @@ void AFlyingGameMode::BeginPlay()
     {
         this->RemainingGameTime = this->GameModeDataAsset->RemainingGameTime;
         this->RemainingChooseModuleTime = this->GameModeDataAsset->RemainingChooseModuleTime;
+        this->RemainingPrepareTime = this->GameModeDataAsset->RemainingPrepareTime;
+
 #if WITH_EDITOR
         if (HackDataAsset != nullptr && HackDataAsset->UseHack)
         {
@@ -239,7 +241,7 @@ void AFlyingGameMode::BeginPlay()
     ASpacelGameState* spacelGameState{ Cast<ASpacelGameState>(this->GameState) };
     if (!ensure(spacelGameState != nullptr)) return;
     spacelGameState->GoToPrepare();
-    m_timerSeconde = this->RemainingChooseModuleTime;
+    m_timerSeconde = this->RemainingPrepareTime;
 #endif
 
     TArray<AActor*> out {};
@@ -277,21 +279,14 @@ void AFlyingGameMode::Tick(float _deltaSeconde)
             {
                 case EGameState::Prepare:
                 {
-                    spacelGameState->GoToLockLowModule();
+                    spacelGameState->GoToChooseSkill();
                     // register all team for scoring
                     spacelGameState->RegisterTeam();
                     m_timerSeconde = this->RemainingChooseModuleTime;
                     break;
                 }
 
-                case EGameState::LockLowModule:
-                {
-                    spacelGameState->GoToLockMediumModule();
-                    m_timerSeconde = this->RemainingChooseModuleTime;
-                    break;
-                }
-
-                case EGameState::LockMediumModule:
+                case EGameState::ChooseSkill:
                 {
                     spacelGameState->GoToLockPrepare();
                     if (this->GameModeDataAsset != nullptr)
@@ -614,7 +609,7 @@ void AFlyingGameMode::HandleGameSessionUpdate()
         ASpacelGameState* spacelGameState{ Cast<ASpacelGameState>(this->GameState) };
         if (!ensure(spacelGameState != nullptr)) return;
         spacelGameState->GoToPrepare();
-        m_timerSeconde = this->RemainingChooseModuleTime;
+        m_timerSeconde = this->RemainingPrepareTime;
     }
     else if(this->WaitingForPlayersToJoin)
     {

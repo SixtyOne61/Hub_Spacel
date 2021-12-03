@@ -22,9 +22,9 @@ void USkillCarrouselWidget::SetupCarrousel(ESkillType _type)
             BP_CreateSkillItemCarrousel(widget);
             if (widget != nullptr)
             {
-                widget->setupItems({ skill->Skill, skill->BackgroundColorLobby, skill->Title, skill->Desc, skill->IconeBtn, skill->SkillType });
-                widget->OnChooseSkillDelegate.AddDynamic(this, &USkillCarrouselWidget::OnChooseSkill);
-                widget->OnHoverSkillDelegate.AddDynamic(this, &USkillCarrouselWidget::OnHoverSkill);
+                //widget->setupItems({ skill->Skill, skill->BackgroundColorLobby, skill->Title, skill->Desc, skill->IconeBtn, skill->SkillType });
+                //widget->OnChooseSkillDelegate.AddDynamic(this, &USkillCarrouselWidget::OnChooseSkill);
+                //widget->OnHoverSkillDelegate.AddDynamic(this, &USkillCarrouselWidget::OnHoverSkill);
             }
         }
     }

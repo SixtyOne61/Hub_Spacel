@@ -20,6 +20,7 @@
 #include "Widget/InGameInterface/SkillCarrouselWidget.h"
 #include "Widget/SkillWidget.h"
 #include "Widget/SkillProgressWidget.h"
+#include "Widget/InGameInterface/SkillItemWidget.h"
 #include "Components/ProgressBar.h"
 #include "Util/SimplyUI.h"
 #include "Util/Tag.h"
@@ -42,18 +43,6 @@ void UInGameWidget::NativeConstruct()
 
         // clean field
         spacelGameState->OnWhoKillWhoDelegate.AddDynamic(this, &UInGameWidget::OnKill);
-    }
-
-    this->CarrouselWidget = SimplyUI::initSafetyFromName<UUserWidget, USkillCarrouselWidget>(this, TEXT("WBP_SkillCarrousel"));
-    if (this->CarrouselWidget != nullptr)
-    {
-        this->CarrouselWidget->OnChangeCarrouselDelegate.AddDynamic(this, &UInGameWidget::OnChangeCarrousel);
-        this->CarrouselWidget->OnHoverCarrouselDelegate.AddDynamic(this, &UInGameWidget::OnHoverCarrousel);
-    }
-
-    if (this->FlyingModeDataAsset != nullptr)
-    {
-        m_currentTimer = this->FlyingModeDataAsset->RemainingChooseModuleTime;
     }
 
     if (AShipPawn* shipPawn = this->GetOwningPlayerPawn<AShipPawn>())
@@ -93,9 +82,15 @@ void UInGameWidget::OnChangeState(EGameState _state)
 {
     if (_state == EGameState::Prepare)
     {
-        m_currentSkillType = ESkillType::Low;
-        setupDefaultSkill();
+        setupChooseSkill();
         WaitPlayerState();
+    }
+    else if (_state == EGameState::ChooseSkill)
+    {
+        if (this->FlyingModeDataAsset != nullptr)
+        {
+            m_currentTimer = this->FlyingModeDataAsset->RemainingChooseModuleTime;
+        }
     }
     else if (_state == EGameState::LockPrepare)
     {
@@ -144,8 +139,6 @@ void UInGameWidget::WaitPlayerState()
     {
         spawnLobby3D(owningPlayerState);
         setupColor(owningPlayerState);
-        // must be low skill
-        BP_SetupSkillCarrousel(m_currentSkillType);
 
         if (this->TeamColorDataAsset != nullptr)
         {
@@ -219,33 +212,34 @@ void UInGameWidget::setupInGame()
     }
 }
 
-void UInGameWidget::setupDefaultSkill()
+void UInGameWidget::setupChooseSkill()
 {
     if (this->SkillDataAsset == nullptr) return;
-    ESkill skill = ESkill::Max;
-    switch (m_currentSkillType)
-    {
-        case ESkillType::Low:
-            skill = ESkill::DefaultLow;
-        break;
-        case ESkillType::Medium:
-            skill = ESkill::DefaultMedium;
-        break;
-        case ESkillType::Hight:
-            skill = ESkill::DefaultHight;
-        break;
-    }
 
-    if (skill != ESkill::Max)
+    auto lb = [&](ESkillType _type)
     {
-        if (auto* uniqueSkillDataAsset = this->SkillDataAsset->getSKill(skill))
+        auto const& skills = this->SkillDataAsset->getSkillByType(_type);
+        for (UUniqueSkillDataAsset* skill : skills)
         {
-            BP_SetupSkill(m_currentSkillType, uniqueSkillDataAsset->IconeBtn, uniqueSkillDataAsset->BackgroundColorBtn, uniqueSkillDataAsset->VerboseEffect);
+            if (skill != nullptr)
+            {
+                USkillItemWidget* _out { nullptr };
+                BP_AddSkillToChoose(skill->Skill, _type, skill->IconeBtn, skill->BackgroundColorBtn, skill->Title, skill->Desc, skill->VerboseEffect, _out);
+                if (_out != nullptr)
+                {
+                    _out->OnHoverSkillDelegate.AddDynamic(this, &UInGameWidget::BP_OnHoverSkill);
+                    _out->OnChooseSkillDelegate.AddDynamic(this, &UInGameWidget::BP_OnChooseSkill);
+                }
+            }
         }
-    }
+    };
+
+    lb(ESkillType::Low);
+    lb(ESkillType::Medium);
+    lb(ESkillType::Hight);
 }
 
-void UInGameWidget::OnChangeCarrousel(ESkill _skillId, ESkillType _type)
+/*void UInGameWidget::OnChangeCarrousel(ESkill _skillId, ESkillType _type)
 {
     m_currentSkillType = (ESkillType)((uint8)_type + 1);
     setupDefaultSkill();
@@ -287,7 +281,7 @@ void UInGameWidget::OnHoverCarrousel(ESkill _skillId, ESkillType _type)
     {
         BP_SetupSkill(_type, uniqueSkillDataAsset->IconeBtn, uniqueSkillDataAsset->BackgroundColorBtn, uniqueSkillDataAsset->VerboseEffect);
     }
-}
+}*/
 
 void UInGameWidget::tickTimer(float _deltaSeconde)
 {
@@ -296,29 +290,6 @@ void UInGameWidget::tickTimer(float _deltaSeconde)
     if (m_currentTimer <= 0.0f)
     {
         m_currentTimer = 0.0f;
-        switch (m_internState)
-        {
-        case EInternState::ChooseLow:
-            this->CarrouselWidget->OnChooseSkill(ESkill::DefaultLow, ESkillType::Low);
-            break;
-
-        case EInternState::ChooseMedium:
-            this->CarrouselWidget->OnChooseSkill(ESkill::DefaultMedium, ESkillType::Medium);
-            break;
-
-        case EInternState::ChooseHight:
-            this->CarrouselWidget->OnChooseSkill(ESkill::DefaultHight, ESkillType::Hight);
-            break;
-
-        case EInternState::Go:
-            break;
-
-        case EInternState::InGame:
-            break;
-
-        default:
-            break;
-        }
     }
 
     int min = (int)m_currentTimer / 60;

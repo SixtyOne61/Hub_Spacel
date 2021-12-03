@@ -7,9 +7,35 @@
 #include "Enum/SpacelEnum.h"
 #include "SkillItemWidget.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnChooseSkill, ESkill, _skillId, ESkillType, _type);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnHoverSkill, ESkill, _skillId, ESkillType, _type);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnChooseSkill, FString const&, _desc, ESkillType, _type, UTexture2D*, _icon, FSlateColor const&, _color);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnHoverSkill, FString const&, _title, FString const&, _desc, FSlateColor const&, _color);
 
+USTRUCT(BlueprintType)
+struct FSkillChooseData
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	ESkill Id;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FSlateColor BackgroundColor{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString Title{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString Desc{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	class UTexture2D* Icon{ nullptr };
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	ESkillType Type;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString VerboseEffect {};
+};
 
 /**
  * 
@@ -19,41 +45,8 @@ class HUB_SPACEL_API USkillItemWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
-	struct FData
-	{
-		ESkill m_id;
-		FSlateColor m_backgroundColor{};
-		FString m_title{};
-		FString m_desc{};
-		class UTexture2D* m_icon { nullptr };
-		ESkillType m_type;
-
-		FData& operator=(FData&& _move)
-		{
-			m_id = std::move(_move.m_id);
-			m_backgroundColor = std::move(_move.m_backgroundColor);
-			m_title = std::move(_move.m_title);
-			m_desc = std::move(_move.m_desc);
-			m_icon = std::move(_move.m_icon);
-			m_type = std::move(_move.m_type);
-
-			_move.m_id = {};
-			_move.m_backgroundColor = {};
-			_move.m_title = {};
-			_move.m_desc = {};
-			_move.m_icon = {};
-			_move.m_type = {};
-			return *this;
-		}
-
-	} m_data;
-
-public:
-	void setupItems(FData && _data);
-
 protected:
-	UFUNCTION(BlueprintImplementableEvent, Category = "UI|Event")
-	void BP_Setup(FSlateColor const& _backgroundColor, FString const& _title, FString const& _desc, class UTexture2D* _icon);
+	void NativeConstruct() override;
 
 	UFUNCTION(BlueprintCallable, Category = "UI|Event")
 	void OnChooseSkill();
@@ -61,10 +54,21 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "UI|Event")
 	void OnHover();
 
+private:
+	UFUNCTION()
+	void OnChangeState(EGameState _state);
+
 public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, BlueprintAssignable)
 	FOnChooseSkill OnChooseSkillDelegate {};
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, BlueprintAssignable)
 	FOnHoverSkill OnHoverSkillDelegate {};
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Meta = (ExposeOnSpawn = "true"))
+	FSkillChooseData Data {};
+
+private:
+	/* true when state > lockPrepare */
+	bool m_isDisable { false };
 };
