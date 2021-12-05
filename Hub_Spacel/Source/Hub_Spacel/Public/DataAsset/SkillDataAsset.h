@@ -17,6 +17,7 @@ class HUB_SPACEL_API USkillDataAsset : public UDataAsset
 	GENERATED_BODY()
 	
 public:
+	UFUNCTION(BlueprintCallable)
 	class UUniqueSkillDataAsset * getSKill(ESkill _type);
 
 	TArray<class UUniqueSkillDataAsset*> getSkillByInput(EInput _input);

@@ -17,7 +17,7 @@ class HUB_SPACEL_API UUniqueSkillDataAsset : public UDataAsset
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	ESkill Skill {};
 
 	UPROPERTY(EditAnywhere)
@@ -29,37 +29,37 @@ public:
 	UPROPERTY(EditAnywhere)
 	uint32 Value { 0 };
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	class UTexture2D* IconeBtn { nullptr };
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	FSlateColor BackgroundColorBtn { };
 
 	UPROPERTY(EditAnywhere)
 	FKey Key {};
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	FName WidgetName {};
 
 	UPROPERTY(EditAnywhere)
 	FString TextWhenFail {};
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	FSlateColor BackgroundColorLobby {};
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	FString Desc {};
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	FString Title {};
 
 	UPROPERTY(EditAnywhere)
 	EInput InputType {};
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	ESkillType SkillType {};
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	FString VerboseEffect {};
 
 	UPROPERTY(EditAnywhere)
