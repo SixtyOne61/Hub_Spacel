@@ -86,7 +86,7 @@ protected:
 	void BP_OnHoverSkill(FString const& _title, FString const& _desc, FSlateColor const& _color);
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void BP_OnChooseSkill(FString const& _verboseEffect, ESkillType _type, UTexture2D* _icon, FSlateColor const& _color);
+	void BP_OnChooseSkill(ESkill _id, FString const& _verboseEffect, ESkillType _type, UTexture2D* _icon, FSlateColor const& _color);
 
 private:
 	UFUNCTION()

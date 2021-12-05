@@ -38,7 +38,7 @@ void USkillItemWidget::OnChooseSkill()
     {
         owningPlayerState->RPCServerAddSkill(Data.Id, Data.Type);
 
-        this->OnChooseSkillDelegate.Broadcast(Data.VerboseEffect, Data.Type, Data.Icon, Data.BackgroundColor);
+        this->OnChooseSkillDelegate.Broadcast(Data.Id, Data.VerboseEffect, Data.Type, Data.Icon, Data.BackgroundColor);
     }
 }
 

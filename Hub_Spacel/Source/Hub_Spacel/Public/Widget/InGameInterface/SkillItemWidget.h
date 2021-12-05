@@ -7,7 +7,7 @@
 #include "Enum/SpacelEnum.h"
 #include "SkillItemWidget.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnChooseSkill, FString const&, _desc, ESkillType, _type, UTexture2D*, _icon, FSlateColor const&, _color);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FiveParams(FOnChooseSkill, ESkill, _id, FString const&, _desc, ESkillType, _type, UTexture2D*, _icon, FSlateColor const&, _color);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnHoverSkill, FString const&, _title, FString const&, _desc, FSlateColor const&, _color);
 
 USTRUCT(BlueprintType)
