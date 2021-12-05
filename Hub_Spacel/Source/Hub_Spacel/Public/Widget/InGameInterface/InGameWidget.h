@@ -82,11 +82,14 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void BP_EndGame();
 
-	UFUNCTION(BlueprintImplementableEvent)
-	void BP_OnHoverSkill(FString const& _title, FString const& _desc, FSlateColor const& _color);
+	UFUNCTION(BlueprintImplementableEvent, Category = "UI|Carrousel")
+	void BP_OnHoverSkill(ESkillType _type, FString const& _title, FString const& _desc, FSlateColor const& _color);
 
-	UFUNCTION(BlueprintImplementableEvent)
+	UFUNCTION(BlueprintImplementableEvent, Category = "UI|Carrousel")
 	void BP_OnChooseSkill(ESkill _id, FString const& _verboseEffect, ESkillType _type, UTexture2D* _icon, FSlateColor const& _color);
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "UI|Carrousel")
+	void BP_OnUnHoverSkill(ESkillType _type);
 
 private:
 	UFUNCTION()

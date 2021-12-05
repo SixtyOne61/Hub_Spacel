@@ -229,6 +229,7 @@ void UInGameWidget::setupChooseSkill()
                 {
                     _out->OnHoverSkillDelegate.AddDynamic(this, &UInGameWidget::BP_OnHoverSkill);
                     _out->OnChooseSkillDelegate.AddDynamic(this, &UInGameWidget::BP_OnChooseSkill);
+                    _out->OnUnHoverSkillDelegate.AddDynamic(this, &UInGameWidget::BP_OnUnHoverSkill);
                 }
             }
         }

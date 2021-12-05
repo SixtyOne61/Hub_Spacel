@@ -54,5 +54,18 @@ void USkillItemWidget::OnHover()
         }
     }
 
-    this->OnHoverSkillDelegate.Broadcast(Data.Title, Data.Desc, Data.BackgroundColor);
+    this->OnHoverSkillDelegate.Broadcast(Data.Type, Data.Title, Data.Desc, Data.BackgroundColor);
+}
+
+void USkillItemWidget::OnUnHover()
+{
+    if (ASpacelPlayerState* owningPlayerState = Cast<ASpacelPlayerState>(this->GetOwningPlayerState()))
+    {
+        if (AShipPawn* shipPawn = Cast<AShipPawn>(owningPlayerState->GetPawn()))
+        {
+            shipPawn->buildLobbyShip(ESkill::Max, ESkillType::Max);
+        }
+    }
+
+    this->OnUnHoverSkillDelegate.Broadcast(Data.Type);
 }
