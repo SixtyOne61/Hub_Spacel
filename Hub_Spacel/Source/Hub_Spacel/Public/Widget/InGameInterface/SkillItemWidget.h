@@ -36,6 +36,9 @@ struct FSkillChooseData
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString VerboseEffect {};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	USoundBase* OnClickSound { nullptr };
 };
 
 /**

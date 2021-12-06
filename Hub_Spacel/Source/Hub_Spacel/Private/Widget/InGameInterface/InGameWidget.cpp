@@ -224,7 +224,7 @@ void UInGameWidget::setupChooseSkill()
             if (skill != nullptr)
             {
                 USkillItemWidget* _out { nullptr };
-                BP_AddSkillToChoose(skill->Skill, _type, skill->IconeBtn, skill->BackgroundColorBtn, skill->Title, skill->Desc, skill->VerboseEffect, _out);
+                BP_AddSkillToChoose(skill->OnClickSound, skill->Skill, _type, skill->IconeBtn, skill->BackgroundColorBtn, skill->Title, skill->Desc, skill->VerboseEffect, _out);
                 if (_out != nullptr)
                 {
                     _out->OnHoverSkillDelegate.AddDynamic(this, &UInGameWidget::BP_OnHoverSkill);

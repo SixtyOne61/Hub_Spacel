@@ -64,4 +64,7 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	uint32 MatiereNeeded { 0 };
+
+	UPROPERTY(BlueprintReadOnly, EditAnywhere)
+	USoundBase* OnClickSound {};
 };
