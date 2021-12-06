@@ -298,7 +298,7 @@ void UInGameWidget::tickTimer(float _deltaSeconde)
     FString minStr = min < 10 ? "0" + FString::FromInt(min) : FString::FromInt(min);
     FString secStr = sec < 10 ? "0" + FString::FromInt(sec) : FString::FromInt(sec);
 
-    BP_UpdateTimer(minStr + ":" + secStr);
+    BP_UpdateTimer(minStr + ":" + secStr, min == 0 && sec < 30);
 }
 
 void UInGameWidget::setupEnnemyTeam()

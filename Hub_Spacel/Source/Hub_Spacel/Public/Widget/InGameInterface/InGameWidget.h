@@ -29,7 +29,7 @@ protected:
 	void BP_AddSkillToChoose(ESkill _id, ESkillType _type, UTexture2D * _icon, FSlateColor const& _backgroundColor, FString const& _title, FString const& _desc, FString const& _verboseEffect, class USkillItemWidget*& _out);
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void BP_UpdateTimer(FString const& _str);
+	void BP_UpdateTimer(FString const& _str, bool _isHighLight);
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void BP_GoAnimation();
