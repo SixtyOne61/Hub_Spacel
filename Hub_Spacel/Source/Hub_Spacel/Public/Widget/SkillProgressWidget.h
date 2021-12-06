@@ -13,5 +13,5 @@ UCLASS()
 class HUB_SPACEL_API USkillProgressWidget : public USkillWidget
 {
 	GENERATED_BODY()
-	
+
 };
