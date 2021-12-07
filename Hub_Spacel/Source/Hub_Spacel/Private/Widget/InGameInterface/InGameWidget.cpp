@@ -17,7 +17,6 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Blueprint/WidgetLayoutLibrary.h"
-#include "Widget/InGameInterface/SkillCarrouselWidget.h"
 #include "Widget/SkillWidget.h"
 #include "Widget/SkillProgressWidget.h"
 #include "Widget/InGameInterface/SkillItemWidget.h"
@@ -239,50 +238,6 @@ void UInGameWidget::setupChooseSkill()
     lb(ESkillType::Medium);
     lb(ESkillType::Hight);
 }
-
-/*void UInGameWidget::OnChangeCarrousel(ESkill _skillId, ESkillType _type)
-{
-    m_currentSkillType = (ESkillType)((uint8)_type + 1);
-    setupDefaultSkill();
-    BP_SetupSkillCarrousel(m_currentSkillType);
-
-    // go to next state
-    m_internState = (EInternState)((uint8)m_internState + 1);
-
-    if (this->FlyingModeDataAsset != nullptr)
-    {
-        switch (m_internState)
-        {
-        case EInternState::ChooseLow:
-        case EInternState::ChooseMedium:
-        case EInternState::ChooseHight:
-            m_currentTimer += this->FlyingModeDataAsset->RemainingChooseModuleTime;
-#if WITH_EDITOR
-            if (this->HackDataAsset != nullptr)
-            {
-                if (this->HackDataAsset->UseHack)
-                {
-                    m_currentTimer = this->HackDataAsset->ChooseModuleTime;
-                }
-            }
-#endif
-            break;
-        case EInternState::Go:
-            m_currentTimer += this->FlyingModeDataAsset->EndModuleTime;
-            break;
-        }
-    }
-}
-
-void UInGameWidget::OnHoverCarrousel(ESkill _skillId, ESkillType _type)
-{
-    if (this->SkillDataAsset == nullptr) return;
-
-    if (auto* uniqueSkillDataAsset = this->SkillDataAsset->getSKill(_skillId))
-    {
-        BP_SetupSkill(_type, uniqueSkillDataAsset->IconeBtn, uniqueSkillDataAsset->BackgroundColorBtn, uniqueSkillDataAsset->VerboseEffect);
-    }
-}*/
 
 void UInGameWidget::tickTimer(float _deltaSeconde)
 {
