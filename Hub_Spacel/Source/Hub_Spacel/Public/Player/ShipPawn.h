@@ -43,6 +43,7 @@ class HUB_SPACEL_API AShipPawn : public ACommonPawn
     friend class AComet;
     friend class UTargetUserWidget;
     friend class UEmergencyInstancedMeshComponent;
+    friend class ASpacelHUD;
 
 public:
     // Called when the game starts or when spawned

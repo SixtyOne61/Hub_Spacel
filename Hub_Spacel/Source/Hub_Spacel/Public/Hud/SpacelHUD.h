@@ -24,10 +24,19 @@ private:
 	UFUNCTION()
 	void OnChangeState(EGameState _state);
 
+	UFUNCTION()
+	void OnLocalPlayerAddEffect(EEffect _effect);
+
+	UFUNCTION()
+	void OnLocalPlayerRemoveEffect(EEffect _effect);
+
 protected:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class UUserWidget> InGameWidgetClass { nullptr };
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class UUserWidget> EndMenuWidgetClass { nullptr };
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class UUserWidget> DeathWidgetClass{ nullptr };
 };
