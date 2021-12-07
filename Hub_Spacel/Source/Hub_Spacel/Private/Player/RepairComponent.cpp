@@ -57,7 +57,7 @@ ESkillReturn URepairComponent::onRepair()
         }
 
         this->OnUpdateMatiere(-1 * this->RepairSkillDataAsset->MatiereNeeded, EMatiereOrigin::Lost);
-        float ratio = this->RepairSkillDataAsset->Value / this->RepairSkillDataAsset->MatiereNeeded;
+        float ratio = (float)this->RepairSkillDataAsset->Value / (float)this->RepairSkillDataAsset->MatiereNeeded;
         int maxRepair = this->RepairSkillDataAsset->MatiereNeeded * ratio;
 
         int rest = repair(maxRepair, pawn);
