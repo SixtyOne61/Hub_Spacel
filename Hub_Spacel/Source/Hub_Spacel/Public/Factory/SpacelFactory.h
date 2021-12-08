@@ -17,7 +17,7 @@ public:
 	static TSubclassOf<T> FindClass(TCHAR const* _path);
 
 	template<class T>
-	static void createWidget(UWorld* _world, TSubclassOf<T> _class, bool _setFocus);
+	static T* createWidget(UWorld* _world, TSubclassOf<T> _class, bool _setFocus);
 };
 
 template<class T>
@@ -30,13 +30,15 @@ TSubclassOf<T> SpacelFactory::FindClass(TCHAR const* _path)
 }
 
 template<class T>
-void SpacelFactory::createWidget(UWorld* _world, TSubclassOf<T> _class, bool _setFocus)
+T* SpacelFactory::createWidget(UWorld* _world, TSubclassOf<T> _class, bool _setFocus)
 {
 	T* widget = CreateWidget<T>(_world, _class);
-	if (!ensure(widget != nullptr)) return;
+	if (!ensure(widget != nullptr)) return nullptr;
 	widget->AddToViewport();
 	if (_setFocus)
 	{
 		widget->SetFocus();
 	}
+
+	return widget;
 }
