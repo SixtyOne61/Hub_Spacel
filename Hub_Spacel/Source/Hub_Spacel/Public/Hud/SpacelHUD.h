@@ -30,6 +30,11 @@ private:
 	UFUNCTION()
 	void OnLocalPlayerRemoveEffect(EEffect _effect);
 
+private:
+	/* setup cursor */
+	void switchToGameAndUI();
+	void switchToUIOnly();
+
 protected:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class UUserWidget> InGameWidgetClass { nullptr };

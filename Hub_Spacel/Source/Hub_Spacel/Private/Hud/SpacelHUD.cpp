@@ -47,14 +47,7 @@ void ASpacelHUD::OnChangeState(EGameState _state)
 
     if (_state == EGameState::InGame)
     {
-        APlayerController* playerController = world->GetFirstPlayerController();
-        if (!ensure(playerController != nullptr)) return;
-
-        playerController->bShowMouseCursor = false;
-
-        FInputModeGameAndUI mode{};
-        mode.SetLockMouseToViewportBehavior(EMouseLockMode::LockAlways);
-        playerController->SetInputMode(mode);
+        switchToGameAndUI();
     }
     else if (_state == EGameState::EndGame)
     {
@@ -68,19 +61,11 @@ void ASpacelHUD::OnLocalPlayerAddEffect(EEffect _effect)
     {
         if (this->DeathWidgetClass != nullptr)
         {
+            switchToUIOnly();
+
             UWorld* world = this->GetWorld();
             if (!ensure(world != nullptr)) return;
-
-            APlayerController* playerController = world->GetFirstPlayerController();
-            if (!ensure(playerController != nullptr)) return;
-
-            playerController->bShowMouseCursor = true;
-
             SpacelFactory::createWidget<UUserWidget>(world, this->DeathWidgetClass, true);
-
-            FInputModeUIOnly mode{};
-            mode.SetLockMouseToViewportBehavior(EMouseLockMode::LockAlways);
-            playerController->SetInputMode(mode);
         }
     }
 }
@@ -89,16 +74,38 @@ void ASpacelHUD::OnLocalPlayerRemoveEffect(EEffect _effect)
 {
     if (_effect == EEffect::Killed)
     {
-        UWorld* world = this->GetWorld();
-        if (!ensure(world != nullptr)) return;
-
-        APlayerController* playerController = world->GetFirstPlayerController();
-        if (!ensure(playerController != nullptr)) return;
-
-        FInputModeGameAndUI mode{};
-        mode.SetLockMouseToViewportBehavior(EMouseLockMode::LockAlways);
-        playerController->SetInputMode(mode);
-
-        playerController->bShowMouseCursor = false;
+        switchToGameAndUI();
     }
+}
+
+void ASpacelHUD::switchToGameAndUI()
+{
+    UWorld* world = this->GetWorld();
+    if (!ensure(world != nullptr)) return;
+
+    APlayerController* playerController = world->GetFirstPlayerController();
+    if (!ensure(playerController != nullptr)) return;
+
+    playerController->bShowMouseCursor = false;
+
+    FInputModeGameAndUI mode{};
+    mode.SetLockMouseToViewportBehavior(EMouseLockMode::LockAlways);
+    playerController->SetInputMode(mode);
+}
+
+void ASpacelHUD::switchToUIOnly()
+{
+    UWorld* world = this->GetWorld();
+    if (!ensure(world != nullptr)) return;
+
+    APlayerController* playerController = world->GetFirstPlayerController();
+    if (!ensure(playerController != nullptr)) return;
+
+    playerController->bShowMouseCursor = true;
+
+    SpacelFactory::createWidget<UUserWidget>(world, this->DeathWidgetClass, true);
+
+    FInputModeUIOnly mode{};
+    mode.SetLockMouseToViewportBehavior(EMouseLockMode::LockAlways);
+    playerController->SetInputMode(mode);
 }
