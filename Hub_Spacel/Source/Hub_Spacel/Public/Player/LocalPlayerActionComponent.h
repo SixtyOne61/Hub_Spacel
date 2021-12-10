@@ -31,12 +31,6 @@ private:
 	UFUNCTION()
 	void RemoveEffect(EEffect _effect);
 
-	UFUNCTION()
-	void CountDownRespawn(float _deltaSeconde);
-
 private:
 	class UMaterialInstanceDynamic* m_speedLineMaterial { nullptr };
-
-	// count time when respawn
-	float m_countDownRespawn { 0.0f };
 };

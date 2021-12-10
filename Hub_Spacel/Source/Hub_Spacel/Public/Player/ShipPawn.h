@@ -12,7 +12,6 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnUpdateMatiere, int, _value, EMatiereOrigin, _type);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnEndUpdateMatiere, int32, _value, FString const&, _deltaStr);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnShowMission, bool, _show);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLocalTeamUpdate, FString const&, _team);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAddEffect, EEffect, _type);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRemoveEffect, EEffect, _type);
@@ -44,6 +43,7 @@ class HUB_SPACEL_API AShipPawn : public ACommonPawn
     friend class UTargetUserWidget;
     friend class UEmergencyInstancedMeshComponent;
     friend class ASpacelHUD;
+    friend class UDeathWidget;
 
 public:
     // Called when the game starts or when spawned
@@ -201,6 +201,9 @@ private:
     UFUNCTION(UnReliable, Client)
     void RPCClientRepair();
 
+    UFUNCTION(Reliable, Server)
+    void RPCServerRespawn();
+
     bool canTank(TArray<FHitResult> const& _hits);
 
     UFUNCTION()
@@ -262,9 +265,6 @@ private:
 
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
     FOnEndUpdateMatiere OnEndUpdateMatiereDelegate {};
-
-    UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
-    FOnShowMission OnShowMissionDelegate {}; // deprecated to do remove
 
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
     FOnLocalTeamUpdate OnLocalTeamUpdateDelegate {};

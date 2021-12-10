@@ -16,10 +16,6 @@
 void AGamePlayerController::SetupInputComponent()
 {
     Super::SetupInputComponent();
-
-    // deprecated to do remove
-    this->InputComponent->BindAction("Mission", IE_Pressed, this, &AGamePlayerController::showMission);
-    this->InputComponent->BindAction("Mission", IE_Released, this, &AGamePlayerController::hideMission);
 }
 
 void AGamePlayerController::BeginPlay()
@@ -287,22 +283,6 @@ void AGamePlayerController::halfTurn()
     {
         this->RPCServerHalfTurn();
     }
-}
-
-void AGamePlayerController::showMission()
-{
-    AShipPawn* shipPawn = Cast<AShipPawn>(this->GetPawn());
-    if (shipPawn == nullptr) return;
-
-    shipPawn->OnShowMissionDelegate.Broadcast(true);
-}
-
-void AGamePlayerController::hideMission()
-{
-    AShipPawn* shipPawn = Cast<AShipPawn>(this->GetPawn());
-    if (shipPawn == nullptr) return;
-
-    shipPawn->OnShowMissionDelegate.Broadcast(false);
 }
 
 void AGamePlayerController::GameModeChangeState(EGameState _state)

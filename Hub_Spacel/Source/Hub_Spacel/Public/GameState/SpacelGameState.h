@@ -216,6 +216,9 @@ public:
 	UPROPERTY(Replicated)
 	TArray<FPlayerData> R_PlayersData {};
 
+	UPROPERTY(Replicated)
+	int R_MinDeathTimer { 0 };
+
 protected:
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
 	class UGameStateDataAsset* GameStateDataAsset { nullptr };

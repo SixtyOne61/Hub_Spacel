@@ -283,6 +283,11 @@ void AFlyingGameMode::Tick(float _deltaSeconde)
                     // register all team for scoring
                     spacelGameState->RegisterTeam();
                     m_timerSeconde = this->RemainingChooseModuleTime;
+
+                    if(this->GameModeDataAsset != nullptr)
+                    {
+                        spacelGameState->R_MinDeathTimer = this->GameModeDataAsset->MinDeathTime;
+                    }
                     break;
                 }
 

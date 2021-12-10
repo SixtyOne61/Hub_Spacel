@@ -80,11 +80,6 @@ void ULocalPlayerActionComponent::TickComponent(float _deltaTime, ELevelTick _ti
         float smoothFov { FMath::Lerp(currentFov, noSmoothFov, _deltaTime) };
         get()->CameraComponent->SetFieldOfView(smoothFov);
     }
-
-    if (m_countDownRespawn > 0.0f)
-    {
-        CountDownRespawn(_deltaTime);
-    }
 }
 
 void ULocalPlayerActionComponent::OnUpdateTeam(FString const& _team)
@@ -107,24 +102,6 @@ void ULocalPlayerActionComponent::AddEffect(EEffect _effect)
             }
         }
     }
-    else if (_effect == EEffect::Killed)
-    {
-        // TO DO : no magic number
-        m_countDownRespawn = 10.0f;
-    }
-}
-
-void ULocalPlayerActionComponent::CountDownRespawn(float _deltaSeconde)
-{
-    if (AShipPawn* pawn = get<AShipPawn>())
-    {
-        int round = m_countDownRespawn;
-        m_countDownRespawn = FMath::Max(m_countDownRespawn - _deltaSeconde, 0.0f);
-        if (round != (int)m_countDownRespawn)
-        {
-            pawn->OnSendInfoPlayerDelegate.Broadcast("Rebuilding... " + FString::FromInt((int)m_countDownRespawn));
-        }
-    }
 }
 
 void ULocalPlayerActionComponent::RemoveEffect(EEffect _effect)
@@ -138,10 +115,6 @@ void ULocalPlayerActionComponent::RemoveEffect(EEffect _effect)
                 m_speedLineMaterial->SetScalarParameterValue("GradientRadius", 1.0f);
             }
         }
-    }
-    else if (_effect == EEffect::Killed)
-    {
-        m_countDownRespawn = 0.0f;
     }
 }
 

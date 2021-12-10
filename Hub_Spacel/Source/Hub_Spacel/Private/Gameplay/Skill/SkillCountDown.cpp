@@ -189,9 +189,6 @@ void SkillCountDown::use(class UWorld* _context)
     {
         m_callbackUse(getSkillType(), m_affectedByOtherSkillCountDown);
         m_state = ECountDown::Ing;
-        // TO DO here, add event for cancel other skill count down
-        // may be throw event to skillComponent
-        // and skillComponent cancel other skill affected
     }
     else if(m_state == ECountDown::CountDown)
     {

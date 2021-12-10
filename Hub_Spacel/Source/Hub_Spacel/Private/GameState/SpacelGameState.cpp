@@ -303,4 +303,5 @@ void ASpacelGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
     DOREPLIFETIME(ASpacelGameState, RU_GameState);
     DOREPLIFETIME(ASpacelGameState, R_Scores);
     DOREPLIFETIME(ASpacelGameState, R_PlayersData);
+    DOREPLIFETIME(ASpacelGameState, R_MinDeathTimer);
 }

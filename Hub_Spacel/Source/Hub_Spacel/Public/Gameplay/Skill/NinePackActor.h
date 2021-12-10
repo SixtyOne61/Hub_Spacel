@@ -6,6 +6,7 @@
 #include "Gameplay/DestroyActor.h"
 #include "NinePackActor.generated.h"
 
+// DEPRECATED
 UCLASS()
 class HUB_SPACEL_API ANinePackActor : public ADestroyActor
 {

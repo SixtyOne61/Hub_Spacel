@@ -29,4 +29,7 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	int VictoryScreenTime { 7 };
+
+	UPROPERTY(EditAnywhere)
+	int MinDeathTime { 5 };
 };

@@ -74,10 +74,6 @@ private:
 	void fireOff() override;
 	void halfTurn() override;
 
-	// deprecated to do remove
-	void showMission();
-	void hideMission();
-
 	/* from event */
 	UFUNCTION()
 	void GameModeChangeState(EGameState _state);

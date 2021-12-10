@@ -431,30 +431,7 @@ void AShipPawn::kill(int32 _playerId)
 
         setFire(false);
 
-        // fing all fog actor
-        if (auto* world = this->GetWorld())
-        {
-            TArray<AActor*> fogs;
-            UGameplayStatics::GetAllActorsWithTag(world, Tags::Fog, fogs);
-
-            if (fogs.Num() > 0)
-            {
-                int id { FMath::RandRange(0, fogs.Num() - 1) };
-
-                if (id < fogs.Num())
-                {
-                    // move pawn into fog
-                    this->SetActorLocationAndRotation(fogs[id]->GetActorLocation(), fogs[id]->GetActorRotation(), false, nullptr, ETeleportType::ResetPhysics);
-                    this->DriverMeshComponent->SetWorldLocationAndRotationNoPhysics(fogs[id]->GetActorLocation(), fogs[id]->GetActorRotation());
-                }
-            }
-        }
-
         this->GetWorldTimerManager().ClearAllTimersForObject(this);
-
-        // temp respawn
-        FTimerHandle handle;
-        this->GetWorldTimerManager().SetTimer(handle, this, &AShipPawn::Restarted, 1.0f, false, 10.0f);
 
         // disable collision
         if (this->DriverMeshComponent != nullptr)
@@ -472,6 +449,59 @@ void AShipPawn::kill(int32 _playerId)
 
         this->RU_Matiere = 0;
         OnRep_Matiere();
+    }
+}
+
+void AShipPawn::RPCServerRespawn_Implementation()
+{
+    auto* world = this->GetWorld();
+    // TO DO : take all player, order it by distance between each fog
+    if (ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(world)))
+    {
+        TArray<APlayerState*> players = spacelGameState->PlayerArray;
+        // ignore our player
+        players.Remove(this->GetPlayerState());
+
+        // fing all fog actor
+        TArray<AActor*> fogs;
+        UGameplayStatics::GetAllActorsWithTag(world, Tags::Fog, fogs);
+
+        // order fogs by player distance
+        AActor const* target { nullptr };
+        float targetDist { FLT_MAX };
+        for (auto const* fog : fogs)
+        {
+            if (fog != nullptr)
+            {
+                float minDist{ FLT_MAX };
+                for (auto const* player : players)
+                {
+                    if (APawn const* pawn = player->GetPawn())
+                    {
+                        minDist = FMath::Min(minDist, FVector::Distance(fog->GetActorLocation(), pawn->GetActorLocation()));
+                    }
+                }
+
+                if (minDist < targetDist)
+                {
+                    target = fog;
+                }
+            }
+        }
+
+        // for test when we have only one player
+        if (target == nullptr && fogs.Num())
+        {
+            target = fogs[0];
+        }
+
+        if (target != nullptr)
+        {
+            // move pawn into fog
+            this->SetActorLocationAndRotation(target->GetActorLocation(), target->GetActorRotation(), false, nullptr, ETeleportType::ResetPhysics);
+            this->DriverMeshComponent->SetWorldLocationAndRotationNoPhysics(target->GetActorLocation(), target->GetActorRotation());
+            Restarted();
+        }
     }
 }
 
