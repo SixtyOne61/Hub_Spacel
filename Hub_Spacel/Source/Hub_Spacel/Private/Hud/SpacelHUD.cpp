@@ -103,8 +103,6 @@ void ASpacelHUD::switchToUIOnly()
 
     playerController->bShowMouseCursor = true;
 
-    SpacelFactory::createWidget<UUserWidget>(world, this->DeathWidgetClass, true);
-
     FInputModeUIOnly mode{};
     mode.SetLockMouseToViewportBehavior(EMouseLockMode::LockAlways);
     playerController->SetInputMode(mode);
