@@ -408,6 +408,12 @@ void AShipPawn::kill(int32 _playerId)
 {
     if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
     {
+        // set playerId in player state
+        if (ASpacelPlayerState* playerState = this->GetPlayerState<ASpacelPlayerState>())
+        {
+            playerState->R_KilledByPlayerId = _playerId;
+        }
+
         // dispatch assist
         riseAssist(_playerId);
 

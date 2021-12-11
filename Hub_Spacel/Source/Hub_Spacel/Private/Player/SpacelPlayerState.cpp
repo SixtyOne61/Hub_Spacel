@@ -73,4 +73,5 @@ void ASpacelPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
     DOREPLIFETIME(ASpacelPlayerState, R_LowSkill);
     DOREPLIFETIME(ASpacelPlayerState, R_MediumSkill);
     DOREPLIFETIME(ASpacelPlayerState, R_HightSkill);
+    DOREPLIFETIME(ASpacelPlayerState, R_KilledByPlayerId);
 }

@@ -53,6 +53,9 @@ public:
     UPROPERTY(Replicated)
     uint8 R_HightSkill {};
 
+    UPROPERTY(Replicated)
+    int32 R_KilledByPlayerId {};
+
     std::function<void(class SkillCountDown*)> OnAddSkillUniqueDelegate { nullptr };
     std::function<void(ESkill _type)> OnRemoveSkillUniqueDelegate { nullptr };
 };

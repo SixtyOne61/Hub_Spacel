@@ -25,11 +25,17 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Setup")
 	void BP_EnableRespawn();
 
+	UFUNCTION(BlueprintImplementableEvent, Category = "Setup")
+	void BP_Setup(ESkill _low, ESkill _medium, ESkill _hight, FString const& _name, class UTexture2D* _logo, FColor const& _color);
+
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void Respawn();
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Event")
 	void BP_OnAddEffect(EEffect _effect);
+
+	UFUNCTION()
+	void WaitPlayerInfo();
 
 private:
 	/* update timer before enable respawn */
@@ -38,4 +44,11 @@ private:
 protected:
 	/* timer before enable respawn */
 	float m_currentTimer { 0.0f };
+
+protected:
+	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
+	class UTeamColorDataAsset* TeamColorDataAsset { nullptr };
+
+	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
+	class USkillDataAsset* SkillDataAsset { nullptr };
 };
