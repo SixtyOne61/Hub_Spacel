@@ -166,7 +166,8 @@ enum class EScoreType : uint8
 {
     Kill UMETA(DisplayName = "Kill"),
     Hit UMETA(DisplayName = "Hit"),
-    Emp UMETA(DisplayName = "Emp")
+    Emp UMETA(DisplayName = "Emp"),
+    Heal UMETA(DisplayName = "Heal")
 };
 
 UENUM(BlueprintType)

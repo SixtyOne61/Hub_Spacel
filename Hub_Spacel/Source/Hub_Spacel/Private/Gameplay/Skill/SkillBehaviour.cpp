@@ -73,7 +73,7 @@ void SkillHealPack::searchPlayerAround() const
     FName const& team = get()->Team;
     FVector const& location = get()->GetActorLocation();
 
-    if (auto* gameState = UGameplayStatics::GetGameState(get()->GetWorld()))
+    if (ASpacelGameState* gameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(get()->GetWorld())))
     {
         int totalHeal { 0 };
         auto playerStates = gameState->PlayerArray;
@@ -93,6 +93,8 @@ void SkillHealPack::searchPlayerAround() const
                             {
                                 pawn->heal(m_data->Value);
                                 totalHeal += m_data->Value;
+
+                                gameState->AddScore(team.ToString(), get()->GetUniqueID(), EScoreType::Heal);
                             }
                         }
                     }
