@@ -247,11 +247,13 @@ void ASpacelGameState::RPCNetMulticastStartGlobalCountDown_Implementation(int64 
 
 void ASpacelGameState::RPCNetMulticastStartMission_Implementation(EMission _type)
 {
+    this->R_MissionInProgress.Add({_type, ""});
     OnStartMissionDelegate.Broadcast(_type);
 }
 
 void ASpacelGameState::RPCNetMulticastStartMissionTwoParam_Implementation(EMission _type, FName _team, FName _teamTarget)
 {
+    this->R_MissionInProgress.Add({_type, _team});
     OnStartMissionTwoParamDelegate.Broadcast(_type, _team, _teamTarget);
 }
 
@@ -304,4 +306,5 @@ void ASpacelGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
     DOREPLIFETIME(ASpacelGameState, R_Scores);
     DOREPLIFETIME(ASpacelGameState, R_PlayersData);
     DOREPLIFETIME(ASpacelGameState, R_MinDeathTimer);
+    DOREPLIFETIME(ASpacelGameState, R_MissionInProgress);
 }

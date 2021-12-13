@@ -8,6 +8,7 @@
 #include "Player/SpacelPlayerState.h"
 #include "DataAsset/TeamColorDataAsset.h"
 #include "DataAsset/SkillDataAsset.h"
+#include "DataAsset/MissionDataAsset.h"
 
 void UDeathWidget::NativeConstruct()
 {
@@ -21,6 +22,32 @@ void UDeathWidget::NativeConstruct()
         m_currentTimer = spacelGameState->R_MinDeathTimer;
 
         WaitPlayerInfo();
+        setupMissionInProgress(spacelGameState);
+    }
+}
+
+void UDeathWidget::setupMissionInProgress(ASpacelGameState* _spacelGameState)
+{
+    if(this->MissionDataAsset == nullptr) return;
+
+    // local player state
+    if (AShipPawn const* shipPawn = this->GetOwningPlayerPawn<AShipPawn>())
+    {
+        if (ASpacelPlayerState const* localPlayerState = shipPawn->GetPlayerState<ASpacelPlayerState>())
+        {
+            // private function, we don't need to check _spacelGameState
+            auto const& missions = _spacelGameState->R_MissionInProgress;
+            for (auto const& mission : missions)
+            {
+                if (mission.Team == "" || mission.Team == *localPlayerState->R_Team)
+                {
+                    if (auto const* info = this->MissionDataAsset->getMissionInfo(mission.Type))
+                    {
+                        BP_AddMissionInProgress(info->Logo, info->MissionTitle, info->MissionDesc);
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -36,24 +63,33 @@ void UDeathWidget::WaitPlayerInfo()
         {
             if (ASpacelPlayerState const* localPlayerState = shipPawn->GetPlayerState<ASpacelPlayerState>())
             {
-                // find killer player
-                auto const& players = spacelGameState->PlayerArray;
-                for (auto const* player : players)
+                if (localPlayerState->R_KilledByPlayerId == -1)
                 {
-                    if (player->PlayerId == localPlayerState->R_KilledByPlayerId)
+                    // kill by environment
+                    BP_KillByEnvironment();
+                    return;
+                }
+                else
+                {
+                    // find killer player
+                    auto const& players = spacelGameState->PlayerArray;
+                    for (auto const* player : players)
                     {
-                        if (ASpacelPlayerState const* killerPlayerState = Cast<ASpacelPlayerState>(player))
+                        if (player->PlayerId == localPlayerState->R_KilledByPlayerId)
                         {
-                            if (this->TeamColorDataAsset != nullptr)
+                            if (ASpacelPlayerState const* killerPlayerState = Cast<ASpacelPlayerState>(player))
                             {
-                                FColorsType const& _colors = this->TeamColorDataAsset->GetColorType(killerPlayerState->R_Team);
-                                // setup player killer information
-                                BP_Setup((ESkill)killerPlayerState->R_LowSkill,
-                                    (ESkill)killerPlayerState->R_MediumSkill,
-                                    (ESkill)killerPlayerState->R_HightSkill,
-                                    killerPlayerState->GetPlayerName(),
-                                    _colors.Logo, _colors.Color);
-                                return;
+                                if (this->TeamColorDataAsset != nullptr)
+                                {
+                                    FColorsType const& _colors = this->TeamColorDataAsset->GetColorType(killerPlayerState->R_Team);
+                                    // setup player killer information
+                                    BP_Setup((ESkill)killerPlayerState->R_LowSkill,
+                                        (ESkill)killerPlayerState->R_MediumSkill,
+                                        (ESkill)killerPlayerState->R_HightSkill,
+                                        killerPlayerState->GetPlayerName(),
+                                        _colors.Logo, _colors.Color);
+                                    return;
+                                }
                             }
                         }
                     }

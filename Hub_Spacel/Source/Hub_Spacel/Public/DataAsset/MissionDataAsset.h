@@ -61,6 +61,7 @@ class HUB_SPACEL_API UMissionDataAsset : public UDataAsset
 	GENERATED_BODY()
 
 public:
+	// TO DO deprecated this
 	inline FMission getMission(EMission _type) const
 	{
 		for (auto const& mission : Missions)
@@ -73,6 +74,19 @@ public:
 
 		ensure(false);
 		return {};
+	}
+
+	inline FMission const* getMissionInfo(EMission _type) const
+	{
+		for (auto const& mission : Missions)
+		{
+			if (mission.Type == _type)
+			{
+				return &mission;
+			}
+		}
+
+		return nullptr;
 	}
 
 	inline FMission* getMissionModify(EMission _type)

@@ -63,7 +63,7 @@ struct HUB_SPACEL_API FPlayerData
 		, LowSkill(_lowSkill)
 		, MediumSkill(_mediumSkill)
 		, HightSkill(_hightSkill)
-	{};
+	{}
 
 	UPROPERTY()
 	int32 PlayerId {};
@@ -82,6 +82,24 @@ struct HUB_SPACEL_API FPlayerData
 
 	UPROPERTY(BlueprintReadOnly)
 	ESkill HightSkill { ESkill::DefaultHight };
+};
+
+USTRUCT(BlueprintType)
+struct HUB_SPACEL_API FShortMissionInfo
+{
+	GENERATED_BODY()
+
+	FShortMissionInfo() = default;
+	FShortMissionInfo(EMission _type, FName const& _team)
+		: Type(_type)
+		, Team(_team)
+		{}
+
+	UPROPERTY(BlueprintReadOnly)
+	EMission Type {};
+
+	UPROPERTY(BlueprintReadOnly)
+	FName Team {};
 };
 
 /**
@@ -218,6 +236,9 @@ public:
 
 	UPROPERTY(Replicated)
 	int R_MinDeathTimer { 0 };
+
+	UPROPERTY(Replicated)
+	TArray<FShortMissionInfo> R_MissionInProgress{};
 
 protected:
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
