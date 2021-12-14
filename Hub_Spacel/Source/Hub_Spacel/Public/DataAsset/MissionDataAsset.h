@@ -50,6 +50,9 @@ struct HUB_SPACEL_API FMission
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FName SucceedForTeam {};
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool GiveScore { false };
 };
 
 /**

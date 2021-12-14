@@ -192,14 +192,33 @@ void ASpacelGameState::AddScore(FString const& _team, int32 _playerId, EScoreTyp
     }
 }
 
-void ASpacelGameState::AddScore(FString const& _team, int32 _value)
+void ASpacelGameState::AddScore(FString const& _team, EScoreType _type)
 {
+    if (this->GameStateDataAsset == nullptr) return;
+
     uint16 scoreValue = 0;
     for (FScore& score : this->R_Scores)
     {
         if (score.Team == _team)
         {
-            score.Score += _value;
+            int32 delta = this->GameStateDataAsset->getScore(_type);
+            score.Score += delta;
+            scoreValue = delta;
+        }
+    }
+
+    // send feedback to all playerin team
+    for (APlayerState* playerState : this->PlayerArray)
+    {
+        if (ASpacelPlayerState * spacelPlayerState = Cast<ASpacelPlayerState>(playerState))
+        {
+            if (spacelPlayerState->R_Team == _team)
+            {
+                if (AShipPawn* shipPawn = playerState->GetPawn<AShipPawn>())
+                {
+                    shipPawn->RPCClientFeedbackScore(_type, scoreValue);
+                }
+            }
         }
     }
 }

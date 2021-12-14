@@ -36,7 +36,7 @@ public:
 			}
 		}
 	}
-	virtual void end(UWorld* _world, bool _succeed) { m_isEnd = true; OnResetTimerUniqueDelegate.clean(); m_isSucceed = _succeed; };
+	virtual void end(UWorld* _world, bool _succeed);
 
 	void resetTimer()
 	{

@@ -12,6 +12,21 @@
 #include "Kismet/GameplayStatics.h"
 #include "Util/Tag.h"
 
+void MissionBehaviour::end(UWorld* _world, bool _succeed)
+{
+    m_isEnd = true;
+    OnResetTimerUniqueDelegate.clean();
+    m_isSucceed = _succeed;
+
+    if (ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(_world->GetGameState()))
+    {
+        if (m_mission.GiveScore)
+        {
+            spacelGameState->AddScore(m_succeedForTeam.ToString(), EScoreType::Mission);
+        }
+    }
+}
+
 void MissionFirstBlood::start(class UWorld* _world)
 {
     MissionBehaviour::start(_world);
@@ -120,10 +135,7 @@ void MissionEcartType::tick(float _deltaTime, UWorld* _world)
     MissionSilence::tick(_deltaTime, _world);
     if (m_killDone)
     {
-        if (ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(_world->GetGameState()))
-        {
-            spacelGameState->AddScore(m_loosingTeam, m_mission.RewardValue);
-        }
+        m_succeedForTeam = *m_loosingTeam;
         end(_world, true);
     }
 }
