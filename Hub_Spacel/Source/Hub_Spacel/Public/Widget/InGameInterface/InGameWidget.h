@@ -71,10 +71,10 @@ protected:
 	void BP_OnResetTimerMission(FMission const& _mission);
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void BP_OnScored(EScoreType _type, FString const& _value, FVector2D const& _position);
+	void BP_OnScored(EScoreType _type, FString const& _value);
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void BP_CreateKillField(FString const& _killerName, FSlateColor const& _killerColor, FString const& _killedName, FSlateColor const& _killedColor);
+	void BP_CreateKillField(FString const& _killerName, FSlateColor const& _killerColor, FString const& _killedName, FSlateColor const& _killedColor, bool _isDestruction);
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void BP_CreateAllyWidget(ASpacelPlayerState* _playerState);

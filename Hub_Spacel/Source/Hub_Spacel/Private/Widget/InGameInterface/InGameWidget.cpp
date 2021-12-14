@@ -490,9 +490,7 @@ void UInGameWidget::OnScored(EScoreType _type, int32 _value)
 {
     FString value = "+";
     value += FString::FromInt(_value);
-
-    FVector2D mousePosition = UWidgetLayoutLibrary::GetMousePositionOnViewport(this->GetWorld());
-    BP_OnScored(_type, value, mousePosition);
+    BP_OnScored(_type, value);
 }
 
 void UInGameWidget::OnKill(int32 _killer, int32 _killed)
@@ -526,5 +524,5 @@ void UInGameWidget::OnKill(int32 _killer, int32 _killed)
         }
     }
 
-    BP_CreateKillField(killerName, killerColor, killedName, killedColor);
+    BP_CreateKillField(killerName, killerColor, killedName, killedColor, _killer == -1);
 }
