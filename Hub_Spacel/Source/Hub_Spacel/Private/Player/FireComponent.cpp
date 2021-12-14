@@ -83,7 +83,13 @@ FTransform UFireComponent::getFireTransform()
         m_fireIndex = 0;
     }
 
-    FVector bulletDir = UKismetMathLibrary::FindLookAtRotation(transform.GetLocation(), get()->TargetLocation).Vector();
+    FVector targetLocation = get()->TargetLocation;
+    if (m_target != nullptr)
+    {
+        targetLocation = FMath::Lerp(targetLocation, m_target->GetActorLocation(), 0.25f);
+    }
+
+    FVector bulletDir = UKismetMathLibrary::FindLookAtRotation(transform.GetLocation(), targetLocation).Vector();
     bulletDir.Normalize();
     transform.SetRotation(bulletDir.ToOrientationQuat());
 
