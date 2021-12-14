@@ -86,7 +86,11 @@ FTransform UFireComponent::getFireTransform()
     FVector targetLocation = get()->TargetLocation;
     if (m_target != nullptr)
     {
-        targetLocation = FMath::Lerp(targetLocation, m_target->GetActorLocation(), 0.25f);
+        // find best tolerance
+        float dot = FMath::Abs(FVector::DotProduct(get()->GetActorForwardVector(), m_target->GetActorForwardVector()));
+        // secure lerp value with clamp
+        float lerp = FMath::Clamp(0.43f, 0.78f, FMath::Lerp(0.43f, 0.78f, dot));
+        targetLocation = FMath::Lerp(targetLocation, m_target->GetActorLocation(), lerp);
     }
 
     FVector bulletDir = UKismetMathLibrary::FindLookAtRotation(transform.GetLocation(), targetLocation).Vector();
