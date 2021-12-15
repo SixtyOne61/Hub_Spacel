@@ -227,6 +227,9 @@ public:
     UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
     FOnFeedbackScore OnFeedbackScoreDelegate {};
 
+    UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
+    class UEditorHackDataAsset* HackDataAsset{ nullptr };
+
     using ConstStr = FString const&;
     Util::Event<ConstStr, ConstStr> OnKill {};
 
@@ -252,9 +255,6 @@ protected:
 
     UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
     class UMissionDataAsset* MissionDataAsset { nullptr };
-
-    UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
-    class UEditorHackDataAsset* HackDataAsset { nullptr };
 
     UPROPERTY(EditAnywhere)
     class UNiagaraSystem* HealPackFx { nullptr };

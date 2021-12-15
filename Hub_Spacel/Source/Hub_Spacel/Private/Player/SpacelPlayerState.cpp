@@ -4,6 +4,7 @@
 #include "SpacelPlayerState.h"
 #include "Net/UnrealNetwork.h"
 #include "Player/ShipPawn.h"
+#include "DataAsset/EditorHackDataAsset.h"
 
 void ASpacelPlayerState::BeginPlay()
 {
@@ -54,6 +55,25 @@ void ASpacelPlayerState::WaitPawnCreation()
 
 uint8 ASpacelPlayerState::getSkillId(ESkillType _type) const
 {
+
+#if WITH_EDITOR
+    if (AShipPawn* pawn = this->GetPawn<AShipPawn>())
+    {
+        if (UEditorHackDataAsset* hackDataAsset = pawn->HackDataAsset)
+        {
+            if (hackDataAsset->UseHack)
+            {
+                switch (_type)
+                {
+                case ESkillType::Low: return (uint8)hackDataAsset->LowSkillId;
+                case ESkillType::Medium: return (uint8)hackDataAsset->MediumSkillId;
+                case ESkillType::Hight: return (uint8)hackDataAsset->HightSkillId;
+                }
+            }
+        }
+    }
+#endif
+
     switch (_type)
     {
     case ESkillType::Low: return R_LowSkill;

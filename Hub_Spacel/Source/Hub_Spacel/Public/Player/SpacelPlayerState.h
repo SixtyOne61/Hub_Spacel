@@ -45,13 +45,13 @@ public:
     FString R_Team { "Team 1" };
 
     UPROPERTY(Replicated)
-    uint8 R_LowSkill {};
+    uint8 R_LowSkill { (uint8)ESkill::DefaultLow };
 
     UPROPERTY(Replicated)
-    uint8 R_MediumSkill {};
+    uint8 R_MediumSkill { (uint8)ESkill::DefaultMedium };
 
     UPROPERTY(Replicated)
-    uint8 R_HightSkill {};
+    uint8 R_HightSkill { (uint8)ESkill::DefaultHight };
 
     UPROPERTY(Replicated)
     int32 R_KilledByPlayerId {};
