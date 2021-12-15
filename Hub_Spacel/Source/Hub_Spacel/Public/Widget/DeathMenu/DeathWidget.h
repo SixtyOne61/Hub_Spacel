@@ -40,6 +40,9 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Event")
 	void BP_OnAddEffect(EEffect _effect);
 
+	UFUNCTION(BlueprintImplementableEvent, Category = "Action")
+	void BP_ForceRespawn();
+
 	UFUNCTION()
 	void WaitPlayerInfo();
 

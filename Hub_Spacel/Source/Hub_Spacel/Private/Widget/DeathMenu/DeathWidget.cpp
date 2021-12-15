@@ -120,6 +120,12 @@ void UDeathWidget::updateTimer(float _deltaSeconde)
         if (m_currentTimer <= 0.0f)
         {
             BP_EnableRespawn();
+
+            UWorld* world { this->GetWorld() };
+            if (!ensure(world != nullptr)) return;
+
+            FTimerHandle handle;
+            world->GetTimerManager().SetTimer(handle, this, &UDeathWidget::BP_ForceRespawn, 10, false);
         }
     }
 }
