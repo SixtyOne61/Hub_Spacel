@@ -652,20 +652,28 @@ void AShipPawn::setLocationExhaustFx(TArray<FVector_NetQuantize> const& _loc)
     }
 }
 
-void AShipPawn::RPCClientPlayCameraShake_Implementation(EImpactType _type)
+void AShipPawn::RPCClientPlayCameraShake_Implementation(ECameraShakeType _type)
 {
     if (this->IsLocallyControlled())
     {
         if (APlayerController* playerController = this->GetController<APlayerController>())
         {
             FVector const& camLoc = this->CameraComponent->GetComponentLocation();
-            if (_type == EImpactType::Obstacle)
+            if (_type == ECameraShakeType::Obstacle)
             {
                 playerController->ClientPlayCameraShake(this->CameraShakeObstacleClass, 1.0f, ECameraAnimPlaySpace::UserDefined, (this->GetActorLocation() - camLoc).Rotation());
             }
-            else if (_type == EImpactType::Hit)
+            else if (_type == ECameraShakeType::Hit)
             {
                 playerController->ClientPlayCameraShake(this->CameraShakeHitClass, 1.0f, ECameraAnimPlaySpace::UserDefined, (this->GetActorLocation() - camLoc).Rotation());
+            }
+            else if (_type == ECameraShakeType::SpeedBoost)
+            {
+                playerController->ClientPlayCameraShake(this->CameraShakeSpeedBoostClass, 1.0f, ECameraAnimPlaySpace::UserDefined, (this->GetActorLocation() - camLoc).Rotation());
+            }
+            else if (_type == ECameraShakeType::TowerShot)
+            {
+                playerController->ClientPlayCameraShake(this->CameraShakeTowerShotClass, 1.0f, ECameraAnimPlaySpace::UserDefined, (this->GetActorLocation() - camLoc).Rotation());
             }
         }
 
@@ -819,6 +827,12 @@ void AShipPawn::RPCClientAddEffect_Implementation(EEffect _effect)
             this->WeaponComponent->SetScalarParameterValueOnMaterials("Edge sharp max", 0.0f);
             this->WeaponComponent->SetScalarParameterValueOnMaterials("Glow", 1200.0f);
         }
+
+        this->RPCClientPlayCameraShake(ECameraShakeType::SpeedBoost);
+    }
+    else if (_effect == EEffect::EscapeMode || _effect == EEffect::MetaFormProtection || _effect == EEffect::MetaFormSupport)
+    {
+        this->RPCClientPlayCameraShake(ECameraShakeType::SpeedBoost);
     }
     else if (_effect == EEffect::Emp)
     {

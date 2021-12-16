@@ -150,6 +150,11 @@ void UFireComponent::fireMissile(FTransform _fireTransform)
 {
     spawnMissile(_fireTransform);
     resetFireCountDown();
+
+    if (AShipPawn* pawn = get<AShipPawn>())
+    {
+        pawn->RPCClientPlayCameraShake(ECameraShakeType::TowerShot);
+    }
 }
 
 void UFireComponent::spawnMissile(FTransform const _transform) const

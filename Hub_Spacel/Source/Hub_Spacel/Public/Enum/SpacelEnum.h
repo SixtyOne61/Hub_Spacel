@@ -172,10 +172,12 @@ enum class EScoreType : uint8
 };
 
 UENUM(BlueprintType)
-enum class EImpactType : uint8
+enum class ECameraShakeType : uint8
 {
     Hit UMETA(DisplayName = "Hit"),
-    Obstacle UMETA(DisplayName = "Obstacle")
+    Obstacle UMETA(DisplayName = "Obstacle"),
+    SpeedBoost UMETA(DisplayName = "SpeedBoost"),
+    TowerShot UMETA(DisplayName = "TowerShot"),
 };
 
 UENUM(BlueprintType)

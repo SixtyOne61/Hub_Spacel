@@ -147,6 +147,12 @@ public:
     UPROPERTY(Category = "FX", EditAnywhere, BlueprintReadWrite)
     TSubclassOf<class UCameraShake> CameraShakeHitClass{ nullptr };
 
+    UPROPERTY(Category = "FX", EditAnywhere, BlueprintReadWrite)
+    TSubclassOf<class UCameraShake> CameraShakeSpeedBoostClass{ nullptr };
+
+    UPROPERTY(Category = "FX", EditAnywhere, BlueprintReadWrite)
+    TSubclassOf<class UCameraShake> CameraShakeTowerShotClass { nullptr };
+
     UPROPERTY(Category = "FX", EditAnywhere)
     class UMaterialInstance* MaterialSpeedLines{ nullptr };
 

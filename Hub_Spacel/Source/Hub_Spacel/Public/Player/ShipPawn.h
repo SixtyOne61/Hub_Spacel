@@ -169,7 +169,7 @@ private:
     void RPCNetMulticastStartGame(FName const& _team);
 
     UFUNCTION(UnReliable, Client)
-    void RPCClientPlayCameraShake(EImpactType _type);
+    void RPCClientPlayCameraShake(ECameraShakeType _type);
 
     UFUNCTION(Reliable, Client)
     void RPCClientStartGame(FName const& _team);

@@ -219,17 +219,17 @@ void UCustomCollisionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 			// for each module, we need to check each instance
 			if (sweepForInstancedStaticMesh(pawn->ProtectionComponent, scale, profileCollision, *tagTeam))
 			{
-				pawn->RPCClientPlayCameraShake(EImpactType::Obstacle);
+				pawn->RPCClientPlayCameraShake(ECameraShakeType::Obstacle);
 			}
 			if (sweepForInstancedStaticMesh(pawn->SupportComponent, scale, profileCollision, *tagTeam))
 			{
-				pawn->RPCClientPlayCameraShake(EImpactType::Obstacle);
+				pawn->RPCClientPlayCameraShake(ECameraShakeType::Obstacle);
 			}
 
 			UAnimatedSpacelMeshComponent* tmp = Cast<UAnimatedSpacelMeshComponent>(pawn->EmergencyComponent);
 			if (sweepForInstancedStaticMesh(tmp, scale, profileCollision, *tagTeam))
 			{
-				pawn->RPCClientPlayCameraShake(EImpactType::Obstacle);
+				pawn->RPCClientPlayCameraShake(ECameraShakeType::Obstacle);
 			}
 
 			// end check red zone
@@ -505,7 +505,7 @@ void UCustomCollisionComponent::hit(FString const& _team, int32 _playerId, class
 
 			// for feedback
 			shipPawn->RPCClientDamageIndicator(_otherLocation);
-			shipPawn->RPCClientPlayCameraShake(EImpactType::Hit);
+			shipPawn->RPCClientPlayCameraShake(ECameraShakeType::Hit);
 
 			if (_otherActor != nullptr && _otherActor->ActorHasTag(Tags::EmpBullet))
 			{
