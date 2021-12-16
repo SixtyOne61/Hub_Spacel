@@ -545,14 +545,6 @@ void UCustomCollisionComponent::hit(FString const& _team, int32 _playerId, class
 			shipPawn->OnKill.broadcast(shipPawn->Team.ToString(), _team);
 
 			shipPawn->kill(_playerId);
-
-			if (ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld())))
-			{
-				if (ASpacelPlayerState const* spacelPlayerState = get()->GetPlayerState<ASpacelPlayerState>())
-				{
-					spacelGameState->RPCNetMulticastKill(_playerId, spacelPlayerState->PlayerId);
-				}
-			}
 		}
 	}
 }

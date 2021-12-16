@@ -134,6 +134,10 @@ void UDeathWidget::Respawn()
 {
     if (AShipPawn* shipPawn = this->GetOwningPlayerPawn<AShipPawn>())
     {
+        UWorld* world{ this->GetWorld() };
+        if (!ensure(world != nullptr)) return;
+
+        world->GetTimerManager().ClearAllTimersForObject(this);
         shipPawn->OnAddEffectClientDelegate.AddDynamic(this, &UDeathWidget::BP_OnAddEffect);
         shipPawn->RPCServerRespawn();
     }

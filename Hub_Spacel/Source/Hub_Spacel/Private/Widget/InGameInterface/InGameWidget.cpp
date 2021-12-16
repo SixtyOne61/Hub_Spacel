@@ -503,7 +503,7 @@ void UInGameWidget::OnKill(int32 _killer, int32 _killed)
     TArray<APlayerState*> const& playerStates{ world->GetGameState()->PlayerArray };
 
     FString killerName, killedName{};
-    FSlateColor killerColor, killedColor{};
+    FSlateColor killerColor, killedColor { };
 
     for (auto* playerState : playerStates)
     {

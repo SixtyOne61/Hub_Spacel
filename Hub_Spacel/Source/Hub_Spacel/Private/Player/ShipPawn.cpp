@@ -408,6 +408,14 @@ void AShipPawn::kill(int32 _playerId)
 {
     if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
     {
+        if (ASpacelGameState* spacelGameState = Cast<ASpacelGameState>(UGameplayStatics::GetGameState(this->GetWorld())))
+        {
+            if (ASpacelPlayerState const* spacelPlayerState = this->GetPlayerState<ASpacelPlayerState>())
+            {
+                spacelGameState->RPCNetMulticastKill(_playerId, spacelPlayerState->PlayerId);
+            }
+        }
+
         // set playerId in player state
         if (ASpacelPlayerState* playerState = this->GetPlayerState<ASpacelPlayerState>())
         {
