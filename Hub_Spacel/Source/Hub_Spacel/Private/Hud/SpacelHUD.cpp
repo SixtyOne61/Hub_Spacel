@@ -37,6 +37,8 @@ void ASpacelHUD::BeginPlay()
     {
         pawn->OnAddEffectClientDelegate.AddDynamic(this, &ASpacelHUD::OnLocalPlayerAddEffect);
         pawn->OnRemoveEffectDelegate.AddDynamic(this, &ASpacelHUD::OnLocalPlayerRemoveEffect);
+
+        pawn->OnFeedbackScoreDelegate.AddDynamic(this, &ASpacelHUD::OnScored);
     }
 }
 
@@ -106,4 +108,25 @@ void ASpacelHUD::switchToUIOnly()
     FInputModeUIOnly mode{};
     mode.SetLockMouseToViewportBehavior(EMouseLockMode::LockAlways);
     playerController->SetInputMode(mode);
+}
+
+void ASpacelHUD::Tick(float _deltaSeconde)
+{
+    Super::Tick(_deltaSeconde);
+
+    BP_UpdateAlpha(m_alpha);
+    if (m_alpha != 0.0f)
+    {
+        m_alpha = FMath::Lerp(1.0f, 0.0f, m_timer / 0.42f);
+        m_timer += _deltaSeconde;
+    }
+}
+
+void ASpacelHUD::OnScored(EScoreType _type, int32 _value)
+{
+    if (_type == EScoreType::Hit)
+    {
+        m_alpha = 1.0f;
+        m_timer = 0.0f;
+    }
 }
