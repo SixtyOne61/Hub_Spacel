@@ -3,6 +3,7 @@
 
 #include "CommonPlayerController.h"
 #include "Kismet/GameplayStatics.h"
+#include "Hud/SpacelHUD.h"
 
 void ACommonPlayerController::SetupInputComponent()
 {
@@ -70,6 +71,8 @@ bool ACommonPlayerController::getHitResultUnderCursor(ECollisionChannel TraceCha
 
 void ACommonPlayerController::returnToMainMenu()
 {
-    FString levelName{ "MainMenu" };
-    UGameplayStatics::OpenLevel(this->GetWorld(), FName(*levelName), false, "");
+    if (ASpacelHUD* spacelHud = this->GetHUD<ASpacelHUD>())
+    {
+        spacelHud->OnPlayerPause();
+    }
 }

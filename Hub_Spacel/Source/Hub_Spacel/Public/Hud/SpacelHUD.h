@@ -17,6 +17,14 @@ class HUB_SPACEL_API ASpacelHUD : public AHUD
 public:
 	ASpacelHUD();
 
+	/* call when player press escape */
+	UFUNCTION()
+	void OnPlayerPause();
+
+	/* call if player leave pause */
+	UFUNCTION(BlueprintCallable)
+	void OnPlayerResume();
+
 protected:
 	void BeginPlay() override;
 	void Tick(float _deltaSeconde) override;
@@ -51,6 +59,9 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class UUserWidget> DeathWidgetClass{ nullptr };
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class UUserWidget> PauseWidgetClass{ nullptr };
 
 private:
 	/* alpha for hit marker feedback */

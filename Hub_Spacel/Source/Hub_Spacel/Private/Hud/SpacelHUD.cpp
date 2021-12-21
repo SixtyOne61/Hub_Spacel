@@ -130,3 +130,20 @@ void ASpacelHUD::OnScored(EScoreType _type, int32 _value)
         m_timer = 0.0f;
     }
 }
+
+void ASpacelHUD::OnPlayerPause()
+{
+    if (this->PauseWidgetClass != nullptr)
+    {
+        switchToUIOnly();
+
+        UWorld* world = this->GetWorld();
+        if (!ensure(world != nullptr)) return;
+        SpacelFactory::createWidget<UUserWidget>(world, this->PauseWidgetClass, true);
+    }
+}
+
+void ASpacelHUD::OnPlayerResume()
+{
+    switchToGameAndUI();
+}
