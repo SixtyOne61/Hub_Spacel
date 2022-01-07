@@ -141,6 +141,9 @@ private:
 	void startMission(FMission * _mission);
 	void updateMissionArrowOrientation();
 
+	/* catch up server on construct */
+	void catchUpState(class ASpacelGameState const* _spacelGameState);
+
 protected:
 	UPROPERTY(Category = "DataAsset", EditAnywhere, BlueprintReadWrite)
 	class UTeamColorDataAsset* TeamColorDataAsset { nullptr };

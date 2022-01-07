@@ -34,6 +34,8 @@ void UInGameWidget::NativeConstruct()
     {
         spacelGameState->OnChangeStateDelegate.AddDynamic(this, &UInGameWidget::OnChangeState);
 
+        catchUpState(spacelGameState);
+
         // mission
         spacelGameState->OnStartMissionDelegate.AddDynamic(this, &UInGameWidget::OnStartMission);
         spacelGameState->OnStartMissionTwoParamDelegate.AddDynamic(this, &UInGameWidget::OnStartMissionTwoParam);
@@ -75,6 +77,19 @@ void UInGameWidget::NativeTick(const FGeometry& _myGeometry, float _deltaSeconde
     tickTimer(_deltaSeconde);
     tickScore();
     updateMissionArrowOrientation();
+}
+
+void UInGameWidget::catchUpState(ASpacelGameState const* _spacelGameState)
+{
+    // if we connect on server, before change state
+    EGameState currentGameState = _spacelGameState->GetState();
+    if (currentGameState != EGameState::Undefined)
+    {
+        for (auto state = EGameState::Prepare; state <= currentGameState; state = (EGameState)((uint8)state + 1))
+        {
+            OnChangeState(state);
+        }
+    }
 }
 
 void UInGameWidget::OnChangeState(EGameState _state)
