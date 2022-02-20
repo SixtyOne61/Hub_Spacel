@@ -234,6 +234,7 @@ void USkillComponent::TickComponent(float _deltaTime, ELevelTick _tickType, FAct
 
                     bool keyDown = controller->IsInputKeyDown(param->Key);
                     bool& isDown = skill.Get()->isDown();
+
                     if (keyDown && !isDown)
                     {
                         isDown = true;

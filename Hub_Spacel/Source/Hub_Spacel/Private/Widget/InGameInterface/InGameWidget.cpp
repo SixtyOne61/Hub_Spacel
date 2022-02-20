@@ -94,6 +94,9 @@ void UInGameWidget::catchUpState(ASpacelGameState const* _spacelGameState)
 
 void UInGameWidget::OnChangeState(EGameState _state)
 {
+    // we don't need to process state already process
+    if (_state <= m_saveGameStateProcess) return;
+
     if (_state == EGameState::Prepare)
     {
         setupChooseSkill();
@@ -136,6 +139,8 @@ void UInGameWidget::OnChangeState(EGameState _state)
     {
         BP_EndGame();
     }
+
+    m_saveGameStateProcess = _state;
 }
 
 void UInGameWidget::WaitPlayerState()

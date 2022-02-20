@@ -172,4 +172,7 @@ private:
 
 	/* mission */
 	class AActor* m_arrowTarget { nullptr };
+
+	/* save game state already process */
+	EGameState m_saveGameStateProcess { EGameState::Undefined };
 };

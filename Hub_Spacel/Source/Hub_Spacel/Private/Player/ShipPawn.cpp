@@ -49,15 +49,23 @@ void AShipPawn::OnChangeState(EGameState _state)
 {
     if (_state == EGameState::ChooseSkill)
     {
-        if (this->SkillComponent != nullptr)
+        if (this->GetNetMode() == ENetMode::NM_Client)
         {
-            this->SkillComponent->setupSkill();
+            if (this->SkillComponent != nullptr)
+            {
+                this->SkillComponent->setupSkill();
+            }
         }
     }
     else if (_state == EGameState::LockPrepare)
     {
         if (this->GetNetMode() == ENetMode::NM_DedicatedServer)
         {
+            if (this->SkillComponent != nullptr)
+            {
+                this->SkillComponent->setupSkill();
+            }
+
             this->StartTransform = GetActorTransform();
 
             // add custom collision component
